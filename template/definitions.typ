@@ -1,4 +1,4 @@
-#import "@preview/fletcher:0.5.1": node, edge, diagram
+#import "@preview/fletcher:0.5.5": node, edge, diagram
 #import "@preview/ctheorems:1.1.3": *
 
 #let citep = cite.with(form: "normal")
@@ -81,11 +81,11 @@
 }
 
 #let hazard(which, var, eventno) = {
-  $lambda^(#which)(#var | history(#eventno))$
+    $lambda_(#eventno)^(#which)(#var, history(#eventno))$
 }
 
 #let cumhazard(eventno, which, var) = {
-  $Lambda^(#which)(#var | history(#eventno))$
+    $Lambda_(#eventno)^(#which)(#var, history(#eventno))$
 }
 
 #let treat(which) = {
@@ -133,11 +133,9 @@
     }
 }
 
-#let genericdensity(f,time, arg, which, pow) = $#f^ #pow _(#time)(#arg | history(#which))$
-#let densitytrt(time, arg, which) = $genericdensity(pi, #time, #arg, #which, #none)$
-#let densitytrtint(time, arg, which) = $genericdensity(pi, #time, #arg, #which, "*")$
-#let densitycov(time, arg, which) = $genericdensity(mu, #time, #arg, #which, #none)$
-#let densitycovint(time, arg, which) = $genericdensity(mu, #time, #arg, #which, "*")$
+#let densitytrt(time, arg, which) = $pi_(#which) (#time, #arg, history(#which))$
+#let densitytrtint(time, arg, which) = $pi_(#which)^* (#time, #arg, history(#which))$
+#let densitycov(time, arg, which) = $mu_(#which) (#time, #arg, history(#which))$
 
 #let commonintegral(k, t, integrand, u) = {
     $integral_(event(#k))^(#t) #integrand upright(d) #u$
@@ -164,6 +162,7 @@
 #show: thmrules.with(qed-symbol: $square$)
 #let unary(first, ..) = first
 #let theorem = thmbox("theorem", "Theorem", fill: rgb("#eeffee"), base_level: 0)
+#let lemma = thmbox("lemma", "Lemma", fill: rgb("#eeffee"), base_level: 0)
 #let assumption = thmbox("assumption", "Assumption", fill: rgb("#eeeeff"), base_level: 0)
 #let definition = thmbox("definition", "Definition", fill: rgb("#ffeeee"), base_level: 0)
 #let proof = thmproof("proof", "Proof")

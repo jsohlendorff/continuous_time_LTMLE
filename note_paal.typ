@@ -92,7 +92,7 @@ This means that the observations beyond the point $tau$ have an event time set t
 //         )
 // $
 //Then, we really observe $O_tau$ and not $O$. T
-hroughout, we assume that the observations are observed made the interval $[0, tau]$.
+Throughout, we assume that the observations are observed in the interval $[0, tau]$.
 We make the intervention definition specific to our marked setting.
 The important details will be the same.
 
@@ -174,7 +174,7 @@ Then three basic conditions for identifiability are
  a uniformly integrable martingale, where $scr(P)$ denotes the product integral.
    This is the same as stating that the measure $Q$ given by $d Q = V_tau d P$ is a probability measure.
 
-Then, $bb(E)[tilde(W)_t] = bb(E)[W_t Y_t]$ (Theorem 1 in @ryalenPotentialOutcomes).
+Then, $bb(E)[tilde(Y)_t] = bb(E)[W_t Y_t]$ (Theorem 1 in @ryalenPotentialOutcomes).
 This construction is different from the usual approach
 in the sense that inverse probability weighting is used to derive the g-formula and not the other way around.
 Note that $W_t$ cannot be directly interpreted as a likelihood ratio of interest, for in this case
@@ -192,20 +192,22 @@ We are now ready to compare the two approaches.
 The approach in @rytgaardContinuoustimeTargetedMinimum2022 stipulates that the $Q$-$cal(F)_t$ compensator of $N ((0, t] times {a} times dot)$ is given by
 $Lambda^Q ((0, t], {a}, dot) = Lambda^(g) ((0, t], {a}, dot)$ and that the $Q$-$cal(F)_t$ compensator of $N ((0, t] times {y} times dot)$ is given by $Lambda^Q ((0, t], {y}, dot) = Lambda ((0, t], {y}, dot)$.
 We will show that this is indeed the case if $Lambda ({t} times {a} times {0}) = 0$ which happens if $N ((0, t] times {a} times {0})$ has a compensator which is absolutely continuous with respect to the Lebesgue measure.
-To this end, we shall calculate $[N^g ((0, t] times {a} times A), bb(1) {T^a <= t}] = sum_(s <= t) bb(1) {1 in A} N^g ({s} times {a} times A)) bb(1) {T^a = s} = 0$ - the optional covariation of the two processes.
-This is zero because the two processes have no jumps in common, which is due to the fact that you have a visitation time in which the doctor both treats and does not treat, i.e.
+To this end, we shall calculate $N^(g times a) (t) = [N^g ((0, dot] times {a} times A), bb(1) {T^a <= dot]_t = sum_(s <= t) bb(1) {1 in A} N^g ({s} times {a} times A)) bb(1) {T^a = s} = 0$ - the optional covariation of the two processes.
+This is zero because the two processes have no jumps in common, which is due to the fact that you cannot have a visitation time in which the doctor both treats and does not treat, i.e.
 you cannot jump to state 1 and 2 at the same time.
-Since we have that $N^g ((0, t] times {y} times dot)$ and $N^g ((0,t] times {a} times dot)$ cannot jump at the same time (follows from the decomposition), then the same argument applies to $[N^g ((0,t] times {y} times dot), bb(1) {T^a <= t}]$
-because $T^a$ must be one of the jump times of $N^g ((0, t] times {a} times dot)$. We define their respective compensators as $Lambda^(g times a) ((0,t] times dot) = Lambda^(g times y) ((0,t] times dot) = 0$.
+Since we have that $N ((0, t] times {y} times dot)$ and $N^g ((0,t] times {a} times dot)$ cannot jump at the same time (follows from the decomposition), then the same argument applies to $N^(g times y) (t) = [N ((0,dot] times {y} times dot), bb(1) {T^a <= dot}]_t$
+Thus their respective compensators are $Lambda^(g times a) ((0,t] times dot) = Lambda^(g times y) ((0,t] times dot) = 0$.
 Using Pål's g-formula (Theorem 2 in @ryalenPotentialOutcomes) gives
 $
-    Lambda^Q ((0, t] times {a}, A) &= integral_((0, t]) (d Lambda^g (dot times {a} times A) - d Lambda^(g times  a) (dot times A)) / (1 - Delta Lambda_s^a ({0}))  = integral_((0, t]) (Lambda^g (dot times {a} times A) - 0) / (1 - 0) = Lambda^g ((0, t] times {a} times A) \
-    Lambda^Q ((0, t] times {y}, {emptyset}) &= integral_((0, t]) (d Lambda^g (dot times {y} times {emptyset}) - Lambda^(g times y) (dot times {emptyset})) / (1 - Delta Lambda_s^a ({0}))  = integral_((0, t]) (Lambda (dot times {y}, {emptyset}) - 0) / (1 - 0) = Lambda ((0,t] times {y} times {emptyset}).
+    Lambda^Q ((0, t] times {a}, A) &= integral_((0, t]) (d Lambda^g (dot times {a} times A) - d Lambda^(g times  a) (dot times A)) / (1 - Delta Lambda_s^a ({0}))  = integral_((0, t]) (Lambda^g (dot times {a} times A) - 0) / (1 - 0) \
+        &= Lambda^g ((0, t] times {a} times A) \ \ 
+        Lambda^Q ((0, t] times {y}, {emptyset}) &= integral_((0, t]) (d Lambda^g (dot times {y} times {emptyset}) - Lambda^(g times y) (dot times {emptyset})) / (1 - Delta Lambda_s^a ({0}))  = integral_((0, t]) (Lambda (dot times {y}, {emptyset}) - 0) / (1 - 0) \
+        &= Lambda ((0,t] times {y} times {emptyset}).
 $
 Critically, we used that the compensator is absolutely continuous with respect to the Lebesgue measure.
-The counterexample that is considered in @ryalenPotentialOutcomes is when the compensator is a bit artificial,
-because it does not take into account that death is a terminal event.
-In this sense, the patient is allowed to have visitation times after they die. 
+//The counterexample that is considered in @ryalenPotentialOutcomes is when the compensator is a bit artificial,
+//because it does not take into account that death is a terminal event.
+//In this sense, the patient is allowed to have visitation times after they die. 
 
 Now we assume in contrast that the total compensator is 
 $
@@ -215,15 +217,16 @@ where
 $
     K (s) = c bb(1) {1 <= s}
 $
-Evidently, $Lambda ((0, t] times {a} times d a) = sum_(m=0,1) delta_(m)(d a) pi(A(T_1) = m | D(T_1) = a, T_1 = s) Lambda ((0, t] times {a} times {0, 1}) = c bb(1) {1 <= T_1 and t}$
+Evidently, $Lambda ((0, t] times {a} times d a) = sum_(m=0,1) delta_(m)(d a) pi(A(T_1) = m | D(T_1) = a, T_1 = s) Lambda ((0, t] times {a} times {0, 1})$
 is predictable, increasing, cadlag, but not absolutely continuous with respect to the Lebesgue measure.
 We find that with the same calculations as previously, 
 $
     Lambda^Q ({s} times {a} times {1}) &= 1/(1 - Lambda ({s} times {a} times {0})) (Lambda^g ({s} times {a} times {1}) - Lambda^(g times  a) ({s} times {a} times {1})) \
-        &= 1/(1 - pi(A(T_1) = 0 | D(T_1) = a, T_1 = t) c bb(1) {t <= T_1, t = 1)) Lambda^g ({s} times {a} times {1})
+        &= 1/(1 - pi(A(T_1) = 0 | D(T_1) = a, T_1 = s) c bb(1) {s <= T_1, s = 1)) Lambda^g ({s} times {a} times {1})
 $
-At $t=1$, $Lambda^Q ({s} times {a} times {1}) = 1/(1 - c  pi(A(T_1) = 0 | D(T_1) = a, T_1 = 1) bb(1) {1 <= T_1)) Lambda^g ({1} times {a} times {1}) != Lambda^g ({1} times {a} times {1})$
-since we do not have $1 > T_1$ $P$-almost surely in general nor that $pi(A(T_1) = 0 | D(T_1) = a, T_1 = 1) = 0$. The other components of the $Q$-compensators are the same as before.
+If $s!=1$, then $Lambda^Q ({s} times {a} times {1})  = Lambda^g ({s} times {a} times {1})$.
+However, with positive probability, $Lambda^Q ({s} times {a} times {1})  = 1/(1 - pi(A(T_1) = 0 | D(T_1) = a, T_1 = 1) c bb(1) {1 <= T_1)) Lambda^g ({s} times {a} times {1}) != Lambda^g ({s} times {a} times {1})$ for $s=1$.
+A similar conclusion be drawn for the other compensators. 
 
 // predictable because X = X delta K + K_-
 //Proposition 1 in @ryalenPotentialOutcomes states that $W_t = cal(E) (- (N_t (s, a, 0) - Lambda_t (s, a, 0)))$, where $cal(E)$ is the stochastic exponential.
