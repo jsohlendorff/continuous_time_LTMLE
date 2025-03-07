@@ -1,4 +1,4 @@
-#import "@preview/fletcher:0.5.5": node, edge, diagram
+#import "@preview/fletcher:0.5.6": node, edge, diagram
 #import "@preview/ctheorems:1.1.3": *
 
 #let citep = cite.with(form: "normal")
