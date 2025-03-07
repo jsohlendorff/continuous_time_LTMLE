@@ -48,7 +48,13 @@ where $m$ is the Lebesgue measure on $[0, tau]$.
 The precise statement is given in @thm:main.
 This is useful if one wishes to obtain convergence rates for a hazard function which one has not explicitly considered,
 but only the cumulative hazard function, such as in a Cox regression.
-
+For example for the Cox:
+$
+    sqrt(integral (hat(Lambda) (t | x) - Lambda (t | x))^2 mu_0 (x)) &<= sqrt(integral ((hat(Lambda)_(0) (t | x) - Lambda_0 (t)) exp(hat(beta)_n x) )^2 mu_0 (d x)) \
+    &+ sqrt(Lambda^2_0 (t) integral (exp(hat(beta)_n x) - exp(beta x))^2 mu_0 (d x)) \
+$
+Under standard regularity conditions, the last term is $O_P (n^(-1/2))$ (parametric rate) and the first term is $O_P (n^(-1/2))$ (nonparametric rate)
+if we can show that the Breslow estimator is bounded so that dominated convergence can be applied. If we assume that the covariates are bounded $exp(hat(beta)_n x)$ can be moved outside. 
 #theorem[
     Let $hat(P)_n (t | x)$ be a sequence of estimators of $P (t | x)$ defined on $[0, tau]$ fulfilling that $hat(P)_n (0 | x) = P (0 | x) = 0$.
     Suppose that $P (t | x) in C^2 ([0, tau])$ for $mu_0$-almost all $x$ and that there exists a constant $K>0 $ such that
