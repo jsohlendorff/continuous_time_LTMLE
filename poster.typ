@@ -326,11 +326,11 @@
                    regressing on $history(k-1)$ (among the people who are still at risk after $k-1$ events).
                 2. Define the subject-specific weight:
                    $
-                       hat(eta)_k = (bb(1) {event(k) <= tau, Delta_k in {a, ell}, k < K} hat(nu)_(k) (cal(F)^(-A)_(event(k)), bold(1))) / (hat(S)^c (event(k) | history(k-1))) 
+                       hat(eta)_k = (bb(1) {event(k) <= tau, Delta_k in {a, ell}, k < K} hat(nu)_(k) (cal(F)^(-A)_(event(k)), bold(1))) / (hat(S)^c (event(k) | cal(F)^(-A)_(event(k-1)), bold(1)))
                    $
                    Then calculate the subject-specific pseudo-outcome
                    $
-                       hat(R)_k &= (bb(1) {event(k) <= tau, Delta_k = y}) / (hat(S)^c (event(k) | history(k-1))) + hat(eta)_k
+                       hat(R)_k &= (bb(1) {event(k) <= tau, Delta_k = y}) / (hat(S)^c (event(k) | cal(F)^(-A)_(event(k-1)), bold(1))) + hat(eta)_k
                    $
                    Regress $hat(R)_k$ on $history(k-1)$ on the data with $event(k-1) < tau$ and $Delta_k in {a, ell}$ to obtain a prediction function $hat(nu)_(k-1) : cal(H)_(k-1) -> RR_+$.
            
