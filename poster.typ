@@ -43,7 +43,7 @@
 )
 
 #pop.title-box(
-    "A New Iterated Conditional Expectations Estimator for Longitudinal Causal Effects in Continuous Time",
+    "A new iterated conditional expectations estimator for longitudinal causal effects in continuous time",
     authors: [
         Johan Sebastian Ohlendorff#super("1"),
         Anders Munch#super("1"),
@@ -62,9 +62,9 @@
           require the discretization of time, leading to a loss of information.
         - There is a scarcity of (applied) literature on the estimation of longitudinal causal effects in continuous time.
           @rytgaardContinuoustimeTargetedMinimum2022 considered a targeted minimum-loss based estimator based on
-          iterated conditional expectations (@fig:timegridrytgaard) for estimating causal effects flexibly.
-          However, this estimator quickly becomes intractable.
-        - We propose a new feasible iterated conditional expectations estimator (@fig:eventgrid) for the estimation of longitudinal causal effects in continuous time.
+          iterated conditional expectations (@fig:timegridrytgaard) for estimating causal effects flexibly. Recently, @ryalenPotentialOutcomes
+          proposed a general identification result for longitudinal causal effects in continuous time.
+          We extend upon these works and provide a new feasible iterated conditional expectations estimator (@fig:eventgrid) for the estimation of longitudinal causal effects in continuous time.
           #figure(cetz.canvas(length: 1.8cm, {
               import cetz.draw: *
 
@@ -225,7 +225,7 @@
     ]
 
     #pop.column-box(heading: "Setting")[
-        Let $(N^a (t), A (t), N^ell (t), L(t), N^y (t), N^d (t), N^c (t))$#footnote[We associate to this process its natural filtration $cal(F)_t$ implicitly defined on a probability space $(Omega, cal(F), P)$.] be a stochastic processes observed in $[0, tauend]$,
+        Let $(N^a (t), A (t), N^ell (t), L(t), N^y (t), N^d (t), N^c (t))$#footnote[We associate to this process its natural filtration $cal(F)_t$ implicitly defined on a probability space $(Omega, cal(F), P)$.] be a stochastic (jump) processes observed in $[0, tauend]$,
         consisting of a counting process for treatment visits, treatment values, a counting process for treatment covariate measurements, covariate values, and counting processes for the primary event, competing event, and censoring, respectively.
         //Furthermore, $Delta A (t) = 0$ ($Delta L (t) = 0$) if $Delta N^a (t)$ ($Delta N^ell (t) = 0$).
         Furthermore, $A (t) in {0, 1}$ and $L (t) in cal(L)$, where $cal(L) subset.eq RR^d$ is a finite set. 
@@ -248,7 +248,7 @@
         $
         //and $event(k)$ and $Delta_k in {a, ell, y, d, c}$ are the event time and status indicator for the $k$'th event. 
         #assumption[
-            For each $k in {1, dots, K}$,  $event(k) | history(k-1) lt.double m$ #footnote[$m$ is the Lebesgue measure on $RR_+$. We abuse notation here. In reality, this should be written in terms of the Markov kernel.], $treat(k) | event(k) = t, Delta_k = a, history(k-1) lt.double nu_a$, and $covariate(k) | event(k) = t, status(k) = ell, history(k-1) lt.double nu_ell$.
+            For each $k in {1, dots, K}$,  $event(k) | history(k-1) lt.double m$ #footnote[$m$ is the Lebesgue measure on $RR_+$. Also $lt.double$ should be understood in terms of the corresponding Markov kernel.], $treat(k) | event(k) = t, Delta_k = a, history(k-1) lt.double nu_a$, and $covariate(k) | event(k) = t, Delta_(k) = ell, history(k-1) lt.double nu_ell$.
             //     We assume that the conditional distributions 
             //     $P(event(k) in dot | history(k-1)) lt.double m$ $P$-a.s., and $P(treat(k) in dot | event(k) = t, Delta_k = a, history(k-1)) lt.double nu_a$ $P$-a.s. and $P(covariate(k) in dot | event(k) = t, status(k) = ell, history(k-1)) lt.double nu_ell$ $P$-a.s., where $m$ is the Lebesgue measure on $RR_+$, $nu_a$ is a measure on $cal(A)$, and $nu_ell$ is a measure on $cal(L)$.
             //] <assumptionabscont>
@@ -257,7 +257,7 @@
 
     #pop.column-box(heading: "Target parameter")[
         Let $tilde(T)^(bold(1))_k$ and $tilde(Delta)^(bold(1))_k$ be the counterfactual event time and indicator for the $k$'th had the patient stayed on treatment and initially received treatment (and not been censored).
-        Our target parameter $Psi_(tau)^g : cal(M) -> RR$ is the mean interventional potential outcome at time $tau$ given the intervention plan $g$.
+        Our target parameter $Psi_(tau)^g : cal(M) -> RR$ is the mean interventional absolute risk at time $tau$ given the intervention plan $g$.
  
         $
             Psi_(tau)^g (P) = mean(P) [sum_(k=1)^K bb(1) {tilde(T)^(bold(1))_k <= tau, tilde(Delta)^(bold(1))_k = y}].
@@ -268,14 +268,14 @@
         We consider identification conditions in Theorem 3 of @ryalenPotentialOutcomes. These are stated in our present uncensored setting.
         Let $tilde(Y)_t = (bb(1) {tilde(T)^(bold(1))_1 <= t, tilde(Delta)^(bold(1))_1 = y}, dots, bb(1) {tilde(T)^(bold(1))_K <= t, tilde(Delta)^(bold(1))_K = y})$ and $T^a = inf {t > 0 : A(t) != 1}$.
         For each $k in {1, dots, K}$, we need:
-        - _Consistency_:
+        - *Consistency*:
           $
               bb(1) {tilde(T)^(bold(1))_k <= t, tilde(Delta)^(bold(1))_k = y} bb(1) {T^a > t, A(0) = 1} = bb(1) {T_k <= t, Delta_k = y} bb(1) {T^a > t, A(0) = 1}
           $
           for $t in [0, tauend]$.
-        - Exchangeability:
+        - *Exchangeability*:
           $
-              treat(k) perp (bb(1){tilde(T)^(bold(1))_(k+1) <= t, tilde(D)^(bold(1))_(k+1) = y}, dots, bb(1){tilde(T)^(bold(1))_K <= t, tilde(D)^(bold(1))_K = y}) | status(k) = a, history(k-1)
+              treat(k) perp ((bb(1){tilde(T)^(bold(1))_(k+1) <= t, tilde(D)^(bold(1))_(k+1) = y}, dots, bb(1){tilde(T)^(bold(1))_K <= t, tilde(D)^(bold(1))_K = y}))_(t in [0, tauend]) | Delta_(k) = a, history(k-1)
           $
           (and
           $
@@ -283,11 +283,11 @@
                   &= lim_(h -> 0) (P(t <= event(k) < t+h, Delta_k = a | event(k) >= t, history(k-1), (tilde(Y)_t)_(t in [0, tauend])))/h
           $
           does not depend on $(tilde(Y)_t)_(t in [0, tauend])$).
-        - Positivity: The weights
+        - *Positivity*: The weights
           $
               w_k (f_(k-1), t_k) = (bb(1) {a_0 = 1}) / ( pi_0 (l_0)) product_(j=1)^(k-1) ( (bb(1) {a_j = 1})  / ( pi_j ( f_(j-1))))^(bb(1) {delta_j = a}) bb(1) {t_1 < dots < t_k}
           $
-          fulfill $mean(P) [w_k (history(k-1), event(k))] = 1$. //, where we define $pi_0 (l) = P(A(0) = 1 | L(0) = l_0)$ and $pi_j (f) = P(treat(j) = 1 | Delta_j = a, history(j-1) = f)$.
+          fulfill $mean(P) [w_k (history(k-1), event(k))] = 1$. Here $pi_0 (l) = P(A(0) = 1 | L(0) = l_0)$ and $pi_j (f) = P(treat(j) = 1 | Delta_j = a, history(j-1) = f)$.
           #showybox(
               title: "Identification formula", 
               frame: (
@@ -306,14 +306,12 @@
         
     ]
     
-    #pop.column-box(heading: "Iterated Conditional Expectation Estimator")[
+    #pop.column-box(heading: "Iterated conditional expectation estimator")[
         The form of the efficient influence function (@bickel1993efficient) in this setting suggests the use of a iterated conditional expectations estimator.
         //Moreover, the estimator is more stable than inverse probability weighted estimators.
         Let $S^c (t | history(k))$ be the conditional survival function of the censoring time given the $k$ previous events
         and $cal(F)^(-A)_(event(k))$ denote the history without the treatment process.
       
-        
-
         #showybox(
             title-style: (boxed-style: (:)),
             frame: (
@@ -322,10 +320,10 @@
                 footer-color: blue.lighten(80%),
                 radius: (top-left: 10pt, bottom-right: 10pt, rest: 0pt)
             ),
-            title: "Proposed continuous-time ICE estimator",
+            title: "Proposed continuous-time ICE algorithm",
             [- For each event point $k = K, K-1, dots, 1$ (starting with $k = K$):
                 1. Obtain $hat(S)^c (t | history(k))$ by fitting a cause-specific hazard model for the censoring via the interevent time $S_((k)) = event(k) - event(k-1)$,
-                   regressing on $history(k-1)$ (among the people who are still at risk after $k$ events).
+                   regressing on $history(k-1)$ (among the people who are still at risk after $k-1$ events).
                 2. Define the subject-specific weight:
                    $
                        hat(eta)_k = (bb(1) {event(k) <= tau, Delta_k in {a, ell}, k < K} hat(nu)_(k) (cal(F)^(-A)_(event(k)), bold(1))) / (hat(S)^c (event(k) | history(k-1))) 
@@ -339,21 +337,11 @@
                     - At baseline, we obtain the estimate $hat(Psi)_n = 1/n sum_(i=1)^n hat(nu)_(0) (L_i (0), 1)$.]
         )
         #colbreak()
-        #showybox(
-            title-style: (boxed-style: (:)),
-            frame: (
-                border-color: blue,
-                title-color: blue.lighten(30%),
-                footer-color: blue.lighten(80%),
-                radius: (top-left: 10pt, bottom-right: 10pt, rest: 0pt)
-            ),
-            title: [Existing discrete-time ICE estimator],
-            [1. For each time point $k = K, K-1, dots, 1$ (starting with $hat(R)_K = Y$):
-                Regress $hat(R)_k$ on $(macron(L)_(k-1), macron(A)_(k-1))$ to obtain $hat(nu)_(k-1)$; obtain predictions $hat(R)_(k-1) = hat(nu)_(k-1) (macron(L)_(k-1), bold(1))$.
-             2. At baseline, we obtain the estimate $hat(Psi)_n = 1/n sum_(i=1)^n hat(nu)_(0) (L_i (0), 1)$.
-             - This approach can be extended to survival outcomes.
-            ]
-        )
+    ]
+    #pop.column-box(heading: "Future directions/challenges")[
+        - Implementation of the method and application on real data. 
+        - Few individuals may have a high number of events, leading to potentially very small sample sizes in the iterated regressions.
+          //*Proposed solution*: Use data-adaptive (in the sense of distinguishing sample sizes) rule for model selection.
     ]
     
     #pop.bibliography-box("ref.bib",style: "apa")

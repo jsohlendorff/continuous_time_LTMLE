@@ -52,7 +52,8 @@ If $norm( hat(P)_n (t | x) - P (t | x))_(mu_0) = o_P (n^(-1/2))$ and
 $norm( R_n)_(mu_0 times.circle m) <= K norm(R_(1,n))_(mu_0 times.circle m) norm(R_(2,n))_(mu_0 times.circle m)$,
 where $norm( R_(1,n) )_(mu_0 times.circle m) = norm( hat(p)_n - p)_(mu_0 times.circle m)$,
 then $norm(R_n)_(mu_0 times.circle m) = o_P (n^(-1/2))$
-if $norm(R_(2,n))_(mu_0 times.circle m) = o_P (n^(-5/12-epsilon))$ for some small $epsilon > 0$ (a little bit slower than parametric rate).
+if $norm(R_(2,n))_(mu_0 times.circle m) = o_P (n^(-3/8-epsilon))$ for some small $epsilon > 0$ (a little bit slower than parametric rate) ($gamma + 3gamma = 1/2, gamma + z= 1/2 => z = 3/8$),
+so it may still be possible to use flexible machine learning.
 
 This is useful if one wishes to obtain convergence rates for a hazard function which one has not explicitly considered
 such as in a Cox regression.
