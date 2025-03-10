@@ -145,143 +145,14 @@ and random variables are defined.
     on the events occuring in the previous time interval.
 ]) <fig:discretetimegrid>
 
-#figure(cetz.canvas(length: 0.9cm, {
-  import cetz.draw: *
-
-  set-style(
-    mark: (fill: black, scale: 2),
-    stroke: (thickness: 0.4pt, cap: "round"),
-    angle: (
-      radius: 0.3,
-      label-radius: .22,
-      fill: green.lighten(80%),
-      stroke: (paint: green.darken(50%))
-    ),
-    content: (padding: 1pt)
-  )
-  
-  let time_grid(cord_start,cord_end, time_values, inc: 0.1, anchor: "north") = {
-      // Main axis line
-      set-style(mark: (end: ">"))
-      line(cord_start, cord_end)
-      set-style(mark: none)
-
-      // General time line
-      let early_stop = cord_end.first() - 1/10 * cord_end.first()
-      let t_grid = frange(cord_start.first()+inc,early_stop - inc, inc)
-      
-      // Start line
-      line((cord_start.first(), -2*inc+cord_start.last()), (cord_start.first(), 2*inc+cord_start.last()), name:"lstart")
-      content("lstart.start", [], anchor: "east")
-      
-      // End line
-      line((early_stop - inc, -2*inc+cord_end.last()), (early_stop - inc, 2*inc+cord_end.last()), name: "lend")
-      content("lend.start", [#text(size: 6pt)[$tau_"end"$]],anchor: "north")
-
-      // Draw grid
-      for i in t_grid {
-        line((i, -inc+cord_start.last()), (i, inc+cord_start.last()))    
-      }
-
-      // Deal with the marks/events
-      let event_list = ()
-      for t in range(0, time_values.len()) {
-        event_list.push((name: "v" + str(t), value: time_values.at(t), mformat: $T_( #(t+1) )$))
-      }
-      for v in event_list {
-        line((v.value + cord_start.first(), -2*inc+cord_start.last()), (v.value+cord_start.first(),2*inc+cord_start.last()), name: v.name)
-        
-        //content(v.name + ".start", [#v.mformat], anchor: anchor)
-      }
-    }
-    let eventfun(x, where: "start", anchor: "north",start_y: 0)={
-      let event_list = ()
-      for t in range(0, x.len()) {
-        event_list.push((name: "v" + str(t), value: x.at(t), mformat: $T_( #(t+1) )$))
-      }
-      for v in event_list {
-        line((v.value, -1.5+start_y), (v.value, 1.5+start_y), stroke: red,name: v.name)
-        content(v.name + "." + where, [#text(size: 6pt)[#v.mformat]], anchor: anchor)
-      }
-    }
-
-    rect((0,1.5), (2.8,-1.5),fill:gray,stroke:none)
-    let grid1 = (2.5,4.4,6.4)
-    // Deal with the marks/events
-    eventfun(grid1)
-    
-    let grid2 = (1,1.7, 2.3,2.8)
-    eventfun(grid2, where: "end", anchor: "south")
-    
-    group({time_grid((0,-1),(10,-1), grid1,inc: 0.1,anchor: "south")})
-    group({time_grid((0,1),(10,1), grid2)})
-}), caption:  [The figure illustrates the sequential regression approach
+#figure(timegrid(new_method: false), caption:  [The figure illustrates the sequential regression approach
     given in @rytgaardContinuoustimeTargetedMinimum2022 for two observations:
     Let $t_1 < dots < t_m$ be all the event times in the sample.
     Then, given $mean(Q)[Y | cal(F)_(t_(r))]$,
     we regress back to $mean(Q)[Y | cal(F)_(t_(r-1))]$ (through multiple regressions).
 ],) <fig:timegridrytgaard>
 
-#figure(cetz.canvas(length: 0.9cm, {
-  import cetz.draw: *
-
-  set-style(
-    mark: (fill: black, scale: 2),
-    stroke: (thickness: 0.4pt, cap: "round"),
-    angle: (
-      radius: 0.3,
-      label-radius: .22,
-      fill: green.lighten(80%),
-      stroke: (paint: green.darken(50%))
-    ),
-    content: (padding: 1pt)
-  )
-  
-  let time_grid(cord_start,cord_end, time_values, inc: 0.1, anchor: "north") = {
-      // Main axis line
-      set-style(mark: (end: ">"))
-      line(cord_start, cord_end)
-      set-style(mark: none)
-
-      // General time line
-      let early_stop = cord_end.first() - 1/10 * cord_end.first()
-      let t_grid = frange(cord_start.first()+inc,early_stop - inc, inc)
-      
-      // Start line
-      line((cord_start.first(), -2*inc+cord_start.last()), (cord_start.first(), 2*inc+cord_start.last()), name:"lstart")
-      content("lstart.start", [], anchor: "east")
-      
-      // End line
-      line((early_stop - inc, -2*inc+cord_end.last()), (early_stop - inc, 2*inc+cord_end.last()), name: "lend")
-      content("lend.start", [#text(size: 6pt)[$tau_"end"$]],anchor: "north")
-
-      // Draw grid
-      for i in t_grid {
-        line((i, -inc+cord_start.last()), (i, inc+cord_start.last()))    
-      }
-
-      // Deal with the marks/events
-      let event_list = ()
-      for t in range(0, time_values.len()) {
-        event_list.push((name: "v" + str(t), value: time_values.at(t), mformat: $T_( #(t+1) )$))
-      }
-      for v in event_list {
-        line((v.value + cord_start.first(), -2*inc+cord_start.last()), (v.value+cord_start.first(),2*inc+cord_start.last()), name: v.name)
-        
-        content(v.name + ".start", [#text(size: 6pt)[#v.mformat]], anchor: anchor)
-      }
-    }
-
-    rect((0,1.5), (1.7,0.5),fill:gray,stroke:none)
-    rect((0,-1.5), (4.4,-0.5),fill:gray,stroke:none)
-    let grid1 = (2.5,4.4,6.4)
-    // Deal with the marks/events
-    
-    let grid2 = (1,1.7, 2.3,2.8)
-    
-    group({time_grid((0,-1),(10,-1), grid1, anchor: "north-east")})
-    group({time_grid((0,1),(10,1), grid2, anchor: "north-east")})
-}), caption: [The figure illustrates the sequential regression approach
+#figure(timegrid(new_method: true), caption: [The figure illustrates the sequential regression approach
     proposed in this article. For each event $k$ in the sample, we regress back on the history $history(k-1)$.
     That is, given $mean(Q)[Y | history(k)]$,
     we regress back to $mean(Q)[Y | history(k-1)]$.
@@ -395,58 +266,6 @@ Our observations can thus be assumed to be on the form $O=history(K)$.
     $
     and the result follows. The latter conclusion can be seen by Theorem 4.3.8 of @last1995marked.
 ]
-
-// == Example for $K=2$ with $cal(L) = {0, 1}$ and $cal(A) = {0,1}$
-// We represent the marked point process via a simple diagram given in @fig:multi-state.
-// We consider the set of states represented by time 0,
-// first treatment visit ($a$) set to 1, first treatment visit ($a$) set to 0, first covariate visit ($ell$) set to 1, first covariate visit ($ell$) set to 0, primary event, and competing event.
-
-// The previous theorem gives the transition intensities 
-// If we represent the first state as time 0 and second state as the first treatment visit ($a$) set to 1.
-// Then the counting process,
-// $
-//     N_12 (t) = I(event(1) <= t, status(1) = a, treat(1) = 1, covariate(1) = covariate(0))
-// $
-// has the intensity by mg given by
-// $
-//     hazard(a, t, 0) densitytrt(t, 1, 0)
-// $
-// with similar expressions for transitions to the other states.
-// Moreover, the probability of making this transition before time $t$ is given by @jointdensity.
-
-// #figure(diagram(spacing: (12mm, 7.5mm), debug: false, node-stroke: 0.35pt, node-inset: 10.5pt, label-size: 7pt, {
-//     let (novisit, treat_visit, treat_visit_2, cov_visit, cov_visit_2, death, comp_risk) = ((0,0), (1.3,-1.3), (1.3,1.3), (-1.3,-1.3), (-1.3,1.3), (0, 2.6), (0, -2.6))
-//     node(novisit, [#text([No patient visit \ $history(0) = (covariate(0), treat(0))$], size: 8pt)])
-//     node(treat_visit, [#text([1st patient visit ($a$) \ ($history(1)=(covariate(0), treat(0), event(1), status(1), covariate(0), 1)$) ], size: 8pt)], fill: gray)
-//     node(treat_visit_2, [#text([1st patient visit ($a$) \ ($history(1)=(covariate(0), treat(0), event(1), status(1), covariate(0), 0))$) ], size: 8pt)], fill: gray)
-//     node(cov_visit, [#text([1st patient visit ($ell$) \ ($history(1)=(covariate(0), treat(0), event(1), status(1), 1, treat(0))$)], size: 8pt)], fill: gray)
-//     node(cov_visit_2, [#text([1st patient visit ($ell$) \ ($history(1)=(covariate(0), treat(0), event(1), status(1), 0, treat(0))$)], size: 8pt)], fill: gray)
-//     node(death, [#text([Primary event], size: 8pt)])
-//     node(comp_risk, [#text([Competing event], size: 8pt)])
-
-//     edgemsm(novisit, treat_visit, [$hazard(a, t, 0) densitytrt(t, 1, 0)$])
-//     edgemsm(novisit, cov_visit, [$hazard(ell, t, 0)  densitycov(t, 1, 0)$], label-pos:0.4)
-//     edgemsm(novisit, treat_visit_2, [$hazard(a, t, 0) densitytrt(t, 0, 0)$])
-//     edgemsm(novisit, cov_visit_2, [$hazard(ell, t, 0)  densitycov(t, 0, 0)$])
-    
-//     edgemsm(novisit, death, [$hazard(y, t, 0)$])
-//     edgemsm(novisit, comp_risk, [$hazard(d, t, 0)$])
-//     //edgemsmcens(novisit, censoring, [$hazard(c, t, 0)$])
-
-//     //edgemsm(treat_visit, treat_visit_2, [$hazard(a, t, 1)$]) 
-//     //edgemsm(treat_visit, cov_visit_2, [$hazard(ell, t, 1)$], label-pos: 0.8)
-//     edgemsm(treat_visit, death, [$hazard(y, t, 1)$], label-pos: 0.75)
-//     edgemsm(treat_visit, comp_risk, [$hazard(d, t, 1)$])
-//     edgemsm(treat_visit_2, death, [$hazard(y, t, 1)$])
-//     edgemsm(treat_visit_2, comp_risk, [$hazard(d, t, 1)$], label-pos: 0.75)
-//     //edgemsmcens(treat_visit, censoring, [$hazard(c, t, 1)$])
-
-//     edgemsm(cov_visit, death, [$hazard(y, t, 1)$], label-pos: 0.75)
-//     edgemsm(cov_visit, comp_risk, [$hazard(d, t, 1)$])
-//     edgemsm(cov_visit_2, death, [$hazard(y, t, 1)$])
-//     edgemsm(cov_visit_2, comp_risk, [$hazard(d, t, 1)$], label-pos: 0.75)
-// }), caption: [A multi-state model for $K=2$ with $cal(L) = cal(A) = {0, 1}$.])
-// <fig:multi-state>
 
 = A pragmatic approach to continuous-time causal inference
 One classical causal inference perspective requires that we know how the data was generated up to unknown parameters (NPSEM) #citep(<pearlCausalityModelsReasoning2009>).
@@ -608,6 +427,9 @@ Then we have the following theorem
 //time $tau$ with $T$ and $D$ being the time-to-event and the status, respectively. The target parameter simply
 //summarizes that this can either happen as the first or second event.
 
+At a later point, write down similar conditions for the censoring mechanism.
+By the listed conditions, we will have independent censoring in the sense of @andersenStatisticalModelsBased1993, providing identification via the innovation theorem. 
+
 We first state and prove a formula for at target parameter that is not causal, but we will use it to identify the causal parameter.
 This will be useful for the derivation of the efficient influence function. 
 
@@ -679,81 +501,99 @@ Alternatively, we can apply inverse probability of censoring weighting to obtain
 
 Interestingly, @eq:cuminc corresponds exactly with the target parameter of @rytgaardContinuoustimeTargetedMinimum2022
 and @gill2023causalinferencecomplexlongitudinal by plugging in the definitions of $Qbar(k)$ and simplifying
-(to be shown).
+(to be shown). A simple implementation of the IPCW is provided below in the simple case of a static treatment plan.
+The other representations of the target parameter in terms of the intensities are useful directly,
+but we may, as in the discrete, estimate the target parameter by Monte Carlo integration (i.e., direct simulation from the estimated intensities/densities).
 
-We recommend combining Method 2 to deal with high-dimensional confounding initially. Afterwards when there is sparsity use Method 1.
+== Implementation of Method 3
 
-= Implementation of Method 2
+- For each event point $k = K, K-1, dots, 1$ (starting with $k = K$):
+    1. Obtain $hat(S)^c (t | history(k-1))$ by fitting a cause-specific hazard model for the censoring via the interevent time $S_((k)) = event(k) - event(k-1)$,
+       regressing on $history(k-1)$ (among the people who are still at risk after $k-1$ events).
+    2. Define the subject-specific weight:
+       $
+           hat(eta)_k = (bb(1) {event(k) <= tau, Delta_k in {a, ell}, k < K} hat(nu)_(k) (cal(F)^(-A)_(event(k)), bold(1))) / (hat(S)^c (event(k) | cal(F)^(-A)_(event(k-1)), bold(1)))
+       $
+       Then calculate the subject-specific pseudo-outcome
+       $
+           hat(R)_k &= (bb(1) {event(k) <= tau, Delta_k = y}) / (hat(S)^c (event(k) | cal(F)^(-A)_(event(k-1)), bold(1))) + hat(eta)_k
+       $
+       Regress $hat(R)_k$ on $history(k-1)$ on the data with $event(k-1) < tau$ and $Delta_k in {a, ell}$ to obtain a prediction function $hat(nu)_(k-1) : cal(H)_(k-1) -> RR_+$.
+           
+- At baseline, we obtain the estimate $hat(Psi)_n = 1/n sum_(i=1)^n hat(nu)_(0) (L_i (0), 1)$.
 
-First, we rewrite to the interarrival times. Note that the hazard of the interarrival time $S_(k) = T_(k)-T_(k-1)$ is $lambda^x (w+event(k-1) | history(k-1))$
-$
-    Qbar(k) &= commonintegral(k, tau, survivalfunction(k, s, {ell, a, d, y}) hazard(a, s, k)  \
-        & #h(3cm) times (integral_(cal(A)) Qbar(k+1) (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k) ), s) \
-        &+ commonintegral(k, tau, survivalfunction(k, s, {ell, a, d, y}) hazard(ell, s, k) \
-            & #h(3cm) times (mean(P) [Qbar(k+1) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)] ), s) \
-        &+ commonintegral(k, tau, survivalfunction(k, s, {ell, a, d, y}) hazard(y, s, k), s) \
-        &= integral_(0)^(tau-event(k-1)) exp(- sum_(x = a, ell, y, d) integral_(0)^ (s) lambda^x (w+event(k-1) | history(k-1)) upright(d) w) \
-        &times (hazard(a, event(k-1) + s, k) integral_(cal(A)) Qbar(k+1) (covariate(k-1), a_k, event(k-1) + s, a, history(k)) densitytrtint(event(k-1) + s, a_k, k) nu_A (upright(d) a_k) \
-            &+ hazard(ell, event(k-1) + s, k) (mean(P) [Qbar(k+1) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =event(k-1) + s , status(k) = ell, history(k-1)] ) \
-                &+ hazard(y, event(k-1) + s, k) )) \
-$
 
-Now by using a piecewise estimator of the cumulative hazard, such as the Nelson-Aalen estimator, Cox model, or a random survival forest.
-Let $M^x_k  = {i in {1, dots, n} | D_((k),i) = x}$. Let $S_((k),i)$ be the time of the $i$'th event (ordered) in the sample.
-Then we can estimate the cumulative hazard for the interarrival times as
-$
-    hat(Lambda_(k, t)^x) (f_(k-1))= sum_(i in M_k^x) I(S_((k),i-1) < t <= S_((k), i)) hat(A)_(i,k)^x (f_(k-1))
-$
-for values $hat(A)_(i,k)^x$ that are estimated from the data. Let $c^x_k (t) = sup {i in M_k^x | T_(k,i) <= t}$.
-Then we can estimate the integrals in @eq:cuminc, for example the integral corresponding to covariate change,
-$
-    & sum_(i=1)^(c_k (tau)) exp(- sum_(x = a, ell, y, d) hat(A)_(i,k)^x (f_(k-1)))  (hat(bb(E)_P) [Qbar(k+1) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) = t_(k-1) + S_((k),i), status(k) = ell, history(k-1) = f_(k-1)] ) \
-        &(hat(A)_(i,k)^ell - hat(A)_(i-1,k)^ell) (f_(k-1))
-$
-for given covariate history.
+// = Implementation of Method 2
 
-We begin with an algorithm for Method 2, in which it is initially assumed that all relevant models can be fitted.
+// First, we rewrite to the interarrival times. Note that the hazard of the interarrival time $S_(k) = T_(k)-T_(k-1)$ is $lambda^x (w+event(k-1) | history(k-1))$
+// $
+//     Qbar(k) &= commonintegral(k, tau, survivalfunction(k, s, {ell, a, d, y}) hazard(a, s, k)  \
+//         & #h(3cm) times (integral_(cal(A)) Qbar(k+1) (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k) ), s) \
+//         &+ commonintegral(k, tau, survivalfunction(k, s, {ell, a, d, y}) hazard(ell, s, k) \
+//             & #h(3cm) times (mean(P) [Qbar(k+1) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)] ), s) \
+//         &+ commonintegral(k, tau, survivalfunction(k, s, {ell, a, d, y}) hazard(y, s, k), s) \
+//         &= integral_(0)^(tau-event(k-1)) exp(- sum_(x = a, ell, y, d) integral_(0)^ (s) lambda^x (w+event(k-1) | history(k-1)) upright(d) w) \
+//         &times (hazard(a, event(k-1) + s, k) integral_(cal(A)) Qbar(k+1) (covariate(k-1), a_k, event(k-1) + s, a, history(k)) densitytrtint(event(k-1) + s, a_k, k) nu_A (upright(d) a_k) \
+//             &+ hazard(ell, event(k-1) + s, k) (mean(P) [Qbar(k+1) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =event(k-1) + s , status(k) = ell, history(k-1)] ) \
+//                 &+ hazard(y, event(k-1) + s, k) )) \
+// $
 
-== Surrogate/approximate modeling of the $macron(Q)$ function
-Let $K_tau$ be the maximal number of non-terminal events that occur before time $tau$.
-We suppose we are given estimators $hat(Lambda)_k (t)^x$ of the cause-specific hazard functions for the interarrival times $S_(k) = event(k) - event(k-1)$,
-which are piecewise constant. 
+// Now by using a piecewise estimator of the cumulative hazard, such as the Nelson-Aalen estimator, Cox model, or a random survival forest.
+// Let $M^x_k  = {i in {1, dots, n} | D_((k),i) = x}$. Let $S_((k),i)$ be the time of the $i$'th event (ordered) in the sample.
+// Then we can estimate the cumulative hazard for the interarrival times as
+// $
+//     hat(Lambda_(k, t)^x) (f_(k-1))= sum_(i in M_k^x) I(S_((k),i-1) < t <= S_((k), i)) hat(A)_(i,k)^x (f_(k-1))
+// $
+// for values $hat(A)_(i,k)^x$ that are estimated from the data. Let $c^x_k (t) = sup {i in M_k^x | T_(k,i) <= t}$.
+// Then we can estimate the integrals in @eq:cuminc, for example the integral corresponding to covariate change,
+// $
+//     & sum_(i=1)^(c_k (tau)) exp(- sum_(x = a, ell, y, d) hat(A)_(i,k)^x (f_(k-1)))  (hat(bb(E)_P) [Qbar(k+1) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) = t_(k-1) + S_((k),i), status(k) = ell, history(k-1) = f_(k-1)] ) \
+//         &(hat(A)_(i,k)^ell - hat(A)_(i-1,k)^ell) (f_(k-1))
+// $
+// for given covariate history.
 
-1. Let $cal(R)^y_(K, tau) = {i in {1, dots, n} | D_((K),i) in {a, ell}, T_((K), i) <= tau, D_((K), i) = y}$. 
-2. Calculate for each $j in cal(R)_(K, tau)$, $hat(p)_(K y) = sum_(i=1)^(c^y_K (tau)) exp(- sum_(x = y, d) hat(Lambda)^x_K (cal(F)^j_(T_(K)))) (hat(Lambda)^y_K (cal(F)^j_(T_(K))) - hat(Lambda)^y_K (cal(F)^j_(T_(K-1))))$.
-3. Use surrogate model $tilde(p)_(K y)$ for $hat(p)_(K y)$ to learn $p_(K a)$ and thus $macron(Q)_K$.
+// We begin with an algorithm for Method 2, in which it is initially assumed that all relevant models can be fitted.
 
-For each event point $k = K-1, dots, 1$:
-1. For each $j in cal(R)_(k, tau)$, calculate $hat(p)_(k y) (tau | cal(F)^j_(T_(k-1)))$ as earlier.
-   Also, calculate $hat(p)_(k a) (tau | cal(F)^j_(T_(k-1)))$ and $hat(p)_(k ell) (tau | cal(F)^j_(T_(k-1)))$
-   based on the surrogate model $tilde(Q)_(k+1)$.
+// == Surrogate/approximate modeling of the $macron(Q)$ function
+// Let $K_tau$ be the maximal number of non-terminal events that occur before time $tau$.
+// We suppose we are given estimators $hat(Lambda)_k (t)^x$ of the cause-specific hazard functions for the interarrival times $S_(k) = event(k) - event(k-1)$,
+// which are piecewise constant. 
 
-At baseline $k = 0$:
-1. Calculate $hat(Psi)_n = 1/n sum_(i=1)^n Qbar(0) (A_0, L^i_0)$.
+// 1. Let $cal(R)^y_(K, tau) = {i in {1, dots, n} | D_((K),i) in {a, ell}, T_((K), i) <= tau, D_((K), i) = y}$. 
+// 2. Calculate for each $j in cal(R)_(K, tau)$, $hat(p)_(K y) = sum_(i=1)^(c^y_K (tau)) exp(- sum_(x = y, d) hat(Lambda)^x_K (cal(F)^j_(T_(K)))) (hat(Lambda)^y_K (cal(F)^j_(T_(K))) - hat(Lambda)^y_K (cal(F)^j_(T_(K-1))))$.
+// 3. Use surrogate model $tilde(p)_(K y)$ for $hat(p)_(K y)$ to learn $p_(K a)$ and thus $macron(Q)_K$.
+
+// For each event point $k = K-1, dots, 1$:
+// 1. For each $j in cal(R)_(k, tau)$, calculate $hat(p)_(k y) (tau | cal(F)^j_(T_(k-1)))$ as earlier.
+//    Also, calculate $hat(p)_(k a) (tau | cal(F)^j_(T_(k-1)))$ and $hat(p)_(k ell) (tau | cal(F)^j_(T_(k-1)))$
+//    based on the surrogate model $tilde(Q)_(k+1)$.
+
+// At baseline $k = 0$:
+// 1. Calculate $hat(Psi)_n = 1/n sum_(i=1)^n Qbar(0) (A_0, L^i_0)$.
    
-// #algorithm({
-//   import algorithmic: *
-//     Function("Iterative conditional expectation approach (Method 2)", {
-//     For(cond: $k = K_tau, dots, 1$, {
-//         Assign($cal(R)_(k, tau)$, ${i in {1, dots, n} | D_((k-1),i) in {a, ell}, T_((k-1), i) <= tau}$)
-//         Cmt[Obtain $hat(A)_(i,k)^x (f_j)$ for all pairs $i, j in cal(R)_(k, tau)$, $x in {a, ell, y, d}$ by regressing $(S_((k)), D_((k)) = x)$ on $history(k-1)$]
-//         If(cond: $k < K_tau$, {
-//             Cmt[Obtain from $tilde(Q)_(k)$ predictions for each $i in cal(R)_(k, tau) inter {i | D_((k),i) = ell}$. Regress these on $event(k), status(k) = ell, history(k-1)$ to get $hat(mu) (event(k), history(k-1))$, an estimator of $bb(E)_P [Qbar(k) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k), status(k) = ell, history(k-1)]$. ]
-//         })
-//         For(cond: $j in cal(R)_(k, tau)$, {
-//             Assign($hat(p)_(k y) (tau | cal(F)^j_(T_(k-1)))$, $sum_(i=1)^(c_k (tau)) exp(- sum_(x = a, ell, y, d) hat(A)_(i,k)^x (cal(F)^j_(T_(k-1)))) (hat(A)_(i,k)^y (cal(F)^j_(T_(k-1))) - hat(A)_(i-1,k)^y (cal(F)^j_(T_(k-1))))$)
-//             Assign($hat(p)_(k a) (tau | cal(F)^j_(T_(k-1)))$, $bb(1) {k < K_tau} sum_(i=1)^(c_k (tau)) exp(- sum_(x = a, ell, y, d) hat(A)_(i,k)^x (cal(F)^j_(T_(k-1)))) tilde(Q)_(k) (A_k := 1, L^i_k, D^i_k, S_(k,i,j)+ T^i_((k-1)), cal(F)^j_(T_(k-1))) (hat(A)_(i,k)^a (cal(F)^i_(T_(k-1))) - hat(A)_(i-1,k)^a (cal(F)^i_(T_(k-1))))$)
-//             Assign($hat(p)_(k ell) (tau | cal(F)^j_(T_(k-1)))$, $bb(1) {k < K_tau} sum_(i=1)^(c_k (tau)) exp(- sum_(x = a, ell, y, d) hat(A)_(i,k)^x (cal(F)^j_(T_(k-1))))  hat(mu) (S_(k,i,j)+ T^i_((k-1)), cal(F)^j_(T_(k-1))) (hat(A)_(i,k)^ell (cal(F)^i_(T_(k-1))) - hat(A)_(i-1,k)^ell (cal(F)^i_(T_(k-1))))$)
-//             Assign($hat(p) (tau | cal(F)^j_(T_(k-1)))$, $hat(p)_(k a) (tau | cal(F)^j_(T_(k-1))) + hat(p)_(k ell) (tau | cal(F)^j_(T_(k-1))) + hat(p)_(k y) (tau | cal(F)^j_(T_(k-1)))$)
-//         })
-//         Cmt[Regress the predicted values $hat(p) (tau | cal(F)^j_(T_(k-1)))$ on $history(k-1)$ to get $tilde(Q)_(k-1)$; the surrogate model for $Qbar(k-1)$]
-//       })
-//     })
-//     Cmt[From $tilde(Q)_0$ obtain predictions for each $i = 1, dots, n$ and regress on $A_0, L_0$; thereby obtaining $1/n sum_(i=1)^n hat(bb(E)_P) [Qbar(0) (A_0, L_0) | A_0 = 1, L^i_0]$ as an estimator of $Psi_tau lr((Q))$]
-//     // Apply baseline regression    
-//     Return[*null*]
-//   })
-// })
+// // #algorithm({
+// //   import algorithmic: *
+// //     Function("Iterative conditional expectation approach (Method 2)", {
+// //     For(cond: $k = K_tau, dots, 1$, {
+// //         Assign($cal(R)_(k, tau)$, ${i in {1, dots, n} | D_((k-1),i) in {a, ell}, T_((k-1), i) <= tau}$)
+// //         Cmt[Obtain $hat(A)_(i,k)^x (f_j)$ for all pairs $i, j in cal(R)_(k, tau)$, $x in {a, ell, y, d}$ by regressing $(S_((k)), D_((k)) = x)$ on $history(k-1)$]
+// //         If(cond: $k < K_tau$, {
+// //             Cmt[Obtain from $tilde(Q)_(k)$ predictions for each $i in cal(R)_(k, tau) inter {i | D_((k),i) = ell}$. Regress these on $event(k), status(k) = ell, history(k-1)$ to get $hat(mu) (event(k), history(k-1))$, an estimator of $bb(E)_P [Qbar(k) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k), status(k) = ell, history(k-1)]$. ]
+// //         })
+// //         For(cond: $j in cal(R)_(k, tau)$, {
+// //             Assign($hat(p)_(k y) (tau | cal(F)^j_(T_(k-1)))$, $sum_(i=1)^(c_k (tau)) exp(- sum_(x = a, ell, y, d) hat(A)_(i,k)^x (cal(F)^j_(T_(k-1)))) (hat(A)_(i,k)^y (cal(F)^j_(T_(k-1))) - hat(A)_(i-1,k)^y (cal(F)^j_(T_(k-1))))$)
+// //             Assign($hat(p)_(k a) (tau | cal(F)^j_(T_(k-1)))$, $bb(1) {k < K_tau} sum_(i=1)^(c_k (tau)) exp(- sum_(x = a, ell, y, d) hat(A)_(i,k)^x (cal(F)^j_(T_(k-1)))) tilde(Q)_(k) (A_k := 1, L^i_k, D^i_k, S_(k,i,j)+ T^i_((k-1)), cal(F)^j_(T_(k-1))) (hat(A)_(i,k)^a (cal(F)^i_(T_(k-1))) - hat(A)_(i-1,k)^a (cal(F)^i_(T_(k-1))))$)
+// //             Assign($hat(p)_(k ell) (tau | cal(F)^j_(T_(k-1)))$, $bb(1) {k < K_tau} sum_(i=1)^(c_k (tau)) exp(- sum_(x = a, ell, y, d) hat(A)_(i,k)^x (cal(F)^j_(T_(k-1))))  hat(mu) (S_(k,i,j)+ T^i_((k-1)), cal(F)^j_(T_(k-1))) (hat(A)_(i,k)^ell (cal(F)^i_(T_(k-1))) - hat(A)_(i-1,k)^ell (cal(F)^i_(T_(k-1))))$)
+// //             Assign($hat(p) (tau | cal(F)^j_(T_(k-1)))$, $hat(p)_(k a) (tau | cal(F)^j_(T_(k-1))) + hat(p)_(k ell) (tau | cal(F)^j_(T_(k-1))) + hat(p)_(k y) (tau | cal(F)^j_(T_(k-1)))$)
+// //         })
+// //         Cmt[Regress the predicted values $hat(p) (tau | cal(F)^j_(T_(k-1)))$ on $history(k-1)$ to get $tilde(Q)_(k-1)$; the surrogate model for $Qbar(k-1)$]
+// //       })
+// //     })
+// //     Cmt[From $tilde(Q)_0$ obtain predictions for each $i = 1, dots, n$ and regress on $A_0, L_0$; thereby obtaining $1/n sum_(i=1)^n hat(bb(E)_P) [Qbar(0) (A_0, L_0) | A_0 = 1, L^i_0]$ as an estimator of $Psi_tau lr((Q))$]
+// //     // Apply baseline regression    
+// //     Return[*null*]
+// //   })
+// // })
          
 = Implementation of the Iterative Conditional Expectations formula
 
@@ -884,66 +724,6 @@ Let $N_k^c (t) = N_t ({c} times cal(L) union {emptyset} times cal(A) union {empt
 For now, we recommend using the one step estimator and not the TMLE because the martingales are computationally intensive to estimate.
 This means that multiple TMLE updates may not be a good idea. 
 
-== Remainder term with IPCW for $K=1$:
-
-Let $phi_(tau,1)$ be the term of the efficient influence function without the martingale
-and let $phi_(tau,2)$ be the martingale term.
-
-It is given by
-
-$
-    phi_tau^*(P) &= (pi^*(A(0) | L(0))) / (pi(A(0) | L(0))) \
-        & times lr(\[ (bb(1){event(1) <= tau, status(1) = y}) / (exp(-Lambda^c (event(1) | A_0, L_0))) - F_1(tau | A_0, L_0) \
-            & + integral_(0)^tau (F_1(tau | A_0, L_0) - F_1(s | A_0, L_0)) 1/(exp(-(Lambda^y (s | A_0, L_0)+Lambda^c (s | A_0, L_0))))
-            (N^c (upright(d) s) -  tilde(Y) (s) Lambda^c (d s | A(0), L(0))) \]) \
-        &+ integral F_1(tau|a, L(0)) pi^*(a | L(0)) nu_A (upright(d) a)- Psi_tau (P)
-$
-Taken the mean with respect to $P_0$ gives
-$
-    bb(E)_(P_0) [phi_tau^*(P)] &= bb(E)_(P_0) [(pi^*(A(0) | L(0))) / (pi(A(0) | L(0))) \
-        & times lr(\[ (bb(1){event(1) <= tau, status(1) = y}) / (exp(-Lambda^c (event(1) | A_0, L_0))) - F_1(tau | A_0, L_0) \
-            & + integral_(0)^tau (F_1(tau | A_0, L_0) - F_1(s | A_0, L_0)) 1/(exp(-(Lambda^y (s | A_0, L_0)+Lambda^c (s | A_0, L_0))))
-            (N^c (upright(d) s) -  tilde(Y) (s) Lambda^c (d s | A(0), L(0))) \]) \
-        &+ integral F_1(tau|a, L(0)) pi^*(a | L(0)) nu_A (upright(d) a)- Psi_tau (P)] \
-        & = bb(E)_(P_0) [(pi^*(A(0) | L(0))) / (pi(A(0) | L(0))) \
-            & times lr(\[ (integral_0^tau Lambda^y_0 ( d s | A_0, L(0)) (exp(-Lambda^y_0 (s | A_0, L(0)) - Lambda^c_0 (s| A_0, L(0) ))) (1/ (exp(-Lambda^c (s | A_0, L_0))) - 1/ (exp(-Lambda_0^c (s | A_0, L_0)))) \
-            & + integral_(0)^tau (F_1(tau | A_0, L_0) - F_1(s | A_0, L_0)) (exp(-(Lambda_0^y (s | A_0, L_0)+Lambda_0^c (s | A_0, L_0))))/(exp(-(Lambda^y (s | A_0, L_0)+Lambda^c (s | A_0, L_0))))
-            (Lambda^c_0 (upright(d) s | A(0), L(0))) -  Lambda^c (d s | A(0), L(0))) \]) \
-        &+ integral F_1(tau|a, L(0)) pi^*(a | L(0)) nu_A (upright(d) a)- Psi_tau (P)]
-$
-
-and the two parameters are $Psi_tau(P) = bb(E)_P [bb(E)_P ( I(T <= tau, D= y)) / exp(-Lambda))]$.
-
-Let us try to calculate this remainder for a simple static intervention. 
-
-$
-    R_2(P,P_0) &= Psi_tau (P)-Psi_tau (P_0) + P_0 (phi_tau^*(P)) \
-        &= Psi_tau (P) - Psi_tau (P,S^c_0) + P_0 (phi_(tau,1)^*(P))-P_0 (phi_(tau,1)^*(P, S_0^c)) \
-        &+ Psi_tau (P,S^c_0) - Psi_tau (P_0) + P_0 (phi_(tau,1)^*(P, S_0^c)) \
-        &+P_0 (phi_(tau,2)^*(P))-P_0 (phi_(tau,2)^*(P, S^c_0)) + P_0 (phi_(tau,2)^*(P, S^c_0))
-$
-The above calculation shows $P_0 (phi_(tau,2)^*(P, S^c_0)) = 0$.
-The martingale difference has the desired product structure (almost we're missing like a 1 in the censoring survival functino quotient).
-We can write for one of the terms in the $P_0 (phi_(tau,1)^*(P))-P_0 (phi_(tau,1)^*(P, S_0^c))$:
-$
-    P_0[ bb(E)_P [I(T <= tau, D = 1) / (S^c (T| 1, L)) - I(T <= tau, D = 1) / (S_0^c (T| 1, L)) | A_0 = 1, L]]
-$
-For the other term
-$
-    P_0[ (bb(1) {A=1}) / (pi(A, L)) bb(E)_P [I(T <= tau, D = 1) / (S^c (T| 1, L)) - I(T <= tau, D = 1) / (S_0^c (T| 1, L)) | A_0 = 1, L]]
-$
-Add these two terms to get
-
-For the other term in the $phi_(tau,1)$, we have $P_0 (phi_(tau,1)^*(P, S_0^c)) = 0$.
-//$
-//    Psi_tau (P,S^c_0) - Psi_tau (P_0) = bb(E)_P [bb(E)_P [I(T <= tau, D = 1) / (S^c (T| 1, L)) - I(T <= tau, D = 1) / (S_0^c (T| 1, L)) | A_0 = 1, L] ]
-//$
-Apply the well-known remainder when the censoring is known to the second term to get
-$
-    (2) = integral (pi (1 | L) - pi_0(1|L))/(pi (1|L)) (bb(E)_P [I(T <= tau, D = 1) / (S_0^c (T| 1, L)) | A_0 = 1, L]-bb(E)_(P_0) [I(T <= tau, D = 1) / (S_0^c (T| 1, L)) | A_0 = 1, L]) d P_0 (L)
-$
-We get a term like (2) for the other part.
-
 == Comparison with the EIF in @rytgaardContinuoustimeTargetedMinimum2022
 Let $B_(k-1) (u) = (Qbar(k-1)(tau) -Qbar(k-1)(u)) 1/exp(-sum_(x=a,ell,d,y) integral_(event(k-1))^u hazard(x, w, k-1) upright(d) w)$
 and $S (u | history(k-1)) = exp(-sum_(x=a,ell,d,y) integral_(event(k-1))^u hazard(x, w, k-1) upright(d) w)$ and $S^c (u | history(k-1)) = exp(- integral_(event(k-1))^u hazard(c, w, k-1) upright(d) w)$.
@@ -980,7 +760,7 @@ Let us calculate the second integral
 $
     & Qbar(k-1)(tau) integral_(event(k-1))^(tau and event(k)) 1/(S^c (u | history(k-1)) S (u | history(k-1))) hazard(bullet, s, k-1) upright(d) s \
     &= Qbar(k-1)(tau) integral_(event(k-1))^(tau and event(k)) (S^c (u | history(k-1)) S (u | history(k-1)))/(S^c (u | history(k-1)) S (u | history(k-1)))^2 hazard(bullet, s, k-1) upright(d) s \
-        &= Qbar(k-1)(tau) (1-1/(S^c (event(k) and tau | history(k-1)) S (event(k) and tau | history(k-1))))
+        &= Qbar(k-1)(tau) (1/(S^c (event(k) and tau | history(k-1)) S (event(k) and tau | history(k-1)))-1)
 $
 where the last line holds by the Duhamel equation (or using that the antiderivative of $- f' / f^2$ is $1/f$).
 The first of these integrals is equal to
@@ -1001,16 +781,16 @@ $
 Now note that
 $
     & integral_(s)^(tau and event(k)) 1/(S^c (u | history(k-1)) S (u | history(k-1))) hazard(bullet, u, k-1) upright(d) u \
-    &= 1/(S^c (s) S (s)) - 1/(S^c (tau and event(k) | history(k-1)) S (tau and event(k) | history(k-1))) 
+        &=  1/(S^c (tau and event(k) | history(k-1)) S (tau and event(k) | history(k-1))) - 1/(S^c (s | history(k-1)) S (s | history(k-1)))
 $
 Setting this into the previous integral, we get
 $
-    &integral_(event(k-1))^(tau and event(k))  1/(S^c (s))   hazard(bullet, u, k-1) upright(d) u [ cumhazard(k-1, a, d s)  \
+    &-integral_(event(k-1))^(tau and event(k))  1/(S^c (s))   hazard(bullet, u, k-1) upright(d) u [ cumhazard(k-1, a, d s)  \
         & #h(3cm) times (integral_(cal(A)) Qbar(k+1) (covariate(k-1), a_k, s, a, history(k-1)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k) ) \
         &+  cumhazard(k-1, ell, d s)  \
         & #h(3cm) times (mean(P) [Qbar(k+1) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)]) \
         &+  cumhazard(k-1, y, d s)] \
-        &- 1/(S^c (tau and event(k) | history(k-1)) S (tau and event(k) | history(k-1))) Qbar(k-1) (tau and event(k))
+        &+ 1/(S^c (tau and event(k) | history(k-1)) S (tau and event(k) | history(k-1))) Qbar(k-1) (tau and event(k))
 $
 Thus, we find
 $
@@ -1019,27 +799,149 @@ $
         &-Qbar(k-1)(tau) integral_(event(k-1))^(tau and event(k)) 1/(S^c (u | history(k-1)) S (u | history(k-1))) hazard(bullet, s, k-1) upright(d) s \
         &+ integral_(event(k-1))^(tau and event(k)) (Qbar(k-1)(u))/(S^c (u | history(k-1)) S (u | history(k-1))) hazard(bullet, s, k-1) upright(d) s \
         &=(Qbar(k-1)(tau) - Qbar(k-1)(event(k))) 1/(S^c (event(k) | history(k-1)) S (event(k) | history(k-1))) bb(1){event(k) <= tau} \
-        &-(Qbar(k-1)(tau) (1-1/(S^c (event(k) and tau | history(k-1)) S (event(k) and tau | history(k-1))))) \
-        &+integral_(event(k-1))^(tau and event(k))  1/(S^c (s))   hazard(bullet, u, k-1) upright(d) u [ cumhazard(k-1, a, d s)  \
+        &-(Qbar(k-1)(tau) (1/(S^c (event(k) and tau | history(k-1)) S (event(k) and tau | history(k-1))))-1) \
+        &-integral_(event(k-1))^(tau and event(k))  1/(S^c (s))   hazard(bullet, u, k-1) upright(d) u [ cumhazard(k-1, a, d s)  \
         & #h(3cm) times (integral_(cal(A)) Qbar(k+1) (covariate(k-1), a_k, s, a, history(k-1)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k) ) \
         &+  cumhazard(k-1, ell, d s)  \
         & #h(3cm) times (mean(P) [Qbar(k+1) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)]) \
         &+  cumhazard(k-1, y, d s)] \
-        &- 1/(S^c (tau and event(k) | history(k-1)) S (tau and event(k) | history(k-1))) Qbar(k-1) (tau and event(k)) \
-        &=(Qbar(k-1)(tau) - Qbar(k-1)(event(k))) 1/(S^c (event(k) | history(k-1)) S (event(k) | history(k-1))) bb(1){event(k) <= tau} \
-        &+(Qbar(k-1)(tau)- Qbar(k-1)(tau and event(k)))/(S^c (event(k) and tau | history(k-1)) S (event(k) and tau | history(k-1))) \
-        &+integral_(event(k-1))^(tau and event(k))  1/(S^c (s))   hazard(bullet, u, k-1) upright(d) u [ cumhazard(k-1, a, d s)  \
+        &+ 1/(S^c (tau and event(k) | history(k-1)) S (tau and event(k) | history(k-1))) Qbar(k-1) (tau and event(k)) \
+        &=- integral_(event(k-1))^(tau and event(k))  1/(S^c (s))   hazard(bullet, u, k-1) upright(d) u [ cumhazard(k-1, a, d s)  \
         & #h(3cm) times (integral_(cal(A)) Qbar(k+1) (covariate(k-1), a_k, s, a, history(k-1)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k) ) \
         &+  cumhazard(k-1, ell, d s)  \
         & #h(3cm) times (mean(P) [Qbar(k+1) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)]) \
-        &+  cumhazard(k-1, y, d s)] -Qbar(k-1)(tau)  \
-        &=^? integral_(event(k-1))^(tau and event(k))  1/(S^c (s))   hazard(bullet, u, k-1) upright(d) u [ cumhazard(k-1, a, d s)  \
-        & #h(3cm) times (integral_(cal(A)) Qbar(k+1) (covariate(k-1), a_k, s, a, history(k-1)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k) ) \
-        &+  cumhazard(k-1, ell, d s)  \
-        & #h(3cm) times (mean(P) [Qbar(k+1) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)]) \
-        &+  cumhazard(k-1, y, d s)] -Qbar(k-1)(tau) 
+        &+  cumhazard(k-1, y, d s)] +Qbar(k-1)(tau) 
 $
-Inserting this into the EIF gives the desired result in terms of our EIF. 
+
+= Remainder term for $K = 2$
+//May be useful to consider the estimator as an empirical process, i.e., see Anders PhD first manuscript with Nelson-Aalen.
+
+Taking the mean of the EIF with respect to $P_0$ gives
+
+$
+    mean(P_0) [phi_tau^*(P)] &=mean(P_0) [ sum_(k = 1)^(K) product_(j = 0)^(k - 1) ((densitytrtint(event(j), treat(j), j-1)) / (densitytrt(event(j), treat(j), j-1)))^(I(status(j) = a)) (I (status(k-1) in {ell, a}, event(k-1) <= tau))/(exp(- sum_(1 <= j < k) integral_(event(j-1))^(event(j)) hazard(c, s, j-1) upright(d) s)) [ \
+        &integral_(event(k-1))^tau S_0(u |history(k-1))(S^c_0(u |history(k-1))) /(S^c (u | history(k-1))) (integral_(cal(A)) Qbar(k) (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k)- B_(k-1) (u)) (Lambda_(k,0)^a (d u) - Lambda_(k)^a (d u)) \
+            &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (mean(P) [Qbar(k) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)] - B_(k-1) (u)) (Lambda_(k,0)^ell (d u) - Lambda_(k)^ell (d u)) \
+        &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (1 - B_(k-1) (u)) (Lambda_(k,0)^y (d u) - Lambda_(k)^y (d u)) +integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) -B_(k-1) (u) (Lambda_(k,0)^d (d u) - Lambda_(k)^d (d u)) \
+        &+  bb(1) {k < K}
+            integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1)))( mean(P_0) [Qbar(k-1) (covariate(k), treat(k-1), tilde(event(k)), status(k), history(k-1)) | tilde(event(k)) = u , status(k) = ell, history(k-1)] \
+                &#h(1.5cm) - mean(P) [Qbar(k-1) (covariate(k), treat(k-1), tilde(event(k)), status(k), history(k-1)) | tilde(event(k)) = u, status(k) = ell, history(k-1)] ) Lambda_(k,0)^c (d u) ]]\
+        &+ mean(P_0) [integral Qbar(1) (a, covariate(0)) densitytrtint(0, a, 0) nu_A (upright(d) a)]- Psi_tau (P) 
+$
+We need to calculate
+$
+    R_2(P,P_0) &= Psi_tau (P)-Psi_tau (P_0) + P_0 (phi_(tau)^*(P)) \
+        &=mean(P_0) [ sum_(k = 1)^(K) product_(j = 0)^(k - 1) ((densitytrtint(event(j), treat(j), j-1)) / (densitytrt(event(j), treat(j), j-1)))^(I(status(j) = a)) (I (status(k-1) in {ell, a}, event(k-1) <= tau))/(exp(- sum_(1 <= j < k) integral_(event(j-1))^(event(j)) hazard(c, s, j-1) upright(d) s)) [ \
+        &integral_(event(k-1))^tau S_0(u |history(k-1))(S^c_0(u |history(k-1))) /(S^c (u | history(k-1))) (integral_(cal(A)) Qbar(k) (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k)- B_(k-1) (u)) (Lambda_(k,0)^a (d u) - Lambda_(k)^a (d u)) \
+            &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (mean(P) [Qbar(k) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)] - B_(k-1) (u)) (Lambda_(k,0)^ell (d u) - Lambda_(k)^ell (d u)) \
+        &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (1 - B_(k-1) (u)) (Lambda_(k,0)^y (d u) - Lambda_(k)^y (d u)) +integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) -B_(k-1) (u) (Lambda_(k,0)^d (d u) - Lambda_(k)^d (d u)) \
+        &+  bb(1) {k < K}
+            integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1)))( mean(P_0) [Qbar(k-1) (covariate(k), treat(k-1), tilde(event(k)), status(k), history(k-1)) | tilde(event(k)) = u , status(k) = ell, history(k-1)] \
+                &#h(1.5cm) - mean(P) [Qbar(k-1) (covariate(k), treat(k-1), tilde(event(k)), status(k), history(k-1)) | tilde(event(k)) = u, status(k) = ell, history(k-1)] ) Lambda_(k,0)^ell (d u) ]]\
+        &+ mean(P_0) [integral Qbar(1) (a, covariate(0))- Qbar(1)_0 (a, covariate(0)) densitytrtint(0, a, 0) nu_A (upright(d) a)]
+$
+By the Duhamel equation,
+$
+    & Qbar(1) (a, covariate(0))- Qbar(1)_0 \
+        &= S_0(s) ("bla"- "bla"_0) + (S (s) - S_0(s)) "bla" \
+        &= S_0(s) ("bla" Q - "bla"_0 Q + "bla"_0 Q - "bla"_0 Q_0)- integral S_0 B_(k-1) sum_x (Lambda_(0,x) - Lambda_x) 
+$
+The second term gives that we can ignore $B_k$:
+$
+    & integral_(event(k-1))^tau S_0(u |history(k-1))(S^c_0(u |history(k-1))) /(S^c (u | history(k-1))) (integral_(cal(A)) Qbar(k) (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k)) (Lambda_(k,0)^a (d u) - Lambda_(k)^a (d u)) \
+            &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (mean(P) [Qbar(k) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)]) (Lambda_(k,0)^ell (d u) - Lambda_(k)^ell (d u)) \
+        &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (Lambda_(k,0)^y (d u) - Lambda_(k)^y (d u)) \
+        &+  bb(1) {k < K}
+            integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1)))( mean(P_0) [Qbar(k-1) (covariate(k), treat(k-1), tilde(event(k)), status(k), history(k-1)) | tilde(event(k)) = u , status(k) = ell, history(k-1)] \
+                &#h(1.5cm) - mean(P) [Qbar(k-1) (covariate(k), treat(k-1), tilde(event(k)), status(k), history(k-1)) | tilde(event(k)) = u, status(k) = ell, history(k-1)] ) Lambda_(k,0)^ell (d u) \
+        &=integral_(event(k-1))^tau S_0(u |history(k-1))(S^c_0(u |history(k-1))) /(S^c (u | history(k-1))) (integral_(cal(A)) Qbar(k) (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k)) (Lambda_(k,0)^a (d u) - Lambda_(k)^a (d u)) \
+            &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (mean(P) [Qbar(k) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)]) (- Lambda_(k)^ell (d u)) \
+        &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (Lambda_(k,0)^y (d u) - Lambda_(k)^y (d u)) \
+        &+  bb(1) {k < K}
+            integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1)))( mean(P_0) [Qbar(k-1) (covariate(k), treat(k-1), tilde(event(k)), status(k), history(k-1)) | tilde(event(k)) = u , status(k) = ell, history(k-1)] ) Lambda_(k,0)^ell (d u) \
+        &=integral_(event(k-1))^tau S_0(u |history(k-1))(S^c_0(u |history(k-1))) /(S^c (u | history(k-1))) (integral_(cal(A)) Qbar(k)_0 (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k)) Lambda_(k,0)^a (d u) \
+        & -integral_(event(k-1))^tau S_0(u |history(k-1))(S^c_0(u |history(k-1))) /(S^c (u | history(k-1))) (integral_(cal(A)) Qbar(k) (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k)) Lambda_(k)^a (d u)\
+        &+integral_(event(k-1))^tau S_0(u |history(k-1))(S^c_0(u |history(k-1))) /(S^c (u | history(k-1))) (integral_(cal(A)) Qbar(k) (covariate(k-1), a_k, s, a, history(k)) - Qbar(k)_0 (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k)) Lambda_(k,0)^a (d u) \
+        &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (mean(P_0) [Qbar(k) . | event(k) =s , status(k) = ell, history(k-1)]- mean(P_0) [Qbar(k)_0 . | event(k) =s , status(k) = ell, history(k-1)]) Lambda_(k,0)^ell (d u) \
+        &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (mean(P_0) [Qbar(k)_0 (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)]) Lambda_(k,0)^ell (d u) \
+            &-integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (mean(P) [Qbar(k) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)]) Lambda_(k)^ell (d u) \
+        &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (Lambda_(k,0)^y (d u) - Lambda_(k)^y (d u))
+$
+        // &=integral_(event(k-1))^tau S_0(u |history(k-1))(S^c_0(u |history(k-1))) /(S^c (u | history(k-1))) (integral_(cal(A)) Qbar(k)_0 (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k)) Lambda_(k,0)^a (d u) \
+//         & -integral_(event(k-1))^tau S_0(u |history(k-1))(S^c_0(u |history(k-1))) /(S^c (u | history(k-1))) (integral_(cal(A)) Qbar(k) (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k)) Lambda_(k)^a (d u)\
+//         &+integral_(event(k-1))^tau S_0(u |history(k-1))(S^c_0(u |history(k-1))) /(S^c (u | history(k-1))) (integral_(cal(A)) Qbar(k) (covariate(k-1), a_k, s, a, history(k)) - Qbar(k)_0 (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k)) Lambda_(k,0)^a (d u) \
+//     &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (mean(P) [Qbar(k) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)]) Lambda_(k,0)^ell (d u) \
+//             &-integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (mean(P) [Qbar(k) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)]) Lambda_(k)^ell (d u) \
+//         &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (Lambda_(k,0)^y (d u) - Lambda_(k)^y (d u)) \
+//         &+  bb(1) {k < K}
+//             integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1)))( mean(P_0) [Qbar(k-1) (covariate(k), treat(k-1), tilde(event(k)), status(k), history(k-1)) | tilde(event(k)) = u , status(k) = ell, history(k-1)] \
+//                 &#h(1.5cm) - mean(P) [Qbar(k-1) (covariate(k), treat(k-1), tilde(event(k)), status(k), history(k-1)) | tilde(event(k)) = u, status(k) = ell, history(k-1)] ) Lambda_(k,0)^c (d u) \
+//             &= integral_(event(k-1))^tau S_0(u |history(k-1))(S^c_0(u |history(k-1))) /(S^c (u | history(k-1))) (integral_(cal(A)) Qbar(k)_0 (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k)) Lambda_(k,0)^a (d u) \
+//         & -integral_(event(k-1))^tau S_0(u |history(k-1))(S^c_0(u |history(k-1))) /(S^c (u | history(k-1))) (integral_(cal(A)) Qbar(k) (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k)) Lambda_(k)^a (d u)\
+//         &+integral_(event(k-1))^tau S_0(u |history(k-1))(S^c_0(u |history(k-1))) /(S^c (u | history(k-1))) (integral_(cal(A)) Qbar(k) (covariate(k-1), a_k, s, a, history(k)) - Qbar(k)_0 (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k)) Lambda_(k,0)^a (d u) \
+//     &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (mean(P_0) [Qbar(k) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)]) Lambda_(k,0)^ell (d u) \
+//             &-integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (mean(P) [Qbar(k) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)]) Lambda_(k)^ell (d u) \
+//         &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (Lambda_(k,0)^y (d u) - Lambda_(k)^y (d u)) 
+// $
+// Furthermore, this is
+// $
+//     &integral_(event(k-1))^tau S_0(u |history(k-1))(S^c_0(u |history(k-1))) /(S^c (u | history(k-1))) (integral_(cal(A)) Qbar(k)_0 (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k)) Lambda_(k,0)^a (d u) \
+//         & -integral_(event(k-1))^tau S_0(u |history(k-1))(S^c_0(u |history(k-1))) /(S^c (u | history(k-1))) (integral_(cal(A)) Qbar(k) (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k)) Lambda_(k)^a (d u)\
+//         &+integral_(event(k-1))^tau S_0(u |history(k-1))(S^c_0(u |history(k-1))) /(S^c (u | history(k-1))) (integral_(cal(A)) Qbar(k) (covariate(k-1), a_k, s, a, history(k)) - Qbar(k)_0 (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (upright(d) a_k)) Lambda_(k,0)^a (d u) \
+//         &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (mean(P_0) [Qbar(k) . | event(k) =s , status(k) = ell, history(k-1)]- mean(P_0) [Qbar(k)_0 . | event(k) =s , status(k) = ell, history(k-1)]) Lambda_(k,0)^ell (d u) \
+//         &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (mean(P_0) [Qbar(k)_0 (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)]) Lambda_(k,0)^ell (d u) \
+//             &-integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (mean(P) [Qbar(k) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)]) Lambda_(k)^ell (d u) \
+//         &+integral_(event(k-1))^tau S_0(u |history(k-1)) (S^c_0(u |history(k-1)))/(S^c (u | history(k-1))) (Lambda_(k,0)^y (d u) - Lambda_(k)^y (d u)) 
+// $
+//Do the same trick on the new Q's. or directly insert the definition of the new Q
+Adding the first term together in the sum with the last term, we have
+$
+    mean(P_0) [phi_tau^*(P)] &=mean(P^*_0) [
+        integral_(0)^tau S_0(u |history(0)) ((pi_0 (L(0))) / (pi(L(0))) (S^c_0(u |history(0))) /(S^c (u | history(0)))-1) (Qbar(0)_0 (d s, history(0)) - Qbar(0) (d s, history(0)))  \
+            &+integral_0^tau S_0(u |history(0)) (pi_0 (L(0))) / (pi(L(0))) (S^c_0(u |history(0))) /(S^c (u | history(0))) (sum_(x=a,ell) mean(P^*_0)  [Qbar(1) - Qbar(1)_0 | event(1) = s, status(1)= x, history(0)] Lambda_(1,0)^x (d u) )] \
+        &= mean(P^*_0) [integral_(0)^tau S_0(u |history(0)) ((pi_0 (L(0))) / (pi(L(0))) (S^c_0(u |history(0))) /(S^c (u | history(0)))-1) (Qbar(0)_0 (d s, history(0)) - Qbar(0) (d s, history(0))) ] \
+        &+mean(P^*_0) [integral_(event(k-1))^tau S_0(u |history(k-1)) (pi_0 (L(0))) / (pi(L(0))) (S^c_0(u |history(k-1))) /(S^c (u | history(k-1))) \
+            &times (sum_(x=a,ell) mean(P^*_0)  [integral_(0)^tau S_0(s |history(1)) ((pi_(1,0) (event(1), treat(1), history(0))) / (pi_(1) (event(1), treat(1), history(0))) (S^c_0(s |history(1))) /(S^c (u | history(1)))-1) (Qbar(1)_0 (d s, history(1)) - Qbar(1) (d s, history(1))) | event(1) = u, status(1)= x, history(0)] Lambda_(1,0)^x (d u) )
+$
+
+== Coupled ICE one-step estimator
+
+We provide a special estimator for the purpose of one-step estimation.
+This iterative regression is a little bit different from the ICE IPCW estimator, because we also integrate over the covariate distribution from the previous step. 
+
+- For each event point $k = K, K-1, dots, 1$ (starting with $k = K$):
+    1. Obtain $hat(S)^c (t | history(k-1))$ by fitting a cause-specific hazard model for the censoring via the interevent time $S_((k)) = event(k) - event(k-1)$,
+       regressing on $history(k-1)$ (among the people who are still at risk after $k-1$ events).
+    2. Define the subject-specific weight:
+       $
+           hat(eta)_k = (bb(1) {event(k) <= tau, Delta_k in {a, ell}, k < K} hat(nu)_(k) (cal(F)^(-A,L)_(event(k)), bold(1))) / (hat(S)^c (event(k) | cal(F)^(-A)_(event(k-1)), bold(1)))
+       $
+       Then calculate the subject-specific pseudo-outcome
+       $
+           hat(R)_k &= (bb(1) {event(k) <= tau, Delta_k = y}) / (hat(S)^c (event(k) | cal(F)^(-A)_(event(k-1)), bold(1))) + hat(eta)_k
+       $
+       If $k > 1$: Regress $hat(R)_k$ on $cal(F)^(-L)_(event(k-1))$ on the data with $event(k-1) < tau$ and $Delta_k in {a, ell}$ to obtain a prediction function $hat(nu)_(k-1) : cal(H)_(k-1) -> RR_+$.
+    3. Calculate the corresponding term in the efficient influence function based on $hat(nu)_(k)$. This is the "coupling" step: Given cause-specific estimators $hat(Lambda)_(k-1)^x$ for $x=a,l,d,y$, estimate
+       $Qbar(k-1) (u, history(k-1))$ by
+       $
+           integral_(event(k-1))^u hat(S) (u | history(k-1)) (hat(Lambda)^y (d u) + hat(nu)_(k) (bold(1), u, a, history(k-1)) hat(Lambda)_(k-1)^a (d u) + hat(nu)_(k) (bold(1), u, ell, history(k-1)) hat(Lambda)_(k-1)^ell (d u))
+       $
+       We then debias the $(K - k + 1)$'th term in the efficient influence function, i.e.,
+       $  &(pi_0^* (L(0))) / (pi_0 (L(0))) product_(j = 1)^(k-1) ((densitytrtint(event(j), treat(j), j)) / (densitytrt(event(j), treat(j), j)))^(bb(1) {status(j) = a}) 1/( S^c (event(j) | history(j-1))) bb(1) {status(k-1) in {ell, a}, event(k-1) < tau}  \
+           & times (macron(Z)^a_(k,tau) - Qbar(k-1) (tau, history(k-1)) + integral_(event(k - 1))^(tau and event(k)) (Qbar(k-1)(tau) - Qbar(k-1)(u)) 1/(S^c (u | history(k-1)) S (u | history(k-1))) M_k^c (upright(d) s))
+       $
+       by also estimating $pi$.
+           
+- At baseline, we obtain the estimate $hat(Psi)_n = 1/n sum_(i=1)^n Qbar(0) (L_i (0), 1)$.
+
+If for example, we use a cause-specific models, for the computation of the integral.
+This requires then for combination of a point in the time grid and each observation, estimates from $hat(nu)_(k-1)$.
+If we assume that we use empirical estimates of the cumulative incidence function at that point, we can estimate $Qbar(k-1)(u)$ by
+$
+    hat(F_y) (tau, history(k-1)) - hat(F_y) (tau, history(k-1)) + integral_(u)^tau hat(nu)_(k) (bold(1), u, a, history(k-1)) hat(F_a) (d u, history(k-1)) + integral_(u)^tau hat(nu)_(k) (bold(1), u, ell, history(k-1)) hat(F_ell) (d u, history(k-1))
+$
+
+This tactic for debiasing does not directly yield a TMLE alternative. 
 
 = Data-adaptive choice of $K$
 In practice, we will want to use $K_tau$ to be equal to 1 + maximum number of non-terminal events up to $tau$ in the sample. 
@@ -1058,8 +960,18 @@ $
 $ is $o_P(n^(-1/2))$, so if have asymptotic linearity in terms of $phi_tau^*(P) (K_n)$, then we automatically have it
 for the original estimator for $phi_tau^*(P) (K_lim)$
 
-= Issues relating to rare patient histories (postponed)
-Consider the following table representing example data:
+= Issues relating to rare patient histories
+
+In the case of irregular data, we may have few people with many events.
+In that case, the iterative conditional expectations estimator will fail, because there are not enough people at each event point (see @table:irregular).
+We are then left with three options:
+
+- Pooling
+- A data-adaptive target parameter (@hubbard2016statistical), where the number of events considered (not all events) for the parameter is chosen based on the data,
+  that is $Psi_tau (P) = sum_(k = 1)^(K_n) mean(P) [ bb(1) {tilde(event(k)) <= tau, tilde(status(k)) = y}]$, where $K_n$ is selected based on the data.
+  This is essentially done by sample splitting/cross-validation. 
+- Event-adaptive model selection, where the complexity of the models for each event point is based on how many data points are available at that event point (parametric models for very few data points, nonparametric models for many data points).
+  By sample splitting, we should be able to take into account the data-adaptive model selection.
 
 #figure(
 table(
@@ -1068,7 +980,8 @@ table(
     [$tilde(Y)_k (tau)$],   [10000], [8540], [5560], [2400], [200], [4],
     [$Delta treat(k)$],     [6000],  [3560], [1300],  [100],  [2], [NA],
     [$Delta covariate(k)$], [2540],  [2000], [1100], [100],  [2], [NA]
-))
+)) <table:irregular>
+
 == Pooling
 
 Some people have complex histories. There may be very few of these people in the sample,
@@ -1096,23 +1009,6 @@ To estimate the regression for the time-varying covariates, one could do:
   $
   So we separately estimate the target parameter on the left hand side and use it to estimate the one on the right when we need to,
   pooling the data from the last three events with the data from the first three events.
-
-Doing this adaptively leads to data-adaptive target parameter #citep(<hubbard2016statistical>).
-
-// The most unfortunate situation-wise is that:
-// #figure(
-// table(
-//   columns: 3,
-//     [$k$], [0], [1], 
-//     [$tilde(Y)_k (tau)$],   [10000], [8004],
-//     [$Delta treat(k)$],     [8000],  [...],
-//     [$Delta covariate(k)$], [4],  [...]
-// ))
-// In this case, we can forget about using iterative regression -- what we used previously is
-// that the only point of sparsity was after many events. 
-// Here we would need to estimate the conditional density of $densitycov(t, dot, 1)$ instead of regressing
-// -- this could be done by once again pooling, but may be very hard to do computationally because the estimation of a conditional
-// density is much, much harder than regression.
 
 Other possible methods are:
 

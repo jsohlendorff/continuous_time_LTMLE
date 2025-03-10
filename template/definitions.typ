@@ -1,5 +1,6 @@
 #import "@preview/fletcher:0.5.6": node, edge, diagram
 #import "@preview/ctheorems:1.1.3": *
+#import "@preview/cetz:0.3.3"
 
 #let citep = cite.with(form: "normal")
 
@@ -10,55 +11,6 @@
   ] else {
     $T_((#ind))$
   }
-}
-
-
-#let eventcens(ind) = {
-  if ind == [0] or ind == 0 [
-      $tilde(T)_0$
-  ] else {
-      $tilde(T)_((#ind))$
-  }
-}
-
-#let eventint(ind) = {
-  if type(ind) == "integer" {
-    let indminus = ind - 1
-    if (indminus != 0){
-      $T_((#ind))^(macron(a)_(#indminus))$
-    } else {
-      $T_((#ind))^(a_0)$
-    }
-  } else if ind.has("children") and ind.children.len() == 3 and ind.children.at(1) == [+] and regex("\d+") in ind.children.at(2).text{
-    let theInteger = int(ind.children.at(2).text)-1
-    if (theInteger != 0){
-        $T_((#ind))^(macron(a)_(#ind.children.at(0) + #theInteger))$
-    } else {
-      $T_((#ind))^(macron(a)_(#ind.children.at(0)))$
-    }
-  } else {
-      $T_((#ind))^(macron(a)_(#ind - 1))$
-  }
-}
-
-#let statusint(ind) = {
-    if type(ind) == "integer" {
-        let indminus = ind - 1
-        if ind == [0] or ind == 0 {
-            $D_0$
-        } else {
-            $D_((#ind))^(a_(#indminus))$
-        }
-    } else if ind.has("children") and ind.children.len() == 3 and ind.children.at(1) == [+] and regex("\d+") in ind.children.at(2).text{
-        let theInteger = int(ind.children.at(2).text)-1
-        if theInteger == 0 {
-            $D_((#ind))^(a_0)$
-        } else {
-            $D_((#ind))^(macron(a)_(#theInteger))$
-        }
-    } else {
-        $D_((#ind))^(macron(a)_(#ind - 1))$
-    }
 }
 
 #let history(eventno) = {
@@ -97,12 +49,7 @@
 }
 
 #let status(which) = {
-    $D_((#which))$
-}
-
-#let statuscens(which) = {
-
-    $tilde(D)_((#which))$
+    $Delta_((#which))$
 }
 
 #let covariate(which) = {
@@ -113,29 +60,9 @@
     }
 }
 
-#let covariateint(which) = {
-    if type(which) == "integer" {
-        let indminus = which - 1
-        if which == [0] or which == 0 {
-            $L^(a_0)(0)$
-        } else {
-            $L^(macron(a)_(#indminus)) (eventint(#which))$
-        }
-    } else if which.has("children") and which.children.len() == 3 and which.children.at(1) == [+] and regex("\d+") in which.children.at(2).text{
-        let theInteger = int(which.children.at(2).text)-1
-        if theInteger == 0 {
-            $L^(macron(a)_(#which.children.at(0))(eventint(#which))$
-        } else {
-            $L^(macron(a)_((#which.children.at(0) + #theInteger)))(eventint(#which))$
-        }
-    } else {
-        $L^(macron(a)_(#which - 1))(eventint(#which))$
-    }
-}
-
-#let densitytrt(time, arg, which) = $pi_(#which) (#time, #arg, history(#which))$
-#let densitytrtint(time, arg, which) = $pi_(#which)^* (#time, #arg, history(#which))$
-#let densitycov(time, arg, which) = $mu_(#which) (#time, #arg, history(#which))$
+#let densitytrt(time, arg, which) = $pi_(#which) (#time, #arg, history(#which - 1))$
+#let densitytrtint(time, arg, which) = $pi_(#which)^* (#time, #arg, history(#which - 1))$
+#let densitycov(time, arg, which) = $mu_(#which) (#time, #arg, history(#which - 1))$
 
 #let commonintegral(k, t, integrand, u) = {
     $integral_(event(#k))^(#t) #integrand upright(d) #u$
@@ -179,4 +106,85 @@
     }
     res
   }
+
+#let timegrid(new_method: true) = {
+    cetz.canvas(length: 1.8cm, {
+        import cetz.draw: *
+
+        set-style(
+            mark: (fill: black, scale: 4),
+            stroke: (thickness: 2pt, cap: "round"),
+            angle: (
+                radius: 0.3,
+                label-radius: .8,
+                fill: green.lighten(80%),
+                stroke: (paint: green.darken(50%))
+            ),
+            content: (padding: 8pt)
+        )
+  
+        let time_grid(cord_start,cord_end, time_values, inc: 0.1, anchor: "north") = {
+            // Main axis line
+            set-style(mark: (end: ">"))
+            line(cord_start, cord_end)
+            set-style(mark: none)
+
+            // General time line
+            let early_stop = cord_end.first() - 1/10 * cord_end.first()
+            let t_grid = frange(cord_start.first()+inc,early_stop - inc, inc)
+      
+            // Start line
+            line((cord_start.first(), -2*inc+cord_start.last()), (cord_start.first(), 2*inc+cord_start.last()), name:"lstart")
+            content("lstart.start", [], anchor: "east")
+      
+            // End line
+            line((early_stop - inc, -2*inc+cord_end.last()), (early_stop - inc, 2*inc+cord_end.last()), name: "lend")
+            content("lend.start", [#text(size: 12pt)[$tau_"end"$]],anchor: "north")
+
+            // Draw grid
+            for i in t_grid {
+                line((i, -inc+cord_start.last()), (i, inc+cord_start.last()))    
+            }
+
+            // Deal with the marks/events
+            let event_list = ()
+            for t in range(0, time_values.len()) {
+                event_list.push((name: "v" + str(t), value: time_values.at(t), mformat: $T_( #(t+1) )$))
+            }
+            for v in event_list {
+                line((v.value + cord_start.first(), -2*inc+cord_start.last()), (v.value+cord_start.first(),2*inc+cord_start.last()), name: v.name)
+        
+                if new_method {content(v.name + ".start", [#text(size: 12pt)[#v.mformat]], anchor: anchor)}
+            }
+        }
+        let eventfun(x, where: "start", anchor: "north",start_y: 0)={
+            let event_list = ()
+            for t in range(0, x.len()) {
+                event_list.push((name: "v" + str(t), value: x.at(t), mformat: $T_( #(t+1) )$))
+            }
+            for v in event_list {
+                line((v.value, -1.5+start_y), (v.value, 1.5+start_y), stroke: blue,name: v.name)
+                content(v.name + "." + where, [#text(size: 12pt)[#v.mformat]], anchor: anchor)
+            }
+        }
+        let grid1 = (2.5,4.4,6.4)
+        let grid2 = (1,1.7, 2.3,2.8)
+        
+        if new_method == false {
+            rect((0,1.5), (2.8,-1.5),fill:aqua,stroke:none)
+            
+            eventfun(grid1)
+            eventfun(grid2, where: "end", anchor: "south")
+    
+            group({time_grid((0,-1),(10,-1), grid1,anchor: "south")})
+            group({time_grid((0,1),(10,1), grid2,anchor: "south")})
+        } else {
+            rect((0,1.5), (1.7,0.3),fill:aqua,stroke:none)
+            rect((0,-1.7), (4.4,-0.5),fill:aqua,stroke:none)
+    
+            group({time_grid((0,-1),(10,-1), grid1, anchor: "north-east")})
+            group({time_grid((0,1),(10,1), grid2, anchor: "north-east")})
+        }
+    })
+}
 

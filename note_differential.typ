@@ -65,6 +65,7 @@ $
 $
 Under standard regularity conditions, the last term is $O_P (n^(-1/2))$ (parametric rate) and the first term is $O_P (n^(-1/2))$ (parametric rate).
 The first may be shown to be $O_P (n^(-1/2))$ using empirical process theory (note the theorem also works with bounded in probability).
+(Granted, we may get a very slow rate of about $O_P (n^(-1/8))$.)
 //if we can show that the Breslow estimator is bounded so that dominated convergence can be applied. If we assume that the covariates are bounded $exp(hat(beta)_n x)$ can be moved outside. 
 #theorem[
     Let $hat(P)_n (t | x)$ be a sequence of estimators of $P (t | x)$ defined on $[0, tau]$ fulfilling that $hat(P)_n (0 | x) = P (0 | x) = 0$.

@@ -65,143 +65,13 @@
           iterated conditional expectations (@fig:timegridrytgaard) for estimating causal effects flexibly. Recently, @ryalenPotentialOutcomes
           proposed a general identification result for longitudinal causal effects in continuous time.
           We extend upon these works and provide a new feasible iterated conditional expectations estimator (@fig:eventgrid) for the estimation of longitudinal causal effects in continuous time.
-          #figure(cetz.canvas(length: 1.8cm, {
-              import cetz.draw: *
-
-              set-style(
-                  mark: (fill: black, scale: 4),
-                  stroke: (thickness: 2pt, cap: "round"),
-                  angle: (
-                      radius: 0.3,
-                      label-radius: .8,
-                      fill: green.lighten(80%),
-                      stroke: (paint: green.darken(50%))
-                  ),
-                  content: (padding: 8pt)
-              )
-  
-              let time_grid(cord_start,cord_end, time_values, inc: 0.1, anchor: "north") = {
-                  // Main axis line
-                  set-style(mark: (end: ">"))
-                  line(cord_start, cord_end)
-                  set-style(mark: none)
-
-                  // General time line
-                  let early_stop = cord_end.first() - 1/10 * cord_end.first()
-                  let t_grid = frange(cord_start.first()+inc,early_stop - inc, inc)
-      
-                  // Start line
-                  line((cord_start.first(), -2*inc+cord_start.last()), (cord_start.first(), 2*inc+cord_start.last()), name:"lstart")
-                  content("lstart.start", [], anchor: "east")
-      
-                  // End line
-                  line((early_stop - inc, -2*inc+cord_end.last()), (early_stop - inc, 2*inc+cord_end.last()), name: "lend")
-                  content("lend.start", [#text(size: 12pt)[$tau_"end"$]],anchor: "north")
-
-                  // Draw grid
-                  for i in t_grid {
-                      line((i, -inc+cord_start.last()), (i, inc+cord_start.last()))    
-                  }
-
-                  // Deal with the marks/events
-                  let event_list = ()
-                  for t in range(0, time_values.len()) {
-                      event_list.push((name: "v" + str(t), value: time_values.at(t), mformat: $T_( #(t+1) )$))
-                  }
-                  for v in event_list {
-                      line((v.value + cord_start.first(), -2*inc+cord_start.last()), (v.value+cord_start.first(),2*inc+cord_start.last()), name: v.name)
-        
-                      //content(v.name + ".start", [#v.mformat], anchor: anchor)
-                  }
-              }
-              let eventfun(x, where: "start", anchor: "north",start_y: 0)={
-                  let event_list = ()
-                  for t in range(0, x.len()) {
-                      event_list.push((name: "v" + str(t), value: x.at(t), mformat: $T_( #(t+1) )$))
-                  }
-                  for v in event_list {
-                      line((v.value, -1.5+start_y), (v.value, 1.5+start_y), stroke: blue,name: v.name)
-                      content(v.name + "." + where, [#text(size: 12pt)[#v.mformat]], anchor: anchor)
-                  }
-              }
-
-              rect((0,1.5), (2.8,-1.5),fill:aqua,stroke:none)
-              let grid1 = (2.5,4.4,6.4)
-              // Deal with the marks/events
-              eventfun(grid1)
-    
-              let grid2 = (1,1.7, 2.3,2.8)
-              eventfun(grid2, where: "end", anchor: "south")
-    
-              group({time_grid((0,-1),(10,-1), grid1,inc: 0.1,anchor: "south")})
-              group({time_grid((0,1),(10,1), grid2)})
-          }), caption:  [The figure illustrates the sequential regression approach
+          #figure(timegrid(new_method:false), caption:  [The figure illustrates the sequential regression approach
               given in @rytgaardContinuoustimeTargetedMinimum2022 for two observations.
           ],) <fig:timegridrytgaard>
 
-        #figure(cetz.canvas(length: 1.8cm, {
-            import cetz.draw: *
-
-            set-style(
-                mark: (fill: black, scale: 4),
-                stroke: (thickness: 2pt, cap: "round"),
-                angle: (
-                    radius: 0.3,
-                    label-radius: .8,
-                    fill: green.lighten(80%),
-                    stroke: (paint: green.darken(50%))
-                ),
-                content: (padding: 8pt)
-            )
-  
-            let time_grid(cord_start,cord_end, time_values, inc: 0.1, anchor: "north") = {
-                // Main axis line
-                set-style(mark: (end: ">"))
-                line(cord_start, cord_end)
-                set-style(mark: none)
-
-                // General time line
-                let early_stop = cord_end.first() - 1/10 * cord_end.first()
-                let t_grid = frange(cord_start.first()+inc,early_stop - inc, inc)
-      
-                // Start line
-                line((cord_start.first(), -2*inc+cord_start.last()), (cord_start.first(), 2*inc+cord_start.last()), name:"lstart")
-                content("lstart.start", [], anchor: "east")
-      
-                // End line
-                line((early_stop - inc, -2*inc+cord_end.last()), (early_stop - inc, 2*inc+cord_end.last()), name: "lend")
-                content("lend.start", [#text(size: 12pt)[$tau_"end"$]],anchor: "north")
-
-                // Draw grid
-                for i in t_grid {
-                    line((i, -inc+cord_start.last()), (i, inc+cord_start.last()))    
-                }
-
-                // Deal with the marks/events
-                let event_list = ()
-                for t in range(0, time_values.len()) {
-                    event_list.push((name: "v" + str(t), value: time_values.at(t), mformat: $T_( #(t+1) )$))
-                }
-                for v in event_list {
-                    line((v.value + cord_start.first(), -2*inc+cord_start.last()), (v.value+cord_start.first(),2*inc+cord_start.last()), name: v.name)
-        
-                    content(v.name + ".start", [#text(size: 12pt)[#v.mformat]], anchor: anchor)
-                }
-            }
-
-            rect((0,1.5), (1.7,0.3),fill:aqua,stroke:none)
-            rect((0,-1.7), (4.4,-0.5),fill:aqua,stroke:none)
-            let grid1 = (2.5,4.4,6.4)
-            // Deal with the marks/events
-    
-            let grid2 = (1,1.7, 2.3,2.8)
-    
-            group({time_grid((0,-1),(10,-1), grid1, anchor: "north-east")})
-            group({time_grid((0,1),(10,1), grid2, anchor: "north-east")})
-        }), caption: [The figure illustrates the sequential regression approach
+        #figure(timegrid(new_method:true), caption: [The figure illustrates the sequential regression approach
             proposed in this article. 
         ],) <fig:eventgrid>
-
 
         #figure(table(
             columns: (auto, auto, auto),
@@ -244,7 +114,7 @@
         $
         where
         $
-            history(k) = (event(k), Delta_k, treat(k), covariate(k)) or history(k-1) "and" history(0) = (covariate(0), treat(0))
+            history(k) = (event(k), Delta_k, treat(k), covariate(k)) or history(k-1) "and" history(0) = (L(0), A(0))
         $
         //and $event(k)$ and $Delta_k in {a, ell, y, d, c}$ are the event time and status indicator for the $k$'th event. 
         #assumption[
@@ -298,7 +168,7 @@
                   radius: (top-left: 10pt, bottom-right: 10pt, rest: 0pt)
               )
           )[
-              Under the assumptions of consistency, exchangeability, and positivity, the target parameter is identified via
+              Under the assumptions of *consistency*, *exchangeability*, and *positivity*, the target parameter is identified via
               $
                   Psi_(tau)^g (P) = mean(P) [sum_(k=1)^K w_k (history(k-1), event(k)) bb(1) {T_k <= tau, Delta_k = y}].
               $
@@ -307,7 +177,6 @@
     ]
     
     #pop.column-box(heading: "Iterated conditional expectation estimator")[
-        The form of the efficient influence function (@bickel1993efficient) in this setting suggests the use of a iterated conditional expectations estimator.
         //Moreover, the estimator is more stable than inverse probability weighted estimators.
         Let $S^c (t | history(k))$ be the conditional survival function of the censoring time given the $k$ previous events
         and $cal(F)^(-A)_(event(k))$ denote the history without the treatment process.
@@ -322,7 +191,7 @@
             ),
             title: "Proposed continuous-time ICE algorithm",
             [- For each event point $k = K, K-1, dots, 1$ (starting with $k = K$):
-                1. Obtain $hat(S)^c (t | history(k))$ by fitting a cause-specific hazard model for the censoring via the interevent time $S_((k)) = event(k) - event(k-1)$,
+                1. Obtain $hat(S)^c (t | history(k-1))$ by fitting a cause-specific hazard model for the censoring via the interevent time $S_((k)) = event(k) - event(k-1)$,
                    regressing on $history(k-1)$ (among the people who are still at risk after $k-1$ events).
                 2. Define the subject-specific weight:
                    $
@@ -332,20 +201,22 @@
                    $
                        hat(R)_k &= (bb(1) {event(k) <= tau, Delta_k = y}) / (hat(S)^c (event(k) | cal(F)^(-A)_(event(k-1)), bold(1))) + hat(eta)_k
                    $
-                   Regress $hat(R)_k$ on $history(k-1)$ on the data with $event(k-1) < tau$ and $Delta_k in {a, ell}$ to obtain a prediction function $hat(nu)_(k-1) : cal(H)_(k-1) -> RR_+$.
+                   If $k > 1$: Regress $hat(R)_k$ on $cal(F)_(event(k-1))$ on the data with $event(k-1) < tau$ and $Delta_k in {a, ell} $ to obtain a prediction function $hat(nu)_(k-1) : cal(H)_(k-1) -> RR_+$.
+                   
+                   If $k = 1$: Regress $hat(R)_k$ on $L(0), A(0)$ to obtain a prediction function $hat(nu)_(0) : cal(H)_(0) -> RR_+$.
            
-                    - At baseline, we obtain the estimate $hat(Psi)_n = 1/n sum_(i=1)^n hat(nu)_(0) (L_i (0), 1)$.]
+             - At baseline, we obtain the estimate $hat(Psi)_n = 1/n sum_(i=1)^n hat(nu)_(0) (L_i (0), 1)$.] 
         )
         #colbreak()
     ]
     #pop.column-box(heading: "Future directions/challenges")[
-        - Implementation of the method and application on real data. 
+        - Implementation of the method and application on real data.
+        - Debiasing via the efficient influence function is not considered on this poster.
         - Few individuals may have a high number of events, leading to potentially very small sample sizes in the iterated regressions.
           //*Proposed solution*: Use data-adaptive (in the sense of distinguishing sample sizes) rule for model selection.
     ]
     
     #pop.bibliography-box("ref.bib",style: "apa")
 ])
-
 
 
