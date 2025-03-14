@@ -312,7 +312,7 @@ but is also related to the notion that the treatment times are not predictable (
     caption: [
         A DAG representing the relationships between the variables of $O$.
         The dashed lines indicate multiple edges from the dependencies in the past and into the future.
-        Here $historypast(k)$ is the history up to and including the $k$'th event and $historynext(k)$ is the history after and including the $k$'th event.
+        //Here $historypast(k)$ is the history up to and including the $k$'th event and $historynext(k)$ is the history after and including the $k$'th event.
     ],
 ) <fig:dag>
 
@@ -368,57 +368,86 @@ which specifies the treatment that the person observation should have at teach e
 which is a treatment event point that is $g_k : RR_+ times bb(F)_(k-1) -> {0, 1}$.
 Specifically, the plan specifies that $treat(k) = g_k (event(k), history(k-1))$ if $event(k) < oo$ and $status(k) = a$.
 
-We assume the existence of potential outcome process
-$
-    tilde(O)^g &= (covariate(0), tilde(A) (0), tilde(T)_((1)), tilde(D)_((1)), tilde(A)(tilde(T)_((1))), tilde(L)(tilde(T)_((1))), dots, tilde(T)_((K)), tilde(D)_((K))) \
-        &"with" tilde(A) (tilde(T)_((k))) = cases(g_k (tilde(T)_((k)), history(k-1)) "if" tilde(T)_k < oo "and" status(k) = a, tilde( A ) (tilde(T)_((k-1))) "if" tilde(T)_k < oo "and" status(k) != a, nabla "otherwise")
-$
+//We assume the existence of potential outcome process
+//$
+//    tilde(O)^g &= (covariate(0), tilde(A) (0), tilde(T)_((1)), tilde(D)_((1)), tilde(A)(tilde(T)_((1))), tilde(L)(tilde(T)_((1))), dots, tilde(T)_((K)), tilde(D)_((K))) \
+//        &"with" tilde(A) (tilde(T)_((k))) = cases(g_k (tilde(T)_((k)), history(k-1)) "if" tilde(T)_k < oo "and" status(k) = a, tilde( A ) (tilde(T)_((k-1))) "if" tilde(T)_k < oo "and" status(k) != a, nabla "otherwise")
+//$
 We choose not to index the random variables with $g$ when it can clearly be inferred from the context.
-Our potential outcome, which is part of this process, is given by
+Let
 $
-    tilde(Y)^g_t = (bb(1){tilde(T)_1 <= t, tilde(D)_1 = y}, dots, bb(1){tilde(T)_K <= t, tilde(D)_K = y})
-$ 
+    T_k^(y) &:= cases(event(k) "if" status(k) = y, oo "otherwise") \
+    tilde(T)_k^(g,y) &:= cases(event(k) "if" status(k) = y, oo "otherwise").
+$
+Then our outcome is $(tilde(T)_1^(g,y), dots, tilde(T)_K^(g,y))$.
+// Our potential outcome, which is part of this process, is given by
+// $
+//     tilde(Y)^g_t = (bb(1){tilde(T)_1 <= t,, dots, bb(1){tilde(T)_K <= t, tilde(D)_K = y})
+// $
+
 
 We are then interested in estimating the causal parameter given in @def:targetparameter.
 
 #definition("Target parameter")[
     Our target parameter $Psi_(tau)^g : cal(M) -> RR$ is the mean interventional potential outcome at time $tau$ given the intervention plan $g$,
     $
-        Psi_(tau)^g (P) = mean(P) [sum_(k=1)^K bb(1) {tilde(T)_k <= tau, tilde(D)_k = y}]
+        Psi_(tau)^g (P) = mean(P) [sum_(k=1)^K bb(1) {tilde(T)^(g,y)_k <= tau}]
     $
 ] <def:targetparameter>
-
+Let $T^a = inf {event(k) | status(k) = a, treat(k) != g_k (event(k), history(k-1))}$ be the time of the first treatment event where the treatment plan is not followed.
 The three identifying conditions for the target parameter are as follows:
 
-1. For all $k=1,dots,K$, $bb(1) {tilde(T)_k <= tau, tilde(D)_k = y} = bb(1) {T_k <= tau, D_k = y}$ $P$-a.s. if there does not exist a treatment plan $j < k$ such that $treat(j) != g_j (event(j), history(j-1))$ with $status(j) = a$ and $event(j) < oo$ and $treat(0) = g_0 (covariate(0))$ (consistency).
-2. For all $k=1,dots,K$, $treat(k) perp (bb(1){tilde(T)_(k+1) <= t, tilde(D)_(k+1) = y}, dots, bb(1){tilde(T)_K <= t, tilde(D)_K = y}) | status(k) = a, history(k-1)$  (exchangeability).
-3. Let $w_(k-1) (l_0, a_0, f_1, dots, f_k) = (bb(1) {a_0 = g(l_0)}) / (pi_0 (g(l_0)) ) product_(j=1)^(k-1) ( (bb(1) {a_j = g_j (t_j, f_(j-1))})  / (pi_j (t_j, g_j (t_j, f_(j-1)))) )^(bb(1) {d_j = a}) bb(1) {t_1 < dots < t_k}$.
-   The measure $Q_tau = (sum_(k=1)^K w_k) dot P$ is a valid probability measure (positivity).
-
+For each $k in {1, dots, K}$, we need:
+        - *Consistency*:
+          $
+              tilde(T)_k^(g,y) bb(1) {T^a > event(k-1), A(0) = g(L_0)} = T_(k)^(y) bb(1) {T^a > event(k-1), A(0) = g(L_0)}
+          $
+        - *Exchangeability*:
+          $
+              treat(k) perp (tilde(T)_(k+1)^(g,y), dots, tilde(T)_K^(g,y)) | status(k) = a, history(k-1)
+          $
+          Wrong! Why would to state conditional independence for multiple of the outcomes. Go back to poster.
+          // (and
+          // $
+          //     &lambda^a (t | history(k-1) or (tilde(Y)_t)_(t in [0, tauend]) ) \
+          //         &= lim_(h -> 0) (P(t <= event(k) < t+h, Delta_k = a | event(k) >= t, history(k-1), (tilde(Y)_t)_(t in [0, tauend])))/h
+          // $
+          // does not depend on $(tilde(Y)_t)_(t in [0, tauend])$). We hypothesize that the last exchangeability condition may not be necessary.
+        - *Positivity*: The weights
+          $
+              w_k (f_(k-1), t_k) = (bb(1) {a_0 = g_0(l_0)}) / ( pi_0 (g(l_0))) product_(j=1)^(k-1) ( (bb(1) {a_j = g_j (t_j, f_(j-1))})  / ( pi_j (t_j, g_j (t_j, f_(j-1)))))^(bb(1) {delta_j = a}) bb(1) {t_1 < dots < t_k}
+          $
+          fulfill $mean(P) [w_k (history(k-1), event(k))] = 1$. 
 Then we have the following theorem
 #theorem("Identification via inverse probability weights")[
-    Under the conditions of 1., 2., and 3., the target parameter is identified by
+    Under the conditions of consistency, exchangeability, and consistency, the target parameter is identified by
         $
             Psi_(tau)^g (P) = mean(P) [sum_(k=1)^K w_(k-1) bb(1) {T_k <= tau, D_k = y}]
         $
 ]
 #proof[
     We will show this by proving that $psi_(k,tau) (P) = mean(P) [w_(k-1) bb(1) {T_k <= tau, D_k = y}] = mean(P) [bb(1) {tilde(T)_k <= tau, tilde(D)_k = y}]$.
-    Let $Y_(k,j)^* = mean(P) [ bb(1) {tilde(T)_k <= tau, tilde(D)_k = y} | (event(j-1), status(j-1), covariate(j-1), cal(F)^(-a)_(event(j-2)))]$ \
+    Let $Y_(k,j)^* = mean(P) [ bb(1) {tilde(T)_k <= tau, tilde(D)_k = y} | treat(j-1), event(j-1), status(j-1), covariate(j-1), history(j-1)]$.
+    By assumption, this is a function of $event(j-1), status(j-1), covariate(j-1), history(j-1)$ only. 
     Let $g_k^* = g_k$ if $status(k) = a$ and $event(k) < oo$ and $g_k^* = g_(k-1)^*$ otherwise.
     We use the law of iterated expectations to find that
     $
-        psi_(k,tau) (P) &= mean(P) [w_(k-1) mean(P) [ bb(1) {T_k <= tau, D_k = y} | history(k-1)]] \
-            &= mean(P) [w_(k-1) bb(1) {t_1 < dots < t_(k-1)} mean(P) [ bb(1) {T_k <= tau, D_k = y} | (event(k-1), status(k-1), covariate(k-1), treat(k-1) = g_k^* (event(k-1), cal(F)_(event(k-2))), dots, treat(0) = g_0 (covariate(0)), covariate(0))]] \
-            &= mean(P) [w_(k-1) bb(1) {t_1 < dots < t_(k-1)} mean(P) [ bb(1) {tilde(T)_k <= tau, tilde(D)_k = y} | (event(k-1), status(k-1), covariate(k-1), treat(k-1) = g_k^* (event(k-1), cal(F)_(event(k-2))), dots, treat(0) = g_0 (covariate(0)), covariate(0))]] \
-            &= mean(P) [w_(k-1) bb(1) {t_1 < dots < t_(k-1)} mean(P) [ bb(1) {tilde(T)_k <= tau, tilde(D)_k = y} | (event(k-1), status(k-1), covariate(k-1), cal(F)^(-a)_(event(k-2)))] \
-                &= mean(P) [w_(k-2) bb(1) {t_1 < dots < t_(k-1)} Y_k^* mean(P) [((bb(1) {treat(k-1) = g_(k-1) (event(k-1), cal(F)^g_(event(k-1)))}) / (pi_(k-1) (event(k-1), g_(k-1) (event(k-1), cal(F)_(event(k-1)))) ))^(bb(1) {status(k-1) = a})   | (event(k-1), status(k-1), covariate(k-1), cal(F)^(-a)_(event(k-2))) ] \
-                    &= mean(P) [w_(k-2) bb(1) {t_1 < dots < t_(k-1)} Y_k^*] \
-                    &= mean(P) [w_(k-2) bb(1) {event(1) < dots < event(k-2)} mean(P) [Y_k^* bb(1){event(k-2) < event(k-1)} | cal(F)^(-a)_((event(k-2))) ] \
-                        &= mean(P) [w_(k-2) bb(1) {event(1) < dots < event(k-2)} Y_(k,k-1)^* ] \
+        psi_(k,tau) (P) &= mean(P) [w_(k-1) mean(P) [ bb(1) {event(k) <= tau, event(k) = y} | history(k-1)]] \
+            &=mean(P) [w_(k-1) mean(P) [ bb(1) {T_k <= tau, D_k = y} | history(k-1)]] \
+            &= mean(P) [w_(k-1)  mean(P) [ bb(1) {T_k <= tau, D_k = y} | (event(k-1), status(k-1), covariate(k-1), treat(k-1) = g_k^* (event(k-1), cal(F)_(event(k-2))), dots, treat(0) = g_0 (covariate(0)), covariate(0))]] \
+            &= mean(P) [w_(k-1)  mean(P) [ bb(1) {T^(y)_k <= tau} bb(1) {T^a > event(k-1), A(0) = g(L_0)} | (event(k-1), status(k-1), covariate(k-1), treat(k-1) = g_k^* (event(k-1), cal(F)_(event(k-2))), dots, treat(0) = g_0 (covariate(0)), covariate(0))]] \
+            &= mean(P) [w_(k-1)  mean(P) [ bb(1) {tilde(T)^(g,y)_k <= tau} bb(1) {T^a > event(k-1),  A(0) = g(L_0)} | (event(k-1), status(k-1), covariate(k-1), treat(k-1) = g_k^* (event(k-1), cal(F)_(event(k-2))), dots, treat(0) = g_0 (covariate(0)), covariate(0))]] \
+            &= mean(P) [w_(k-1)  mean(P) [ bb(1) {tilde(T)^(g,y)_k <= tau} | (event(k-1), status(k-1), covariate(k-1), treat(k-1) = g_k^* (event(k-1), cal(F)_(event(k-2))), dots, treat(0) = g_0 (covariate(0)), covariate(0))]] \
+            &= mean(P) [w_(k-2) Y_(k,k)^* (event(k-1), status(k-1), covariate(k-1), history(k-2)) mean(P) [((bb(1) {treat(k-1) = g_(k-1) (event(k-1), cal(F)^g_(event(k-1)))}) / (pi_(k-1) (event(k-1), g_(k-1) (event(k-1), cal(F)_(event(k-1)))) ))^(bb(1) {status(k-1) = a})   | (event(k-1), status(k-1), covariate(k-1), history(k-2)) ] \
+            &= mean(P) [w_(k-2)  Y_(k,k)^* (event(k-1), status(k-1), covariate(k-1), history(k-2))] \
+            &= mean(P) [w_(k-2)  Y_(k,k-1)^* (event(k-2), status(k-2), covariate(k-2), history(k-3)) mean(P) [((bb(1) {treat(k-2) = g_(k-2) (event(k-2), cal(F)^g_(event(k-2)))}) / (pi_(k-2) (event(k-2), g_(k-2) (event(k-2), cal(F)_(event(k-2)))) ))^(bb(1) {status(k-2) = a}) | (event(k-2), status(k-2), covariate(k-2), history(k-3)) ] \
+                        &= mean(P) [w_(k-2) Y_(k,k-1)^* ] \
                         & dots \
-                        &= mean(P) [bb(1) { tilde(T)_k <= tau, tilde(D)_k = y}]
+                &= mean(P) [bb(1) { tilde(T)_k <= tau, tilde(D)_k = y}]
+                
     $
+    The third and fifth last equality can be arrived at by applying the law of iterated expectations twice: First by conditioning on $(treat(k-1), event(k-1), status(k-1), covariate(k-1), history(k-2))$ and then using exchangeability. Then use the law of iterated conditional expectations again on $(event(k-1), status(k-1), covariate(k-1), history(k-2))$,
+    where the first factor no longer depends on $treat(k-1)$.
 ]
 
 //Also note that according to our example with multi-state models with $cal(A)= cal(L) = {0,1}$: If $T$ is the time to
@@ -427,8 +456,50 @@ Then we have the following theorem
 //time $tau$ with $T$ and $D$ being the time-to-event and the status, respectively. The target parameter simply
 //summarizes that this can either happen as the first or second event.
 
-At a later point, write down similar conditions for the censoring mechanism.
-By the listed conditions, we will have independent censoring in the sense of @andersenStatisticalModelsBased1993, providing identification via the innovation theorem. 
+Similar conditions have been given in @ryalenPotentialOutcomes. They require, in addition, to our conditions
+          $
+             &lambda^a (t | history(k-1) or (tilde(Y)_t)_(t in [0, tauend]) ) \
+                 &= lim_(h -> 0) (P(t <= event(k) < t+h, Delta_k = a | event(k) >= t, history(k-1), (tilde(Y)_t)_(t in [0, tauend])))/h
+          $
+          does not depend on $(tilde(Y)_t)_(t in [0, tauend])$ for the potential outcome process $(tilde(Y)_t)_(t in [0, tauend])$.
+
+
+In the appendix, it will be shown that the identification formulas are the same in our specific setting. 
+
+//At a later point, write down similar conditions for the censoring mechanism.
+//By the listed conditions, we will have independent censoring in the sense of @andersenStatisticalModelsBased1993, providing identification via the innovation theorem.
+
+== Censoring
+//Let $(macron(T)_k, macron(D)_k, macron(A)_k, macron(L)_k)$ for $k=1,dots,K$ be the possibly right-censored observations,
+Let $C>0$ be the censoring time. The censoring time in our setting is defined so that $C = inf {event(k) | status(k) = c}$. Censoring changes what is observed in the following way:
+$
+    macron(T)_k &= C and event(k) \
+    macron(D)_k &= cases(status(k) "if" C > event(k), "c" "otherwise") \
+    macron(A)_k &= cases(treat(k) "if" C > event(k), treat(k-1) "otherwise") \
+    macron(L)_k &= cases(covariate(k) "if" C > event(k), covariate(k-1) "otherwise")
+$
+so that we really observe $macron(O) = (macron(T)_1, macron(D)_1, macron(A)_1, macron(L)_1, dots, macron(T)_K, macron(D)_K, macron(A)_K, macron(L)_K)$.
+Let $cal(F)_(t and C)$ denote the corresponding filtration for the censored (potentially unobserved process).
+
+For the censoring, one has the conditions,
+
+//*Consistency*: $(macron(T)_k, macron(D)_k, macron(A)_k, macron(L)_k) = (T_k, D_k, treat(k), covariate(k))$ if $C > event(k)$.
+
+*Independent censoring*: $C perp (T_k, D_k, treat(k), covariate(k)) | history(k-1)$.
+
+*Positivity*: The weights $w^c_k (f_(k-1), t_k, d_k) = (bb(1) {d_k != c} )/ (product_(j=1)^k S^c (t_j | f_(j-1)))$ fulfill $mean(P) [w^c_k (history(k-1), event(k), status(k))] = 1$. Here $S^c (t | f_(k-1)) = exp(-integral_(t_(k-1))^t hazard(c, s, k-1) upright(d) s)$.
+
+Then by @thm:jointdensity, $Lambda$ is also the $P$-compensating measure for $cal(F)_t or C$, where $C$ is included as a baseline covariate. By the innovation theorem,
+$
+    Lambda^*(d t, d m, d a, d l) &= sum_(k=1)^K bb(1) {event(k-1) and C < t <= event(k) and C} delta_(a) (d m) hazard(a, t, k-1) densitytrt(t, d a, k-1)  \
+        &+ bb(1) {event(k-1) and C< t <= event(k) and C} delta_(ell) (d m) hazard(ell, t, k-1) densitycov(t, d l, k-1)  \
+        &+ bb(1) {event(k-1) and C < t <= event(k) and C} delta_(y) (d m) hazard(y, t, k-1)  \
+        &+ bb(1) {event(k-1) and C < t <= event(k) and C} delta_(d) (d m) hazard(d, t, k-1)  \
+        &+ bb(1) {event(k-1) and C < t <= event(k) and C} delta_(c) (d m) hazard(c, t, k-1)
+$
+is the $P$-$(cal(F)_(t and C))$-compensator measure of $N$. This means that every component can be identified. 
+
+== A simple lemma
 
 We first state and prove a formula for at target parameter that is not causal, but we will use it to identify the causal parameter.
 This will be useful for the derivation of the efficient influence function. 
@@ -924,9 +995,11 @@ This iterative regression is a little bit different from the ICE IPCW estimator,
     3. Calculate the corresponding term in the efficient influence function based on $hat(nu)_(k)$. This is the "coupling" step: Given cause-specific estimators $hat(Lambda)_(k-1)^x$ for $x=a,l,d,y$, estimate
        $Qbar(k-1) (u, history(k-1))$ by
        $
-           integral_(event(k-1))^u hat(S) (u | history(k-1)) (hat(Lambda)^y (d u) + hat(nu)_(k) (bold(1), u, a, history(k-1)) hat(Lambda)_(k-1)^a (d u) + hat(nu)_(k) (bold(1), u, ell, history(k-1)) hat(Lambda)_(k-1)^ell (d u))
+           tilde(nu)_k (u, history(k-1)) &= integral_(event(k-1))^u hat(S) (u |  bold(1), cal(F)^(-A)_(event(k-1))) (hat(Lambda)^y (d u | bold(1), cal(F)^(-A)_(event(k-1))) \
+               &+ hat(nu)_(k) (bold(1), u, a,  cal(F)^(-A)_(event(k-1))) cal(F)^(-A)_(event(k-1))) hat(Lambda)_(k-1)^a (d u |  bold(1), cal(F)^(-A)_(event(k-1))) \
+               &+ hat(nu)_(k) (bold(1), u, ell, history(k-1)) hat(Lambda)_(k-1)^ell (d u |  bold(1), cal(F)^(-A)_(event(k-1))))
        $
-       We then debias the $(K - k + 1)$'th term in the efficient influence function, i.e.,
+       We then debias the corresponding term in the efficient influence function, i.e.,
        $  &(pi_0^* (L(0))) / (pi_0 (L(0))) product_(j = 1)^(k-1) ((densitytrtint(event(j), treat(j), j)) / (densitytrt(event(j), treat(j), j)))^(bb(1) {status(j) = a}) 1/( S^c (event(j) | history(j-1))) bb(1) {status(k-1) in {ell, a}, event(k-1) < tau}  \
            & times (macron(Z)^a_(k,tau) - Qbar(k-1) (tau, history(k-1)) + integral_(event(k - 1))^(tau and event(k)) (Qbar(k-1)(tau) - Qbar(k-1)(u)) 1/(S^c (u | history(k-1)) S (u | history(k-1))) M_k^c (upright(d) s))
        $
@@ -936,12 +1009,25 @@ This iterative regression is a little bit different from the ICE IPCW estimator,
 
 If for example, we use a cause-specific models, for the computation of the integral.
 This requires then for combination of a point in the time grid and each observation, estimates from $hat(nu)_(k-1)$.
-If we assume that we use empirical estimates of the cumulative incidence function at that point, we can estimate $Qbar(k-1)(u)$ by
+If we assume that we use empirical estimates of the cumulative incidence function at that point, we can estimate $Qbar(k-1)(tau)-Qbar(k-1)(u)$ by
 $
-    hat(F_y) (tau, history(k-1)) - hat(F_y) (tau, history(k-1)) + integral_(u)^tau hat(nu)_(k) (bold(1), u, a, history(k-1)) hat(F_a) (d u, history(k-1)) + integral_(u)^tau hat(nu)_(k) (bold(1), u, ell, history(k-1)) hat(F_ell) (d u, history(k-1))
+    tilde(nu)_k (s) =hat(F_y) (s, history(k-1)) + integral_(0)^s hat(nu)_(k) (bold(1), u, a, history(k-1)) hat(F_a) (d u, history(k-1)) + integral_(0)^s hat(nu)_(k) (bold(1), u, ell, history(k-1)) hat(F_ell) (d u, history(k-1))
 $
+If we assume that the cumulative hazard for the censoring jumps at the points $event(k-1) = t_0 < t_1 < t_2 < dots < t_c = tau$. Let $k^* = sup {k | t_k < event(k)}$, then we can estimate the martingale integral by
+$
+    bb(1) {event(k) <= tau, status(k) = c} (tilde(nu)_k (tau) - tilde(nu)_k (event(k)))/(S^c (event(k) | history(k-1)) S (event(k) | history(k-1))) - sum_(j=1)^(k^*) (tilde(nu)_k (tau) - tilde(nu)_k (t_j))/(S^c (t_j | history(k-1)) S (t_j | history(k-1))) (Lambda^c (t_j) - Lambda^c (t_(j-1)))
+$
+If we write this down in terms of the interevent times instead.
+Let $0 = s_0 < s_1 < s_2 < dots < s_c = tau-min_i event(k-1)$ be the event grid times
+and $k^* = sup {k | s_k <= min(S_(k), tau-event(k-1))}$.
+Then we can write
+$
+    bb(1) {S_(k) <= tau - event(k-1), status(k) = c} (tilde(nu)_k (tau-event(k-1)) - tilde(nu)_k (event(k-1) + S_k))/(S^c (S_k | history(k-1)) S (S_k | history(k-1))) - sum_(j=1)^(k^*) (tilde(nu)_k (tau-event(k-1)) - tilde(nu)_k (s_j+ event(k-1)))/(S^c (s_j | history(k-1)) S (s_j | history(k-1))) (Lambda^c (s_j) - Lambda^c (s_(j-1)))
+$
+The evaluation of $tilde(nu)$ for each term in $tilde(nu)$ here would be done on another grid for each term $0=s_0^* < s_1^* < s_2^* < dots < s_m^* = tau- min_i event(k-1)$.
+For $s_j$, the corresponding term would be $s_l^*$ with $l = sup {k | s_k^* <= s_j}$.
 
-This tactic for debiasing does not directly yield a TMLE alternative. 
+This tactic for debiasing does not directly yield a TMLE alternative.
 
 = Data-adaptive choice of $K$
 In practice, we will want to use $K_tau$ to be equal to 1 + maximum number of non-terminal events up to $tau$ in the sample. 

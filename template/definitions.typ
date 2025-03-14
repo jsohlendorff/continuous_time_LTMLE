@@ -142,9 +142,9 @@
             content("lend.start", [#text(size: 12pt)[$tau_"end"$]],anchor: "north")
 
             // Draw grid
-            for i in t_grid {
-                line((i, -inc+cord_start.last()), (i, inc+cord_start.last()))    
-            }
+            //for i in t_grid {
+            //    line((i, -inc+cord_start.last()), (i, inc+cord_start.last()))    
+            //}
 
             // Deal with the marks/events
             let event_list = ()
