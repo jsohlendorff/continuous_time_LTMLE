@@ -15,8 +15,8 @@ cumulative_hazard_cox <- function(m, dt, covariate_dt, times_dt, cause) {
   exp_lp <- data.table(id = covariate_dt$id, exp_lp =  exp_lp)
   ## Baseline hazard function
   base_hazard <- as.data.table(basehaz(m, centered = FALSE))
-  base_hazard <- base_hazard[times_dt, on = "time"]
-
+  base_hazard <- base_hazard[times_dt, roll = TRUE, on = "time"] ##??
+    
   dt <- merge(dt, base_hazard, by = "time")
   dt <- merge(dt, exp_lp, by = "id")
   dt[, paste0("Lambda_cause_", cause) := exp_lp * hazard]
@@ -52,22 +52,27 @@ influence_curve_censoring_martingale_time_varying <- function(dt,
     name_covariates <- copy(colnames(my_covariate_dt))
     
     my_times_dt <- as.data.table(dt)
+    #my_times_dt <- my_times_dt[time <= tau & event == 1, "time"]
+    #cumhazard forkert regnet ud
+    times_event <- my_times_dt[time <= tau & event == 1, "time", with = FALSE]$time
 
     my_times_dt <- my_times_dt[, "time"]
     ## here we should also subset so that <= tau - min_i T_(k-1)
-    
+
     ## Cartesian product
     my_dt <- my_covariate_dt[, as.list(my_times_dt), by = my_covariate_dt]
-
+    #my_dt2 <- my_covariate_dt[, as.list(my_times_dt2), by = my_covariate_dt]
     ## Ensure that it is sorted by id, and then time
     setkey(my_dt, time, id)
-    
+    #setkey(my_dt2, time, id)
     if (!is.null(weight_fun)) {
        ## my_dt[, Q2 := predict_cumulative_invidence_csc(m_event, .SD, cause = cause)]
-        for (m in 1:length(m_event$models)) {
-            cause_temp <- m_event$cause[m]
-            my_dt <- cumulative_hazard_cox(m_event$models[[m]], my_dt, my_covariate_dt, my_times_dt, cause_temp)
-        }
+        my_dt <- cumulative_hazard_cox(m_event$models[[1]], my_dt, my_covariate_dt, my_times_dt, 1)
+        my_dt <- cumulative_hazard_cox(m_event$models[[2]], my_dt, my_covariate_dt, my_times_dt, 2)
+        #my_dt <- my_dt[time %in% my_times_dt[which_times_event]$time]
+        #my_dt2 <- cumulative_hazard_cox(m_event$models[[1]], my_dt2, my_covariate_dt, my_times_dt2, 1)
+        #my_dt2 <- cumulative_hazard_cox(m_event$models[[2]], my_dt2, my_covariate_dt, my_times_dt2, 2)
+        
             ## Get minimal prior event time
     # min_T_k_1 <- my_times_dt[, min(time), by = id]
     # my_times_dt <- my_times_dt[time <= tau - min_T_k_1& event == 1]
@@ -80,27 +85,37 @@ influence_curve_censoring_martingale_time_varying <- function(dt,
         ##    weight_fun <- function(x) 1
         ##}
 
-        my_dt <- my_dt[, weight := weight_fun(.SD), .SDcols = c(name_covariates, "time")]
         setkey(my_dt, id, time)
         ## Define diff F1 within each id
         my_dt <- my_dt[, diff_Lambda_cause_1 := diff(c(0, Lambda_cause_1)), by = id]
-        my_dt <- my_dt[, diff_Lambda_cause_2 := diff(c(0, Lambda_cause_2)), by = id]
         my_fun <- function(x,y) {
             m<-exp(-c(0,x) - c(0,y))
             m[-length(m)]
         }
+        ## NEW: TODO: difference is in Sminus!!!!!
         my_dt <- my_dt[, Sminus := my_fun(Lambda_cause_1, Lambda_cause_2), by = id]
+        ## SHOULD BE ABLE TO ADD THIS LINE!
+        my_dt <- my_dt[time %in% times_event]
+        my_dt <- my_dt[, weight := weight_fun(.SD), .SDcols = c(name_covariates, "time")]
         my_dt <- my_dt[, Q := cumsum(weight * Sminus * diff_Lambda_cause_1), by = id]
-        my_dt[, c("diff_Lambda_cause_1", "diff_Lambda_cause_2", "Lambda_cause_1", "Lambda_cause_2", "weight", "Sminus") := NULL]
-
+        my_dt[, c("diff_Lambda_cause_1", "Lambda_cause_1", "Lambda_cause_2", "weight", "Sminus") := NULL]
         cens_dt <- dt[time <= tau & event == 0, "time"]
         cens_dt_original <- copy(cens_dt)
         ## Cartesian product of cens_dt and my_covariate_dt
     
         cens_dt <- my_covariate_dt[, as.list(cens_dt), by = my_covariate_dt]
-    
+
         ## rolling join (forward) to get Q at censoring times
-        my_dt <- my_dt[cens_dt, roll = TRUE, on = c("time", name_covariates)]
+        #browser()
+        setkey(my_dt, id, time)
+        #my_dt <- my_dt[cens_dt, roll = TRUE, on = c("time", name_covariates)]
+        #setkey(my_dt, id, time)
+        my_dt <- my_dt[cens_dt, roll = TRUE, on = c(name_covariates,"time")]
+        my_dt[is.na(Q), Q := 0]
+        ##if (any(is.na(test$Q))) {
+        ##    browser()
+        ##}
+        ##my_dt <- test
     } else {
         my_times_dt <- as.data.table(dt)
         my_times_dt <- my_times_dt[time <= tau & event == 0, "time"]
@@ -114,7 +129,7 @@ influence_curve_censoring_martingale_time_varying <- function(dt,
         my_dt <- my_dt[, Q := predict_cumulative_invidence_csc(m_event, .SD, cause = cause)]
     }
     
-    ## setkey(my_dt, time, id)
+    setkey(my_dt, time, id)
 
     ## if (test) {
     ##     my_dt[,Q2 := NULL]
@@ -249,3 +264,86 @@ influence_curve_censoring_martingale_time_varying <- function(dt,
 ##                                                            event_id[.N] == 0) - sum(1 / (Scu * Su) * (Q_last - Q) * diff(c(0, LambdaC)))
 ##   ), Q=Q_last[.N]), by = id]
 ## }
+
+
+
+simulate <- function(n = 1000, tau = 6) {
+  dt <- sampleData(
+    n,
+    outcome = "competing.risks",
+    formula = ~ f(X1, 1) +
+      f(X2, -0.033) + f(X3, 0.4) + f(X6, 0.1) + f(X7, -0.1) + f(X8, 0.5) + f(X9, -1)
+  )
+  levels(dt$X1) <- c("T0", "T1")
+  df <- dt[order(dt$time), ]
+  df[, c("eventtime1", "eventtime2", "censtime") := NULL]
+  
+  m.event <-  CSC(Hist(time, event) ~ X1 + X2 + X3 + X5 + X8, data = df)
+  m.censor <-  coxph(
+    Surv(time, event == 0) ~ X1 + X2 + X3 + X5 + X8,
+    data = df,
+    x = TRUE,
+    y = TRUE
+  )
+  m.treatment <-  glm(X1 ~ X2 + X3 + X5 + X8,
+                      data = df,
+                      family = binomial(link = "logit"))
+  
+  
+  ## mg2 <- influence_curve_censoring_martingale(
+  ##   df,
+  ##   m_event = m.event,
+  ##   m_censor = m.censor,
+  ##   weight_fun = NULL,
+  ##   treatment = 1
+  ## )
+  ## mg <- influence_curve_censoring_martingale_time_varying(
+  ##   df,
+  ##   m_event = m.event,
+  ##   m_censor = m.censor,
+  ##   treatment = 1,
+  ##   1,test = FALSE
+  ## )
+   mg <- influence_curve_censoring_martingale_time_varying(
+    df,
+    m_event = m.event,
+    m_censor = m.censor,
+    weight_fun =  function(x) 1,
+    treatment = 1,
+    1
+  )
+  ## mg2 <- influence_curve_censoring_martingale_time_varying(
+  ##     df,
+  ##     m_event = m.event,
+  ##     m_censor = m.censor,
+  ##     weight_fun =  NULL,
+  ##     treatment = 1,
+  ##     1
+  ## )
+  ##if (sum(abs(mg$cens_mg-mg2$cens_mg)>0.00001)>0 | any(is.na(mg$cens_mg))){
+  ## browser()
+  ##}
+  
+  ## merge with dt; for those ids not in mg, set cens_mg to 0
+  df[, id := 1:.N]
+  df <- merge(df, mg, by = "id", all.x = TRUE)
+  df[is.na(cens_mg), c("cens_mg", "Q") := 0]
+  
+  # censoring_survival_predict <- predict(m_censor, type = "survival")
+  # treatment_predict <- predict(mce.treatment, type = "response")
+  df[, propensity_score := predict(m.treatment, type = "response")]
+  df[, censoring_survival_predict := predict(m.censor, type = "survival")]
+  df[, ic := 1 * (X1 == "T1") / propensity_score * ((1 * (time <= tau &
+                                                            event == 1) / censoring_survival_predict) - Q + cens_mg)]
+  df$X1 <- "T1"
+  df[, F1tau := predictRisk(m.event,
+                            newdata = .SD,
+                            times = tau,
+                            cause = 1)]
+  df[, ic := ic + F1tau - mean(F1tau)]
+  df[, .(
+    estimate = mean(F1tau) + mean(ic),
+    lower_ci = mean(F1tau) + mean(ic) - 1.96 * sd(ic) / sqrt(.N),
+    upper_ci = mean(F1tau) + mean(ic) + 1.96 * sd(ic) / sqrt(.N)
+  )]
+}
