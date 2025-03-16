@@ -56,9 +56,7 @@ influence_curve_censoring_martingale_time_varying <- function(dt,
   
   ## Cartesian product
   my_dt <- my_covariate_dt[, as.list(my_times_dt), by = my_covariate_dt]
-  ## Ensure that it is sorted by id, and then time
-  setkey(my_dt, time, id)
-  
+
   my_dt <- cumulative_hazard_cox(m_event$models[[1]], my_dt, my_covariate_dt, my_times_dt, 1)
   my_dt <- cumulative_hazard_cox(m_event$models[[2]], my_dt, my_covariate_dt, my_times_dt, 2)
   
@@ -86,12 +84,9 @@ influence_curve_censoring_martingale_time_varying <- function(dt,
   cens_dt <- my_covariate_dt[, as.list(cens_dt), by = my_covariate_dt]
   
   ## rolling join (forward) to get Q at censoring times
-  setkey(my_dt, id, time)
-  
+
   my_dt <- my_dt[cens_dt, roll = TRUE, on = c(name_covariates, "time")]
   my_dt[is.na(Q), Q := 0]
-  
-  setkey(my_dt, time, id)
   
   ## predict cumulative hazard function
   my_dt <- cumulative_hazard_cox(m_censor, my_dt, my_covariate_dt, cens_dt_original, 0)
@@ -112,6 +107,7 @@ influence_curve_censoring_martingale_time_varying <- function(dt,
   Q = Q_last[.N]), by = id]
 }
 
+## NOTE: should figure out why higher sample size leads to unstable estimates.
 simulate <- function(n = 1000, tau = 6) {
   dt <- sampleData(
     n,
