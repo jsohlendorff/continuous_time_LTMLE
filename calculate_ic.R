@@ -4,14 +4,10 @@ cumulative_hazard_cox <- function(m, dt, covariate_dt, times_dt, cause) {
   exp_lp <- data.table(id = covariate_dt$id, exp_lp =  exp_lp)
   ## Baseline hazard function
   base_hazard <- as.data.table(basehaz(m, centered = FALSE))
-  base_hazard_minus <- base_hazard[, hazard := c(0, hazard[-.N])]  
+  base_hazard[, hazard_minus := c(0, hazard[-.N])]
   base_hazard <- base_hazard[times_dt, on = "time"]
-  base_hazard_minus <- base_hazard_minus[times_dt, on = "time"]
-  ## rename hazard to hazard_minus
-  setnames(base_hazard_minus, "hazard", "hazard_minus")
-    
+
   dt <- merge(dt, base_hazard, by = "time")
-  dt <- merge(dt, base_hazard_minus, by = "time")
   dt <- merge(dt, exp_lp, by = "id")
   dt[, paste0("Lambda_cause_", cause) := exp_lp * hazard]
   dt[, paste0("Lambda_cause_minus_", cause) := exp_lp * hazard_minus]
@@ -62,7 +58,6 @@ influence_curve_censoring_martingale_time_varying <- function(dt,
   
   ## apply the weight function to all other columns than id and F1
   ## TODO: the time columns should be shifted with T_(k-1), i.e., added; find "time", "time_(k-1), time_(k-2), dots, time_1" and add T_(k-1)
-  
   setkey(my_dt, id, time)
   my_dt <- my_dt[, diff_Lambda_cause_1 := diff(c(0, Lambda_cause_1)), by = id]
   my_dt <- my_dt[, Sminus := exp(-Lambda_cause_minus_1 - Lambda_cause_minus_2), by = id]
@@ -134,8 +129,7 @@ simulate <- function(n = 1000, tau = 6) {
     df,
     m_event = m.event,
     m_censor = m.censor,
-    treatment = 1,
-    1
+    treatment = 1
   )
 
   ## merge with dt; for those ids not in mg, set cens_mg to 0
