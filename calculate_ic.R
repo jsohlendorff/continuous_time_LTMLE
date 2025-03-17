@@ -5,7 +5,7 @@ cumulative_hazard_cox <- function(m, dt, covariate_dt, times_dt, cause) {
   ## Baseline hazard function
   base_hazard <- as.data.table(basehaz(m, centered = FALSE))
   base_hazard[, hazard_minus := c(0, hazard[-.N])]
-  base_hazard <- base_hazard[times_dt, on = "time"]
+  base_hazard <- base_hazard[times_dt, roll = TRUE, on = "time"]
 
   dt <- merge(dt, base_hazard, by = "time")
   dt <- merge(dt, exp_lp, by = "id")
@@ -124,7 +124,6 @@ simulate <- function(n = 1000, tau = 6) {
   m.treatment <-  glm(X1 ~ X2 + X3 + X5 + X8,
                       data = df,
                       family = binomial(link = "logit"))
-  
    mg <- influence_curve_censoring_martingale_time_varying(
     df,
     m_event = m.event,
