@@ -79,12 +79,12 @@ influence_curve_censoring_martingale_time_varying <- function(dt,
   cens_dt <- my_covariate_dt[, as.list(cens_dt), by = my_covariate_dt]
   
   ## rolling join (forward) to get Q at censoring times
-
   my_dt <- my_dt[cens_dt, roll = TRUE, on = c(name_covariates, "time")]
   my_dt[is.na(Q), Q := 0]
   
   ## predict cumulative hazard function
   my_dt <- cumulative_hazard_cox(m_censor, my_dt, my_covariate_dt, cens_dt_original, 0)
+  my_dt <- my_dt[, diff_Lambda_cause_0 := diff(c(0, Lambda_cause_0)), by = id]
   my_dt <- cumulative_hazard_cox(m_event$models[[1]], my_dt, my_covariate_dt, cens_dt_original, 1)
   my_dt <- cumulative_hazard_cox(m_event$models[[2]], my_dt, my_covariate_dt, cens_dt_original, 2)
   my_dt <- my_dt[, Scu := exp(-Lambda_cause_0)]
@@ -93,12 +93,10 @@ influence_curve_censoring_martingale_time_varying <- function(dt,
   ## define Q_last as the last Q within each id
   my_dt <- my_dt[, Q_last := Q[.N], by = id]
   my_dt <- merge(my_dt, times_to_use, by = "id")
-  # my_dt <- my_dt[time <= time_id]
-  ## time is already less than tau
-  my_dt[, .(cens_mg = 1 * (time[.N] <= time_id[.N]) * (
-    1 / (Scu[.N] * Su[.N]) * (Q_last[.N] - Q[.N]) * 1 * (time_id[.N] <= tau &
-                                                           event_id[.N] == 0) - sum(1 / (Scu * Su) * (Q_last - Q) * diff(c(0, Lambda_cause_0)))
-  ),
+  my_dt <- my_dt[time <= time_id]
+  
+  my_dt[, .(cens_mg = 
+    1 / (Scu[.N] * Su[.N]) * (Q_last[.N] - Q[.N]) * 1 * (time_id[.N] <= tau & event_id[.N] == 0) - sum(1 / (Scu * Su) * (Q_last - Q) * diff_Lambda_cause_0),
   Q = Q_last[.N]), by = id]
 }
 
