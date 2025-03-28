@@ -106,7 +106,13 @@ list(
           reps = 100,
           batch = 10
   ),
-  tar_target(boxplot_debias_ipcw_scaled_quasi_three, fun_boxplot(debias_ipcw_scaled_quasi_three, true_value_three_event))
+  tar_target(boxplot_debias_ipcw_scaled_quasi_three, fun_boxplot(debias_ipcw_scaled_quasi_three, true_value_three_event)),
+  tar_rep(debias_ipcw_scaled_quasi_three_conservative, ## works well even if we can't correctly specify the regression
+          command = simulate_and_run(n = 1000, number_events = 3, function_name = debias_ipcw, function_args = list(tau = tau, model_type = "glm", model_type_cens = "scaled_quasibinomial", conservative=TRUE)),
+          reps = 100,
+          batch = 10
+  ),
+  tar_target(boxplot_debias_ipcw_scaled_quasi_three_conservative, fun_boxplot(debias_ipcw_scaled_quasi_three_conservative, true_value_three_event))
   # tar_rep(name = debias_ipcw_scaled_quasi_test_one, ## works well even if we can't correctly specify the regression
   #         command = simulate_and_run(n = 1000, number_events = 1, function_name = test_me, function_args = list(tau = tau)),
   #         reps = 100,

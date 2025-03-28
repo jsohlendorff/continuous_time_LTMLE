@@ -441,13 +441,11 @@ get_propensity_scores <- function(last_event_number, d, tau, model_type = "glm",
   list(interarrival_censoring_survival = interarrival_censoring_survival, prob_A = prob_A, censoring_models = censoring_models, prob_A0 = prob_A0)
 }
 
-## First implement estimation via hazards at baseline
-## Then implement ipw/ipcw from the corresponding models
-## Then implement estimation via hazards at other time points
 debias_ipcw <- function(d,
                         tau = 0.02,
                         model_type = "glm",
-                        model_type_cens = "scaled_quasibinomial") {
+                        model_type_cens = "scaled_quasibinomial",
+                        conservative = FALSE) {
   d_res <- widen_continuous_data(d)
   last_event_number <- d_res$last_event_number
   d <- d_res$d_wide
@@ -495,7 +493,12 @@ debias_ipcw <- function(d,
     d[, ic_term_part := 1 / propensity_scores$prob_A0]
     d[A_0 != 1, ic_term_part := 0]
     for (j in seq_len(k - 1)) {
-      d[, ic_term_part := ic_term_part * 1 / (propensity_scores$interarrival_censoring_survival[[j]])]
+      if (j == 1){
+        d[, ic_term_part := ic_term_part * 1 / (propensity_scores$interarrival_censoring_survival[[j]])]
+      } else {
+        ## Would actually want to do j instead of j-1. Because of the next line, this is ok.
+        d[get(paste0("event_",j-1)) %in% c("A", "L"), ic_term_part := ic_term_part * 1 / (propensity_scores$interarrival_censoring_survival[[j]])]
+      }
       d[!(get(paste0("event_", j)) %in% c("A", "L")), ic_term_part := 0]
       d[get(paste0("event_", j)) == "A", ic_term_part := ic_term_part * 1 / (propensity_scores$prob_A[[j]])]
       d[get(paste0("event_", j)) == "A" &
@@ -545,71 +548,75 @@ debias_ipcw <- function(d,
     }
 
     if (k > 1) {
-      history_of_variables <- c(history_of_variables, paste0("time_", 1:(k - 1)))
+      history_of_variables <- c(history_of_variables, paste0("time_", (k - 1)))
     }
 
-    ## IC
-    m_dat <- copy(d)
-    setkeyv(m_dat, paste0("time_", k))
-    setnames(m_dat, c(paste0("event_", k), paste0("time_", k)), c("event", "time"))
-    non_zero <- m_dat$ic_term_part != 0
-    get_variables <- c(history_of_variables,
-                       "event",
-                       "time",
-                       "id",
-                       paste0("A_", k))
-    m_dat <- m_dat[, ..get_variables]
-    if (k == 1)
-      m_dat[, time_0 := 0]
+    if (!conservative){
+      ## IC
+      m_dat <- copy(d)
+      setkeyv(m_dat, paste0("time_", k))
+      setnames(m_dat, c(paste0("event_", k), paste0("time_", k)), c("event", "time"))
+      non_zero <- m_dat$ic_term_part != 0
+      get_variables <- c(history_of_variables,
+                         "event",
+                         "time",
+                         "id",
+                         paste0("A_", k))
+      m_dat <- m_dat[, ..get_variables]
+      if (k == 1)
+        m_dat[, time_0 := 0]
+      mg <- influence_curve_censoring_martingale_time_varying(
+        dt = copy(m_dat),
+        learn_causes = learn_causes,
+        learn_censor = propensity_scores$censoring_models[[k]],
+        cause = "Y",
+        weight_fun = function(x)
+          1,
+        non_zero = copy(non_zero),
+        tau = tau,
+        k
+      )
+      if (k != last_event_number) {
+        predict_fun_intervention <- function(data, k, predict_fun) {
+          intervened_data <- copy(data)
+          for (j in 0:k) {
+            intervened_data[, paste0("A_", j) := 1]
+          }
+          if (is.factor(intervened_data[[paste0("event_", k)]])) {
+            intervened_data[[paste0("event_", k)]] <- droplevels(intervened_data[[paste0("event_", k)]])
+          }
+          predict_fun(intervened_data)
+        }
 
-    mg <- influence_curve_censoring_martingale_time_varying(
-      dt = m_dat,
-      learn_causes = learn_causes,
-      learn_censor = propensity_scores$censoring_models[[k]],
-      cause = "Y",
-      weight_fun = function(x)
-        1,
-      non_zero = non_zero,
-      tau = tau,
-      k
-    )
-    ##FIX
-    # mg[, cens_mg:=0]
-    if (k != last_event_number) {
-      predict_fun_intervention <- function(data, k, predict_fun) {
-        intervened_data <- copy(data)
-        for (j in 0:k) {
-          intervened_data[, paste0("A_", j) := 1]
-        }
-        if (is.factor(intervened_data[[paste0("event_", k)]])) {
-          intervened_data[[paste0("event_", k)]] <- droplevels(intervened_data[[paste0("event_", k)]])
-        }
-        predict_fun(intervened_data)
+        #setkey(m_dat, time)
+        mg2 <- influence_curve_censoring_martingale_time_varying(
+          dt = copy(m_dat),
+          learn_causes = learn_causes,
+          learn_censor = propensity_scores$censoring_models[[k]],
+          cause = "A",
+          weight_fun = function(x)
+            predict_fun_intervention(x, k, predict_fun_integral),
+          non_zero = copy(non_zero),
+          tau = tau,
+          k
+        )
+        mg3 <- influence_curve_censoring_martingale_time_varying(
+          dt = copy(m_dat),
+          learn_causes = learn_causes,
+          learn_censor = propensity_scores$censoring_models[[k]],
+          cause = "L",
+          weight_fun = function(x)
+            predict_fun_intervention(x, k, predict_fun_integral),
+          non_zero = copy(non_zero),
+          tau = tau,
+          k
+        )
+      } else {
+        mg2 <- mg3 <- NULL
       }
-
-      mg2 <- influence_curve_censoring_martingale_time_varying(
-        dt = m_dat,
-        learn_causes = learn_causes,
-        learn_censor = propensity_scores$censoring_models[[k]],
-        cause = "A",
-        weight_fun = function(x)
-          predict_fun_intervention(x, k, predict_fun_integral),
-        non_zero = non_zero,
-        tau = tau,
-        k
-      )
-      mg3 <- influence_curve_censoring_martingale_time_varying(
-        dt = m_dat,
-        learn_causes = learn_causes,
-        learn_censor = propensity_scores$censoring_models[[k]],
-        cause = "L",
-        weight_fun = function(x)
-          predict_fun_intervention(x, k, predict_fun_integral),
-        non_zero = non_zero,
-        tau = tau,
-        k
-      )
     } else {
+      mg <- copy(d[ic_term_part != 0, "id"])
+      mg[, c("cens_mg", "Q") := 0]
       mg2 <- mg3 <- NULL
     }
     safe_merge <- function(x, y, by) {
@@ -629,111 +636,38 @@ debias_ipcw <- function(d,
         return(z)
       }
     }
+
     if (k > 1) {
       new_history_of_variables <- setdiff(history_of_variables, paste0("L_", k - 1))
     }
-
-    if (model_type == "glm") {
-      if (!is_censored) {
-        fit <- glm(as.formula(paste0(
-          "weight ~ ", paste(history_of_variables, collapse = "+")
-        )),
-        data = at_risk_before_tau,
-        family = quasibinomial)
-        predict_fun <- function(data)
-          predict(fit, data, type = "response")
-      }
-      else if (model_type_cens == "scaled_quasibinomial") {
-        max_weight <- max(at_risk_before_tau$weight)
-        at_risk_before_tau$f_weight <- at_risk_before_tau$weight / max_weight
-        #warning("Fix this crap, do not use collapse = askerisk")
-        fit <- glm(as.formula(paste0(
-          "f_weight ~ ", paste(history_of_variables, collapse = "+")
-        )),
-        data = at_risk_before_tau,
-        family = quasibinomial)
-        predict_fun <- function(data)
-          predict(fit, data, type = "response") * max_weight
-        at_risk_before_tau[,pred:=predict(fit, data = d, type = "response") * max_weight] ## needs to be fixed
-        # pred <- predict(fit, data = at_risk_before_tau, type = "response") * max_weight
-        # at_risk_before_tau$Q2 <- predict(fit, type = "response") * max_weight
-        if (k > 1) {
-          fit_integral <- glm(as.formula(paste0(
-            "f_weight ~ ",
-            paste(new_history_of_variables, collapse = "+")
-          )),
-          data = at_risk_before_tau,
-          family = quasibinomial)
-          predict_fun_integral <- function(data)
-            predict(fit_integral, data, type = "response")
-        }
-      } else if (model_type_cens == "tweedie") {
-        fit <- glm(
-          as.formula(paste0(
-            "weight ~ ", paste(history_of_variables, collapse = "+")
-          )),
-          data = at_risk_before_tau,
-          family = statmod::tweedie(var.power = 1.5)
-        )
-        predict_fun <- function(data)
-          predict(fit, data, type = "response")
-        pred <- predict(fit, data = at_risk_before_tau, type = "response")
-      } else if (model_type_cens == "lognormal_mixture") {
-        fit_1 <- glm(as.formula(paste0(
-          "weight != 0 ~ ",
-          paste(history_of_variables, collapse = "+")
-        )),
-        data = at_risk_before_tau,
-        family = binomial)
-        fit_2 <- lm(as.formula(paste0(
-          "log(weight) ~ ",
-          paste(history_of_variables, collapse = "+")
-        )), data = at_risk_before_tau[get("weight") != 0])
-        predict_fun <- function(data)
-          predict(fit_1, data, type = "response") * exp(predict(fit_2, data, type = "response"))
-      } else if (model_type_cens == "gamma_mixture") {
-        fit_prob <- glm(as.formula(paste0(
-          "weight > 1 ~ ",
-          paste(history_of_variables, collapse = "+")
-        )),
-        data = at_risk_before_tau,
-        family = binomial)
-        at_risk_before_tau$weightminusone <- at_risk_before_tau$weight - 1
-        fit_gamma <- glm(as.formula(paste0(
-          "weightminusone ~ ",
-          paste(history_of_variables, collapse = "+")
-        )),
-        data = at_risk_before_tau[get("weight") > 1],
-        family = Gamma(link = "log"))
-        if (first_event) {
-          predict_fun <- function(data)
-            predict(fit_prob, data, type = "response") * (predict(fit_gamma, data, type = "response") + 1)
-        } else {
-          fit_quasi_binomial <- glm(as.formula(paste0(
-            "weight ~ ",
-            paste(history_of_variables, collapse = "+")
-          )),
-          data = at_risk_before_tau[get("weight") <= 1],
-          family = quasibinomial)
-          predict_fun <- function(data) {
-            predict_prob <- predict(fit_prob, data, type = "response")
-            predict_prob * (predict(fit_gamma, data, type = "response") + 1) + (1 - predict_prob) * predict(fit_quasi_binomial, data, type = "response")
-          }
-        }
-      }
-    } else {
-      fit <- ranger::ranger(as.formula(paste0(
-        "weight ~ ", paste(history_of_variables, collapse = "+")
-      )), data = at_risk_before_tau)
-      predict_fun <- function(data)
-        predict(fit, data = data)$predictions
+    max_weight <- max(at_risk_before_tau$weight)
+    at_risk_before_tau$f_weight <- at_risk_before_tau$weight / max_weight
+    fit <- glm(as.formula(paste0(
+      "f_weight ~ ", paste(history_of_variables, collapse = "+")
+    )),
+    data = at_risk_before_tau,
+    family = quasibinomial)
+    predict_fun <- function(data)
+      predict(fit, data, type = "response") * max_weight
+    at_risk_before_tau[,pred:=predict(fit, data = d, type = "response") * max_weight] ## needs to be fixed
+    # pred <- predict(fit, data = at_risk_before_tau, type = "response") * max_weight
+    # at_risk_before_tau$Q2 <- predict(fit, type = "response") * max_weight
+    if (k > 1) {
+      fit_integral <- glm(as.formula(paste0(
+        "f_weight ~ ",
+        paste(new_history_of_variables, collapse = "+")
+      )),
+      data = at_risk_before_tau,
+      family = quasibinomial)
+      predict_fun_integral <- function(data)
+        predict(fit_integral, data, type = "response")
     }
+
     mg_fin <- safe_merge(safe_merge(safe_merge(mg, at_risk_before_tau[, c("weight", "pred", "id")], by = "id"), mg2, by =
                                       "id"), mg3, by = "id")
     ## WARNING: Add cens_mg and Qs together in mg, mg2, mg3. TODO
     mg_fin <- merge(mg_fin, d[, c("ic_term_part", "id")], by = "id")
     mg_fin <- mg_fin[, ic_term_part := ic_term_part * (weight - pred + cens_mg)] ##Q part broken. Weight
-    Q_save <- mg_fin[,c("Q","id")]
     mg_fin <- mg_fin[, c("ic_term_part", "id")]
     ## Now add the influence curve to the data d
     d[, ic_term_part := NULL]
@@ -763,43 +697,12 @@ debias_ipcw <- function(d,
     upper = estimate[.N] + 1.96 * sd(ic) / sqrt(.N),
     g_formula_estimate = g_formula_estimate[.N]
   )]
-  # d[A_0==1 & L_0==1,mean(weight)]
-  # d[A_0==1 & L_0==0, mean(weight)]
-  # dd<-copy(d)
-  # levels(dd$event_1)<-c(3,4,0,1,2)
-  # dd$event_1<-as.numeric(as.character(dd$event_1))
-  # m.event <-  CSC(Hist(time_1, event_1)~A_0+L_0, data = dd)
-  # map_X1_to_T1 <- function(dt){
-  #   dt$A_0 <- 1
-  #   dt
-  # }
-  # pred_0_2 <- predictRisk(m.event,
-  #             newdata = map_X1_to_T1(dd),
-  #             times = tau,
-  #             cause = 1)[,1]
-
-  # g_formula_estimate <- mean(pred_0)
-  # # g_formula_estimate_2 <- mean(pred_0_2)
-  #
-  # # ic_F1tau <- d$ic + pred_0_2 - g_formula_estimate_2
-  # ic <- d$ic + pred_0 - g_formula_estimate
-  # estimate <- g_formula_estimate + mean(ic)
-  # estimate_2 <- g_formula_estimate_2 + mean(ic_F1tau)
-  # data.table(
-  #   estimate = estimate,
-  #   #ic = ic,
-  #   g_formula_estimate = g_formula_estimate,
-  #   lower = estimate - 1.96 * sd(ic) / sqrt(nrow(d)),
-  #   upper = estimate + 1.96 * sd(ic) / sqrt(nrow(d)),
-  #   se = sd(ic) / sqrt(nrow(d))
-  #   # estimate_2 = estimate_2,
-  #   # g_formula_estimate_2 = g_formula_estimate_2,
-  #   # lower_2 = estimate_2 - 1.96 * sd(ic_F1tau) / sqrt(nrow(d)),
-  #   # upper_2 = estimate_2 + 1.96 * sd(ic_F1tau) / sqrt(nrow(d)),
-  #   # se_2 = sd(ic_F1tau) / sqrt(nrow(d))
-  # )
 }
 
+
+## First implement estimation via hazards at baseline
+## Then implement ipw/ipcw from the corresponding models
+## Then implement estimation via hazards at other time points
 # debias_ipcw <- function(d,
 #                         tau = 0.02,
 #                         model_type = "glm",
@@ -851,7 +754,12 @@ debias_ipcw <- function(d,
 #     d[, ic_term_part := 1 / propensity_scores$prob_A0]
 #     d[A_0 != 1, ic_term_part := 0]
 #     for (j in seq_len(k - 1)) {
-#       d[, ic_term_part := ic_term_part * 1 / (propensity_scores$interarrival_censoring_survival[[j]])]
+#       if (j == 1){
+#         d[, ic_term_part := ic_term_part * 1 / (propensity_scores$interarrival_censoring_survival[[j]])]
+#       } else {
+#         ## Would actually want to do j instead of j-1. Because of the next line, this is ok.
+#         d[get(paste0("event_",j-1)) %in% c("A", "L"), ic_term_part := ic_term_part * 1 / (propensity_scores$interarrival_censoring_survival[[j]])]
+#       }
 #       d[!(get(paste0("event_", j)) %in% c("A", "L")), ic_term_part := 0]
 #       d[get(paste0("event_", j)) == "A", ic_term_part := ic_term_part * 1 / (propensity_scores$prob_A[[j]])]
 #       d[get(paste0("event_", j)) == "A" &
@@ -901,7 +809,7 @@ debias_ipcw <- function(d,
 #     }
 #
 #     if (k > 1) {
-#       history_of_variables <- c(history_of_variables, paste0("time_", 1:(k - 1)))
+#       history_of_variables <- c(history_of_variables, paste0("time_", (k - 1)))
 #     }
 #
 #     ## IC
@@ -929,8 +837,6 @@ debias_ipcw <- function(d,
 #       tau = tau,
 #       k
 #     )
-#     ##FIX
-#     # mg[, cens_mg:=0]
 #     if (k != last_event_number) {
 #       predict_fun_intervention <- function(data, k, predict_fun) {
 #         intervened_data <- copy(data)
@@ -943,6 +849,7 @@ debias_ipcw <- function(d,
 #         predict_fun(intervened_data)
 #       }
 #
+#       setkey(m_dat, time)
 #       mg2 <- influence_curve_censoring_martingale_time_varying(
 #         dt = m_dat,
 #         learn_causes = learn_causes,
@@ -985,11 +892,37 @@ debias_ipcw <- function(d,
 #         return(z)
 #       }
 #     }
-#     mg_fin <- safe_merge(safe_merge(safe_merge(mg, at_risk_before_tau[, c("weight", "id")], by = "id"), mg2, by =
+#     if (k > 1) {
+#       new_history_of_variables <- setdiff(history_of_variables, paste0("L_", k - 1))
+#     }
+#     max_weight <- max(at_risk_before_tau$weight)
+#     at_risk_before_tau$f_weight <- at_risk_before_tau$weight / max_weight
+#     fit <- glm(as.formula(paste0(
+#       "f_weight ~ ", paste(history_of_variables, collapse = "+")
+#     )),
+#     data = at_risk_before_tau,
+#     family = quasibinomial)
+#     predict_fun <- function(data)
+#       predict(fit, data, type = "response") * max_weight
+#     at_risk_before_tau[,pred:=predict(fit, data = d, type = "response") * max_weight] ## needs to be fixed
+#     # pred <- predict(fit, data = at_risk_before_tau, type = "response") * max_weight
+#     # at_risk_before_tau$Q2 <- predict(fit, type = "response") * max_weight
+#     if (k > 1) {
+#       fit_integral <- glm(as.formula(paste0(
+#         "f_weight ~ ",
+#         paste(new_history_of_variables, collapse = "+")
+#       )),
+#       data = at_risk_before_tau,
+#       family = quasibinomial)
+#       predict_fun_integral <- function(data)
+#         predict(fit_integral, data, type = "response")
+#     }
+#
+#     mg_fin <- safe_merge(safe_merge(safe_merge(mg, at_risk_before_tau[, c("weight", "pred", "id")], by = "id"), mg2, by =
 #                                       "id"), mg3, by = "id")
 #     ## WARNING: Add cens_mg and Qs together in mg, mg2, mg3. TODO
 #     mg_fin <- merge(mg_fin, d[, c("ic_term_part", "id")], by = "id")
-#     mg_fin <- mg_fin[, ic_term_part := ic_term_part * (weight - Q + cens_mg)] ##Q part broken. Weight
+#     mg_fin <- mg_fin[, ic_term_part := ic_term_part * (weight - pred + cens_mg)] ##Q part broken. Weight
 #     Q_save <- mg_fin[,c("Q","id")]
 #     mg_fin <- mg_fin[, c("ic_term_part", "id")]
 #     ## Now add the influence curve to the data d
@@ -997,102 +930,7 @@ debias_ipcw <- function(d,
 #     d <- merge(mg_fin, d, by = "id", all = TRUE)
 #     d[is.na(ic_term_part), ic_term_part := 0]
 #     d[, ic := ic + ic_term_part]
-#     if (k > 1) {
-#       new_history_of_variables <- setdiff(history_of_variables, paste0("L_", k - 1))
-#     }
 #
-#     if (model_type == "glm") {
-#       if (!is_censored) {
-#         fit <- glm(as.formula(paste0(
-#           "weight ~ ", paste(history_of_variables, collapse = "+")
-#         )),
-#         data = at_risk_before_tau,
-#         family = quasibinomial)
-#         predict_fun <- function(data)
-#           predict(fit, data, type = "response")
-#       }
-#       else if (model_type_cens == "scaled_quasibinomial") {
-#         max_weight <- max(at_risk_before_tau$weight)
-#         at_risk_before_tau$weight <- at_risk_before_tau$weight / max_weight
-#         warning("Fix this crap, do not use collapse = askerisk")
-#         fit <- glm(as.formula(paste0(
-#           "weight ~ ", paste(history_of_variables, collapse = "*")
-#         )),
-#         data = at_risk_before_tau,
-#         family = quasibinomial)
-#         predict_fun <- function(data)
-#           predict(fit, data, type = "response") * max_weight
-#         # at_risk_before_tau$Q2 <- predict(fit, type = "response") * max_weight
-#         if (k > 1) {
-#           fit_integral <- glm(as.formula(paste0(
-#             "weight ~ ",
-#             paste(new_history_of_variables, collapse = "+")
-#           )),
-#           data = at_risk_before_tau,
-#           family = quasibinomial)
-#           predict_fun_integral <- function(data)
-#             predict(fit_integral, data, type = "response")
-#         }
-#       } else if (model_type_cens == "tweedie") {
-#         fit <- glm(
-#           as.formula(paste0(
-#             "weight ~ ", paste(history_of_variables, collapse = "+")
-#           )),
-#           data = at_risk_before_tau,
-#           family = statmod::tweedie(var.power = 1.5)
-#         )
-#         predict_fun <- function(data)
-#           predict(fit, data, type = "response")
-#       } else if (model_type_cens == "lognormal_mixture") {
-#         fit_1 <- glm(as.formula(paste0(
-#           "weight != 0 ~ ",
-#           paste(history_of_variables, collapse = "+")
-#         )),
-#         data = at_risk_before_tau,
-#         family = binomial)
-#         fit_2 <- lm(as.formula(paste0(
-#           "log(weight) ~ ",
-#           paste(history_of_variables, collapse = "+")
-#         )), data = at_risk_before_tau[get("weight") != 0])
-#         predict_fun <- function(data)
-#           predict(fit_1, data, type = "response") * exp(predict(fit_2, data, type = "response"))
-#       } else if (model_type_cens == "gamma_mixture") {
-#         fit_prob <- glm(as.formula(paste0(
-#           "weight > 1 ~ ",
-#           paste(history_of_variables, collapse = "+")
-#         )),
-#         data = at_risk_before_tau,
-#         family = binomial)
-#         at_risk_before_tau$weightminusone <- at_risk_before_tau$weight - 1
-#         fit_gamma <- glm(as.formula(paste0(
-#           "weightminusone ~ ",
-#           paste(history_of_variables, collapse = "+")
-#         )),
-#         data = at_risk_before_tau[get("weight") > 1],
-#         family = Gamma(link = "log"))
-#         if (first_event) {
-#           predict_fun <- function(data)
-#             predict(fit_prob, data, type = "response") * (predict(fit_gamma, data, type = "response") + 1)
-#         } else {
-#           fit_quasi_binomial <- glm(as.formula(paste0(
-#             "weight ~ ",
-#             paste(history_of_variables, collapse = "+")
-#           )),
-#           data = at_risk_before_tau[get("weight") <= 1],
-#           family = quasibinomial)
-#           predict_fun <- function(data) {
-#             predict_prob <- predict(fit_prob, data, type = "response")
-#             predict_prob * (predict(fit_gamma, data, type = "response") + 1) + (1 - predict_prob) * predict(fit_quasi_binomial, data, type = "response")
-#           }
-#         }
-#       }
-#     } else {
-#       fit <- ranger::ranger(as.formula(paste0(
-#         "weight ~ ", paste(history_of_variables, collapse = "+")
-#       )), data = at_risk_before_tau)
-#       predict_fun <- function(data)
-#         predict(fit, data = data)$predictions
-#     }
 #     first_event <- FALSE
 #   }
 #   ## Intervened baseline data
@@ -1101,10 +939,10 @@ debias_ipcw <- function(d,
 #     intervened_baseline_data$A_0 <- 1
 #     predict_fun(intervened_baseline_data)
 #   }
-#   zz <- na.omit(unique(merge(Q_save,d,by="id",all.y=TRUE)[, c("Q","L_0")]))
-#   d<- merge(d,zz,by="L_0")
-#   d[, pred_0:=Q]
-#   # d[, pred_0 := intervene_baseline_fun(.SD)]
+#   # zz <- na.omit(unique(merge(Q_save,d,by="id",all.y=TRUE)[, c("Q","L_0")]))
+#   # d<- merge(d,zz,by="L_0")
+#   # d[, pred_0:=Q]
+#   d[, pred_0 := intervene_baseline_fun(.SD)]
 #   d[, g_formula_estimate := mean(pred_0)]
 #   d[, ic := ic + pred_0 - g_formula_estimate]
 #   d[, estimate := g_formula_estimate + mean(ic)]
@@ -1115,43 +953,7 @@ debias_ipcw <- function(d,
 #     upper = estimate[.N] + 1.96 * sd(ic) / sqrt(.N),
 #     g_formula_estimate = g_formula_estimate[.N]
 #   )]
-#   # d[A_0==1 & L_0==1,mean(weight)]
-#   # d[A_0==1 & L_0==0, mean(weight)]
-#   # dd<-copy(d)
-#   # levels(dd$event_1)<-c(3,4,0,1,2)
-#   # dd$event_1<-as.numeric(as.character(dd$event_1))
-#   # m.event <-  CSC(Hist(time_1, event_1)~A_0+L_0, data = dd)
-#   # map_X1_to_T1 <- function(dt){
-#   #   dt$A_0 <- 1
-#   #   dt
-#   # }
-#   # pred_0_2 <- predictRisk(m.event,
-#   #             newdata = map_X1_to_T1(dd),
-#   #             times = tau,
-#   #             cause = 1)[,1]
-#
-#   # g_formula_estimate <- mean(pred_0)
-#   # # g_formula_estimate_2 <- mean(pred_0_2)
-#   #
-#   # # ic_F1tau <- d$ic + pred_0_2 - g_formula_estimate_2
-#   # ic <- d$ic + pred_0 - g_formula_estimate
-#   # estimate <- g_formula_estimate + mean(ic)
-#   # estimate_2 <- g_formula_estimate_2 + mean(ic_F1tau)
-#   # data.table(
-#   #   estimate = estimate,
-#   #   #ic = ic,
-#   #   g_formula_estimate = g_formula_estimate,
-#   #   lower = estimate - 1.96 * sd(ic) / sqrt(nrow(d)),
-#   #   upper = estimate + 1.96 * sd(ic) / sqrt(nrow(d)),
-#   #   se = sd(ic) / sqrt(nrow(d))
-#   #   # estimate_2 = estimate_2,
-#   #   # g_formula_estimate_2 = g_formula_estimate_2,
-#   #   # lower_2 = estimate_2 - 1.96 * sd(ic_F1tau) / sqrt(nrow(d)),
-#   #   # upper_2 = estimate_2 + 1.96 * sd(ic_F1tau) / sqrt(nrow(d)),
-#   #   # se_2 = sd(ic_F1tau) / sqrt(nrow(d))
-#   # )
 # }
-
 
 test_fun_method_ipw <- function(d, tau = 0.02, model_type = "glm"){
   d_res <- widen_continuous_data(d)
