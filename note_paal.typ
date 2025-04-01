@@ -1,23 +1,14 @@
 #import "@preview/fletcher:0.5.1": node, edge, diagram
 // #import "template.typ": conf
 #import "template/definitions.typ": *
-#import "@preview/arkheion:0.1.0": arkheion, arkheion-appendices
-#import "@preview/cetz:0.3.1"
+#import "@preview/arkheion:0.1.0": arkheion
 #import "@preview/ctheorems:1.1.3": *
 #let definition = thmbox("definition", "Definition", inset: (x: 1.2em, top: 1em))
 #let theorem = thmbox("theorem", "Theorem", fill: rgb("#eeffee"))
 #import "@preview/numty:0.0.5" as nt
-#show: thmrules
 #set cite(form: "prose")
-#set heading(numbering: "1.")
-
 // Color references red
 #show  ref: it => {text(fill: maroon)[#it]}
-#let mapsto = $arrow.bar$
-#let scr(it) = text(
-    features: ("ss01",),
-    box($cal(it)$),
-)
 
 #let theorem = thmbox("theorem", "Theorem", fill: rgb("#eeffee"))
 #let proof = thmproof("proof", "Proof")
@@ -34,6 +25,8 @@
     // Insert your abstract after the colon, wrapped in brackets.
     // Example: `abstract: [This is my abstract...]`
 )
+#set math.equation(numbering: none)
+
 
 #show: thmrules.with(qed-symbol: $square$)
 
@@ -47,7 +40,7 @@ We observe the counting processes $N_t = (N^(01)_t, N^(02)_t, N^(03)_t, N^(13)_t
 on the canonical filtered probability space $(Omega, cal(F), (cal(F)_t)_(t >= 0), P)$,
 where $cal(F)_t = sigma(N_s | s <= t)$.
 This means that we can represent the observed data as $O = (T_((1)), D_((1)), A(T_((1))), T_((2)))$,
-where $T_((1))$ is the first event time, $D_((1)) in {01, 02, 03}$ is the first event type, $A(T_(1)) in {0, 1}$ is the treatment at the first event time, and $T_(2)$ is the second event time, possibly $oo$.
+where $T_((1))$ is the first event time, $D_((1)) in {01, 02, 03}$ is the first event type, $A(T_(1)) in {0, 1}$ is the treatment at the first event time, and $T_((2))$ is the second event time, possibly $oo$.
 We will assume that the distribution of the jump times are continuous and that there are no jumps in common between the counting processes.
 By a well-known result for marked point processes (Proposition 3.1 of @jacod1975multivariate), we know 
 there exist functions $h^(i j): RR_+ -> RR_+$
@@ -88,17 +81,16 @@ $
     //msm_function(offset: (2, 5), scale_text: 70%)
 }), caption: [A multi-state model allowing one visitation time for the treatment with the possible treatment values 0/1. ])
 <fig:multi-state>
-Define
+Additionally define
 $
     Lambda^(a) (t) &= (h^(01) (t) + h^(02) (t)) bb(1) {T_((1)) <= t} \
-    pi_t (1) &= (h^(01) (t))/(h^(01) (t) + h^(02) (t)) 
+    pi_t (1) &= (h^(01) (t))/(h^(01) (t) + h^(02) (t))  bb(1) {T_((1)) <= t}
 $
 Here, we can interpret $Lambda^(a) (t)$ as the intensity of the visitation times and $pi_t (1)$ as the probability of being treated given that you go to the doctor at time $t$.
-We will represent the observations from such a multi-state model as a marked point process.
 
 = The potential outcomes framework
 To follow along @ryalenPotentialOutcomes, we restrict the observations to the interval $[0, tau]$ for $tau > 0$.
-For this, we need to define the intervention of interest,
+We first need to define the intervention of interest,
 defining the counting processes that we would have like to have observed under the intervention.
 For this define the corresponding "interventional" processes as
 $
@@ -112,6 +104,7 @@ $
     N^(g^*,0)_t &= 0 \
 $
 prevents the patient from visiting the doctor if they drop out of the treatment.
+The issue in @ryalenPotentialOutcomes is that we will not be able to differentiate between $g$ and $g^*$ in the likelihood.
 //The compensator of the two counting processes are
 //$
 //    Lambda^(g,0) (d t) &= 0 \
@@ -131,8 +124,8 @@ and we want to estimate $bb(E)_P [tilde(Y)_t]$ where $tilde(Y)_t$ denotes the ou
 2. Exchangeability: The $P-cal(F)_t$ compensators 
    $Lambda^(01)$, $Lambda^(02)$ are also compensators for $cal(G)_t=cal(F)_t or sigma(tilde(Y)_s, tau >= s >= 0)$.
    Here $tilde(Y)_s$ is added at baseline, so that $cal(G)_0 = sigma(tilde(Y)_s, tau >= s >= 0)$.
-    3. Positivity: $W_t = (bb(1) {T^A > t}) / exp(-Lambda_t^02) = (1-bb(1){T_((1)) <= t, D_((1)) = a, A_((1)) = 0}) / exp(-integral_0^t bb(1) {s <= T_((1))} h^(a) (s) pi_s (0) d s)$
-   is a uniformly integrable martingale or equivalently that $R^"Pål"$ given by $d R^"Pål" = W_tau d P$ be a probability measure.
+3. Positivity: $W_t = (bb(1) {T^A > t}) / exp(-Lambda_t^02) = (1-bb(1){T_((1)) <= t, D_((1)) = a, A_((1)) = 0}) / exp(-integral_0^t bb(1) {s <= T_((1))} h^(a) (s) pi_s (0) d s)$
+   is a uniformly integrable martingale or equivalently that $R^"Pål"$ given by $d R^"Pål" = W_tau d P$ is a probability measure.
 
 Then the estimand of interest is identifiable by
 $
@@ -179,14 +172,8 @@ finding the compensators in the reweighted measure $d R^"Pål"$.
 = Does the g-formula in @rytgaardContinuoustimeTargetedMinimum2022 have a causal interpretation? 
 
 We now consider the question concerning whether there is a causal interpretation of the g-formula in @rytgaardContinuoustimeTargetedMinimum2022.
-A simple result is given in the following theorem.
-It would be interesting to see if there are some explicit conditions such that
-$
-    (tilde(Y)_t)_(t in [0,tau]) perp A(T_((1))) | T_((1)), D_((1)) 
-$
-implies the exchangeability condition.
-An obvious one is if the event times are independent of the treatment given the history
-which is unlikely to hold. Note that we can also formulated the exchangeability condition for each $t$ separately.
+A simple result is given in the following theorem. Note that we can also formulated the exchangeability condition for each $t$ separately
+instead of formulating stochastic process conditions. 
 
 #theorem[
     We suppose that there exists a potential outcome process $(tilde(Y)_t)_(t in [0,tau])$ such that
@@ -194,8 +181,7 @@ which is unlikely to hold. Note that we can also formulated the exchangeability 
 1. Consistency: $tilde(Y)_t bb(1) {T^A > t} = Y_t bb(1) {T^A > t}$ for all $t > 0$ $P$-a.s.
 2. Exchangeability: We have
    $
-       (tilde(Y)_t bb(1) {T_((1)) <= t < T_((2))))_(t in [0,tau]) perp A(T_((1))) | T_((1)), D_((1)) \
-       (tilde(Y)_t bb(1) {T_((2)) <= t))_(t in [0,tau]) perp A(T_((1))) | T_((1)), D_((1))
+       (tilde(Y)_t)_(t in [0,tau]) perp A(T_((1))) | T_((1)), D_((1)) 
    $
 3. Positivity: The measure given by $d R^"Helene" = W d P$ where $W_t = ((bb(1) {A(T_((1))) = 1}) / (pi_(T_(1)) (1)))^(N_t^01 +N^02_t)$ is a probability measure.
 
@@ -205,7 +191,7 @@ $
 $
 ]
 #proof[
-    Write $tilde(Y)_t = bb(1) {t < T_((1))} tilde(Y)_t + bb(1) {T_((1)) <= t < T_((2))} tilde(Y)_t + bb(1) {T_((2)) <= t} tilde(Y)_t$.
+    Write $tilde(Y)_t = bb(1) {t < T_((1))} tilde(Y)_t + bb(1) {T_((1)) <= t} tilde(Y)_t$
     Now, we see immediately that
     $
         bb(E)_P [ bb(1) {t < T_((1))} tilde(Y)_t] &= bb(E)_P [ bb(1) {t < T_((1))} tilde(Y)_t bb(1) {T^a > t}] \
@@ -216,21 +202,73 @@ $
     since $T^a$ must be $T_((1))$ if finite.  
     On the other hand, we have that
     $
-        bb(E)_P [ bb(1) {T_((1)) <= t < T_((2))} Y_t W_t] &= bb(E)_P [ bb(1) {T_((1)) <= t < T_((2))} bb(1) {T^a > t} Y_t W_t] \
-            &=bb(E)_P [ bb(1) {T_((1)) <= t < T_((2))} bb(1) {T^a > t} tilde(Y)_t W_t] \
-            &=bb(E)_P [ bb(1) {T_((1)) <= t < T_((2))} tilde(Y)_t W_t] \
-            &=bb(E)_P [ bb(1) {T_((1)) <= t < T_((2))} tilde(Y)_t ((bb(1) {A(T_((1))) = 1}) / (pi_(T_((1))) (1)))^(bb(1) {D_((1)) = a})] \
-            &=bb(E)_P [ bb(E)_P [ bb(1) {T_((1)) <= t < T_((2))} tilde(Y)_t | A(T_((1))), D_1, T_1] ((bb(1) {A(T_((1))) = 1}) / (pi_(T_((1))) (1)))^(bb(1) {D_((1)) = a})] \
-            &=bb(E)_P [ bb(E)_P [ bb(1) {T_((1)) <= t < T_((2))} tilde(Y)_t | D_1, T_1] ((bb(1) {A(T_((1))) = 1}) / (pi_(T_((1))) (1)))^(bb(1) {D_((1)) = a})] \
-            &=bb(E)_P [ bb(E)_P [ bb(1) {T_((1)) <= t < T_((2))} tilde(Y)_t | D_1, T_1] bb(E)_P [((bb(1) {A(T_((1))) = 1}) / (pi_(T_((1))) (1)))^(bb(1) {D_((1)) = a}) | T_1, D_1]] \
-            &= bb(E)_P [ bb(E)_P [ bb(1) {T_((1)) <= t < T_((2))} tilde(Y)_t | D_1, T_1] ] \
-            &= bb(E)_P [  bb(1) {T_((1)) <= t < T_((2))} tilde(Y)_t ]
-    $
-    By the same calculations, we have that
-    $
-    bb(E)_P [ bb(1) {T_((2)) <= t} Y_t W_t] = bb(E)_P [ bb(1) {T_((2)) <= t} tilde(Y)_t ]
+        bb(E)_P [ bb(1) {T_((1)) <= t} Y_t W_t] &= bb(E)_P [ bb(1) {T_((1)) <= t} bb(1) {T^a > t} Y_t W_t] \
+            &=bb(E)_P [ bb(1) {T_((1)) <= t} bb(1) {T^a > t} tilde(Y)_t W_t] \
+            &=bb(E)_P [ bb(1) {T_((1)) <= t} tilde(Y)_t W_t] \
+            &=bb(E)_P [ bb(1) {T_((1)) <= t} tilde(Y)_t ((bb(1) {A(T_((1))) = 1}) / (pi_(T_((1))) (1)))^(bb(1) {D_((1)) = a})] \
+            &=bb(E)_P [ bb(E)_P [ bb(1) {T_((1)) <= t} tilde(Y)_t | A(T_((1))), D_1, T_1] ((bb(1) {A(T_((1))) = 1}) / (pi_(T_((1))) (1)))^(bb(1) {D_((1)) = a})] \
+            &=bb(E)_P [ bb(E)_P [ bb(1) {T_((1)) <= t} tilde(Y)_t | D_1, T_1] ((bb(1) {A(T_((1))) = 1}) / (pi_(T_((1))) (1)))^(bb(1) {D_((1)) = a})] \
+            &=bb(E)_P [ bb(E)_P [ bb(1) {T_((1)) <= t} tilde(Y)_t | D_1, T_1] bb(E)_P [((bb(1) {A(T_((1))) = 1}) / (pi_(T_((1))) (1)))^(bb(1) {D_((1)) = a}) | T_1, D_1]] \
+            &= bb(E)_P [ bb(E)_P [ bb(1) {T_((1)) <= t} tilde(Y)_t | D_1, T_1] ] \
+            &= bb(E)_P [  bb(1) {T_((1)) <= t} tilde(Y)_t ]
     $
     which suffices to show the claim.
-] 
+]
+
+With more than two events, though, the exchangeability condition becomes more difficult to interpret.
+In the case with at most three events, for the previous argument to go through, we would need the three exchangeability conditions
+$
+    (tilde(Y)_t bb(1) {T_((1)) <= t < T_((2))})_(t in [0,tau]) perp A(T_((1))) | T_((1)), D_((1)), \
+    (tilde(Y)_t bb(1) {T_((2)) <= t})_(t in [0,tau]) perp A(T_((1))) | T_((1)), D_((1)), \
+    (tilde(Y)_t)_(t in [0,tau]) perp A(T_((2))) | T_((2)), D_((2)), A(T_((1))), T_((1)), D_((1)), \
+$
+It would be interesting to see if there are some explicit conditions such that
+$
+    (tilde(Y)_t)_(t in [0,tau]) perp A(T_((1))) | T_((1)), D_((1)) 
+$
+implies the two first exchangeability conditions. An obvious one is if the event times are independent of the treatment given the history
+which is unlikely to hold.
+
+The next theorem gives a different causal interpretation of the g-formula in @rytgaardContinuoustimeTargetedMinimum2022.
+Unlike the previous theorem, the exchangeability wont have to be specified in terms of $tilde(Y)_t$ multiplied by a stochastic indicator function
+if there are more than two events. This issue is however that we are assuming the existence of multiple potential outcome processes and not just one.
+
+#theorem[
+    We suppose that there exists two potential outcome process $(tilde(Y)_(t,1))_(t in [0,tau])$ and $(tilde(Y)_(t,2))_(t in [0,tau])$ such that
+    these are potential outcomes of $Y_(t,1) = N^(03)_t$ and $Y_(t,2) = N^(13)_t+N^(23)_t$, respectively (the potential outcomes for each possible event where the outcome can occur).
+    Then we obviously define that
+    $tilde(Y)_t = tilde(Y)_(t,1) + tilde(Y)_(t,2)$ and $Y_t = Y_(t,1) + Y_(t,2)$.
+
+    1. Consistency: $tilde(Y)_(t,i) bb(1) {T^A > t} = Y_(t,i) bb(1) {T^A > t}$ for all $t > 0$ $P$-a.s for $i = 1, 2$.
+2. Exchangeability: We have
+   $
+       (tilde(Y)_(t,i))_(t in [0,tau]) perp A(T_((1))) | T_((1)), D_((1)) 
+   $
+   for $i = 1, 2$.
+3. Positivity: The measure given by $d R^"Helene" = W d P$ where $W_t = ((bb(1) {A(T_((1))) = 1}) / (pi_(T_(1)) (1)))^(N_t^01 +N^02_t)$ is a probability measure.
+
+Then the estimand of interest is identifiable by
+$
+    bb(E)_P [tilde(Y)_t] = bb(E)_P [Y_t W_t] = bb(E)_(R^"Helene") [Y_t]
+$
+]
+#proof[
+    Now, we see immediately that
+    $
+        bb(E)_P [ Y_(t,1) W_t ] &= bb(E)_P [ tilde(Y)_(t,1) ]
+    $
+    because $tilde(Y)_(t,1)$ is always $Y_(t,1)$.
+    On the other hand, we have that
+    $
+        bb(E)_P [  Y_(t,2) W_t ] &=  bb(E)_P [  Y_(t,2) ((bb(1) {A(T_((1))) = 1}) / (pi_(T_((1))) (1)))^(bb(1) {D_((1)) = a}) ]\
+            &=bb(E)_P [  tilde(Y)_(t,2) ((bb(1) {A(T_((1))) = 1}) / (pi_(T_((1))) (1)))^(bb(1) {D_((1)) = a})] \
+            &=bb(E)_P [ bb(E)_P [ tilde(Y)_(t,2) | A(T_((1))), D_1, T_1] ((bb(1) {A(T_((1))) = 1}) / (pi_(T_((1))) (1)))^(bb(1) {D_((1)) = a})] \
+            &=bb(E)_P [ bb(E)_P [ tilde(Y)_(t,2) | D_1, T_1] ((bb(1) {A(T_((1))) = 1}) / (pi_(T_((1))) (1)))^(bb(1) {D_((1)) = a})] \
+            &=bb(E)_P [ bb(E)_P [ tilde(Y)_(t,2) | D_1, T_1] bb(E)_P [((bb(1) {A(T_((1))) = 1}) / (pi_(T_((1))) (1)))^(bb(1) {D_((1)) = a}) | T_1, D_1]] \
+            &= bb(E)_P [ bb(E)_P [ tilde(Y)_(t,2) | D_1, T_1] ] \
+            &= bb(E)_P [  tilde(Y)_(t,2) ]
+    $
+    which suffices to show the claim.
+]
 
 #bibliography("references/ref.bib",style: "apa")
