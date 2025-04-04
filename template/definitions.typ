@@ -80,7 +80,7 @@
 
 #let dagnode = node.with(width: 1.1cm, height: 1.1cm)
 
-#let Qbar(k) = $macron(Q)_(#k, tau)^a$
+#let Qbar(k) = $macron(Q)^g_(#k, tau)$
 #let Qbarmiss(k) = $macron(Q)_(#k)$
 #let Qtilde(k) = $tilde(Q)_#k^a$
 #let Qtildemiss(k) = $tilde(Q)_#k$

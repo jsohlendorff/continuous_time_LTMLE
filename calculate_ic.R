@@ -36,12 +36,12 @@ influence_curve_censoring_martingale_time_varying <- function(dt,
                                                                 1,
                                                               non_zero,
                                                               tau,
-                                                              k) {
+                                                              k,
+                                                              predict_fun_integral) {
   ## TODO: Assume the data is on interevent form
   assertthat::assert_that(is.data.frame(dt))
   ## Assert that time is sorted
   assertthat::assert_that(all(diff(na.omit(dt$time)) >= 0))
-  ## Omit observations with NAs in time and event
 
   dt <- dt[, time_prev := time_minus, env = list(time_minus = paste0("time_", k -
                                                                        1))]
@@ -84,7 +84,11 @@ influence_curve_censoring_martingale_time_varying <- function(dt,
   ## Fix this later with L_1
   setnames(my_dt, "time", paste0("time_", k))
   my_dt <- my_dt[, new_event := cause, env = list(new_event = paste0("event_", k))]
-  my_dt <- my_dt[, weight := weight_fun(.SD), .SDcols = c(name_covariates, paste0(c("time_", "event_"), k))]
+  if (!is.null(predict_fun_integral)){
+    my_dt <- my_dt[, weight := predict_fun_intervention(.SD, k, predict_fun_integral), .SDcols = c(name_covariates, paste0(c("time_", "event_"), k))]
+  } else {
+    my_dt <- my_dt[, weight := 1]
+  }
   my_dt <- my_dt[, Q := cumsum(weight * Sminus * diff_Lambda_cause), by = id]
 
   my_dt[, c(
