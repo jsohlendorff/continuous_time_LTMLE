@@ -102,15 +102,19 @@ and does not prevent the patient from visiting the doctor if they drop out of th
 In contrast, the single "intervention" process
 $
     N^(g^*,0)_t &= 0 \
+    N^(g^*,1)_t &= N^(02)_t \
 $
 prevents the patient from visiting the doctor if they drop out of the treatment.
+We define $T^a$ as the first time where the observed and the interventional process deviate.
 The issue in @ryalenPotentialOutcomes is that we will not be able to differentiate between $g$ and $g^*$ in the likelihood.
+The reason is that the likelihood under the intervention only depends on the stopping time $T^a$ and the problem that the stopping time
+$T^a$ is the same under $g$ and $g^*$.
 //The compensator of the two counting processes are
 //$
 //    Lambda^(g,0) (d t) &= 0 \
 //    Lambda^(g,1) (d t) &= h^(a) (t) pi_t (1) d t + h^(a) (t) (1 - pi_t (1)) d t = h^(a) (t) d t
 //$
-We let $T^a = inf_(t>0) {N^(g,0)_t != N^(01)_t} and inf_(t>0) {N^(g,1)_t != N^(02)_t} = inf_(t>0) {N^(g,0)_t != 0}$.
+We let $T^ag= T^(ag^*) = inf_(t>0) {N^(g,0)_t != N^(01)_t} and inf_(t>0) {N^(g,1)_t != N^(02)_t} = inf_(t>0) {N^(g,0)_t != 0}$.
 The outcome of interest is death at time $t$, i.e., 
 $
     Y_t = N^(13)_t + N^(03)_t + N^(23)_t = bb(1) {T_1 <= t, D_1 = y} + bb(1) {T_2 <= t}
