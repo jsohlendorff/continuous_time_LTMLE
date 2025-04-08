@@ -17,7 +17,17 @@ predict_fun_intervention <- function(data, k, predict_fun) {
 predict_iterative_conditional_expectation <- function(model_type,
                                                       history_of_variables,
                                                       data_ice) {
-  if (model_type == "tweedie") {
+  if (model_type == "quasibinomial") {
+    fit <- glm(
+      as.formula(paste0(
+        "weight ~ ", paste(history_of_variables, collapse = "+")
+      )),
+      data = data_ice,
+      family = quasibinomial(link = "logit")
+    )
+    predict_fun <- function(data)
+      predict(fit, data, type = "response")
+  } else if (model_type == "tweedie") {
     fit <- glm(
       as.formula(paste0(
         "weight ~ ", paste(history_of_variables, collapse = "+")
@@ -195,7 +205,7 @@ simulate_continuous_time_data <- function(n,
           n = nrow(people_atrisk),
           shape = 1,
           scale = scale_list$D,
-          eta = -0.6 * people_atrisk$A + 0.7 * people_atrisk$L +1.2#+ 0.03 * people_atrisk$age
+          eta = -0.6 * people_atrisk$A + 0.7 * people_atrisk$L + 0.03 * people_atrisk$age
         )
       )
     )
@@ -204,6 +214,8 @@ simulate_continuous_time_data <- function(n,
                                     levels = 1:5,
                                     labels = c("A", "L", "C", "Y", "D"))]
     people_atrisk[, time := Rfast::rowMins(ttt, value = TRUE) + entrytime]
+    # people_atrisk[, diff_time := time - entrytime]
+    # print(summary(coxph(Surv(diff_time, event == "C") ~ L + A + age, data = people_atrisk)))
     ## print(people_atrisk[id == 10,data.table::data.table(j = j,entrytime,time)])
     # censor at max_fup
     people_atrisk[time > max_fup, event := "C"]
@@ -436,7 +448,12 @@ get_propensity_scores <- function(last_event_number,
         censoring_models[[k]] <- fit
       }
     } else {
-      interarrival_censoring_survival[[k]] <- rep(1, nrow(at_risk_interevent))
+      if (k > 1) {
+        d[get(paste0("event_", k - 1)) %in% c("A", "L"), 
+          interarrival_censoring_survival_k := 1, env = list(interarrival_censoring_survival_k = paste0("interarrival_censoring_survival_", k))]
+      } else {
+        d[, interarrival_censoring_survival_k := 1, env = list(interarrival_censoring_survival_k = paste0("interarrival_censoring_survival_", k))]
+      }
       censoring_models[[k]] <- NULL
     }
     ## Next propensity score
@@ -513,8 +530,12 @@ debias_ipcw <- function(d,
     at_risk_table <- d$timevarying_data[time < tau & event %in% c("A", "L"), .N, by="event_number"]
     ## last_event_number such that N > 40; 
     ## cannot do iterative regressions for very small sample sizes.
-    last_event_number <- at_risk_table[N > 40, event_number[.N]]
-    message("Adaptively selecting last event number (N <= 40). Event number: ", last_event_number)
+    max_event_number <- max(at_risk_table$event_number)
+    ## last adaptive event number
+    last_event_number <- at_risk_table[N > 40, event_number[.N]] 
+    if (last_event_number < max_event_number) {
+      message("Adaptively selecting last event number (N <= 40). Event number: ", last_event_number)
+    }
   }
   d$timevarying_data[, to_delete:= event_number > last_event_number & event %in% c("A", "L")]
   d$timevarying_data <- d$timevarying_data[to_delete == FALSE]
@@ -549,7 +570,7 @@ debias_ipcw <- function(d,
   }, error = function(e) {
     stop("Error in getting censoring/propensity models: ", e)
   })
-  message("If warnings occurred, consider pooling from a lower event number.")
+  ##message("If warnings occurred, consider pooling from a lower event number.")
   for (k in rev(seq_len(last_event_number))) {
     ## Find those at risk of the k'th event
     if (k == 1) {
@@ -579,7 +600,7 @@ debias_ipcw <- function(d,
     history_of_variables <- c(time_history, baseline_covariates)
     d[, ic_term_part := 1*(A_0 == 1) / pred_propensity_0]
     for (j in seq_len(k - 1)) {
-      if (j == 1){
+      if (j == 1) {
         d[, ic_term_part := ic_term_part * 1 / (interarrival_censoring_survival_j), env = list(interarrival_censoring_survival_j = paste0("interarrival_censoring_survival_", j))]
       } else {
         d[get(paste0("event_",j-1)) %in% c("A", "L"), ic_term_part := ic_term_part * 1 / (interarrival_censoring_survival_j), env = list(interarrival_censoring_survival_j = paste0("interarrival_censoring_survival_", j))]
@@ -614,7 +635,7 @@ debias_ipcw <- function(d,
           warning("Predictions contain NA values.")
         }
         if (any(f < 0 | f > 1)) {
-          warning("Predictions are outside the range [0,1].")
+          #warning("Predictions are outside the range [0,1].")
         }
         f
       }

@@ -188,3 +188,6 @@
     })
 }
 
+#let prodint(s, t1, t2) = $limits(#scale(x:170%, y:170%)[$pi$])_(#s in (#t1, t2])$
+#let prodint2(s, t1, t2) = $limits(#scale(x:170%, y:170%)[$pi$])_(#s in (#t1, t2))$
+#let prodintdisplay(t1, t2) = $#place(dy: -0.002pt)[#scale(x:180%, y:180%)[$pi$]]_(s in (#t1, #t2])$
