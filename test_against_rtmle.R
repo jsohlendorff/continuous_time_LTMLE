@@ -6,6 +6,7 @@ library(survival)
 library(ranger)
 library(data.table)
 library(ggplot2)
+library(rtmle)
 source("continuous_time_functions.R")
 source("calculate_ic.R")
 d_int <- simulate_continuous_time_data(n = 1000000, static_intervention = 1, number_events=number_events)
@@ -13,30 +14,26 @@ true_val <- d_int$timevarying_data[event %in% c("Y", "D"),mean(event=="Y" & time
 ## NOTE: true_val~0.385 for tau =0.02 and number_events=3
 
 set.seed(123)
-d<- simulate_continuous_time_data(n = n*4, number_events=number_events, uncensored=FALSE)
+d<- simulate_continuous_time_data(n = n, number_events=number_events, uncensored=FALSE)
+
+## Allow the estimation of 
 debias_ipcw(
-  d,
+  copy(d), ## TODO: fix that the function modifies d
   tau = tau,
-  model_type = "tweedie",
-  conservative = TRUE,
+  model_type = "tweedie", ## model type for ICE
+  conservative = TRUE, ## whether to debias censoring martingale; makes little difference and is slow
   time_covariates = c("A", "L"),
   baseline_covariates = c("A_0", "L_0", "sex","age")
 )
-x
 
 ## rtmle example
-## naive discretization of time leads to positivity problems
-library(rtmle)
+## naive discretization of time
 grid_size <- 3
 time_seq <- seq(0, tau, tau/grid_size)
 grid <- as.data.table(expand.grid(
   id = 1:n, time = time_seq
 ))
 tau_discrete <- length(time_seq)-1
-set.seed(123)
-d <- simulate_continuous_time_data(n = n,
-                                   number_events = number_events,
-                                   uncensored = FALSE)
 
 z_baseline_data <- d$baseline_data[, c("id", "A_0", "L_0")]
 z_baseline_data[,c("time","event") := list(0, "base")]
@@ -84,9 +81,9 @@ target(x) <- list(
 )
 summary(run_rtmle(x, learner = "learn_glm", time_horizon = tau_discrete))
 
+## Numerical issues
 new_time_varying <- merge(timevarying_data, d$baseline_data[, c("id","sex","age")], by = "id")
 f<-glm(A_2 ~ A_1+A_0+L_0+L_1+sex+age, data=new_time_varying[Y_1 == 0 & Censored_1 == "uncensored" & Dead_1 == 0],family=binomial)
 predict(f, type="response")
-## Maybe we can do better than LTMLE... appears to cause a positivity problem
-## The marked point process setup thus makes it very likely that the treatment value stays the same across time points
-## i.e., if no visitation time occurs, then the treatment value staus the same as in the previous time point
+## The marked point process setup makes it very likely that the time-varying treatment/covariate value stays the same across time points
+## because a visitation time may very likely not occur in the intervals
