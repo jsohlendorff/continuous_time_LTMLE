@@ -58,19 +58,18 @@ this pump cannot be removed or stopped by a general practitioner.
 We further assume that there is absolutely no effect on death of
 visiting the general practitioner in this hypothetical world. Hence,
 the hypothetical world can be described with a simple two-stage model
-and stochastic process $(X^*(s) \in \{0=\text{treated},1=\text{death}\})_{s \ge 0}$. The target
+and stochastic process $(X^*(s) in {0="treated", 1="death"})_(s >= 0)$. The target
 parameter can be expressed as:
 
 $
-P(X^*(t)=1) = \int_0^t h^*(s) d s,
+P(X^*(t)=1) =integral_0^t h^*(s) d s,
 $
 
 where $h^*$ is the hazard rate of transitions from state 0 to state 1.
 
 We can as well use an irreversible three state model where death is
-the only absorbing state and stochastic process $(X^**(s) \in
-\{0=\text{treated, not visited Tivoli yet},1=\text{treated, has
-visited Tivoli},2=\text{death}\}). Here the irreversible intermediate
+the only absorbing state and stochastic process $(X^**(s) in {0="treated",
+1="has visited Tivoli", 2="death"})_(s >= 0)$. Here the irreversible intermediate
 state is 'has visited Tivoli' which should not change the likelihood
 of death. Note that since we assume absolutely no effect by visiting a
 general practitioner we could simply exchange 'Tivoli' with 'visit to
@@ -78,12 +77,12 @@ a general practitioner' and the mathematical formula are not altered.
 In this model the basic assumption is
 
 $
-P(X^**(t)=2|X^**(s)=1) = P(X^**(t)=2|X^**(s)=0) 
+    P(X^(**)(t)=2|X^**(s)=1) = P(X^(**) (t)=2|X^(**) (s)=0) 
 $
 for all $s<t$. Hence
 
 $
-P(X^**(t)=2) = P(X^*(t)=1.
+    P(X^(**)(t)=2) = P(X^*(t)=1.
 $
 
 = The observed world

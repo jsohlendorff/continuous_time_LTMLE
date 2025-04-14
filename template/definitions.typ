@@ -1,7 +1,8 @@
-#import "@preview/fletcher:0.5.6": node, edge, diagram
+#import "@preview/fletcher:0.5.7": node, edge, diagram
 #import "@preview/ctheorems:1.1.3": *
-#import "@preview/cetz:0.3.3"
+#import "@preview/cetz:0.3.4"
 
+#let qquad = h(1.5cm)
 #let citep = cite.with(form: "normal")
 
 // event definitions
@@ -13,6 +14,14 @@
   }
 }
 
+#let eventcensored(ind) = {
+  if ind == [0] or ind == 0 [
+      $macron(T)_0$
+  ] else {
+      $macron(T)_((#ind))$
+  }
+}
+
 #let history(eventno) = {
   if eventno == [0] or eventno == 0 [
     $cal(F)_0$
@@ -21,6 +30,14 @@
   ]
 }
 
+
+#let historycensored(eventno) = {
+  if eventno == [0] or eventno == 0 [
+    $cal(F)_0$
+  ] else [
+    $cal(F)^"obs"_(event(#eventno))$
+  ]
+}
 #let historypast(eventno) = $underline(history(#eventno))$
 #let historynext(eventno) = $overline(history(#eventno))$
 
@@ -52,6 +69,10 @@
     $Delta_((#which))$
 }
 
+#let statuscensored(which) = {
+    $macron(Delta)_((#which))$
+}
+
 #let covariate(which) = {
     if which == [0] or which == 0 [
         $L_0$
@@ -60,7 +81,24 @@
     }
 }
 
-#let densitytrt(time, arg, which) = $pi_(#which) (#time, #arg, history(#which - 1))$
+#let covariatecensored(which) = {
+    if which == [0] or which == 0 [
+        $L_0$
+    ] else {
+        $macron(L) (event(#which))$
+    }
+}
+
+#let treatcensored(which) = {
+    if which == [0] or which == 0 [
+        $macron(A)_0$
+    ] else {
+        $macron(A) (event(#which))$
+    }
+}
+
+#let densitytrt(time, arg, which) = $pi_(#which) (#time, history(#which - 1))$
+#let densitytrtprev(time, arg, which) = $pi_(#which) (#time, #arg, history(#which - 2))$
 #let densitytrtint(time, arg, which) = $pi_(#which)^* (#time, #arg, history(#which - 1))$
 #let densitycov(time, arg, which) = $mu_(#which) (#time, #arg, history(#which - 1))$
 
@@ -108,12 +146,12 @@
   }
 
 #let timegrid(new_method: true) = {
-    cetz.canvas(length: 1.8cm, {
+    cetz.canvas(length: 1cm, {
         import cetz.draw: *
 
         set-style(
-            mark: (fill: black, scale: 4),
-            stroke: (thickness: 2pt, cap: "round"),
+            mark: (fill: black, scale: 3),
+            stroke: (thickness: 1.5pt, cap: "round"),
             angle: (
                 radius: 0.3,
                 label-radius: .8,
