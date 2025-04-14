@@ -42,23 +42,77 @@
 
 = Introduction
 
-We consider a multi-state model with at most one visitation time for the treatment (that is at most one point where treatment may change), 
-no time-varying covariates, and no baseline covariates. In the initial state (0) everyone starts as treated.
-We consider the setting with no censoring. 
-The multi-state model is shown in @fig:multi-state.
-We observe the counting processes $N_t = (N^(01)_t, N^(02)_t, N^(03)_t, N^(13)_t, N^(23)_t)$
-on the canonical filtered probability space $(Omega, cal(F), (cal(F)_t)_(t >= 0), P)$,
-where $cal(F)_t = sigma(N_s | s <= t)$.
-This means that we can represent the observed data as $O = (T_((1)), D_((1)), T_((2)))$,
-where $T_((1))$ is the first event time, $D_((1)) in {01, 02, 03}$ is the first event type, $A(T_(1)) = bb(1) {D_1 != 02}$ is the treatment at the first event time, and $T_((2))$ is the second event time, possibly $oo$.
-We will assume that the distribution of the jump times are continuous and that there are no jumps in common between the counting processes.
-By a well-known result for marked point processes (Proposition 3.1 of @jacod1975multivariate), we know 
-there exist functions $h^(i j)$, 
-such that the compensators $Lambda^(i j)$ of the counting processes $N^(i j)$ with respect to $P-cal(F)_t$ are given by
+The aim of this note is to clarify potential differences between the
+target parameters and identification formulas of Helene and Pål.
+Throughout we consider a simple setting without censoring, without
+time-varying covariates and without baseline covariates.
+
+= The intervened world
+
+In a hypothetical world where the intervention is implemented all
+persons are treated until death or t years after the start of
+treatment, whatever comes first. We could imagine that a pump is
+inserted under the persons skin which injects the treatment and that
+this pump cannot be removed or stopped by a general practitioner.
+
+We further assume that there is absolutely no effect on death of
+visiting the general practitioner in this hypothetical world. Hence,
+the hypothetical world can be described with a simple two-stage model
+and stochastic process $(X^*(s) \in \{0=\text{treated},1=\text{death}\})_{s \ge 0}$. The target
+parameter can be expressed as:
+
 $
-    Lambda^(0 j) (d t) &= bb(1) {t <= T_((1))} h^(0 j) (t) d t, quad j = 1, 2, 3 \
-    Lambda^(i 3) (d t) &= bb(1) {T_((1)) < t <= T_((2))} h^(i 3) (T_((1)), t) d t, quad i = 2, 3
+P(X^*(t)=1) = \int_0^t h^*(s) d s,
 $
+
+where $h^*$ is the hazard rate of transitions from state 0 to state 1.
+
+We can as well use an irreversible three state model where death is
+the only absorbing state and stochastic process $(X^**(s) \in
+\{0=\text{treated, not visited Tivoli yet},1=\text{treated, has
+visited Tivoli},2=\text{death}\}). Here the irreversible intermediate
+state is 'has visited Tivoli' which should not change the likelihood
+of death. Note that since we assume absolutely no effect by visiting a
+general practitioner we could simply exchange 'Tivoli' with 'visit to
+a general practitioner' and the mathematical formula are not altered.
+In this model the basic assumption is
+
+$
+P(X^**(t)=2|X^**(s)=1) = P(X^**(t)=2|X^**(s)=0) 
+$
+for all $s<t$. Hence
+
+$
+P(X^**(t)=2) = P(X^*(t)=1.
+$
+
+= The observed world
+
+The observed world is described by the four state multi-state model
+depicted in @fig:multi-state. The model assumes that all persons are
+treated at time 0 and then allows that some persons visit a general
+practitioner without changing their treatment and others visit a
+general practitioner which leads to stopping the treatment. We allow
+for at most one visitation time per person that is the treatment can
+only be stopped at a single date in time. We observe the counting
+processes $N_t = (N^(01)_t, N^(02)_t, N^(03)_t, N^(13)_t, N^(23)_t)$
+on the canonical filtered probability space $(Omega, cal(F),
+(cal(F)_t)_(t >= 0), P)$, where $cal(F)_t = sigma(N_s | s <= t)$.
+This means that we can represent the observed data as $O = (T_((1)),
+D_((1)), T_((2)))$, where $T_((1))$ is the first event time, $D_((1))
+in {01, 02, 03}$ is the first event type, $A(T_(1)) = bb(1) {D_1 !=
+02}$ is the treatment at the first event time, and $T_((2))$ is the
+second event time, possibly $oo$.  We will assume that the
+distributions of the jump times are continuous and that there are no
+jumps in common between the counting processes.  By a well-known
+result for marked point processes (Proposition 3.1 of
+@jacod1975multivariate), we know there exists functions $h^(i j)$,
+such that the compensators $Lambda^(i j)$ of the counting processes
+$N^(i j)$ with respect to $P-cal(F)_t$ are given by $ Lambda^(0 j) (d
+t) &= bb(1) {t <= T_((1))} h^(0 j) (t) d t, quad j = 1, 2, 3 \
+Lambda^(i 3) (d t) &= bb(1) {T_((1)) < t <= T_((2))} h^(i 3) (T_((1)),
+t) d t, quad i = 2, 3 $
+
 We let $S_0 (t) = prodint(s, 0, t) (1 - sum_j h^(0 j) (s) d s)$
 and $S_1 (t | d, s) = prodint(u, s, t) (1 - sum_i h^(i 3) (s, u) bb(1) {d = i} d u)$ be the survival functions for the first and second event times, respectively.
 Furthermore, denote by $P_(0 j) (t) = integral_0^t S_(s -) h^(0 j) (s) d s$ the probability of having an of type $j$ at time by time $t$
