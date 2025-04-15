@@ -18,12 +18,12 @@
     authors: (
         (name: "Johan Sebastian Ohlendorff", email: "johan.ohlendorff@sund.ku.dk", affiliation: "University of Copenhagen"),
     ),
-    abstract: [In this brief note, we consider the target parameters of @ryalenPotentialOutcomes and compare it with the
-        target parameter given in @rytgaardContinuoustimeTargetedMinimum2022, corresponding to their
-        marked point process settings. It is shown that the resulting target parameters
+    abstract: [In this brief note, we consider the identification formulas of @ryalenPotentialOutcomes and compare it with the
+        identification formula given in @rytgaardContinuoustimeTargetedMinimum2022, corresponding to their
+        marked point process settings. It is shown that the resulting identification formulas
         are the same if and only if the probability of being treated given that you go to the doctor at time $t$ is equal to 1
         for Lebesgue-almost all $t$, provided that the transition hazards for dying are strictly positive for almost all $t$.
-        //From this, we conclude that the target parameters are quite different. 
+        //From this, we conclude that the identification formulas are quite different. 
     ]
     // Insert your abstract after the colon, wrapped in brackets.
     // Example: `abstract: [This is my abstract...]`
@@ -43,14 +43,16 @@
 = Introduction
 
 The aim of this note is to clarify potential differences between the
-target parameters and identification formulas of Helene and Pål.
+identification formulas of Helene and Pål. The target parameters are the same
+in both setups. The target parameters are thus the risk of death at time $t$,
+under the treatment regime which states that if you go to the doctor, you will be treated.
 Throughout we consider a simple setting without censoring, without
 time-varying covariates and without baseline covariates.
 
 = The intervened world
 
 In a hypothetical world where the intervention is implemented all
-persons are treated until death or t years after the start of
+persons are treated until death or $t$ years after the start of
 treatment, whatever comes first. We could imagine that a pump is
 inserted under the persons skin which injects the treatment and that
 this pump cannot be removed or stopped by a general practitioner.
@@ -58,18 +60,18 @@ this pump cannot be removed or stopped by a general practitioner.
 We further assume that there is absolutely no effect on death of
 visiting the general practitioner in this hypothetical world. Hence,
 the hypothetical world can be described with a simple two-stage model
-and stochastic process $(X^*(s) in {0="treated", 1="death"})_(s >= 0)$. The target
+and stochastic process $(X^*(s) in {0,1})_(s >= 0) (0 ="treated", 1="death")$. The target
 parameter can be expressed as:
 
 $
-P(X^*(t)=1) =integral_0^t h^*(s) d s,
+    P(X^*(t)=1) =integral_0^t exp(-integral_0^s h^*(u) d u) h^* (s) d s,
 $
 
 where $h^*$ is the hazard rate of transitions from state 0 to state 1.
 
 We can as well use an irreversible three state model where death is
-the only absorbing state and stochastic process $(X^**(s) in {0="treated",
-1="has visited Tivoli", 2="death"})_(s >= 0)$. Here the irreversible intermediate
+the only absorbing state and stochastic process $(X^(**)(s) in {0,1,2})_(s >= 0) (0="treated",
+1="has visited Tivoli", 2="death")$. Here the irreversible intermediate
 state is 'has visited Tivoli' which should not change the likelihood
 of death. Note that since we assume absolutely no effect by visiting a
 general practitioner we could simply exchange 'Tivoli' with 'visit to
@@ -77,13 +79,65 @@ a general practitioner' and the mathematical formula are not altered.
 In this model the basic assumption is
 
 $
-    P(X^(**)(t)=2|X^**(s)=1) = P(X^(**) (t)=2|X^(**) (s)=0) 
+    P(X^(**)(t)=2|X^(**)(s)=1) = P(X^(**) (t)=2|X^(**) (s)=0) 
 $
 for all $s<t$. Hence
 
 $
-    P(X^(**)(t)=2) = P(X^*(t)=1.
+    P(X^(**)(t)=2) = P(X^*(t)=1).
 $
+
+Johan: This statement always holds and does _not_ require the basic assumption.
+To see this note that, we evidently have for the counting processes of the transitions
+$
+    N^(01,*)_t = N^(01,**)_t + N^(02,**)_t
+$
+Hence,
+we can always find the intensity for $N^(01,**)_t$ and $N^(02,**)_t$ from the transition intensities for the "Tivoli" model, i.e.,
+$
+    h^(*) (t) bb(1) {t <= T^*} = h^(01,**)(t) bb(1) {t <= T^(*), Delta= 2}  + h^(02,**)(t) bb(1) {Delta = 1, macron(T) < t <= T^(*))} \
+$
+where $T^*$ denotes the terminal event time in the hypothetical world and $Delta$ denotes initial transition from state 0 to state 1 or 2,
+$macron(T) = inf {t > 0 | N^(01,**)_t + N^(02,**)_t = 0}$. 
+By writing up the target parameters in both settings, $h^(01,*)$ can easily be found
+in terms of $h^(01,**), h^(02,**)$ and $h^(03,**)$, i.e.,
+$
+    integral_0^t S^*_0( s-) (h^(02,**)(s) + P^(**)_(12)(s, t) h^(01,**)(s)) d s &= integral_0^t exp(-integral_0^s h^(*)(u) d u) h^(*)(s) d s \
+        &= 1 - exp(-integral_0^t h^*(u) d u), \
+$
+where
+$
+    &S_0 (s) =exp(-integral_0^s (h^(01,**)(u) + h^(02,**)(u)) d u) \
+        &P^(**)_(12) (s, t) = integral_s^t exp(-integral_s^w (h^(12,**)(u)) d u) h^(12,**)(w) d w \
+        &=^"!" integral_s^t exp(-integral_s^w (h^(01,**)(u) + h^(02,**)(u)) d u) h^(02,**)(w) d w \
+$
+Conversely, even under the basic assumption, there exist many choices of $h^(01,**)$
+that will lead to the same $h^*(t)$, i.e., the basic assumption does not uniquely determine the transition intensities
+in the "Tivoli" model. For example, $h^(01,**) (t) = 0$ can always be a choice. 
+
+// If $h^(01,*)$, $h^(02,*)$ and $h^(12,*)$ are the transition intensities representing
+// for the corresponding counterfactual world. Then, the basic assumption entails that
+// $
+//     h^(12,*) (t) = 1/(1 - integral_0^t exp(-integral_0^s (h^(01,*) (u) + h^(02,*) (u)) d u) h^(02,*) (s) d s) exp(-integral_0^s (h^(01,*) (u) + h^(02,*) (u)) d u) h^(02,*) (t)
+// $
+// To see this note,
+// $
+//     integral_0^t exp(-integral_0^s (h^(01,*) (u) + h^(02,*) (u)) d u) h^(02,*) (s) d s &= integral_0^t exp(-integral_0^s (h^(12,*) (u)) d u) h^(12,*) (s) d s \
+//         &= 1 - exp(-integral_0^t h^(12,*) (u) d u)
+// $
+// from which the cumulative transition hazard of the transition from 1 to 2 is simply derived to be
+// $
+//     integral_0^t h^(12,*) (s) d s = - log (1 - integral_0^t exp(-integral_0^s (h^(01,*) (u) + h^(02,*) (u)) d u) h^(02,*) (s) d s)
+// $
+// and the result follows by differentiation.
+// So, we can express the probability of dying in this multi-state model as:
+// $
+//     integral_0^t exp(-integral_0^s (h^(01,*) (u) + h^(02,*) (u)) d u) h^(02,*) (s) + h^(01,*) (s) integral_s^t exp(-integral_s^w (h^(01,*) (u) + h^(02,*) (u)) d u) h^(02,*) (w) d w d s
+// $
+// Similarly, $h^*$ can be expressed as
+// $
+//     1/(1 - integral_0^t exp(-integral_0^s (h^(01,*) (u) + h^(02,*) (u)) d u) h^(02,*) (s) + h^(01,*) (s) exp(-integral_s^t (h^(01,*) (u) + h^(02,*) (u)) d u) h^(02,*) (s)) exp(-integral_0^s (h^(01,*) (u) + h^(02,*) (u)) d u) h^(02,*) (t)
+// $
 
 = The observed world
 
@@ -115,7 +169,7 @@ t) d t, quad i = 2, 3 $
 We let $S_0 (t) = prodint(s, 0, t) (1 - sum_j h^(0 j) (s) d s)$
 and $S_1 (t | d, s) = prodint(u, s, t) (1 - sum_i h^(i 3) (s, u) bb(1) {d = i} d u)$ be the survival functions for the first and second event times, respectively.
 Furthermore, denote by $P_(0 j) (t) = integral_0^t S_(s -) h^(0 j) (s) d s$ the probability of having an of type $j$ at time by time $t$
-and $P_(i 3) (t | d, s) = integral_s^t S_1 (w- | d, s) h^(i 3) (s, w) d w$ be the probability of having a terminal at time $t$ given that the first event was of type $d$ at time $s$.
+and $P_(i 3) (s, t) = integral_s^t S_1 (w- | d, s) h^(i 3) (s, w) d w$ be the probability of having a terminal at time $t$ given that the first event was of type $d$ at time $s$.
 //As always, we will assume finite-variation martingales in the below, so that our underlying assumption that the counting proceses have no jumps in common implies that the martingales are orthogonal).
 
 #figure(diagram(spacing: (5mm, 4.5mm), debug: false, node-stroke: 0.5pt, node-inset: 10pt, label-size: 7pt, {
@@ -169,16 +223,23 @@ $
 where the interventional component is $N^02$. 
 This dictates that an individual that transitioned from $0$ to $2$ should not transition to anything at that point. 
 This intuitively thus means that a patient is prevented from visiting the doctor if they drop out of the treatment.
-The key issue in @ryalenPotentialOutcomes is that we will not be able to differentiate between target parameters for $g$ and $g^*$.
+The key issue in @ryalenPotentialOutcomes is that we will not be able to differentiate between identification formulas for $g$ and $g^*$.
 The reason is that the likelihood under the intervention only depends on the stopping time $T^a$ and the problem that the stopping time
 $T^a$ is the same under $g$ and $g^*$.
 
 To see this, let $T^(a, g^*)$ be the first time where the observed and the interventional process (according to $g^*$) deviate.
 We have
 $
-    T^(a, g) = inf_(t>0) {N^(g,0)_t != N^(01)_t} and inf_(t>0) {N^(g,1)_t != N^(02)_t} = inf_(t>0) {N^(g,0)_t != 0} = inf_(t>0) {N^(g^*,0)_t != 0} = T^(a, g^*)
+    T^(a, g) &= inf_(t>0) {N^(g,0)_t != N^(01)_t} and inf_(t>0) {N^(g,1)_t != N^(02)_t} \
+        &= inf_(t>0) {N^(02)_t != 0} and inf_(t>0) {N^(02)_t != 0} \
+        &= inf_(t>0) {N^(02)_t != 0} \
 $
-Applying @thm:ryalen, we find that the target parameters are the same because the weights $W_t$ are the same under $g$ and $g^*$.
+Note that
+$
+    T^(a, g^*) = inf_(t>0) {N^(g^*,0)_t != 0} = inf_(t>0) {N^(g,0)_t != 0}
+$
+so that $T^(a, g^*) = T^(a, g)$.
+Applying @thm:ryalen, we find that the identification formulas are the same because the weights $W_t$ are the same under $g$ and $g^*$.
 Also note that $bb(1) {T^a <= t} = N^02 (t)$.
 //prevents the patient from visiting the doctor if they drop out of the treatment.
 
@@ -191,7 +252,7 @@ Also note that $bb(1) {T^a <= t} = N^02 (t)$.
 //    Lambda^(g,1) (d t) &= h^(a) (t) pi_t (1) d t + h^(a) (t) (1 - pi_t (1)) d t = h^(a) (t) d t
 //$
 
-We now define the target parameter of interest in @ryalenPotentialOutcomes.
+We now define the identification formula of interest in @ryalenPotentialOutcomes.
 The outcome of interest is death at time $t$, i.e., 
 $
     Y_t = N^(13)_t + N^(03)_t + N^(23)_t = bb(1) {T_1 <= t, D_1 = y} + bb(1) {T_2 <= t}
@@ -214,7 +275,7 @@ $
 $
 ] <thm:ryalen>
 
-From this, we can derive an alternate representation of the target parameter. We have that 
+From this, we can derive an alternate representation of the identification formula. We have that 
 $
     Psi_t^"Ryalen" (P)  &= bb(E)_P [ bb(1) {T_((1)) <= t} Y_t W_t] + bb(E)_P [bb(1) {T_((2)) <= t} Y_t W_t] \
         &= bb(E)_P [ bb(1) {T_((1)) <= t} Y_t (1-bb(1) {T^a > t})/exp(-integral_0^(T_((1))) h^02 (s) d s)] \
@@ -222,12 +283,12 @@ $
         &= bb(E)_P [ bb(1) {T_((1)) <= t, D_((1)) = 03} 1/exp(-integral_0^(T_((1))) h^02 (s) d s)] \
         &qquad+ bb(E)_P [bb(1) {T_((2)) <= t, D_((1)) = 01} 1/exp(-integral_0^(T_((1))) h^02 (s) d s)] \
         &= integral_0^t 1/exp(-integral_0^(t) h^02 (s) d s) P_03 (d t) \
-        &qquad+ integral_0^t 1/exp(-integral_0^(t) h^02 (s) d s) P_13 (t | 01, s) P_01 (d s) \
+        &qquad+ integral_0^t 1/exp(-integral_0^(t) h^02 (s) d s) P_13 (s, t) P_01 (d s) \
         &= integral_0^t exp( - sum_(j != 2) integral_0^s h^(0 j) (u) d u) h^03 (s) d s \
-        &qquad + integral_0^t exp( - sum_(j != 2) integral_0^s h^(0 j) (u) d u)  P_13 (t | 01, s) h^01 (s) d s \
+        &qquad + integral_0^t exp( - sum_(j != 2) integral_0^s h^(0 j) (u) d u)  P_13 (s, t) h^01 (s) d s \
 $ <eq:ryalen>
 
-== The target parameter in @rytgaardContinuoustimeTargetedMinimum2022
+== The identification formula in @rytgaardContinuoustimeTargetedMinimum2022
 
 To discuss @rytgaardContinuoustimeTargetedMinimum2022, additionally define
 $
@@ -323,7 +384,7 @@ $
 Thus the target estimand is
 $
     Psi_tau^("Rytgaard") (P) &= integral_0^tau S_0 (s- ) h^03 (s) d s \
-        &+ integral_0^tau S_0 (s- ) P_13 (tau | 01, s) (h^01 (s) +h^02 (s)) d s 
+        &+ integral_0^tau S_0 (s- ) P_13 (s, tau) (h^01 (s) +h^02 (s)) d s 
 $ <eq:rytgaard>
 
 == Comparison of the approaches
@@ -340,9 +401,9 @@ From this, we conclude that $Psi^("Rytgaard")_tau (P) = Psi_tau^"Ryalen" (P)$ if
 To see this, note that
 $
     Psi_tau^"Ryalen" (P)- Psi^("Rytgaard")_tau (P) &= integral_0^tau exp( - sum_(j != 2) integral_0^s h^(0 j) (u) d u)(1-exp( - integral_0^s h^02 (u) d u)) h^03 (s) d s \
-        &+ integral_0^tau exp( - sum_(j != 2) integral_0^s h^(0 j) (u) d u) P_13 (tau | 01, s) \
+        &+ integral_0^tau exp( - sum_(j != 2) integral_0^s h^(0 j) (u) d u) P_13 (s, tau) \
         &#h(3cm) times(1-exp( - integral_0^s h^02 (u) d u)) h^01 (s) d s \
-        &+integral_0^tau S_0 (s-) P_13 (tau | 01, s) h^02 (s) d s \
+        &+integral_0^tau S_0 (s-) P_13 (s, tau) h^02 (s) d s \
 $ <eq:compare>
 Since each term is non-negative, $Psi^("Rytgaard")_tau (P) = Psi_tau^"Ryalen" (P)$ implies that each term is equal to zero.
 Since each of the integrands are non-negative, we must have that the integrands are equal to zero (almost surely). 
