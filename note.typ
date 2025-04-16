@@ -9,7 +9,9 @@
 #show: arkheion.with(
     title: "A Novel Approach to the Estimation of Causal Effects of Multiple Event Point Interventions in Continuous Time",
     authors: (
-        (name: "Johan Sebastian Ohlendorff", email: "johan.ohlendorff@sund.ku.dk", affiliation: "University of Copenhagen"),
+        (name: "Johan Sebastian Ohlendorff", email: "", affiliation: "University of Copenhagen"),
+        (name: "Anders Munch", email: "", affiliation: "University of Copenhagen"),
+        (name: "Thomas Alexander Gerds", email: "", affiliation: "University of Copenhagen"),
     ),
     abstract: [In medical research, causal effects of treatments that may change over
             time on an outcome can be defined in the context of an emulated target
@@ -738,9 +740,15 @@ We want to use machine learning estimators of the nuisance parameters,
 so to get inference in a non-parametric setting, we need to debias our estimate with the efficient influence function, e.g., double/debiased machine learning @chernozhukovDoubleMachineLearning2018 or
 targeted minimum loss estimation (@laanTargetedMaximumLikelihood2006).
 We use @eq:ipcw for censoring to derive the efficient influence function.
+To do so, we introduce some additional notation and let 
+$
+   Qbar(k) (u  | history(k)) = p_(k a) (u | history(k-1)) + p_(k ell) (u | history(k-1)) + p_(k y) (u | history(k-1)), u < tau
+$ <eq:Qbaru>
+which, additionally can also be estimated with an ICE IPCW procedure (but we won't need to!).
+
 One of the main features here is that the efficient influence function is given in terms of the martingale for the censoring process
 which may be simpler computationally to implement. In an appendix, we compare
-it with the efficient influence function derived in @rytgaardContinuoustimeTargetedMinimum2022 .
+it with the efficient influence function derived in @rytgaardContinuoustimeTargetedMinimum2022.
 
 #theorem("Efficient influence function")[
     The efficient influence function is given by
@@ -813,7 +821,7 @@ In this section, we provide a special procedure for the purpose of one-step esti
 Though the present section is stated in the context one-step estimation,
 a targeted minimum loss estimator (TMLE) can be obtained by very similar considerations. //using the same procedure, fluctuating the $Q$ and $S^c$-estimates.
 Recall that the efficient influence function in @eq:eif includes a censoring martingale.
-To estimate this martingale, we would need to have estimators of $Qbar(k) (t)$ at a sufficiently dense grid of time points $t$.
+To estimate this martingale, we would need to have estimators of $Qbar(k) (t)$ (defined in @eq:Qbaru) at a sufficiently dense grid of time points $t$.
 Unfortunately, the event-specific cause-specific hazards $hat(Lambda)_(k)^x$ cannot readily be used to estimate $Qbar(k) (t)$
 directly due to the aforementioned high dimensionality of integrals. 
 The IPCW approach we have given in @alg:ipcwice also would be prohibitively computationally expensive (at the very least if we use flexible machine learning estimators). 
@@ -853,14 +861,14 @@ which may be used in conjunction with @thm:remainder.
     Let $macron(Q)^(-L)_k = mean(P) [Qbar(k) | treat(k), event(k), status(k), history(k-1)]$.
     Assume that $|| tilde(nu)^*_(k+1) - macron(Q)^(-L)_(k+1)  ||_(L^2 (P)) = o_P (1)$.
     If the estimators for the cause-specific hazards for the event times
-    converge at $n^(-1/4)$-rate, that is
+    converge, that is
         $
-            sqrt(integral integral_(t_(k-1))^tau (lambda_(k+1)^x (t | f_(k)) - hat(lambda)_(k+1)^x (t | f_(k)))^2 d t P_(history(k)) (d f_(k))) = o_P (n^(-1/4))
+            sqrt(integral integral_(t_(k-1))^tau (lambda_(k+1)^x (t | f_(k)) - hat(lambda)_(k+1)^x (t | f_(k)))^2 d t P_(history(k)) (d f_(k))) = o_P (1)
         $
     for $ x= a, ell, d, y$.
     Then,
     $
-        || hat(nu)^*_(k,tau) (dot) - Qbar(k)(dot) ||_(L^2 (P_k^*)) = o_P (n^(-1/4))
+        || hat(nu)^*_(k,tau) (dot) - Qbar(k)(dot) ||_(L^2 (P_k^*)) = o_P (1)
     $
     where $P_k^* = m times.circle P|_(history(k))$ and $m$ is the Lebesgue measure on the interval $[0,tau]$.
     // integrate over time
@@ -874,9 +882,9 @@ which may be used in conjunction with @thm:remainder.
                 &+sqrt( integral integral_(t_(k))^tau (hat(lambda)_(k+1)^ell (t | f_(k)) hat(S)_(k+1) (t|f_k)  - S_(k+1) (t|f_k) lambda_(k+1)^ell (t | f_(k)) )^2 (tilde(nu) (a_(k-1), t, a, f_k))^2 d t P_(history(k)) (d f_(k))) \
                 &+ sqrt( integral integral_(t_(k))^tau (tilde(nu)^*_(k+1,tau) (t, dots) - macron(Q)^(-L)_(k+1) (t, dots))^2  (sum_(x=a,l,y) S_(k+1) (t|f_k) lambda_(k+1)^x (t | f_(k)) ) d t P_(history(k-1)) (d f_(k))) \
         $
-    The last term is $o_P (n^(-1/4))$ by assumption. By bounding $tilde(nu)$, the first three terms are then also $o_P (n^(-1/4))$.
+    The last term is $o_P (1)$ by assumption. By bounding $tilde(nu)$, the first three terms are then also $o_P (1)$.
     By i.e., noting that the mapping $(x,y) mapsto x exp(-(x+y))$ is Lipschitz continuous and uniformly bounded (under additional boundedness conditions on the hazards),
-    we see that the conditions on the hazards are sufficient to show that the first three terms are $o_P (n^(-1/4))$.
+    we see that the conditions on the hazards are sufficient to show that the first three terms are $o_P (1)$.
 ]
 
 == Remainder term
@@ -1428,4 +1436,3 @@ $
         & #h(3cm) times (mean(P) [Qbar(k+1) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)]) \
         &+  cumhazard(k-1, y, d s)] +Qbar(k-1)(tau) 
 $
-
