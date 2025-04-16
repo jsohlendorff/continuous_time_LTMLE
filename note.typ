@@ -866,9 +866,9 @@ which may be used in conjunction with @thm:remainder.
             sqrt(integral integral_(t_(k-1))^tau (lambda_(k+1)^x (t | f_(k)) - hat(lambda)_(k+1)^x (t | f_(k)))^2 d t P_(history(k)) (d f_(k))) = o_P (1)
         $
     for $ x= a, ell, d, y$.
-    Then,
+    Then for the derivatives of $hat(nu)^*_(k,tau)$ and $Qbar(k)$, we have
     $
-        || hat(nu)^*_(k,tau) (dot) - Qbar(k)(dot) ||_(L^2 (P_k^*)) = o_P (1)
+        || hat(nu)^(*,')_(k,tau) - Qbar(k)' ||_(L^2 (P_k^*)) = o_P (1)
     $
     where $P_k^* = m times.circle P|_(history(k))$ and $m$ is the Lebesgue measure on the interval $[0,tau]$.
     // integrate over time
@@ -877,7 +877,7 @@ which may be used in conjunction with @thm:remainder.
     *Somewhat incomplete*.
         By the triangle inequality,
         $
-            || hat(nu)^*_(k,tau) (dot) - Qbar(k)(dot) ||_(L^2 (P)) &<= sqrt( integral integral_(t_(k))^tau (hat(S)_(k+1) (t|f_k) hat(lambda)_(k+1)^y (t | f_(k)) - S_(k+1) (t|f_k)lambda_(k+1)^y (t | f_(k)))^2 d t P_(history(k)) (d f_(k))) \
+            || hat(nu)^(*,')_(k,tau)  - Qbar(k)' ||_(L^2 (P)) &<= sqrt( integral integral_(t_(k))^tau (hat(S)_(k+1) (t|f_k) hat(lambda)_(k+1)^y (t | f_(k)) - S_(k+1) (t|f_k)lambda_(k+1)^y (t | f_(k)))^2 d t P_(history(k)) (d f_(k))) \
                 &+sqrt( integral integral_(t_(k))^tau (hat(lambda)_(k+1)^a (t | f_(k)) hat(S)_(k+1) (t|f_k)  - S_(k+1) (t|f_k) lambda_(k+1)^a (t | f_(k)) )^2 (tilde(nu) (1, t, a, f_k))^2 d t P_(history(k)) (d f_(k))) \
                 &+sqrt( integral integral_(t_(k))^tau (hat(lambda)_(k+1)^ell (t | f_(k)) hat(S)_(k+1) (t|f_k)  - S_(k+1) (t|f_k) lambda_(k+1)^ell (t | f_(k)) )^2 (tilde(nu) (a_(k-1), t, a, f_k))^2 d t P_(history(k)) (d f_(k))) \
                 &+ sqrt( integral integral_(t_(k))^tau (tilde(nu)^*_(k+1,tau) (t, dots) - macron(Q)^(-L)_(k+1) (t, dots))^2  (sum_(x=a,l,y) S_(k+1) (t|f_k) lambda_(k+1)^x (t | f_(k)) ) d t P_(history(k-1)) (d f_(k))) \
