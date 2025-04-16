@@ -3,7 +3,7 @@
 #import "@preview/cetz:0.3.4"
 
 #let qquad = h(1.5cm)
-#let citep = cite.with(form: "normal")
+#let citep(label) = cite(label, form: "normal")
 
 // event definitions
 #let event(ind) = {
@@ -50,11 +50,15 @@
 }
 
 #let hazard(which, var, eventno) = {
-    $lambda_(#eventno)^(#which)(#var, history(#eventno))$
+    $lambda_(#eventno)^(#which)(#var, cal(F)_(T_((#eventno - 1))))$
+}
+
+#let hazardprev(which, var, eventno) = {
+    $lambda_(#eventno - 1)^(#which)(#var, cal(F)_(T_((#eventno - 2))))$
 }
 
 #let cumhazard(eventno, which, var) = {
-    $Lambda_(#eventno)^(#which)(#var, history(#eventno))$
+    $Lambda_(#eventno)^(#which)(#var, cal(F)_(T_((#eventno - 1))))$
 }
 
 #let treat(which) = {
@@ -85,7 +89,7 @@
     if which == [0] or which == 0 [
         $L_0$
     ] else {
-        $macron(L) (event(#which))$
+        $L (macron(T)_(#which))$
     }
 }
 
@@ -93,13 +97,14 @@
     if which == [0] or which == 0 [
         $macron(A)_0$
     ] else {
-        $macron(A) (event(#which))$
+        $A (macron(T)_(#which))$
     }
 }
 
-#let densitytrt(time, arg, which) = $pi_(#which) (#time, history(#which - 1))$
-#let densitytrtprev(time, arg, which) = $pi_(#which) (#time, #arg, history(#which - 2))$
-#let densitytrtint(time, arg, which) = $pi_(#which)^* (#time, #arg, history(#which - 1))$
+#let densitytrt(time, which) = $pi_(#which) (#time, history(#which - 1))$
+#let densitytrtmeasure(time, a, which) = $pi_(#which) (#time, #a, history(#which - 1))$
+#let densitytrtprev(time, arg, which) = $pi_(#which) (#time, history(#which - 2))$
+#let densitytrtint(time, arg, which) = $pi_(#which)^* (#time, history(#which - 1))$
 #let densitycov(time, arg, which) = $mu_(#which) (#time, #arg, history(#which - 1))$
 
 #let commonintegral(k, t, integrand, u) = {
