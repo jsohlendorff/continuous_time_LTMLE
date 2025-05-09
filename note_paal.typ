@@ -76,19 +76,14 @@ state is 'has visited Tivoli' which should not change the likelihood
 of death. Note that since we assume absolutely no effect by visiting a
 general practitioner we could simply exchange 'Tivoli' with 'visit to
 a general practitioner' and the mathematical formula are not altered.
+Let $P^(**)_(12) (s, t) = P(X^(**)(t)=2|X^(**)(s)=1)$
+and $P^(**)_(02) (s, t) = P(X^(**)(t)=2|X^(**)(s)=0)$
 In this model the basic assumption is
-
 $
-    P(X^(**)(t)=2|X^(**)(s)=1) = P(X^(**) (t)=2|X^(**) (s)=0) 
+        P^(**)_(12) (s, t) = P^(**)_(02) (s, t)
 $
 for all $s<t$. Hence
-
-$
-    P(X^(**)(t)=2) = P(X^*(t)=1).
-$
-
-Johan: This statement always holds and does _not_ require the basic assumption.
-To see this note that, we evidently have for the counting processes of the transitions
+bunting processes of the transitions
 $
     N^(01,*)_t = N^(01,**)_t + N^(02,**)_t
 $
@@ -100,16 +95,46 @@ $
 where $T^*$ denotes the terminal event time in the hypothetical world and $Delta$ denotes initial transition from state 0 to state 1 or 2,
 $macron(T) = inf {t > 0 | N^(01,**)_t + N^(02,**)_t = 0}$. 
 By writing up the target parameters in both settings, $h^(01,*)$ can easily be found
-in terms of $h^(01,**), h^(02,**)$ and $h^(03,**)$, i.e.,
+in terms of $h^(01,**), h^(02,**)$ and $h^(03,**)$. First note that
 $
-    integral_0^t S^*_0( s-) (h^(02,**)(s) + P^(**)_(12)(s, t) h^(01,**)(s)) d s &= integral_0^t exp(-integral_0^s h^(*)(u) d u) h^(*)(s) d s \
+            P^(**)_(12) (s, t) &= integral_s^t exp(-integral_s^w (h^(12,**)(u)) d u) h^(12,**)(w) d w \
+            P^(**)_(02) (s, t) &= integral_s^t exp(-integral_s^w (h^(01,**)(u) + h^(02,**)(u)) d u) h^(02,**)(w) d w 
+$
+so that
+$
+   integral_s^t exp(-integral_s^w (h^(12,**)(u)) d u) h^(12,**)(w) d w  = integral_s^t exp(-integral_s^w (h^(01,**)(u) + h^(02,**)(u)) d u) h^(02,**)(w) d w \
+$
+by the basic assumption.
+$
+    P(X^(**) (t) = 2) &= integral_0^t S^(**)_0( s-) (h^(02,**)(s) + integral_s^t exp(-integral_s^w h^(12,**)(u) d u) h^(12,**)(w) d w h^01 (s)) dif s \
+        &=integral_0^t S^(**)_0( w-) h^(02,**)(w) d w+ integral_0^t integral_s^t exp(-integral_s^w h^(12,**)(u) d u) h^(12,**)(w) d w S^(**)_0( s-) h^01 (s) d s \
+        &=integral_0^t S^(**)_0( w-) h^(02,**)(w) d w+ integral_0^t integral_0^s exp(-integral_s^w h^(12,**)(u) d u)(S^(**)_0( s-)) / (S^(**)_0( w-))  h^01 (s) d s S^(**)_0( w-) h^(12,**)(w) d w \
+        &=integral_0^t S^(**)_0( w-) h^(02,**)(w) d w+ integral_0^t integral_0^s exp(-integral_s^w h^(12,**)(u) d u)S^(**)_0( s-) h^01 (s) d s h^(12,**)(w) d w \
+        &=integral_0^t S^(**)_0( s-) h^(02,**)(s) d s \
+        &+ integral_0^t exp(-integral_0^w h^(02,**)(u) d u) integral_0^s  exp(-integral_0^s h^(12,**)(u) d u)h^01 (s) d s h^(02,**)(w) d w  \
+    P^(**)_(12)(s, t) h^(01,**)(s)) d s &= integral_0^t S^(**)_0( w-) (integral_0^t h^(12,**)(s) +1) h^(02,**)(s)d s \
+    integral_0^t exp(-integral_0^s h^(*)(u) d u) h^(*)(s) d s \
+        &= 1 - exp(-integral_0^t h^*(u) d u), \
+$
+What choice?
+$
+    &integral_0^t integral_0^s exp(-integral_s^w h^(12,**)(u) d u)(S^(**)_0( s-)) / (S^(**)_0( w-))  h^01 (s) d s S^(**)_0( w-) h^(12,**)(w) d w \
+        &integral_0^t integral_0^s exp(-integral_s^w h^(12,**)(u) d u) exp(integral_s^w h^01(u)+h^02(u))  h^01 (s) d s S^(**)_0( w-) h^(12,**)(w) d w \
+        &= integral_0^t integral_0^s exp(integral_0^w h^(01,**)(u) d u)  h^01 (s) d s S^(**)_0( w-) h^(02,**)(w) d w
+$
+Now note that 
+$
+    P(X^(**) (t) = 2) &= integral_0^t S^(**)_0( s-) (h^(02,**)(s) + integral_s^t S(w-) / (S(s)) h^(02,**)(w) d w h^01 (s)) dif s \
+        &= integral_0^t S^(**)_0( s-) h^(02,**)(s) dif s + integral_0^t integral_s^t S(w-) h^(02,**)(w) d w h^01 (s) dif s \
+        &= integral_0^t S^(**)_0( s-) h^(02,**)(s) dif s + integral_0^t integral_0^w h^01 (s) dif s S(w-) h^(02,**)(w) dif w \
+        &= integral_0^t S^(**)_0( s-) (1 + H^01 (s))  h^(02,**)(s) dif s \
+    P^(**)_(12)(s, t) h^(01,**)(s)) d s &= integral_0^t S^(**)_0( w-) (integral_0^t h^(12,**)(s) +1) h^(02,**)(s)d s \
+    integral_0^t exp(-integral_0^s h^(*)(u) d u) h^(*)(s) d s \
         &= 1 - exp(-integral_0^t h^*(u) d u), \
 $
 where
 $
-    &S_0 (s) =exp(-integral_0^s (h^(01,**)(u) + h^(02,**)(u)) d u) \
-        &P^(**)_(12) (s, t) = integral_s^t exp(-integral_s^w (h^(12,**)(u)) d u) h^(12,**)(w) d w \
-        &=^"!" integral_s^t exp(-integral_s^w (h^(01,**)(u) + h^(02,**)(u)) d u) h^(02,**)(w) d w \
+    S^(**)_0 (s) &=exp(-integral_0^s (h^(01,**)(u) + h^(02,**)(u)) d u) \
 $
 Conversely, even under the basic assumption, there exist many choices of $h^(01,**)$
 that will lead to the same $h^*(t)$, i.e., the basic assumption does not uniquely determine the transition intensities

@@ -59,6 +59,8 @@
 - [x] Consistency of estimator. Skip not done in other papers.
 - [/] Efficient influence function. Cleanup.
 - [ ] Simulation study (ML?).
+- [ ] Comparison of EIF and target parameter with @rytgaardContinuoustimeTargetedMinimum2022.
+- [ ] Consistency of variance estimator?
 - [/] Debiased estimator
 - [/] DR properties + ML rates/criteria (rate conditions + conditions for $hat(nu)^*$)
 - [/] Cross-fitting
@@ -230,7 +232,7 @@ given that the event time is $t$ and that the $k$'th event is a visitation time
 and let $densitytrtmeasure(t, d a, k)$ be the corresponding probability measure.
 Let $densitycov(t, dot, k)$ be the probability measure for the covariate value at the $k$'th event given $history(k-1)$
 given that the event time is $t$ and that the $k$'th event is a covariate event.
-Let $hazard(x, t, k-1)$ be the hazard of the $k$'th event at time $t$ given $history(k-1)$ (@assumptionabscont).
+Let $hazard(x, t, k)$ be the hazard of the $k$'th event at time $t$ given $history(k-1)$ (@assumptionabscont).
 Our overall goal is to estimate the interventional cumulative incidence function at time $tau$,
 $
     Psi^g (tau) = mean(P) [tilde(N)^y_tau],
@@ -267,9 +269,8 @@ For simplicity, we assume that we are only interested in the effect of staying o
 
 We now define the stopping time $T^a$ as the time of the first visitation event where the treatment plan is not followed, i.e.,
 $
-    T^a = inf_(t >= 0) {A(t) = 0} = inf_(k > 1) {event(k) | status(k) = a, treat(k) != 1} and oo bb(1) {A(0) = 1}
+    T^a = inf_(t >= 0) {A(t) = 0} = cases(inf_(k > 1) {event(k) | status(k) = a, treat(k) != 1} "if" A(0) = 1, 0 "otherwise")
 $
-where we use that $oo dot 0 = 0$. 
 
 #theorem[
 We suppose that there exists a potential outcome $tilde(Y)_tau = tilde(N)_tau^y$ at time $tau$ such that
@@ -278,11 +279,11 @@ We suppose that there exists a potential outcome $tilde(Y)_tau = tilde(N)_tau^y$
 - *Exchangeability*: We have
    $
        &tilde(Y)_tau bb(1) {event(j) <= tau < event(j+1)}
-       perp treat(k) | history(k), event(k), status(k) = a, quad forall j>=k>0, \
+       perp treat(k) | history(k-1), event(k), status(k) = a, quad forall j>=k>0, \
        &tilde(Y)_tau bb(1) {event(j) <= tau < event(j+1)}
        perp treat(0) | covariate(0), quad forall j>=0.
    $ <eq:exchangeability>
-    - *Positivity*: The measure given by $d R = W d P$ where $W^*_t = product_(k=1)^(N_t) ((bb(1) {treat(k) = 1}) / (densitytrt(event(k), k)))^(bb(1) {status(k) = a}) (bb(1) {treat(0) = 1})/ (pi_0 (covariate(0)))$ is a probability measure,
+- *Positivity*: The measure given by $d R = W d P$ where $W^*_t = product_(k=1)^(N_t) ((bb(1) {treat(k) = 1}) / (densitytrt(event(k), k)))^(bb(1) {status(k) = a}) (bb(1) {treat(0) = 1})/ (pi_0 (covariate(0)))$ is a probability measure,
   where $N_t = sum_(k=1)^(K-1) bb(1) {event(k) <= t}$.
 
 Then the estimand of interest is identifiable by
@@ -300,11 +301,11 @@ $
             &=bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} bb(1) {T^a > tau} tilde(Y)_tau W_tau] \
             &=bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(Y)_tau W_tau] \
             &=bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(Y)_tau W_(event(k-1)) ]\
-            &=bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(Y)_tau ((bb(1) {treat(k-1) = 1}) / (densitytrtprev(treat(k-1), event(k-1), k)))^(bb(1) {status(k-1) =a}) W_(event(k-2)) ]\
+            &=bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(Y)_tau ((bb(1) {treat(k-1) = 1}) / (densitytrtprev(event(k-1), event(k-1), k)))^(bb(1) {status(k-1) =a}) W_(event(k-2)) ]\
             &=bb(E)_P [ bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(Y)_tau | history(k-2), status(k-1), event(k-1), treat(k-1)] \
-                &qquad times ((bb(1) {treat(k-1) = 1}) / (densitytrtprev(treat(k-1), event(k-1), k)))^(bb(1) {status(k-1) =a}) W_(event(k-2)) ]\
+                &qquad times ((bb(1) {treat(k-1) = 1}) / (densitytrtprev(event(k-1), event(k-1), k)))^(bb(1) {status(k-1) =a}) W_(event(k-2)) ]\
                         &=bb(E)_P [ bb(E)_P [ bb(1) {event(k-1) <= tau< event(k)} tilde(Y)_tau | history(k-2), status(k-1), event(k-1)] \
-                &qquad times ((bb(1) {treat(k-1) = 1}) / (densitytrtprev(treat(k-1), event(k-1), k)))^(bb(1) {status(k-1) =a}) W_(event(k-2)) ]\
+                &qquad times ((bb(1) {treat(k-1) = 1}) / (densitytrtprev(event(k-1), event(k-1), k)))^(bb(1) {status(k-1) =a}) W_(event(k-2)) ]\
             &=bb(E)_P [ bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(Y)_tau | history(k-2), status(k-1), event(k-1)] \
                 &qquad times mean(P) [((bb(1) {treat(k-1) = 1}) / (densitytrtprev(treat(k-1), event(k-1), k)))^(bb(1) {status(k-1) =a}) | history(k-2), status(k-1), event(k-1)] W_(event(k-2)) ]\
             &=bb(E)_P [ bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(Y)_tau | history(k-2), status(k-1), event(k-1)] W_(event(k-2)) ]\
@@ -317,9 +318,9 @@ By the intersection property of conditional independence, we see that a sufficie
 is that
 $
     tilde(Y)_tau
-    perp treat(k) | event(j) <= tau < event(j+1), history(k), event(k), status(k) = a, quad forall j>=k>0, \
+    perp treat(k) | event(j) <= tau < event(j+1), history(k-1), event(k), status(k) = a, quad forall j>=k>0, \
     bb(1) {event(j) <= tau < event(j+1)}
-    perp treat(k) | tilde(Y)_tau, history(k), event(k), status(k) = a, quad forall j>=k>0. \
+    perp treat(k) | history(k-1), event(k), status(k) = a, quad forall j>=k>0. \
 $
 An illustration of the consistency condition is given in @fig:potentialoutcome.
 
@@ -441,10 +442,10 @@ with no competing event (*TODO*: show this more explicitly) under the stated ide
     the left limit of the survival function of the $k$'th event at time $s$ given $history(k-1)$.
     Then, we have
     $
-        & p_(k a) (t | history(k-1)) = integral_(history(k-1))^t S_k (s- | history(k-1)) Qbar(k+1) (1, covariate(k-1), s, a, history(k-1)) hazard(a, s, k) d s \
+        & p_(k a) (t | history(k-1)) = integral_(event(k-1))^t S_k (s- | history(k-1)) Qbar(k+1) (1, covariate(k-1), s, a, history(k-1)) hazard(a, s, k) d s \
             &p_(k ell) (t | history(k-1)) \
-            &= integral_(history(k-1))^t S_k (s- | history(k-1)) (mean(P) [Qbar(k+1) (treat(k-1), covariate(k), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)] ) hazard(y, s, k) d s \
-            & p_(k y) (t | history(k-1)) = integral_(history(k-1))^t S_k (s- | history(k-1))  hazard(y, s, k) d s,
+            &= integral_(event(k-1))^t S_k (s- | history(k-1)) (mean(P) [Qbar(k+1) (treat(k-1), covariate(k), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)] ) hazard(y, s, k) d s \
+            & p_(k y) (t | event(k-1)) = integral_(history(k-1))^t S_k (s- | history(k-1))  hazard(y, s, k) d s,
     $
     and we can identify $Qbar(k)$ via the intensities as
 #math.equation(block: true, numbering: "(1)")[$
@@ -749,11 +750,17 @@ which, additionally can also be estimated with an ICE IPCW procedure (but we won
 One of the main features here is that the efficient influence function is given in terms of the martingale for the censoring process
 which may be simpler computationally to implement. In an appendix, we compare
 it with the efficient influence function derived in @rytgaardContinuoustimeTargetedMinimum2022.
+The efficient influence function may change slightly if the censoring distribution cannot be assumed to be continuous,
+but only slightly since we use the product integral
+instead of the exponential function, see e.g., Theorem 8 of @gill1990survey.
+// having, to multiply by $1/(1-Delta Lambda_t^c)$ with $1/exp() $,i.e., inside the integrla.
+// in the case, where C is continuous but the others are not the product integral still factorizes into two S^c S by the trotter formula.  
+// also p. 42 of ryalenPotentialOutcomes.
 
 #theorem("Efficient influence function")[
     The efficient influence function is given by
     #text(size: 7.5pt)[$
-            phi^* (P) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) product_(j = 1)^(k-1) ((bb(1) {treat(j) = 1}) / (densitytrt(event(j), j)))^(bb(1) {status(j) = a}) 1/( product_(j=1)^(k-1) S^c (event(j)- | history(j-1))) bb(1) {status(k-1) in {ell, a}, event(k-1) < tau}  \
+        phi^* (P) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treat(j) = 1}) / (densitytrt(event(j), j)))^(bb(1) {status(j) = a}) 1/( product_(j=1)^(k-1) S^c (event(j)- | history(j-1))) bb(1) {status(k-1) in {ell, a}, event(k-1) < tau}  \
                 & times ((macron(Z)^a_(k,tau)- Qbar(k-1)) + integral_(event(k - 1))^(tau and event(k)) (Qbar(k-1) (tau  | history(k-1))-Qbar(k-1) (u  | history(k-1))) 1/(S^c (u- | history(k-1)) S (u | history(k-1))) M_k^c (upright(d) u))\
                 & +  Qbar(0) - Psi_tau (P),
     $<eq:eif>]
@@ -901,7 +908,7 @@ and the outcome term in the efficient influence function.
     where
     $
         z_k (history(k)) &= (((pi_(k-1,0) (event(k), history(k-1)))/ (pi_(k-1) (event(k), history(k-1))))^(bb(1) {status(k) = a})-1) (Qbar(k-1) (history(k-1))- nu_(k-1, tau) (history(k-1))) \
-        &+((pi_(k-1,0) (event(k), history(k-1)))/ (pi_(k-1) (event(k), history(k-1))))^(bb(1) {status(k) = a})integral_(event(k - 1))^(tau) ((S_0^c (u | history(k-1))) / (S^c (u | history(k-1)))-1) (nu^*_(k-1, tau) (d u |history(k-1)) - Qbar(k-1) (d u | history(k-1))) \
+        &+((pi_(k-1,0) (event(k), history(k-1)))/ (pi_(k-1) (event(k), history(k-1))))^(bb(1) {status(k) = a})integral_(event(k - 1))^(tau) ((S_0^c (u | history(k-1))) / (S^c (u | history(k-1)))-1) (Qbar(k-1) (d u | history(k-1)) - nu^*_(k-1, tau) (d u |history(k-1))) \
             &+((pi_(k-1,0) (event(k), history(k-1)))/ (pi_(k-1) (event(k), history(k-1))))^(bb(1) {status(k) = a}) integral_(event(k - 1))^(tau) V_k (u, history(k-1)) nu^*_(k-1, tau) (d u |history(k-1)),
     $
     and $V_k (u, history(k)) = integral_(event(k-1))^u ((S_0 (s | history(k-1))) / (S (s | history(k-1))) - 1)  (S_0^c (s- | history(k-1)))/(S^c (s- | history(k-1))) (Lambda^c_(k,0) (d s | history(k-1)) - Lambda^c (d s | history(k-1)))$.
@@ -951,7 +958,7 @@ $
         &=integral_(event(k - 1))^(tau) integral_(event(k-1))^u ((S_0 (s | history(k-1))) / (S (s | history(k-1))) - 1)  (S_0^c (s- | history(k-1)))/(S^c (s- | history(k-1))) (Lambda^c_(k,0) (d s | history(k-1)) - Lambda^c (d s | history(k-1))) (nu^*_(k-1, tau) (d u |history(k-1))) \
         &+integral_(event(k - 1))^(tau) integral_(event(k-1))^u ((S_0^c (s- | history(k-1))) / (S^c (s- | history(k-1)))) (Lambda^c_(k,0) (d s | history(k-1)) - Lambda^c (d s | history(k-1))) (nu^*_(k-1, tau) (d u |history(k-1))) \
         &=integral_(event(k - 1))^(tau) integral_(event(k-1))^u ((S_0 (s | history(k-1))) / (S (s | history(k-1))) - 1)  (S_0^c (s- | history(k-1)))/(S^c (s- | history(k-1))) (Lambda^c_(k,0) (d s | history(k-1)) - Lambda^c (d s | history(k-1))) (nu^*_(k-1, tau) (d u |history(k-1))) \
-        &+integral_(event(k - 1))^(tau) ((S_0^c (u | history(k-1))) / (S^c (u | history(k-1)))-1) (nu^*_(k-1, tau) (d u |history(k-1)))
+        &-integral_(event(k - 1))^(tau) ((S_0^c (u | history(k-1))) / (S^c (u | history(k-1)))-1) (nu^*_(k-1, tau) (d u |history(k-1)))
 $
     where we apply the Duhamel equation in the second last equality, 
 it follows that
