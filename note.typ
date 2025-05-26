@@ -821,7 +821,7 @@ Later, we provide an implementation and algorithm for the ICE-IPCW estimator.
 
     Then, the ICE-IPCW estimator is consistent for the target parameter, i.e.,
     #math.equation(block: true, numbering: "(1)")[$
-        Qbar(k-1) &= bb(1) {statuscensored(k-1) != c} mean(P) [(bb(1) {eventcensored(k) < tau, statuscensored(k) = ell})/( tilde(S)^c (eventcensored(k-1) - | historycensored(k-1)) ) Qbar(k)(treatcensored(k-1), covariatecensored(k), eventcensored(k), statuscensored(k), historycensored(k-1)) \
+        bb(1) {statuscensored(k-1) != c} Qbar(k-1) &= bb(1) {statuscensored(k-1) != c} mean(P) [(bb(1) {eventcensored(k) < tau, statuscensored(k) = ell})/( tilde(S)^c (eventcensored(k-1) - | historycensored(k-1)) ) Qbar(k)(treatcensored(k-1), covariatecensored(k), eventcensored(k), statuscensored(k), historycensored(k-1)) \
             &#h(1.5cm) + (bb(1) {eventcensored(k) < tau, statuscensored(k) = a}) /(tilde(S)^c (eventcensored(k-1) - | historycensored(k-1)))  Qbar(k) (1, covariatecensored(k-1), eventcensored(k), statuscensored(k), historycensored(k-1)) \
             &#h(1.5cm) + (bb(1) {eventcensored(k) <= tau, statuscensored(k) = y}) /(tilde(S)^c (eventcensored(k-1) - | historycensored(k-1))) mid(|) historycensored(k-1)]
     $] <eq:ipcw>
