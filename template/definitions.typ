@@ -22,6 +22,38 @@
   }
 }
 
+#let statuscensored(ind) = {
+  if ind == [0] or ind == 0 [
+      $macron(Delta)_0$
+  ] else {
+      $macron(Delta)_((#ind))$
+  }
+}
+
+#let treatcensored(ind) = {
+  if ind == [0] or ind == 0 [
+      $A_0$
+  ] else {
+      $macron(A) (macron(T)_((#ind)))$
+  }
+}
+
+#let covariatecensored(ind) = {
+  if ind == [0] or ind == 0 [
+      $L_0$
+  ] else {
+      $L (macron(T)_((#ind)))$
+  }
+}
+
+#let historycensored(ind) = {
+  if ind == [0] or ind == 0 [
+    $cal(F)_0$
+  ] else [
+      $cal(F)^tilde(beta)_(eventcensored(#ind))$
+  ]
+}
+
 #let history(eventno) = {
   if eventno == [0] or eventno == 0 [
     $cal(F)_0$
@@ -31,13 +63,19 @@
 }
 
 
+
 #let historycensored(eventno) = {
   if eventno == [0] or eventno == 0 [
     $cal(F)_0$
   ] else [
-    $cal(F)^"obs"_(event(#eventno))$
+      $cal(F)^(tilde(beta))_(macron(T)_((#eventno)))$
   ]
 }
+
+#let cumhazardcensored(eventno, which, var) = {
+    $tilde(Lambda)_(#eventno)^(#which)(#var, cal(F)^beta_(macron(T)_((#eventno - 1))))$
+}
+
 #let historypast(eventno) = $underline(history(#eventno))$
 #let historynext(eventno) = $overline(history(#eventno))$
 
@@ -50,7 +88,7 @@
 }
 
 #let hazard(which, var, eventno) = {
-    $lambda_(#eventno)^(#which)(#var, cal(F)_(T_((#eventno - 1))))$
+    $Lambda_(#eventno)^(#which)(#var, cal(F)_(T_((#eventno - 1))))$
 }
 
 #let hazardprev(which, var, eventno) = {
@@ -63,7 +101,7 @@
 
 #let treat(which) = {
     if which == [0] or which == 0 [
-        $A_0$
+        $A(0)$
     ] else {
         $A(event(#which))$
     }
@@ -79,7 +117,7 @@
 
 #let covariate(which) = {
     if which == [0] or which == 0 [
-        $L_0$
+        $L(0)$
     ] else {
         $L(event(#which))$
     }
@@ -87,7 +125,7 @@
 
 #let covariatecensored(which) = {
     if which == [0] or which == 0 [
-        $L_0$
+        $L(0)$
     ] else {
         $L (macron(T)_(#which))$
     }
@@ -103,7 +141,7 @@
 
 #let densitytrt(time, which) = $pi_(#which) (#time, history(#which - 1))$
 #let densitytrtmeasure(time, a, which) = $pi_(#which) (#time, #a, history(#which - 1))$
-#let densitytrtprev(time, arg, which) = $pi_(#which) (#time, history(#which - 2))$
+#let densitytrtprev(time, arg, which) = $pi_(#which -1) (#time, history(#which - 2))$
 #let densitytrtint(time, arg, which) = $pi_(#which)^* (#time, history(#which - 1))$
 #let densitycov(time, arg, which) = $mu_(#which) (#time, #arg, history(#which - 1))$
 
@@ -231,6 +269,10 @@
     })
 }
 
-#let prodint(s, t1, t2) = $limits(#scale(x:170%, y:170%)[$pi$])_(#s in (#t1, t2])$
-#let prodint2(s, t1, t2) = $limits(#scale(x:170%, y:170%)[$pi$])_(#s in (#t1, t2))$
-#let prodintdisplay(t1, t2) = $#place(dy: -0.002pt)[#scale(x:180%, y:180%)[$pi$]]_(s in (#t1, #t2])$
+//#let prodint(s, t1, t2) = $limits(#scale(x:170%, y:170%)[$pi$])_(#s in (#t1, t2])$
+//#let prodint2(s, t1, t2) = $limits(#scale(x:170%, y:170%)[$pi$])_(#s in (#t1, t2))$
+//#let prodintdisplay(t1, t2) = $#place(dy: -0.002pt)[#scale(x:180%, y:180%)[$pi$]]_(s in (#t1, #t2])$
+
+#let prodint(s, t1, t2) = $product_(#s in (#t1, #t2])$
+#let prodint2(s, t1, t2) = $product_(#s in (#t1, #t2))$
+#let prodintdisplay(t1, t2) = $product_(s in (#t1, #t2])$
