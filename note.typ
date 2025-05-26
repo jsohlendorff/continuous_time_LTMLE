@@ -811,7 +811,7 @@ Later, we provide an implementation and algorithm for the ICE-IPCW estimator.
             &= bb(1) {macron(T)_(n-1) < t,statuscensored(n-1) != c} (tilde(S) (t- | history(n-1)) sum_(x=a,ell,d,y) delta_x (dif m) psi_(n,x) (t, d(a, l)) cumhazard(n, x, dif t) \
                 &qquad + delta_((c, treat(n-1), covariate(n-1))) (dif (m, a, l)) tilde(Lambda)_(n)^c (dif t, history(n-1))),
     $ <eq:densitycens>
-    where $psi_(k,x)$ was defined in @thm:identifiabilitymartingale
+    where $psi_(n,x)$ was defined in @eq:mark
     and $bb(1) {statuscensored(n-1) != c} tilde(S) (t | history(k-1)) = bb(1) {statuscensored(n-1) != c} product_(s in (event(k-1),t]) (1 - sum_(x=a,ell,y,d) Lambda_k^x (dif s | history(k-1)) - tilde(Lambda)_k^c (dif s | history(k-1)))$.
     
     Further suppose that $bb(1) {statuscensored(n-1) != c} product_(s in (event(k-1),t]) (1 - sum_(x=a,ell,y,d) Lambda_k^x (dif s | history(k-1)) - tilde(Lambda)_k^c (dif s | history(k-1)))
