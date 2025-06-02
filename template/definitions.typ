@@ -1,9 +1,14 @@
 #import "@preview/fletcher:0.5.7": node, edge, diagram
 #import "@preview/ctheorems:1.1.3": *
 #import "@preview/cetz:0.3.4"
+#import "@preview/algo:0.3.6": algo, i, d, comment, code
+//#import "@preview/cheq:0.2.2": checklist //uncomment to use checklist
 
 #let qquad = h(1.5cm)
+//#show: checklist
 #let citep(label) = cite(label, form: "normal")
+#let evaluated(expr, size: 100%) = $lr(#expr|, size: #size)$
+#let comment = comment.with(inline:true)
 
 // event definitions
 #let event(ind) = {
@@ -62,16 +67,6 @@
   ]
 }
 
-
-
-#let historycensored(eventno) = {
-  if eventno == [0] or eventno == 0 [
-    $cal(F)_0$
-  ] else [
-      $cal(F)^(tilde(beta))_(macron(T)_((#eventno)))$
-  ]
-}
-
 #let cumhazardcensored(eventno, which, var) = {
     $tilde(Lambda)_(#eventno)^(#which)(#var, cal(F)^beta_(macron(T)_((#eventno - 1))))$
 }
@@ -79,20 +74,8 @@
 #let historypast(eventno) = $underline(history(#eventno))$
 #let historynext(eventno) = $overline(history(#eventno))$
 
-#let historyint(eventno) = {
-  if eventno == [0] or eventno == 0 [
-      $cal(F)_0^(a_0)$
-  ] else [
-      $cal(F)^a_(event(#eventno))$
-  ]
-}
-
 #let hazard(which, var, eventno) = {
     $Lambda_(#eventno)^(#which)(#var, cal(F)_(T_((#eventno - 1))))$
-}
-
-#let hazardprev(which, var, eventno) = {
-    $lambda_(#eventno - 1)^(#which)(#var, cal(F)_(T_((#eventno - 2))))$
 }
 
 #let cumhazard(eventno, which, var) = {
@@ -140,18 +123,9 @@
 }
 
 #let densitytrt(time, which) = $pi_(#which) (#time, history(#which - 1))$
-#let densitytrtmeasure(time, a, which) = $pi_(#which) (#time, #a, history(#which - 1))$
 #let densitytrtprev(time, arg, which) = $pi_(#which -1) (#time, history(#which - 2))$
 #let densitytrtint(time, arg, which) = $pi_(#which)^* (#time, history(#which - 1))$
 #let densitycov(time, arg, which) = $mu_(#which) (#time, #arg, history(#which - 1))$
-
-#let commonintegral(k, t, integrand, u) = {
-    $integral_(event(#k))^(#t) #integrand upright(d) #u$
-}
-
-#let survivalfunction(k, s, sumset) = {
-    $exp lr((- sum_(x in sumset) commonintegral(#k, #s, hazard(x, u, #k), u)))$
-}
 
 #let tauend = $tau_("end")$
 
@@ -162,9 +136,7 @@
 #let dagnode = node.with(width: 1.1cm, height: 1.1cm)
 
 #let Qbar(k) = $macron(Q)^g_(#k, tau)$
-#let Qbarmiss(k) = $macron(Q)_(#k)$
-#let Qtilde(k) = $tilde(Q)_#k^a$
-#let Qtildemiss(k) = $tilde(Q)_#k$
+#let QbarL(k) = $macron(Q)^(g,-L)_(#k, tau)$
 #let mean(k) = $bb(E)_#k$
 
 #show: thmrules.with(qed-symbol: $square$)
@@ -174,7 +146,6 @@
 #let assumption = thmbox("assumption", "Assumption", fill: rgb("#eeeeff"), base_level: 0)
 #let definition = thmbox("definition", "Definition", fill: rgb("#ffeeee"), base_level: 0)
 #let proof = thmproof("proof", "Proof")
-#let atrisk(k, t) = $tilde(Y)_#k (#t)$
 
 #let frange(x, y, step) = {
     assert(step != 0, message: "step must not be zero")
@@ -269,10 +240,5 @@
     })
 }
 
-//#let prodint(s, t1, t2) = $limits(#scale(x:170%, y:170%)[$pi$])_(#s in (#t1, t2])$
-//#let prodint2(s, t1, t2) = $limits(#scale(x:170%, y:170%)[$pi$])_(#s in (#t1, t2))$
-//#let prodintdisplay(t1, t2) = $#place(dy: -0.002pt)[#scale(x:180%, y:180%)[$pi$]]_(s in (#t1, #t2])$
-
 #let prodint(s, t1, t2) = $product_(#s in (#t1, #t2])$
 #let prodint2(s, t1, t2) = $product_(#s in (#t1, #t2))$
-#let prodintdisplay(t1, t2) = $product_(s in (#t1, #t2])$
