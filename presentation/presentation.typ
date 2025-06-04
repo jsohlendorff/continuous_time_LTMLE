@@ -100,6 +100,7 @@ $
 In the third equality, we use the fact that the integrands under exchangeability are predictable, and hence the integrals are zero mean martingales.
 In the last equality, we simply use the baseline exchangeability condition.
 ]
+
 //- weight not uniquely determined?
 
 //The condition for exchangeability may be problematic

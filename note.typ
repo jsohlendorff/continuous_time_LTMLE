@@ -1234,6 +1234,8 @@ which need only convert at $L_2 (P)$-rates of at least $o_P (n^(-1/4))$ under re
 //        &<= mu_(k-1, tau) (tau) sup_(u in (eventcensored(k-1), tau]) lr(| integral_((eventcensored(k-1),u)) ((S_0 (s- | history(k-1))) / (S (s- | history(k-1))) - 1)  (tilde(S)^c_0 (s- | history(k-1)))/(tilde(S)^c (s | history(k-1))) (tilde(Lambda)^c_(k,0) (d s | history(k-1)) - tilde(Lambda)_k^c (d s | history(k-1))) |)  \
 //$
 //The desired rate conditions may then be easier.
+// Write more explicitly for mu, where a = tilde(nu) and b = S (s) Lambda 
+// Because: int a d b - int hat a hat d b = - int hat a (hat d b - d b) + int a d b - int hat a d b
 #theorem("Second order remainder")[
     Let $eta_0 = ({Lambda_(k,0)^x}_(k,x), {tilde(Lambda)_(k,0)^c}_(k), {pi_(0,k)}_(k), {Qbar(k)}_(k), {QbarL(k)}_k, P_(0,L(0)) )$ be the true parameter values
     and let $eta = ({Lambda_(k)^x}_(k,x), {tilde(Lambda)_(k)^c}_(k), {pi_k}_(k), {nu_(k,tau)}_(k), {tilde(nu)_(k,tau)}_k, P'_(L(0)) )$.
@@ -1380,12 +1382,9 @@ $ <eq:canceltermk>
 
 == Algorithm for the calculation of censoring martingale <section:censmg>
 
-//Before we turn to the main result for the remainder term, we present an algorithm.
 //Overall, the described procedure in pseudo-code is given in #smallcaps("debiasIceIpcw") and
 //we the algorithm #smallcaps("getCensoringMartingale") describes how to compute the outer integral
 //for the martingale term on a fine grid of time points.
-
-// Because: int a d b - int hat a hat d b = - int hat a (hat d b - d b) + int a d b - int hat a d b
 
 // #algo(
 //   title: "debiasIceIpcw",

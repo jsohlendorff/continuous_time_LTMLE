@@ -129,9 +129,6 @@ influence_curve_censoring_martingale_time_varying <- function(dt,
   res2 <- my_dt[id %in% no_id_match, .(cens_mg = 0, Q = Q_last[.N]), by = id]
   my_dt <- my_dt[time <= time_id]
 
-  # my_dt <- my_dt[time <= time_id]
-  #
-
   res <- my_dt[, .(
     cens_mg =
       1 / (Scu[.N] * Su[.N]) * (Q_last[.N] - Q[.N]) * 1 * (time_id[.N] <= tau - time_prev[.N] &
@@ -141,9 +138,4 @@ influence_curve_censoring_martingale_time_varying <- function(dt,
   res <- rbind(res, res2)
   setkey(res, id)
   res
-  # my_dt[, .(
-  #   cens_mg =
-  #     1 / (Scu[.N] * Su[.N]) * (Q_last[.N] - Q[.N]) * 1 * (time_id[.N] <= tau &
-  #                                                            event_id[.N] == "C") - sum(1 / (Scu * Su) * (Q_last - Q) * diff_Lambda_cause_C)
-  # ), by = id]
 }
