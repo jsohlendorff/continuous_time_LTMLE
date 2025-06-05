@@ -20,11 +20,9 @@ safe_merge <- function(x, y, by) {
 
 # Function to widen continuous data from the long format to the wide format
 widen_continuous_data <- function(data) {
-  last_event_number <- max(data$timevarying_data$event_number)
   data_wide <- data.table::dcast(data$timevarying_data,
                                  id ~ event_number,
                                  value.var = c("time", "event", "A", "L"))
   ## Merge with baseline data
-  data_wide <- merge(data_wide, data$baseline_data, by = "id")
-  list(data_wide = data_wide, last_event_number = last_event_number)
+  merge(data_wide, data$baseline_data, by = "id")
 }

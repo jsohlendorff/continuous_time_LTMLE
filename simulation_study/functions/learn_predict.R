@@ -74,8 +74,7 @@ predict_iterative_conditional_expectation <- function(model_type,
 learn_coxph <- function(character_formula,
                         data,
                         intervened_data = NULL,
-                        type = "survival",
-                        is_function = FALSE) {
+                        type = "survival") {
   ## Fit the Cox model
   fit <- coxph(character_formula, data = data, x = TRUE)
   if (!is.null(intervened_data)) {
@@ -85,4 +84,12 @@ learn_coxph <- function(character_formula,
     ## Predict on original data
     list(pred=predict(fit, type = type), fit = fit)
   }
+}
+
+learn_glm_logistic <- function(character_formula,
+                               data) {
+  ## Fit the logistic regression model
+  fit <- glm(character_formula, data = data, family = binomial(link = "logit"))
+  ## Predict on original data
+  list(pred=predict(fit, type = "response"), fit = fit)
 }
