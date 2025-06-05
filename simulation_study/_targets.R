@@ -26,7 +26,7 @@ list(
             function_name = debias_ice_ipcw,
             function_args = list(
               tau = tau,
-              model_type = "tweedie",
+              model_pseudo_outcome = "tweedie",
               time_covariates = time_covariates,
               baseline_covariates = baseline_covariates
             )

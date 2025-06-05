@@ -163,7 +163,7 @@ get_propensity_scores <- function(last_event_number,
 #' @export
 debias_ice_ipcw <- function(data,
                             tau,
-                            model_pseudo_outcome = "tweedie",
+                            model_pseudo_outcome = "scaled_quasibinomial",
                             model_treatment = "learn_glm_logistic",
                             model_hazard = "learn_coxph",
                             conservative = FALSE,
@@ -381,7 +381,6 @@ debias_ice_ipcw <- function(data,
       if (k == 1) {
         martingale_data[, time_0 := 0]
       }
-      
       ## Compute martingale terms separetely for each cause
       ## Needs to be able to handle the non-Cox case
       ## Maybe faster to calculate them all at once, but then there is the issue with memory ... 
@@ -408,6 +407,7 @@ debias_ice_ipcw <- function(data,
           tilde_nu = tilde_nu,
           static_intervention = static_intervention
         )
+
         mg_l <- influence_curve_censoring_martingale(
           dt = copy(martingale_data),
           learn_causes = learn_causes,

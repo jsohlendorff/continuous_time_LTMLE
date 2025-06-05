@@ -54,6 +54,8 @@ predict_iterative_conditional_expectation <- function(model_type,
     )), data = data_ice[get("weight") > 1])
     predict_fun <- function(data)
       predict(fit_prob, data, type = "response") * (exp(predict(fit_normal, data, type = "response")))
+  } else {
+    stop("Unknown model type. Please choose from: 'tweedie', 'quasibinomial', 'scaled_quasibinomial', 'ranger', 'log_normal_mixture'.")
   }
   predict_fun
 }

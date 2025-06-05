@@ -96,6 +96,16 @@ influence_curve_censoring_martingale <- function(dt,
   } else {
     pooled_data <- pooled_data[, weight := 1]
   }
+  
+  ## check for very large weights
+  if (any(pooled_data$weight > 100)) {
+    warning("Some weights are larger than 100. Truncating ...")
+    ## Calculate percentage of weights larger than 100
+    percentage_large_weights <- sum(pooled_data$weight > 100) / nrow(pooled_data) * 100
+    message(paste0("Percentage of weights larger than 100: ", round(percentage_large_weights, 3), "%"))
+    pooled_data[weight > 100, weight := 100]
+  }
+  
   ## mu computation along all event times
   ##  mu_k (u | h(k)) &= integral_(T(k))^(u) prodint2(s, T(k), u) (1-sum_(x=a,l,d,y) Lambda_(k)^x (dif s | H(k))) \
   ## quad times [Lambda^y_(k+1) (dif s | H(k)) + bb(1) {s < u} tilde(nu)_(k+1,tau)(1, s, a, H(k)) Lambda^a_(k+1) (dif s | historycensored(k))
