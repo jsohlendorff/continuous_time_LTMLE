@@ -120,7 +120,7 @@ get_propensity_scores <- function(last_event_number,
 #'  `Y` (event of interest), `D` (competing event), `A` (visiting event), `L` (covariate event),
 #'  `C` (censoring event).
 #' @param tau A numeric value representing the time horizon for the analysis.
-#' @param model_type A string specifying the type of model to use for the iterative conditional expectations estimator.
+#' @param model_pseudo_outcome A string specifying the type of model to use for the iterative conditional expectations estimator.
 #'  Options include \code{"tweedie"}, \code{"quasibinomial"}, \code{"scaled_quasibinomial"}, \code{"ranger"}, and \code{"log_normal_mixture"}.
 #'  Default is \code{"tweedie"}.
 #'  \code{"quasibinomial"} uses a quasi-binomial model. IMPORTANT: Requires outcome between [0, 1], so cannot be used in the censored case.
@@ -128,6 +128,10 @@ get_propensity_scores <- function(last_event_number,
 #'  \code{"ranger"} uses a random forest model from the \code{ranger} package.
 #'  \code{"log_normal_mixture"} uses a log-normal mixture model, which is useful for continuous outcomes with e.g., allows us to model continuous outcomes with a point mass at 0.
 #'
+#' @param model_treatment A string specifying the type of model to use for the treatment propensity score.
+#' Options include \code{"learn_glm_logistic"} (logistic regression).
+#' @param model_hazard A string specifying the type of model to use for the cumulative hazard function.
+#' Options include \code{"learn_coxph"} (Cox proportional hazards model).
 #' @param conservative Logical; if \code{TRUE}, do not debias the censoring martingale in the efficient influence function.
 #' Results in massive speed up, but slightly less accurate inference.
 #' @param time_covariates A character vector of column names in \code{data} that are
@@ -138,6 +142,7 @@ get_propensity_scores <- function(last_event_number,
 #'   in the outcome.
 #' @param return_ipw Logical; if \code{TRUE}, adds inverse probability weight estimator to the output.
 #'   Default is \code{TRUE}.
+#' @param return_ic Logical; if \code{TRUE}, returns the estimated influence curve (IC) for the ICE-IPCW estimator.
 #'
 #' @return A named vector containing the following elements:
 #' `estimate` - the estimated mean interventional absolute risk at time \code{tau} (debiased)
@@ -158,7 +163,7 @@ get_propensity_scores <- function(last_event_number,
 #' @export
 debias_ice_ipcw <- function(data,
                             tau,
-                            model_type = "tweedie",
+                            model_pseudo_outcome = "tweedie",
                             model_treatment = "learn_glm_logistic",
                             model_hazard = "learn_coxph",
                             conservative = FALSE,
@@ -317,7 +322,7 @@ debias_ice_ipcw <- function(data,
     ## Pseudo-outcome and its regression, i.e., this is hat(Z)^a_k which we will regress on cal(F)_(T_(k-1))
     at_risk_before_tau[, weight := 1 / (survival_censoring_k) * ((get(paste0("event_", k)) == "Y" &
                                                                     get(paste0("time_", k)) <= tau) + (get(paste0("event_", k)) %in% c("A", "L")) * future_prediction), env = list(survival_censoring_k = paste0("survival_censoring_", k))]
-    nu_hat <- predict_iterative_conditional_expectation(model_type, history_of_variables, at_risk_before_tau)
+    nu_hat <- predict_iterative_conditional_expectation(model_pseudo_outcome, history_of_variables, at_risk_before_tau)
     at_risk_before_tau[, pred := nu_hat(data = .SD)]
     
     ## Warn if any predictions are NA or below or above 1
@@ -332,6 +337,10 @@ debias_ice_ipcw <- function(data,
         causes <- c("Y", "D")
       } else {
         causes <- c("Y", "D", "A", "L")
+      }
+      
+      if (model_hazard != "learn_coxph"){
+        stop("Only Cox proportional hazards model is supported for estimation of the martingale term")
       }
       
       learn_causes <- list()
@@ -375,7 +384,8 @@ debias_ice_ipcw <- function(data,
       
       ## Compute martingale terms separetely for each cause
       ## Needs to be able to handle the non-Cox case
-      mg_y <- influence_curve_censoring_martingale_time_varying(
+      ## Maybe faster to calculate them all at once, but then there is the issue with memory ... 
+      mg_y <- influence_curve_censoring_martingale(
         dt = copy(martingale_data),
         learn_causes = learn_causes,
         learn_censor = censoring_models[[k]],
@@ -387,7 +397,7 @@ debias_ice_ipcw <- function(data,
         static_intervention = static_intervention
       )
       if (k != last_event_number) {
-        mg_a <- influence_curve_censoring_martingale_time_varying(
+        mg_a <- influence_curve_censoring_martingale(
           dt = copy(martingale_data),
           learn_causes = learn_causes,
           learn_censor = censoring_models[[k]],
@@ -398,7 +408,7 @@ debias_ice_ipcw <- function(data,
           tilde_nu = tilde_nu,
           static_intervention = static_intervention
         )
-        mg_l <- influence_curve_censoring_martingale_time_varying(
+        mg_l <- influence_curve_censoring_martingale(
           dt = copy(martingale_data),
           learn_causes = learn_causes,
           learn_censor = censoring_models[[k]],
@@ -416,7 +426,7 @@ debias_ice_ipcw <- function(data,
       
       if (k > 1) {
         history_of_variables <- setdiff(history_of_variables, paste0(setdiff(time_covariates, "A"), "_", k - 1))
-        tilde_nu <- predict_iterative_conditional_expectation(model_type, history_of_variables, at_risk_before_tau)
+        tilde_nu <- predict_iterative_conditional_expectation(model_pseudo_outcome, history_of_variables, at_risk_before_tau)
       }
       
       mg <- mg_y |> 
