@@ -1,18 +1,18 @@
 ## Function to calculate the cumulative hazard function for Cox models efficiently
-cumulative_hazard_cox <- function(m, dt, covariate_dt, times_data, causes) {
+cumulative_hazard_cox <- function(models, dt, covariate_data, times_data, causes) {
   ## Find exp(LP); i.e., exponential of linear predictor
-  exp_lp_dt <- data.table(id = covariate_dt$id)
+  exp_lp_dt <- data.table(id = covariate_data$id)
   base_hazard <- NULL
   for (j in causes) {
     ## Predict linear predictor for each cause, i.e., exp(LP (X_j)) for all covariates X_j
-    exp_lp <- predict(m[[j]]$fit, newdata = covariate_dt, type = "risk", reference = "zero")
+    exp_lp <- predict(models[[j]]$fit, newdata = covariate_data, type = "risk", reference = "zero")
     exp_lp_dt[, paste0("exp_lp_", j) := exp_lp]
     ## Baseline cumulative hazard Lambda_0^x (T_j) for all j
     if (is.null(base_hazard)) {
-      base_hazard <- as.data.table(basehaz(m[[j]]$fit, centered = FALSE))
+      base_hazard <- as.data.table(basehaz(models[[j]]$fit, centered = FALSE))
       setnames(base_hazard, "hazard",  paste0("hazard_", j))
     } else {
-      base_hazard <- merge(base_hazard, as.data.table(basehaz(m[[j]]$fit, centered = FALSE)), by = "time")
+      base_hazard <- merge(base_hazard, as.data.table(basehaz(models[[j]]$fit, centered = FALSE)), by = "time")
       setnames(base_hazard, "hazard",  paste0("hazard_", j))
     }
     ## Baseline cumulative hazard Lambda_0^x (T_j-) for all j
@@ -32,7 +32,7 @@ cumulative_hazard_cox <- function(m, dt, covariate_dt, times_data, causes) {
   dt
 }
 
-#' Influence curve for the censoring martingale
+# Influence curve for the censoring martingale
 influence_curve_censoring_martingale <- function(dt,
                                                  learn_causes,
                                                  learn_censor,
@@ -41,12 +41,12 @@ influence_curve_censoring_martingale <- function(dt,
                                                  tau,
                                                  k,
                                                  tilde_nu,
-                                                 static_intervention) {
-  ## TODO: Assume the data is on interevent form
+                                                 static_intervention,
+                                                 grid_size = NULL) {
   assertthat::assert_that(is.data.frame(dt))
   ## Assert that time is sorted
   assertthat::assert_that(all(diff(na.omit(dt$time)) >= 0))
-  ## Shift time to interarrival time
+  ## Change time to interarrival time
   dt <- dt[, time_prev := time_minus, env = list(time_minus = paste0("time_", k -
                                                                        1))]
   for (j in seq_len(k - 1)) {
@@ -54,10 +54,11 @@ influence_curve_censoring_martingale <- function(dt,
   }
   dt <- dt[, time := time - time_prev]
   
+  ## Set covariate data = prior history (i.e., all covariates before time k)
   covariate_data <- copy(as.data.table(dt))
   covariate_data <- covariate_data[non_zero]
-  times_to_use <- covariate_data[, c("time", "event", "id")]
-  setnames(times_to_use,
+  time_id_data <- covariate_data[, c("time", "event", "id")] ## for keeping track about whether t <= T_i and tau in MG calculation
+  setnames(time_id_data,
            c("time", "event", "id"),
            c("time_id", "event_id", "id"))
   covariate_data <- covariate_data[, -c("time", "event")]
@@ -65,18 +66,28 @@ influence_curve_censoring_martingale <- function(dt,
   name_covariates <- setdiff(colnames(covariate_data), c("time_prev", "id"))
   if (k == 1)
     name_covariates <- setdiff(name_covariates, "time_0")
+  
+  ## Cause-specific event times
   times_data <- as.data.table(dt)
   times_data <- times_data[event == cause, "time"]
+  if (!is.null(grid_size)){
+    times_data <- data.table(time=seq(min(times_data$time), max(times_data$time),length.out=grid_size))
+  }
+
+  ## Cartesian product to get all combinations of covariates and times for the computation of mu.
+  pooled_data <- covariate_data[, as.list(times_data), by = covariate_data]
   
   ## Get minimal prior event time
   ## here we should also subset so that <= tau - min_i T_((k-1),i) (interarrival scale)
-  # min_T_k_1 <- times_data[, min(time), by = id]
-  # times_data <- times_data[time <= tau - min_T_k_1& event == 1]
-  
-  ## Cartesian product to get all combinations of covariates and times for the computation of mu.
-  pooled_data <- covariate_data[, as.list(times_data), by = covariate_data]
   pooled_data <- pooled_data[time <= tau - time_prev]
   ## Get estimates of cumulative hazard for mu computation
+  ## TODO: add other possibilities for censoring. 
+  ## These should for all causes return predicted values of the cumulative hazard
+  ## for each row of pooled_data (corresponding to each time x covariate combination)
+  ## As such, covariate_data and times_data aren't needed as arguments, but the implementation is more
+  ## computationally efficient for the Cox model here, since
+  ## Lambda( t_j | x_i) = Lambda_0 (t_j) * exp(LP(x_i))
+  ## so Lambda_0 (t_j) and exp(LP(x_i)) may be stored as vectors.
   pooled_data <- cumulative_hazard_cox(learn_causes,
                                        pooled_data,
                                        covariate_data,
@@ -91,15 +102,17 @@ influence_curve_censoring_martingale <- function(dt,
   }
   setnames(pooled_data, "time", paste0("time_", k))
   pooled_data <- pooled_data[, new_event := cause, env = list(new_event = paste0("event_", k))]
+  
+  ## Predict from prior regressions
   if (!is.null(tilde_nu)) {
     pooled_data <- pooled_data[, weight := predict_intervention(.SD, k, tilde_nu, static_intervention), .SDcols = c(name_covariates, paste0(c("time_", "event_"), k))]
   } else {
     pooled_data <- pooled_data[, weight := 1]
   }
   
-  ## check for very large weights
+  ## Check for very large weights
   if (any(pooled_data$weight > 100)) {
-    warning("Some weights are larger than 100. Truncating ...")
+    warning("Some weights are larger than 100. Truncating as weights are supposed to be probabilities ...")
     ## Calculate percentage of weights larger than 100
     percentage_large_weights <- sum(pooled_data$weight > 100) / nrow(pooled_data) * 100
     message(paste0("Percentage of weights larger than 100: ", round(percentage_large_weights, 3), "%"))
@@ -107,7 +120,7 @@ influence_curve_censoring_martingale <- function(dt,
   }
   
   ## mu computation along all event times
-  ##  mu_k (u | h(k)) &= integral_(T(k))^(u) prodint2(s, T(k), u) (1-sum_(x=a,l,d,y) Lambda_(k)^x (dif s | H(k))) \
+  ##  mu_k (u | h(k)) = integral_(T(k))^(u) prodint2(s, T(k), u) (1-sum_(x=a,l,d,y) Lambda_(k)^x (dif s | H(k))) \
   ## quad times [Lambda^y_(k+1) (dif s | H(k)) + bb(1) {s < u} tilde(nu)_(k+1,tau)(1, s, a, H(k)) Lambda^a_(k+1) (dif s | historycensored(k))
   ## + bb(1) {s < u} tilde(nu)_(k+1, tau)(A(k-1), s, ell, H(k)) Lambda^ell_(k+1) (dif s | H(k))].
   pooled_data <- pooled_data[, mu := cumsum(weight * Sminus * Delta_Lambda_cause), by = id]
@@ -122,9 +135,14 @@ influence_curve_censoring_martingale <- function(dt,
   mu_tau_data <- pooled_data[, .(mu_tau = mu[.N]), by = id]
   setnames(pooled_data, paste0(c("time_", "event_"), k), c("time", "event"))
   
+  ## Censored times
   censoring_times <- dt[time <= tau - time_prev &
                           event == "C", "time"]
   censoring_times_original <- copy(censoring_times)
+  if (!is.null(grid_size)){
+    censoring_times <- data.table(time=seq(min(censoring_times), max(censoring_times),length.out=grid_size))
+  }
+  
   ## Cartesian product of censoring_times and covariate_data
   censoring_times <- covariate_data[, as.list(censoring_times), by = covariate_data]
   
@@ -152,9 +170,12 @@ influence_curve_censoring_martingale <- function(dt,
   }
 
   ## define mu_tau as the last mu within each id
-  pooled_data <- merge(pooled_data, times_to_use, by = "id")
-  no_id_match  <- pooled_data[, (sum(time <= time_id) == 0), by = "id"][V1 == TRUE, ]$id ## If all censoring times occur after the event time; then cens_mg = 0
+  pooled_data <- merge(pooled_data, time_id_data, by = "id")
+  
+  # If all censoring times occur after the event time; then cens_mg = 0
+  no_id_match  <- pooled_data[, (sum(time <= time_id) == 0), by = "id"][V1 == TRUE, ]$id 
   result_no_match <- pooled_data[id %in% no_id_match, .(cens_mg = 0, mu = mu_tau[.N]), by = id]
+  
   pooled_data <- pooled_data[time <= time_id]
   
   ## Censoring martingale of Equation 25

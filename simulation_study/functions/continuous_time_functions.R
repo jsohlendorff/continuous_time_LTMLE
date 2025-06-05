@@ -172,7 +172,8 @@ debias_ice_ipcw <- function(data,
                             last_event_number = NULL,
                             static_intervention = 1, 
                             return_ipw = TRUE,
-                            return_ic = FALSE) {
+                            return_ic = FALSE,
+                            grid_size = NULL) {
   ## TODO: Need to more thorougly check user input. At this point *not important*.
   data$timevarying_data <- data$timevarying_data[, event_number := seq_len(.N), by = id]
   
@@ -393,7 +394,8 @@ debias_ice_ipcw <- function(data,
         tau = tau,
         k = k,
         tilde_nu = NULL,
-        static_intervention = static_intervention
+        static_intervention = static_intervention,
+        grid_size = grid_size
       )
       if (k != last_event_number) {
         mg_a <- influence_curve_censoring_martingale(
@@ -405,7 +407,8 @@ debias_ice_ipcw <- function(data,
           tau = tau,
           k = k,
           tilde_nu = tilde_nu,
-          static_intervention = static_intervention
+          static_intervention = static_intervention,
+          grid_size = grid_size
         )
 
         mg_l <- influence_curve_censoring_martingale(
@@ -417,7 +420,8 @@ debias_ice_ipcw <- function(data,
           tau = tau,
           k,
           tilde_nu = tilde_nu,
-          static_intervention = static_intervention
+          static_intervention = static_intervention,
+          grid_size = grid_size
         )
       }
       else {
@@ -487,7 +491,6 @@ debias_ice_ipcw <- function(data,
   }
 }
 ## TODO: Add possibility to use IPW as the last regression when few event points are available
-## TODO: MG calculation and pooling not implemented (yet)
 ## TODO: Add possibility to simulate (impute) when few event points are available
 ## TODO: Add cross-fitting as a possibility
 ## TODO: Add pooling later
