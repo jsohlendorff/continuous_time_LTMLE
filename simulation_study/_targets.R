@@ -10,8 +10,8 @@ tar_option_set(
                "ggplot2")
 )
 tar_source("functions")
-time_covariates <- c("A", "L")
-baseline_covariates <- c("sex", "age", "A_0", "L_0")
+time_covariates <- c("A", "L1", "L2")
+baseline_covariates <- c("sex", "age", "A_0", "L_01", "L_02")
 tau <- 0.04 ## time horizon
 
 list(

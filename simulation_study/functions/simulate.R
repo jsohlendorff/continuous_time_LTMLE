@@ -10,7 +10,7 @@ calculate_mean <- function(data_interventional, tau) {
 }
 
 ## Function to create a boxplot of the estimates and standard errors
-fun_boxplot = function(d,true_value){
+fun_boxplot <- function(d,true_value){
   ## calculate coverage
   cov<-d[, .(coverage=mean((true_value > lower) & (true_value < upper)))]
   p<-ggplot2::ggplot(data = d, aes(y = estimate)) +
@@ -61,25 +61,28 @@ simulate_continuous_time_data <- function(n,
     id = 1:n,
     sex = stats::rbinom(n, 1, .4),
     age = stats::runif(n, 40, 90),
-    L = as.numeric(rep(NA, n)),
+    L1 = as.numeric(rep(NA, n)),
+    L2 = as.numeric(rep(NA, n)),
     A = as.numeric(rep(NA, n)),
     time = numeric(n),
     event = rep("0", n)
   )
-  pop[, L_0 := stats::rbinom(n, 1, .40)]
+  pop[, L_01 := stats::rbinom(n, 1, .40)]
+  pop[, L_02 := stats::rbinom(n, 1, .25)]
   
   # baseline treatment depends on baseline variables
   if (is.null(static_intervention)) {
-    pop[, A_0 := stats::rbinom(n, 1, lava::expit(0.7 * L_0))]
+    pop[, A_0 := stats::rbinom(n, 1, lava::expit(0.7 * L_01))]
   } else if (static_intervention %in% c(0, 1)) {
     pop[, A_0 := static_intervention]
   } else {
     stop("Intervention must be 0, 1, or NULL")
   }
-  pop[, L := L_0]
+  pop[, L1 := L_01]
+  pop[, L2 := L_02]
   pop[, A := A_0]
   
-  people_atrisk <- pop[, data.table::data.table(id, entrytime = time, age, sex, L_0, A_0, A, L)]
+  people_atrisk <- pop[, data.table::data.table(id, entrytime = time, age, sex, L_01, L_02, A_0, A, L1, L2)]
   if (!is.null(static_intervention))
     uncensored <- TRUE
   
@@ -101,13 +104,13 @@ simulate_continuous_time_data <- function(n,
         n = nrow(people_atrisk),
         shape = 1,
         scale = scale_list$A,
-        eta = 0.4 * people_atrisk$A - 0.7 * people_atrisk$L+ 0.03 * people_atrisk$age
+        eta = 0.4 * people_atrisk$A - 0.7 * people_atrisk$L1+ 0.03 * people_atrisk$age
       )
       l_time <- rweibull_proportional_hazard(
         n = nrow(people_atrisk),
         shape = 1,
         scale = scale_list$L,
-        eta = 0.2 * people_atrisk$A - 0.4 * people_atrisk$L+ 0.03 * people_atrisk$age
+        eta = 0.2 * people_atrisk$A - 0.4 * people_atrisk$L1+ 0.03 * people_atrisk$age
       )
     } else {
       a_time <- rep(max_fup + 1, nrow(people_atrisk))
@@ -121,7 +124,7 @@ simulate_continuous_time_data <- function(n,
         n = nrow(people_atrisk),
         shape = 1,
         scale = scale_list$C,
-        eta = -0.7 * people_atrisk$A + 0.6 * people_atrisk$L + 0.04 * people_atrisk$age
+        eta = -0.7 * people_atrisk$A + 0.6 * people_atrisk$L1 + 0.04 * people_atrisk$age
       )
     }
     
@@ -135,13 +138,13 @@ simulate_continuous_time_data <- function(n,
           n = nrow(people_atrisk),
           shape = 1,
           scale = scale_list$Y,
-          eta = -0.45 * people_atrisk$A + 0.7 * people_atrisk$L + 0.05 * people_atrisk$age
+          eta = -0.45 * people_atrisk$A + 0.7 * people_atrisk$L1 + 0.05 * people_atrisk$age
         ),
         rweibull_proportional_hazard(
           n = nrow(people_atrisk),
           shape = 1,
           scale = scale_list$D,
-          eta = -0.6 * people_atrisk$A + 0.7 * people_atrisk$L + 0.03 * people_atrisk$age
+          eta = -0.6 * people_atrisk$A + 0.7 * people_atrisk$L1 + 0.03 * people_atrisk$age
         )
       )
     )
@@ -165,10 +168,12 @@ simulate_continuous_time_data <- function(n,
                                                                                           event = event,
                                                                                           sex,
                                                                                           age,
-                                                                                          L_0,
+                                                                                          L_01,
+                                                                                          L_02,
                                                                                           A_0,
                                                                                           A,
-                                                                                          L)])
+                                                                                          L1,
+                                                                                          L2)])
     #------------------------------------------------------------------------------
     # restrict to people still at risk
     #
@@ -179,16 +184,18 @@ simulate_continuous_time_data <- function(n,
       people_atrisk[event == "A", new_A := static_intervention]
     else
       people_atrisk[event == "A", new_A := stats::rbinom(.N, 1, lava::expit(0.3 +
-                                                                              0.25 * L + 0.2 * A))]
+                                                                              0.25 * L1 + 0.2 * A))]
     #------------------------------------------------------------------------------
     
     # update time-dependent covariates
-    people_atrisk[event == "L", new_L := stats::rbinom(.N, 1, lava::expit(0.3 +
-                                                                            0.7 * L))]
-    
+    people_atrisk[event == "L", new_L1 := stats::rbinom(.N, 1, lava::expit(0.3 +
+                                                                            0.7 * L2))]
+    people_atrisk[event == "L", new_L2 := stats::rbinom(.N, 1, lava::expit(0.4 +
+                                                                            0.4 * L1))]
     # update
     people_atrisk[event == "A", A := new_A]
-    people_atrisk[event == "L", L := new_L]
+    people_atrisk[event == "L", L1 := new_L1]
+    people_atrisk[event == "L", L2 := new_L2]
     
     # collect followup information
     fup_info <- rbind(fup_info, people_atrisk[, names(pop), with = FALSE], fill = TRUE)
@@ -199,7 +206,7 @@ simulate_continuous_time_data <- function(n,
   }
   pop <- rbind(has_terminal, fup_info)
   setkey(pop, id, time, event)
-  baseline_vars <-  c("sex", "age", "A_0", "L_0")
+  baseline_vars <-  c("sex", "age", "A_0", "L_01", "L_02")
   baseline_data <- pop[, c("id", baseline_vars), with = FALSE]
   ## remove duplicate ids from baseline
   baseline_data <- baseline_data[!duplicated(baseline_data$id)]

@@ -1,15 +1,3 @@
-## Function wrapper for interventions, i.e., setting all assigned treatments 1.
-predict_fun_intervention <- function(data, k, predict_fun) {
-  intervened_data <- copy(data) ## Memory safe, but not the most efficient
-  for (j in 0:k) {
-    intervened_data[, paste0("A_", j) := 1]
-  }
-  if (is.factor(intervened_data[[paste0("event_", k)]])) {
-    intervened_data[[paste0("event_", k)]] <- droplevels(intervened_data[[paste0("event_", k)]])
-  }
-  predict_fun(intervened_data)
-}
-
 # Model to use for the outcome regression which returns a prediction function
 # for the chosen model.
 # Available models are:
