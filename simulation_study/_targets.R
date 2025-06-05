@@ -12,7 +12,7 @@ tar_option_set(
 tar_source("functions")
 time_covariates <- c("A", "L1", "L2")
 baseline_covariates <- c("sex", "age", "A_0", "L_01", "L_02")
-tau <- 0.04 ## time horizon
+tau <- 0.03 ## time horizon
 
 list(
   tar_target(true_value_three_event, {
