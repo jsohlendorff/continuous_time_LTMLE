@@ -1,4 +1,9 @@
 ## Function to calculate the cumulative hazard function for Cox models efficiently
+## As such, covariate_data and times_data aren't needed as arguments, but the implementation is more
+## computationally efficient for the Cox model here, since
+## Lambda( t_j | x_i) = Lambda_0 (t_j) * exp(LP(x_i))
+## so Lambda_0 (t_j) and exp(LP(x_i)) may be stored as vectors.
+## The cumulative hazards are then obtained by taking a cartesian product.
 cumulative_hazard_cox <- function(models, dt, covariate_data, times_data, causes) {
   ## Find exp(LP); i.e., exponential of linear predictor
   exp_lp_dt <- data.table(id = covariate_data$id)
@@ -80,14 +85,12 @@ influence_curve_censoring_martingale <- function(dt,
   ## Get minimal prior event time
   ## here we should also subset so that <= tau - min_i T_((k-1),i) (interarrival scale)
   pooled_data <- pooled_data[time <= tau - time_prev]
+  
   ## Get estimates of cumulative hazard for mu computation
   ## TODO: add other possibilities for censoring. 
   ## These should for all causes return predicted values of the cumulative hazard
   ## for each row of pooled_data (corresponding to each time x covariate combination)
-  ## As such, covariate_data and times_data aren't needed as arguments, but the implementation is more
-  ## computationally efficient for the Cox model here, since
-  ## Lambda( t_j | x_i) = Lambda_0 (t_j) * exp(LP(x_i))
-  ## so Lambda_0 (t_j) and exp(LP(x_i)) may be stored as vectors.
+  ## NOTE: Should be possible with predictRisk from riskRegression
   pooled_data <- cumulative_hazard_cox(learn_causes,
                                        pooled_data,
                                        covariate_data,
@@ -110,16 +113,16 @@ influence_curve_censoring_martingale <- function(dt,
     pooled_data <- pooled_data[, weight := 1]
   }
   
-  ## Check for very large weights
+  ## Check for very large weights. These should be between 0 and 1! Inform user for badly behaved models. 
   if (any(pooled_data$weight > 100)) {
     warning("Some weights are larger than 100. Truncating as weights are supposed to be probabilities ...")
-    ## Calculate percentage of weights larger than 100
+    ## Calculate percentage of weights larger than 100 
     percentage_large_weights <- sum(pooled_data$weight > 100) / nrow(pooled_data) * 100
     message(paste0("Percentage of weights larger than 100: ", round(percentage_large_weights, 3), "%"))
     pooled_data[weight > 100, weight := 100]
   }
   
-  ## mu computation along all event times
+  ## mu computation along all event times (Equation 26)
   ##  mu_k (u | h(k)) = integral_(T(k))^(u) prodint2(s, T(k), u) (1-sum_(x=a,l,d,y) Lambda_(k)^x (dif s | H(k))) \
   ## quad times [Lambda^y_(k+1) (dif s | H(k)) + bb(1) {s < u} tilde(nu)_(k+1,tau)(1, s, a, H(k)) Lambda^a_(k+1) (dif s | historycensored(k))
   ## + bb(1) {s < u} tilde(nu)_(k+1, tau)(A(k-1), s, ell, H(k)) Lambda^ell_(k+1) (dif s | H(k))].
@@ -139,9 +142,9 @@ influence_curve_censoring_martingale <- function(dt,
   censoring_times <- dt[time <= tau - time_prev &
                           event == "C", "time"]
   censoring_times_original <- copy(censoring_times)
-  if (!is.null(grid_size)){
-    censoring_times <- data.table(time=seq(min(censoring_times), max(censoring_times),length.out=grid_size))
-  }
+  # if (!is.null(grid_size)){
+  #   censoring_times <- data.table(time=seq(min(censoring_times), max(censoring_times),length.out=grid_size))
+  # }
   
   ## Cartesian product of censoring_times and covariate_data
   censoring_times <- covariate_data[, as.list(censoring_times), by = covariate_data]
@@ -169,7 +172,6 @@ influence_curve_censoring_martingale <- function(dt,
     pooled_data <- pooled_data[, Su  :=  Su * exp(-Lambda_x), env = list(Lambda_x = paste0("Lambda_cause_", j)), by = id]
   }
 
-  ## define mu_tau as the last mu within each id
   pooled_data <- merge(pooled_data, time_id_data, by = "id")
   
   # If all censoring times occur after the event time; then cens_mg = 0

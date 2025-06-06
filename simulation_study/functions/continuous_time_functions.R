@@ -1,3 +1,4 @@
+## Function for getting the propensity scores (treatment) and censoring models
 get_propensity_scores <- function(last_event_number,
                                   data,
                                   tau,
@@ -8,7 +9,7 @@ get_propensity_scores <- function(last_event_number,
                                   baseline_covariates) {
   censoring_models <- list()
   for (k in rev(seq_len(last_event_number))) {
-    ## Find those at risk of the k'th event
+    ## Find those at risk of the k'th event; subset data (i.e., people who have not died before the k'th event)
     ## NOTE: For the treatment propensity score, we do not consider
     ## the interarrival times 
     if (k == 1) {
@@ -86,7 +87,7 @@ get_propensity_scores <- function(last_event_number,
       
     }
   }
-  ## Baseline propensity score
+  ## Baseline propensity model
   formula_treatment <- as.formula(paste0("A_0 ~ ", paste(
     setdiff(baseline_covariates, "A_0"), collapse = "+"
   )))
@@ -101,7 +102,6 @@ get_propensity_scores <- function(last_event_number,
   censoring_models
 }
 
-## TODO: Add support for coarse time grid for numerical integration to compute martingale terms.
 #' @title Computes a one-step estimator of the ICE-IPCW estimator to estimate the mean interventional absolute risk
 #' at a given time horizon in continuous time.
 #'
@@ -135,9 +135,9 @@ get_propensity_scores <- function(last_event_number,
 #' @param conservative Logical; if \code{TRUE}, do not debias the censoring martingale in the efficient influence function.
 #' Results in massive speed up, but slightly less accurate inference.
 #' @param time_covariates A character vector of column names in \code{data} that are
-#'   treated as time-varying covariates.
+#'   treated as time-varying covariates. Must include values of time-varying covariates at baseline.
 #' @param baseline_covariates A character vector of column names in \code{data} that are
-#'   considered baseline (time-invariant) covariates.
+#'   considered baseline (time-invariant) covariates. Must include treatment and time-varying covariates.
 #' @param last_event_number Optional numeric indicating the last event number to consider
 #'   in the outcome.
 #' @param return_ipw Logical; if \code{TRUE}, adds inverse probability weight estimator to the output.
@@ -157,7 +157,7 @@ get_propensity_scores <- function(last_event_number,
 #' causal effect of a time-varying treatment on a time-to-event outcome
 #' that is then used to debias with the efficient influence function, providing inference
 #' with flexible machine learning methods.
-#' Current interventions implemented: Stay treated (i.e., stay on treatment 1)
+#' Current interventions implemented: Static intervention (i.e., intervention at baseline and at each doctor visit to a fixed value).
 #' Current target parameters implemented: Absolute risk.
 #'
 #' @export
@@ -231,6 +231,7 @@ debias_ice_ipcw <- function(data,
     stop("Error in getting censoring/propensity models: ", e)
   })
 
+  ## Main procedure for the ICE-IPCW estimator and the debiasing
   for (k in rev(seq_len(last_event_number))) {
     ## Find those at risk of the k'th event and at risk before tau
     if (k == 1) {
@@ -273,7 +274,7 @@ debias_ice_ipcw <- function(data,
           event_j_previous = paste0("event_", j - 1)
         )]
       }
-      ## 1/pi_j
+      ## 1/hat(pi)_j
       data[event_j == "A", ic_term_part := ic_term_part * (1 *
                                                              (A_j == static_intervention) / (propensity_j)), env = list(
                                                                propensity_j = paste0("propensity_", j),
@@ -290,7 +291,8 @@ debias_ice_ipcw <- function(data,
                  time_previous = paste0("time_", k - 1)
                )]
     }
-    
+
+    ## Handle the IPW estimator
     data[, ipw_k := 0, env = list(ipw_k = paste0("ipw_", k))]
     if (return_ipw) {
       if (k > 1) {
@@ -309,7 +311,6 @@ debias_ice_ipcw <- function(data,
       }
     }
     
-    ## Add ipw contribution
     at_risk_before_tau[, future_prediction := 0]
     
     ## Iterated part
@@ -330,8 +331,9 @@ debias_ice_ipcw <- function(data,
     if (any(is.na(at_risk_before_tau$pred))) {
       warning("Predictions contain NA values.")
     }
-    
-    ## Fit cause-spefific cox models for each current event that is not censoring
+
+    ## NOTE: The following code is the non-conservative version of the debiasing procedure.
+    ## We fit cause-spefific Cox models for each current event that is not censoring
     ## And calculate martingale terms
     if (!conservative) {
       if (first_event) {
