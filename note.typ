@@ -131,9 +131,8 @@ Our approach enables the use of existing regression techniques from the survival
 
 Let $tauend$ be the end of the observation period.
 We will focus on the estimation of the interventional absolute risk in the presence of time-varying confounding at a specified time horizon $tau < tauend$.
-// JOHAN: consider We let $(Omega, cal(F), cal(M))$ be a statistical experiment ...
-We let $(Omega, cal(F), P)$ be a probability space on which all processes
-and random variables are defined.
+We let $(Omega, cal(F), P)$ be a statistical experiment on which all processes
+and random variables are defined. 
 
 At baseline,
 we record the values of the treatment $treat(0)$ and the time-varying covariates $covariate(0)$
@@ -148,36 +147,37 @@ The time-varying confounders $L(t)$ at time $t>0$ are assumed
 to take values in a finite subset $cal(L) subset RR^m$,
 so that $L(t) in cal(L)$ for all $t >= 0$.
 We assume that the stochastic processes $(L(t))_(t>=0)$ and $(A(t))_(t>=0)$ are càdlàg (right-continuous with left limits),
-jump processes. The fact that they are jump processes by @assumptionbounded means that for $P-$almost all $omega in Omega$,
-the processes $L(omega, dot)$ and $A(omega, dot)$ have at most $K-1$ jumps.// #footnote[If this does not hold, then we can view our target parameter as a truncated mean.].//#footnote[The assumption that the number of jumps is bounded can maybe be relaxed to a no explosion condition, but we do not pursue this here.].
+jump processes.
 Furthermore, we require that the times at which the treatment and covariate values may change 
 are dictated entirely by the counting processes $(N^a (t))_(t>=0)$ and $(N^ell (t))_(t>=0)$, respectively
 in the sense that $Delta A (t) != 0$ only if $Delta N^a (t) != 0$ and $Delta L (t) != 0$ only if $Delta N^ell (t) != 0$.
-//The jump times of these counting processes
-//thus represent visitation times. 
+We _emphasize_ the importance of this assumption: We need to assume that $L$ and $A$ are constant between jumps of the counting processes $N^a$ and $N^ell$,
+which means that not only are functional measurements of $L$ not allowed, but also that we must observe all times at which $Delta N^a (t) != 0$ and $Delta N^ell (t) != 0$.
+For technical reasons and ease of notation, we shall assume that the number of jumps $K(t)$
+for the processes $L$ and $A$ satisfies $K(tauend) <= K - 1$ $P$-a.s. for some finite $K >= 1$.
+// If K(tauend) denotes the total number of events in the sample (random variable). Then we assume that K(tauend) <= K
+// However, this might be relaxed to E[K(tauend)] < oo, i.e., the expected number of events is finite.
 
 We also have counting processes representing
-the event of interest $(N^y (t))_(t>=0)$ and the competing event $(N^d (t))_(t>=0)$.//, and the censoring process $(N^c)_(t>=0)$.
-Later, we will introduce the counting process $N^c$ for the censoring process.
+the event of interest $(N^y (t))_(t>=0)$ and the competing event $(N^d (t))_(t>=0)$.
+Let $N^c$ be the censoring process.
+Initially, we shall allow only administrative censoring, i.e., $N^c (t) = bb(1) {t > tauend}$ for all $t >= 0$. 
 //Finally, let $N^c$ be the counting process for the censoring counting process.
-For all counting processes involved, we assume for simplicity that the jump times differ with probability 1 (@assumptionnosimultaneous).
+For all counting processes involved, we assume for simplicity that the jump times differ with probability 1 (i.e., $x!=y$, we have $Delta N^x Delta N^y eq.triple 0$.).
 //Moreover, we assume that only a bounded number of events occur for each individual in the time interval $[0, tauend]$ (@assumptionbounded).
 Thus, we have observations from a jump process $alpha(t) = (N^a (t), A (t), N^ell (t), L(t), N^y (t), N^d (t))$,
 and the natural filtration $(cal(F)_t)_(t>=0)$ is given by $cal(F)_t = sigma (alpha(s) | s <= t) or cal(F)_0$.
 Let $event(k)$ be the $k$'th ordered jump time of $alpha$, that is $T_0 = 0$ and $event(k) = inf {t > event(k-1) | alpha (t) != alpha (event(k-1))} in [0, oo]$ be the time of the $k$'th event
-and let $status(k) in {y, d, a, ell}$ be the status of the $k$'th event, i.e., $status(k) = x$ if $Delta N^x (event(k)) = 1$, so that
-//JOHAN: why emphasize these 3 conditions? they seem not very surprising 
-1. each $event(k)$ is a $cal(F)_t$ stopping time.
-2. $event(k) < event(k+1)$ if $event(k) < oo$.
-3. $event(k+1) = oo$ if $event(k) = oo$ or $status(k-1) in {y, d}$.
+and let $status(k) in {c, y, d, a, ell}$ be the status of the $k$'th event, i.e., $status(k) = x$ if $Delta N^x (event(k)) = 1$.
+We let $event(k+1) = oo$ if $event(k) = oo$ or $status(k-1) in {y, d}$.
 
 //We also impose the condition that the last event has to be a terminal event, i.e., $status(K) = y$ or $d$.
 We let $treat(k)$ ($covariate(k)$) be the treatment (covariate values) at the $k$'th event, i.e., $treat(k) = A(event(k))$ if $status(k) = a$ ($covariate(k) = L(event(k))$ if $status(k) = ell$)
 and $treat(k) = A(event(k-1))$ ($covariate(k) = L(event(k-1))$) otherwise.
 To the process $(alpha(t))_(t>=0)$, we associate the corresponding random measure $N^alpha$ on $(RR_+ times ({y, d, a, ell} times {0,1} times cal(L)))$ by
-//JOHAN: consider \mathrm d instead of d in the following display
+
 $
-    N^alpha (d (t, x, a, ell)) = sum_(k: event(k) < oo) delta_((event(k), status(k), treat(k), covariate(k))) (d (t, x, a, ell)),
+    N^alpha (dif (t, x, a, ell)) = sum_(k: event(k) < oo) delta_((event(k), status(k), treat(k), covariate(k))) (d (t, x, a, ell)),
 $
 where $delta_x$ denotes the Dirac measure on $(RR_+ times ({y, d, a, ell} times {0,1} times cal(L)))$.
 It follows that the filtration $(cal(F)_t)_(t>=0)$ is the natural filtration of the random measure $N^alpha$ (@thm:jointdensity (i)).
@@ -196,29 +196,26 @@ Furthermore, it follows that the stopping time $sigma$-algebra $history(k)$ asso
 stopping time $event(k)$ fulfills that $history(k)= sigma( treat(k), covariate(k), event(k), status(k)) or history(k-1)$. $history(k)$ represents the information up to the $k$'th event.
 We will interpret $history(k)$ as a random variable instead of a $sigma$-algebra, whenever it is convenient to do so and also make the implicit assumption that whenever we condition on $history(k)$,
 we only consider the cases where $event(k) < oo$ and $status(k) in {a, ell}$.
+.//uddyb
 
 We observe $O=history(K) = (event(K), status(K), treat(K-1), covariate(K-1), event(K-1), status(K-1), dots, treat(0), covariate(0)) ~ P in cal(M)$ where
-$cal(M)$ is the statistical model, i.e., a set of probability measures. 
-// JOHAN: we seem to assume that densitytrt is a stochastic process in t with piecewise constant trajectories
-//        also, we implicitely assume that since T(k-1) nothing else has changed which could affect the treatment probability.
-//        I find these assumptions more important than current Assumptions 1,2 
+$cal(M)$ is the statistical model, i.e., a set of probability measures.
+As is common in the point process literature, we let $Ø$ denote the empty mark corresponding to $event(k) = oo$.
+For a single individual, we might observe $treat(0) = 0$ and $covariate(0) = 2$,
+ $treat(1) = 1$, $covariate(1) = 2$, $event(1) = 0.5$, and $status(1) = a$,
+$treat(2) = 1$, $covariate(2) = 2$, $event(2) = 1.5$, and $status(2) = y$,
+and $event(3) = oo$, $status(3) = Ø$, so here $K(t) = 2$.
+
+We will also work within the so-called canonical setting (@last1995marked, Section 2.2).
+Intuitively this means that we assume that $P$ defines only the distribution for the sequence of random variables given by $O$
+and that we work with the natural filtration $(cal(F)_t)_(t>=0)$ generated by the random measure $N^alpha$.
+This is needed to ensure the existence of compensators given by the regular conditional distributions of the jump times and marks (@thm:jointdensity (ii)),
+but also to ensure that $history(k) = sigma(event(k), status(k), treat(k-1), covariate(k-1), history(k-1))$.
+
 Let $densitytrt(t, k)$ be the probability of being treated at the $k$'th event given $status(k) =a, event(k) = t$, and $history(k-1)$.
 Similarly, let $densitycov(t, dot, k)$ be the probability measure for the covariate value $status(k) = ell, event(k) = t$, and $history(k-1)$.
 Let also $cumhazard(k, x, dif t)$ be the cumulative cause-specific hazard measure #footnote[Let $T in (0, oo]$ and $X in cal(X)$ be random variables. Then the cause-specific cumulative hazard measure is given by
     $Lambda_x (dif t) = bb(1) {P(T >= t} > 0} P(T in dif t, X = x) / P(T >= t)$ (Appendix A5.3 of @last1995marked).] for the $k$'th event of type $x$ given $history(k-1)$.
-
-// JOHAN: until here the style of writing is technical, so why not express the assumptions in a more technical
-//        fashion too? also, why is assumption 1 needed, can you make an example where it is not satisfied?
-#assumption("Bounded number of events")[
-In the time interval $[0, tauend]$ there are at most $K - 1 < oo$ many changes of treatment and
-    covariates in total for a single individual. The $K$'th event is terminal. 
-] <assumptionbounded>
-// JOHAN: is this no jumps in common assumption necessary or mostly for ease of presentation?
-#assumption("No simultaneous jumps")[
-    The counting processes $N^a$, $N^ell$, $N^y$, $N^d$, and $N^c$ have with probability 1 no jump times in common.
-    #footnote[If the resulting martingales $M^x$, are of locally bounded variation, then the processes are orthogonal $[M^x, M^(x')]_t = 0$ for $x != x'$ $P$ -a.s,
-        where $[dot, dot]$ is the quadratic covariation process.]
-] <assumptionnosimultaneous>
 
 = Causal framework
 
@@ -402,7 +399,7 @@ $ <eq:mark>
     
     First, we will show that $L(t) = W (t)$, where $W (t)$ is the weight process defined in @eq:weightprocess.
 
-    Note that by @assumptionbounded, $T_oo = oo quad P $-a.s. and 
+    By our assumptions, $T_oo = oo quad P $-a.s. and 
     thus $T_oo (nu) = T_oo = oo$ in view Theorem 4.1.7 (ii) since $macron(nu) {t} < oo$ for all $t > 0$.
     
     Second, note that $macron(nu) = macron(mu)$. This follows since
