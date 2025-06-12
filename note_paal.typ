@@ -49,6 +49,362 @@ under the treatment regime which states that if you go to the doctor, you will b
 Throughout we consider a simple setting without censoring, without
 time-varying covariates and without baseline covariates.
 
+//We establish identification criteria for the causal effect of treatment on an outcome within this setting.
+
+= Causal framework
+
+// JOHAN: elaborate on the definition of g. g seems to operate on A only. need to discuss if g affects N^a because we assume
+// that A can only change where N^a changes
+// and discuss (briefly) what interventions are of interest (static, dynamic, stochastic) in applications, then say
+// that for ease of presentation we assume A to be one-dimensional and A^g(t)=1. is it clear what extensions are covered by the theory?
+// i.e., what is the first time where a subject does not follow a stochastic regime?
+// Further explain that one is really interesting in contrasts of treatment plans/regimes 
+Our overall goal is to estimate the interventional cumulative incidence function at time $tau$,
+$
+    Psi_tau^g (P) = mean(P) [tilde(N)^y (tau)],
+$
+// JOHAN: would be good to have g in the notation of the potential outcome but the N notation, N^(g), is overloaded
+//        perhaps okay to replace tilde(N)^y by 1{T^g_K < tau, Delta^g_K=y}?
+where $tilde(N)^y (t)$ is the potential outcome (a counting process with at most one jump) representing
+the counterfactual outcome $N^y (t) = sum_(k=1)^K bb(1) {event(k) <= t, status(k) =y}$ had the treatment
+regime $g$, possibly contrary to fact, been followed. For simplicity, we assume that the treatment
+regime specifies that $A(t) = 1$ for all $t >= 0$.
+This means that treatment is administered
+at each visitation time.
+In terms of these data, this means that we must have $A(0) = 1$ and $treat(k) = 1$ whenever $status(k) = a$ and $event(k) < t$.
+// JOHAN: maybe first define the weight process and then remark that it is càdlàg
+We now define the càdlàg weight process $(W (t))_(t>=0)$ given by
+$
+        W (t) = product_(k=1)^(N_t) ((bb(1) {treat(k) = 1}) / (densitytrt(event(k), k)))^(bb(1) {status(k) = a}) (bb(1) {treat(0) = 1})/ (pi_0 (covariate(0))),
+$ <eq:weightprocess>
+where $N_t = sum_k bb(1) {event(k) <= t}$ is the number of events up to time $t$,
+// JOHAN: the expression "observed data target parameter" is odd. I would define the "target parameter" and then here say that 
+//        Psi_tau identifies the target parameter 
+and we consider the observed data target parameter $Psi_tau^"obs" : cal(M) -> RR_+$#footnote[Note that by fifth equality of Appendix S1.2 of @rytgaardContinuoustimeTargetedMinimum2022,
+    this is the same as the target parameter in @rytgaardContinuoustimeTargetedMinimum2022 with no competing event.]
+ given by
+$
+        Psi_tau^"obs" (P) = mean(P) [N^y (tau) W (tau)].
+$ <eq:identification>
+// JOHAN: non-martingale is an odd expression. 
+We provide both martingale and non-martingale conditions for the identification ($Psi_tau^g (P) = Psi_tau^"obs" (P)$) of the mean potential outcome in @thm:identifiabilitymartingale and @thm:identifiability,
+respectively.
+// JOHAN: the following 2 sentences need elaboration and may have to be moved to the discussion 
+One can also define a (stochastic)
+intervention with respect to a local independence graph (@roeysland2024) but we do not further pursue this here. //#footnote[The reason we write stochastic is that the treatment consists of two components; the total compensator for the treatment and mark probabilities. Since these two components are inseparable, the intervention of interest is not a static intervention. ]
+While our theory provides a potential outcome framework, it is unclear at this point
+how graphical models can be used to reason about the conditions. #footnote[see @richardson2013single for the discrete time variant, i.e., single world intervention graphs.]
+
+//We recognize at this point that visitation times may not actually be that irregular,
+//but regularly scheduled as they are in a randomized control trial. This will likely _not_ change our results for identification, estimation,
+//and debiasing.
+//For instance, even if $cumhazard(k, a, t)$ were fully known and deterministic,
+//the efficient influence function
+//given in @thm:eif and the iterative conditional expectation formula (@eq:ice2 and @eq:ipcw) are not likely to change
+//based on the form given in these theorems.
+
+== Identification of the causal effect (martingale approach)
+Let $N^a_t (dot) = N^alpha ((0, t] times {a} times dot times cal(L))$ be the random measure on $(RR_+ times {0, 1})$ for the treatment process 
+and let $Lambda_t^a (dot)$ be the corresponding $P$-$cal(F)_t$ compensator.
+We adopt a martingale-based approach for identifying causal effects, following the methodology of @ryalenPotentialOutcomes
+#footnote[The overall difference between @ryalenPotentialOutcomes and our exchangeability condition is that the $P$-$cal(F)_t$ compensator $Lambda^a_t ({1})$ is not required to be the $P$-$(cal(F)_t or sigma(tilde(N)^y))$ compensator for $N^a$.].
+
+To this end, we define the stopping time $T^a$ as the time of the first visitation event where the treatment plan is not followed, i.e.,
+$
+    T^a = inf_(t >= 0) {A(t) = 0} = cases(inf_(k > 1) {event(k) | status(k) = a, treat(k) != 1} "if" A(0) = 1, 0 "otherwise")
+$
+//JOHAN: can we find a different symbol for T^a to avoid confusion with T_(k)?
+Overall $T^a$ acts as a coarsening variable, limiting
+the ability to observe the full potential outcome process. An illustration of the consistency condition in @thm:identifiabilitymartingale is provided in @fig:potentialoutcome.
+Informally, the consistency condition states that the potential outcome process $tilde(N)^y (t)$
+coincides with $N^y (t)$ if the treatment plan has been adhered to up to time point $t$.
+
+// JOHAN: refer to van der Laan and Robins book 
+To fully phrase the causal inference problem as a missing data problem,
+we also need an exchangeability condition.
+// JOHAN: elaborate on this intuition: you write outcome process but mean potential outcome process?
+//        and should it be independent of the OBSERVED timing and treatment assignment?
+The intuition behind the exchangeability condition in @thm:identifiabilitymartingale
+is that the outcome process $tilde(N)^y$ should be
+independent of both the timing of treatment visits and treatment assignment,
+conditional on observed history.
+
+We also briefly discuss the positivity condition,
+which ensures that $(W(t))_(t >= 0)$ is a uniformly integrable martingale
+with $mean(P) [W(t)] = 1$ for all $t in [0, tauend]$ by @eq:sde. This guarantees
+that the observed data parameter $Psi_tau^"obs" (P)$ is well-defined.
+
+//JOHAN: the transition to this following statement is not smooth: "instead of conditioning" where?
+//       you seem to discuss the assumptions of Theo 1 before stating Theo 1
+Note that instead of conditioning on the entire potential outcome process in the exchangeability condition,
+we could have simply conditioned on a single potential outcome variable $tilde(T)_y := inf {t > 0 | tilde(N)^y (t) = 1} in [0, oo]$#footnote[A competing event occuring corresponds to $tilde(T)_y = oo$]
+and included that information at baseline #footnote[Note that $bb(1) {tilde(T)_y <= t} = tilde(N)^y (t)$ for all $t > 0$ because $(tilde(N)^y (t))_(t>=0)$ jumps at most once.].
+//#footnote[Note that if $N^y (t)$ and $N^y (t)$ are counting processes for an event of interest and a competing event, respectively.
+//then $tilde(T)_y$ is the time of the first event of interest and $T^y$ is the time of the first competing event.
+//$bb(1) {T <= t, D = y} = bb(1) {T^y <= t}$.].
+
+We can also state the time-varying exchangeability condition of @thm:identifiabilitymartingale explicitly in terms of the observed data:
+Let $cal(H)_(event(k))$ be the corresponding stopping time $sigma$-algebra for the $k$'th event
+with respect to the filtration ${cal(H)_t}$ given in @thm:identifiabilitymartingale.
+In light of the canonical compensator, we see immediately that the exchangeability condition is fulfilled if
+$ treat(k) perp tilde(T)_y | event(k), status(k) = a, history(k-1)$
+and the cause-specific cumulative hazards for $event(k) | history(k-1), tilde(T)_y$
+for treatment visits only depend on $history(k-1)$ and not on $tilde(T)_y$.
+
+Further work is needed to cast this framework into a coarsening at random (CAR) framework (@onrobinsformula).
+// JOHAN: the following may be correct but is also a show stopper?
+In particular, it is currently unclear whether the parameter $Psi_tau (P)$ depends on the distribution of treatment visitation times and treatment assignment
+and whether the identification conditions impose restrictions on the distribution of the observed data process.
+
+// #footnote[It may be shown in
+//     contrast that a sufficient condition for the exchangeability condition in @ryalenPotentialOutcomes
+//     is that the cumulative cause-specific hazard of $event(k) | cal(H)_(event(k-1)$
+//     for treatment visits that assign no treatment do not depend on $tilde(T)_y$,
+//     which is actually slightly weaker. If the treatment visitation times are actually not random (i.e., regular),
+//     the two stated conditions are the same. //Look into the more general setting.
+// ]
+
+//At this point, it is unclear to me if the conditions, unlike coarsening at random (CAR),
+//impose restrictions on the observed data process in terms of the observed outcome. //, i.e., is "locally arbitrary" in the sense described by @onrobinsformula.
+
+// JOHAN: this theorem is not for right censored data and  we need to state this here again.
+#theorem("Martingale identification of mean potential outcome")[
+Define
+$
+    zeta (t, m, a, l) := sum_k bb(1) {event(k-1) < t <= event(k)} ((bb(1) {a = 1}) / (densitytrt(event(k), k)))^(bb(1) {m=a}),
+$ <eq:reweightmeasure>
+
+If _all_ of the following conditions hold:
+- *Consistency*: $tilde(N)^y (t) bb(1) {T^a > t} = N^y (t) bb(1) {T^a > t} quad P-"a.s."$
+- *Exchangeability*:
+  Define $cal(H)_t := cal(F)_t or sigma(tilde(N)^y)$.
+  The $P$-$cal(F)_t$  compensator for $N^a$ $Lambda^a_t (dot)$ is also the $P$-$cal(H)_t$ compensator
+      and
+  $
+       &tilde(N)^y (t)
+       // JOHAN: really only treat(0) and not also treat(t) for t>0?
+       perp treat(0) | covariate(0), forall t in (0, tauend].
+  $
+- *Positivity*: $mean(P) [integral bb(1) {t <= tauend} |zeta(t, m, a, l) - 1| W (t-) N (d (t, m, a, l))] < oo$ and $ mean(P) [W(0)] = 1.$
+    //$mean(P) [lim_(t -> oo) W(t)] = mean(P) [W(0)] = 1$ and $mean(P) [W (t)^2] < oo$ for all $t > 0$. #footnote[Most likely, it is sufficient for these properties to hold until $tauend$ and not $oo$, because we don't care about identification after that point. ]
+  //$densitytrt(event(k), k) > eta$ and $pi_0 (covariate(0)) > eta$ for all $k in {1, dots, K-1}$ and $t > 0$ for some $eta > 0$ $P$-a.s. #footnote[Probably not the most general condition, but it is sufficient for the proof of the theorem.]    //$W (t) = product_(k=1)^(N_t) ((bb(1) {treat(k) = 1}) / (densitytrt(event(k), k)))^(bb(1) {status(k) = a}) (bb(1) {treat(0) = 1})/ (pi_0 (covariate(0))) < eta$ for all $t>0$ (for simplicity)#footnote[Implying that $mean(P) [W (t)] = 1$ for all $t$].  //fulfills $mean(P) [W (t)] = 1$ for all $t in {0, oo}$ (by monotonicity of $L(t)$ all values in between have mean 1).
+
+// JOHAN: Psi_(t)^g has not been defined yet
+Then,
+$
+    Psi_(t)^g (P) = Psi_t^"obs" (P)
+$ for all $t in (0, tauend]$.
+] <thm:identifiabilitymartingale>
+
+#proof[
+    We shall use that the likelihood ratio solves a specific stochastic differential equation (we use what is essentially Equation (2.7.8) of @andersenStatisticalModelsBased1993),
+    but present the argument using Theorem 10.2.2 of @last1995marked as the explicit conditions are not stated in @andersenStatisticalModelsBased1993.
+    First, let
+    $
+        psi_(k, x) (t, history(k-1),dif (m, a, l)) &=   bb(1) {x = a}(delta_(1) (dif a) densitytrt(t, k) + delta_(0) (dif a) (1 - densitytrt(t, k))) delta_(covariate(k-1)) (dif l) \
+            &+ bb(1) {x = ell} densitycov(d l, t, k) delta_(treat(k-1)) (dif a) \
+            &+ bb(1) {x in {y, d}} delta_(treat(k-1)) (dif a) delta_(covariate(k-1)) (dif l).
+$ <eq:mark>
+    We shall use that the $P$-$cal(F)_t$ compensator of $N^alpha$ is given by
+    $
+        Lambda^alpha (d (t, m, a, l)) &= sum_k bb(1) {event(k-1) < t <= event(k)} sum_(x=a,ell,y,d) delta_x (dif m) psi_(k,x) (t, d (a, l)) cumhazard(k,x,dif t) , \
+    $ <eq:compensator>
+    Second, let $Phi (d (t, x)) = bb(1) {t <= tauend} N^alpha (d (t, x))$ and $nu (d (t, x)) = bb(1) {t <= tauend} Lambda^alpha (d (t, x))$ be the restricted
+    random measure and its compensator. We define $P$-$cal(F)_t$ predictable, $mu (d (t, x)) := zeta (t, x) nu (d (t, x))$.
+    Here, we use the shorthand notation $x=(m,a,l)$.
+    The likelihood ratio process $L (t)$ given in (10.1.14) of @last1995marked is defined by
+    $
+        L(t) &= bb(1) {t < T_oo and T_oo (nu)) L_0 product_(n : event(n) <= t) zeta(event(n), status(n), treat(n), covariate(n)) \
+             &quad product_(s <= t \ N_(s-) = N_(s)) (1-macron(nu) {s}) / (1-macron(mu) {s}) exp(integral bb(1){s <= t} (1-zeta(s,x)) nu^c (d (s, x))) \
+            &+ bb(1) {t >= T_oo and T_oo (nu)} liminf_(s -> T_oo and T_oo (nu)) L(s).
+    $ <eq:lrt>
+    Here $T_oo := lim_n T_n$, $T_oo (nu) := inf {t >= 0 | nu ((0, t] times {y, d, a, ell} times {0, 1} times cal(L)) = oo}$,
+    $macron(mu)(dot) := mu(dot times {y, d, a, ell} times {0, 1} times cal(L))$,
+    $macron(nu)(dot) := nu(dot times {y, d, a, ell} times {0, 1} times cal(L))$,
+    $nu^c (dif (s, x)) := bb(1) {macron(nu) {s} = 0} nu (d (s, x))$, and $L_0 := W (0) = (bb(1) {treat(0) = 1})/ (pi_0 (covariate(0)))$.
+    
+    First, we will show that $L(t) = W (t)$, where $W (t)$ is the weight process defined in @eq:weightprocess.
+
+    By our assumptions, $T_oo = oo quad P $-a.s. and 
+    thus $T_oo (nu) = T_oo = oo$ in view Theorem 4.1.7 (ii) since $macron(nu) {t} < oo$ for all $t > 0$.
+    
+    Second, note that $macron(nu) = macron(mu)$. This follows since
+    $
+        macron(nu) (A) &= integral_(A times {y, d, a, ell} times {0, 1} times cal(L)) zeta(t, m, a, l) mu (d (t, m, a, l)) \
+            &=integral_(A times {y, d, ell} times {0, 1} times cal(L)) zeta(t, m, a, l) mu (d (t, m, a, l))  + integral_(A times {a} times {0, 1} times cal(L)) zeta(t, m, a, l) mu (d (t, m, a, l))\
+            &=integral_(A times {y, d, ell} times {0, 1} times cal(L)) 1 mu (d (t, m, a, l))  + integral_(A times {a} times {0, 1} times cal(L)) zeta(t, m, a, l) mu (d (t, m, a, l))\
+            &=mu (A times {y, d, ell} times {0, 1} times cal(L))  + sum_k bb(1) {event(k-1) < t <= event(k)} Lambda^a (d t | history(k-1)) \
+            &=mu(A times {y, d, a, ell} times {0, 1} times cal(L)) = macron(mu) (A), \
+    $
+    for Borel measurable sets $A subset.eq RR_+$,
+    where the last step follows from the form of the compensator (@eq:compensator).
+    Thus
+    $
+        product_(s <= t \ N_(s-) = N_(s)) (1-macron(nu) {s}) / (1-macron(mu) {s}) exp(integral bb(1){s <= t} (1-zeta(s,x)) nu^c (d (s, x))) = 1,
+    $
+    and hence
+    $
+        L(t) &= L_0 product_(n : event(n) <= t) zeta(event(n), status(n), treat(n), covariate(n)) \
+            &=^"def."W (t).
+    $
+    Let $V(s,x) = zeta(s,x) - 1 + (macron(nu) {s}-macron(mu) {s})/(1-macron(mu) {s}) = zeta(s,x)-1$.
+    $L (t)$ will fulfill that
+    $
+        L (t) = L_0 + integral bb(1) {s <= t} V(s,x) L(s-) [Phi (d(s,x)) - nu (d(s,x))] \
+    $
+    if
+    $
+        mean(P) [L_0] = 1, \
+        macron(mu) {t} <= 1, \
+        macron(mu) {t} = 1 " if " macron(nu) {t} = 1, \
+        macron(mu) [T_oo and T_oo (mu)] = 0 " and " macron(nu) [T_oo and T_oo (nu)] = 0.
+    $ <eq:conditionstheorem1022>
+    by Theorem 10.2.2 of @last1995marked.
+    
+    The first condition holds by positivity. The second condition holds by the specific choice
+    of compensator since $sum_x cumhazard(k, x, {t}) <= 1$ for all $k = 1, dots, K$ and $t in (0, tauend]$ (Theorem A5.9 of @last1995marked).
+    The third holds since $macron(mu) = macron(nu)$ and the fourth holds since $T_oo = T_oo (nu) = T_oo (mu) = oo$.
+    
+    Thus,
+    $
+        W(t) = (bb(1) {treat(0) = 1})/ (pi_0 (covariate(0))) + integral_0^t W(s -) V(s, x) (Phi (d(s,x)) - nu (d(s,x)).
+    $ <eq:sde>
+    
+    Then we shall show that
+    $
+        M^*_t := integral tilde(N)^y (t) bb(1) {s <= t} V(s,x) L(s-) [N (d(s,x)) - Lambda (d(s,x))]
+    $ <eq:martingalecond>
+    is a zero mean uniformly integrable martingale.
+    This follows if
+    $
+        mean(P) [integral tilde(N)^y (t) |V(s,x)| L(s-) Phi (d(s,x))] < oo.
+    $
+    and if $(omega, s, x) mapsto tilde(N)^y (t) |V(s,x)| L(s-)$ is $P$-$cal(H)_s$ predictable by Exercise 4.1.22 of @last1995marked.
+    Since
+    $
+        mean(P) [integral tilde(N)^y (t) |V(s,x)| L(s-) Phi (d(s,x))] <= mean(P) [integral bb(1) {s <= tauend} |V(s,x)| L(s-) N (d(s,x))] < oo
+    $
+    and
+    $(omega, s) mapsto tilde(N)^y (t)$ is predictable with respect to $cal(H)_s$,
+    $(omega,s) mapsto L(s-)$ is $P$-$cal(H)_s$ predictable (càglàd and adapted; Theorem 2.1.10 of @last1995marked),
+    $(omega,s, x) mapsto V(s,x)$ is $P$-$cal(H)_s$ predictable (Theorem 2.2.22 of @last1995marked),
+    so that $(omega, s) mapsto tilde(N)^y (t) |V(s,x)| L(s-)$ is $P$-$cal(H)_s$ predictable,
+    and the desired martingale result for @eq:martingalecond follows.
+    This in turn implies by @eq:sde:
+    $
+        mean(P) [ tilde(N)_t^y W(t)] &= mean(P) [ tilde(N)_t^y W(0)] + mean(P) [M^*_t] \
+            &= mean(P) [ tilde(N)_t^y W(0)] \
+            &= mean(P) [ mean(P) [tilde(N)_t^y | history(0)] W(0) ] \
+            &= mean(P) [ mean(P) [tilde(N)_t^y | covariate(0)] W(0) ] \
+            &= mean(P) [ mean(P) [tilde(N)_t^y | covariate(0)] mean(P) [W(0) | covariate(0)] ] \
+            &= mean(P) [ mean(P) [tilde(N)_t^y | covariate(0)] 1] \
+            &= mean(P) [ tilde(N)_t^y],
+    $
+    where we use the baseline exchangeability condition and the law of iterated expectation.
+]
+// Note that we can specify conditions directly in terms of the events. 
+
+#figure(cetz.canvas(length: 1cm, {
+    import cetz.draw: *
+
+  // Set-up a thin axis style
+  set-style(axes: (stroke: .5pt, tick: (stroke: .5pt)),
+      legend: (stroke: none, item: (spacing: .3), scale: 80%))
+    line( (0,0), (0,6), mark: (end: ">"), name: "line")
+    line( (0,0), (6,0), mark: (end: ">"), name: "line")
+    content((), $t$, anchor: "north-west")
+    line((0, 2.3),(-0.15, 2.3))
+    content((), $1$, anchor: "east")
+    line((0, 0.3),(-0.15, 0.3))
+    content((), $0$, anchor: "east")
+
+    line( (0.1,0.3), (3,0.3), mark: ( end: "o"), stroke: (paint: blue))
+    line( (2.7,2.3), (5,2.3), mark: (fill: blue, start: "o"), stroke: (paint: blue))
+    line( (3,0.3), (5,0.3), mark: (fill: blue), stroke: (dash: "dashed", paint: blue))
+    line( (1.8, 0.15), (1.8, -0.15))
+    content((), $T^a$, anchor: "north")
+    
+    line( (8,0), (8,6), mark: (end: ">"), name: "line")
+    content((), $A(t)$, anchor: "east")
+    line( (8,0), (14,0), mark: (end: ">"), name: "line")
+    content((), $t$, anchor: "north-west")
+    line((8, 2.3),(7.85, 2.3))
+    content((), $1$, anchor: "east")
+    line((8, 0.3),(7.85, 0.3))
+    content((), $0$, anchor: "east")
+
+    line( (8.1,2.3), (9.8,2.3), mark: ( end: "o"), stroke: (paint: blue))
+    line( (9.7,0.3), (13,0.3), mark: (fill: blue, start: "o"), stroke: (paint: blue))
+    line( (9.8, 0.15), (9.8, -0.15))
+    content((), $T^a$, anchor: "north")
+}), caption: [The figure illustrates the consistency condition for the potential outcome framework for single individual.
+    The left panel shows the potential outcome process $tilde(N)^y (t)$ (dashed) and the observed process $N^y (t)$ (solid).
+    The right panel shows the treatment process $A(t)$. At time $T^a$, the treatment is stopped and the processes
+    may from some random future point diverge from each other.
+]) <fig:potentialoutcome>
+
+== Identification of the causal effect (non-martingale approach)
+In this subsection, we present a non-martingale approach for the identification of causal effects,
+and the conditions are stated for identification at the time horizon of interest.
+
+#theorem[
+Assume *Consistency* and *Positivity* as in @thm:identifiabilitymartingale for a single timepoint $tau$ (in the positivity condition replace $tauend$ with $tau$). Additionally, we assume that:
+- *Exchangeability*: We have
+   $
+       &tilde(N)^y (tau) bb(1) {event(j) <= tau < event(j+1)}
+       perp treat(k) | history(k-1), event(k), status(k) = a, quad forall j>=k>0, \
+       &tilde(N)^y (tau) bb(1) {event(j) <= tau < event(j+1)}
+       perp treat(0) | covariate(0), quad forall j>=0.
+   $ <eq:exchangeability>
+
+Then the estimand of interest is identifiable, i.e.,
+$
+    Psi_(tau)^g (P) = Psi_tau^"obs" (P).
+$
+]<thm:identifiability>
+#proof[
+    Write $tilde(Y)_t = sum_(k=1)^K bb(1) {event(k-1) <= tau < event(k)} tilde(N)^y (tau)$.
+    The theorem is shown if we can prove that $mean(P) [bb(1) {event(k-1) <= tau < event(k)} tilde(N)^y (tau)] = mean(P) [bb(1) {event(k-1) <= tau < event(k)} N_tau^y W(tau)]$
+    by linearity of expectation.
+    We have that for $k >= 1$,
+    $
+        bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} N_tau^y W(tau)] &= bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} bb(1) {T^a > tau} N_tau^y W(tau)] \
+            &=bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} bb(1) {T^a > tau} tilde(N)^y (tau) W(tau)] \
+            &=bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(N)^y (tau) W(tau)] \
+            &=bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(N)^y (tau) W(event(k-1)) ]\
+            &=bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(N)^y (tau) ((bb(1) {treat(k-1) = 1}) / (densitytrtprev(event(k-1), event(k-1), k)))^(bb(1) {status(k-1) =a}) W(event(k-2)) ]\
+            &=bb(E)_P [ bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(N)^y (tau) | history(k-2), status(k-1), event(k-1), treat(k-1)] \
+                &qquad times ((bb(1) {treat(k-1) = 1}) / (densitytrtprev(event(k-1), event(k-1), k)))^(bb(1) {status(k-1) =a}) W(event(k-2)) ]\
+                        &=bb(E)_P [ bb(E)_P [ bb(1) {event(k-1) <= tau< event(k)} tilde(N)^y (tau) | history(k-2), status(k-1), event(k-1)] \
+                &qquad times ((bb(1) {treat(k-1) = 1}) / (densitytrtprev(event(k-1), event(k-1), k)))^(bb(1) {status(k-1) =a}) W(event(k-2)) ]\
+            &=bb(E)_P [ bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(N)^y (tau) | history(k-2), status(k-1), event(k-1)] \
+                &qquad times mean(P) [((bb(1) {treat(k-1) = 1}) / (densitytrtprev(treat(k-1), event(k-1), k)))^(bb(1) {status(k-1) =a}) | history(k-2), status(k-1), event(k-1)] W(event(k-2)) ]\
+            &=bb(E)_P [ bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(N)^y (tau) | history(k-2), status(k-1), event(k-1)] W(event(k-2)) ]\
+            &=bb(E)_P [ bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(N)^y (tau) | history(k-3), status(k-2), event(k-2), treat(k-2)] W(event(k-2)) ]\
+    $
+    Iteratively applying the same argument, we get that
+    $bb(E)_P [  bb(1) {event(k-1) <= tau < event(k)} tilde(N)^y (tau) ] = bb(E)_P [  bb(1) {event(k-1) <= tau < event(k)} N_tau^y W(tau)]$ as needed.
+]
+By the intersection property of conditional independence, we see that a sufficient condition for the first exchangeability condition in @eq:exchangeability
+is that
+$
+    tilde(N)^y (tau)
+    perp treat(k) | event(j) <= tau < event(j+1), history(k-1), event(k), status(k) = a, quad forall j>=k>0, \
+    bb(1) {event(j) <= tau < event(j+1)}
+    perp treat(k) | history(k-1), event(k), status(k) = a, quad forall j>=k>0. \
+$
+
+The second condition may in particular be too strict in practice as the future event times
+may be affected by prior treatment.
+While the overall exchangeability condition can be expressed in an alternative form, the consistency condition remains essentially the same.
+Specifically, let $tilde(Y)_(tau, k)$ be the potential outcome at event $k$
+corresponding to $bb(1) {event(k) <= tau, status(k) =y}$.
+Then the exchangeability condition is that $tilde(Y)_(tau, k) perp treat(j) | history(j-1), event(j), status(j) = a)$ for $0 <= j < k$ and $k = 1, dots, K$.
+However,
+it has been noted (@RobinsLongitudinal2001) in discrete time that the existence of multiple potential outcomes
+can be restrictive and that the resulting exchangeability condition may be too strong. 
+
+
 = The intervened world
 
 In a hypothetical world where the intervention is implemented all

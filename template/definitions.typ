@@ -124,7 +124,7 @@
 
 #let densitytrt(time, which) = $pi_(#which) (#time, history(#which - 1))$
 #let densitytrtprev(time, arg, which) = $pi_(#which -1) (#time, history(#which - 2))$
-#let densitytrtint(time, arg, which) = $pi_(#which)^* (#time, history(#which - 1))$
+#let densitytrtint(time,arg, which) = $pi_(#which)^* (#time, history(#which - 1))$
 #let densitycov(time, arg, which) = $mu_(#which) (#time, #arg, history(#which - 1))$
 
 #let tauend = $tau_("end")$
