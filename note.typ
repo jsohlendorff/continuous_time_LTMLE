@@ -522,16 +522,21 @@ In this section, we present an algorithm for the ICE-IPCW estimator and consider
 It requires as inputs the dataset $cal(D)_n$, a time point $tau$ of interest, and a cause-specific cumulative hazard model $cal(L)_h$​ for the censoring process.
 This model takes as input the event times, the cause of interest, and covariates from some covariate space $bb(X)$,
 and outputs an estimate of the cumulative cause-specific hazard function $hat(Lambda)^c: (0, tau) times bb(X) -> RR_+$ for the censoring process.
+It is technically allowed for this procedure to only give estimates
+of $1/(P(eventcensored(k) >= t | historycensored(k-1))) P(eventcensored(k) in dif t, statuscensored(k) = c | historycensored(k-1))$, which is always estimable from observed data, and not $1/(P(C >= t | historycensored(k-1))) P(C in dif t | historycensored(k-1))$.
+For all practical purposes, we will assume that these are the same. 
 
 The algorithm also takes a model $cal(L)_o$ for the iterative regressions, which returns a prediction function $hat(nu): bb(X) -> RR_+$ for the pseudo-outcome.
 Ideally, both models should be chosen flexibly, since even with full knowledge of the data-generating mechanism, the true functional form of the regression model
 cannot typically be derived in closed form.
 Also, the model should be chosen such that the predictions are $[0,1]$-valued.
 
+For use of the algorithm in practice, we shall choose $K$ such that $K=max_(i in {1, dots, n}) K_i (tau)$,
+where $K_i (tau)$ is the number of non-terminal events for individual $i$ in the sample.
 The algorithm can then be stated as follows:
 
 - For each event point $k = K+1, K, dots, 1$ (starting with $k = K$):
-    1. Regress $macron(S)_((k)) = eventcensored(k) - eventcensored(k-1)$
+    1. Regress $macron(S)_((k)) = eventcensored(k) - eventcensored(k-1)$, known as the $k$'th _interarrival_ time,
        with the censoring as the cause of interest
        on $historycensored(k-1)$ (among the people who are still at risk after $k-1$ events,
        that is $R_k = {i in {1, dots, n} | macron(Delta)_(k-1,i) in {a, ell}}$ if $k > 1$ and otherwise $R_1 = {1, dots, n}$)
@@ -563,19 +568,19 @@ The algorithm can then be stated as follows:
            
 - At baseline, we obtain the estimate $hat(Psi)_n = 1/n sum_(i=1)^n hat(nu)_(0) (1, L_i (0))$.
 
-Note that the third step, we can alternatively let $cal(F)^g_(eventcensored(k))$
-be given by replacing setting all prior treatment values to 1,
+Note that the third step, we can alternatively in $cal(F)^g_(eventcensored(k))$
+replace all prior treatment values with 1,
 that is $treat(0) = dots = treatcensored(k-1) = 1$. This is certainly closer
-to the iterative conditional expectation estimator as proposed by @bangandrobins2005,
-but is mathematically equivalent.
+to the iterative conditional expectation estimator as proposed by @bangandrobins2005, but is mathematically equivalent
+as we, in the next iterations, condition on the treatment being set to 1.
+This follows from standard properties of the conditional expectation (see e.g., Theorem A3.13 of @last1995marked).
 
 In the first step, the modeler wish to alter the history from an intuitive point of view, so that, in
 the history $historycensored(k-1)$, we use the variables $macron(T)_(k-1) - macron(T)_(j)$ for $j <= k-1$
-instead of the variables $macron(T)_(k-1)$,
-altering the event times in the history to "time since last event" instead of the "event times".
-
-Also note that in practice, we will choose $K$ such that $K=K(tau)$ is the number of non-terminal events
-occuring in the sample.
+instead of the variables $macron(T)_(j)$,
+altering the event times in the history to "time since last event" instead of the "event times" 
+(note that we should then remove $macron(T)_(k-1)$ from the history as it is identically zero).
+This makes our regression procedure in step 1 intuitively look like a simple regression procedure at time zero.
 
 //Looking at the algorithm, we see that this does not matter as no observations; indicator functions are all zero.
 // otherwise we would not have data.
@@ -972,7 +977,7 @@ To achieve this, we need to debias our initial ICE-IPCW estimator either through
 A method for constructing this estimator is presented in @section:onestep.
 
 We derive the efficient influence function using the iterative representation given
-in @eq:ipcw, working under the assumptions of @thm:ice, by finding the Gateaux derivative of the target parameter.
+in @eq:ipcw, working under the conclusions of @thm:ice, by finding the Gateaux derivative of the target parameter.
 Note that this does not constitute a rigorous proof that @eq:eif
 is the efficient influence function, but rather a heuristic argument.
 To proceed, we introduce additional notation and define
@@ -1085,22 +1090,22 @@ is the same as the one derived by @rytgaardContinuoustimeTargetedMinimum2022 in 
 //This means that multiple TMLE updates may not be a good idea. 
 
 In this section, we provide a one step estimator for the target parameter $Psi_tau^g$.
-For a collection of estimators $eta = ({Lambda_k^x}, {tilde(Lambda)_k^c}, {pi_k}, {nu_(k,tau)}, {tilde(nu)_(k,tau)}, P'_(L(0)) )$,
+For a collection of estimators $eta = ({hat(Lambda)_k^x}, {hat(Lambda)_k^c}, {hat(pi)_k}, {nu_(k,tau)}, {tilde(nu)_(k,tau)}, hat(P)_(L(0)) )$,
 we consider plug-in estimates of the efficient influence function
 $
-    phi_tau^* (O; eta) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (pi_j (eventcensored(j), historycensored(j-1))))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^(c) (eventcensored(j)- | historycensored(j-1))) bb(1) {statuscensored(k-1) in {ell, a}, eventcensored(k-1) < tau} \
-        & times ((macron(Z)^a_(k,tau) (tilde(S)_(k-1)^(c), nu_(k,tau)) - nu_(k-1,tau)) \
-            &qquad+ integral_(eventcensored(k - 1))^(tau and eventcensored(k)) (mu_(k-1)(tau | historycensored(k-1))-mu_(k-1)(u | historycensored(k-1))) 1/(tilde(S)^(c) (u | historycensored(k-1)) S (u- | historycensored(k-1))) (tilde(N)^c (dif u) - tilde(Lambda)^c (dif u | historycensored(k-1)))) \
-        & + nu_(0,tau) (1, L(0)) - Psi_tau^g (eta)
+    phi_tau^* (O; eta) &= (bb(1) {treat(0) = 1})/ (hat(pi)_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (pi_j (eventcensored(j), historycensored(j-1))))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) hat(S)^(c) (eventcensored(j)- | historycensored(j-1))) bb(1) {statuscensored(k-1) in {ell, a}, eventcensored(k-1) < tau} \
+        & times ((macron(Z)^a_(k,tau) (hat(S)_(k-1)^(c), nu_(k,tau)) - nu_(k-1,tau)) \
+            &qquad+ integral_(eventcensored(k - 1))^(tau and eventcensored(k)) (mu_(k-1)(tau | historycensored(k-1))-mu_(k-1)(u | historycensored(k-1))) 1/(hat(S)^(c) (u | historycensored(k-1)) hat(S) (u- | historycensored(k-1))) (tilde(N)^c (dif u) - tilde(Lambda)^c (dif u | historycensored(k-1)))) \
+        & + nu_(0,tau) (1, L(0)) - hat(P)_(L(0)) [ nu_(0,tau) (1, dot)]
 $ <eq:onestep-eif>
 where
 $
-    mu_k (u | historycensored(k)) &= integral_(eventcensored(k))^(u) prodint2(s, eventcensored(k), u) (1-sum_(x=a,l,d,y) Lambda_(k)^x (dif s | historycensored(k))) \
-        &quad times [Lambda^y_(k+1) (dif s | historycensored(k)) + bb(1) {s < u} tilde(nu)_(k+1,tau)(1, s, a, history(k)) Lambda^a_(k+1) (dif s | historycensored(k)) + bb(1) {s < u} tilde(nu)_(k+1, tau)(treat(k-1), s, ell, history(k)) Lambda^ell_(k+1) (dif s | historycensored(k))].
+    mu_k (u | historycensored(k)) &= integral_(eventcensored(k))^(u) prodint2(s, eventcensored(k), u) (1-sum_(x=a,l,d,y) hat(Lambda)_(k)^x (dif s | historycensored(k))) \
+        &times [hat(Lambda)^y_(k+1) (dif s | historycensored(k)) + bb(1) {s < u} tilde(nu)_(k+1,tau)(1, s, a, history(k)) hat(Lambda)^a_(k+1) (dif s | historycensored(k)) + bb(1) {s < u} tilde(nu)_(k+1, tau)(treat(k-1), s, ell, history(k)) hat(Lambda)^ell_(k+1) (dif s | historycensored(k))].
 $ <eq:mu>
 
 Here, we let $tilde(nu)_(k, tau) (u | f_k)$ be an estimate of $QbarL(k) (u |f_k) := mean(P) [Qbar(k) (u | historycensored(k)) | treatcensored(k) = a_k, statuscensored(k) = d_k, historycensored(k-1) = f_(k-1)]$,
-let $nu_(k,tau) (f_k)$ be an estimate of $Qbar(k) (tau | f_k)$, and let $P'_(L(0))$ be an estimate of $P_(L(0))$, the distribution of the covariates at time 0.
+let $nu_(k,tau) (f_k)$ be an estimate of $Qbar(k) (tau | f_k)$, and let $hat(P)_(L(0))$ be an estimate of $P_(L(0))$, the distribution of the covariates at time 0.
 We use the notation $macron(Z)^a_(k,tau) (tilde(S)_(k-1)^(c), nu_(k,tau))$ to explicitly denote the dependency on $tilde(S)_(k-1)^(c)$ and $nu_(k,tau)$.
 
 We will now describe how to estimate the efficient influence function in practice.
@@ -1108,14 +1113,15 @@ Overall, we consider the same procedure as in @alg:ipcwice with additional steps
 1. For ${nu_(k,tau) (f_k)}$, use the procedure described in @alg:ipcwice.
 2. For ${tilde(nu)_(k,tau) (f_k)}$ use a completely similar procedure to the one given in @alg:ipcwice
    using the estimator $nu_(k+1,tau)$ to obtain $tilde(nu)_(k,tau)$.
-   The difference is that we do not include the latest time varying covariate $covariatecensored(k)$
-   in the regression.
-3. Estimate ${Lambda_k^x}$ for $x=a,ell,d,y$ and ${tilde(Lambda)^c_k}$ using step 1 in @alg:ipcwice.
-4. Obtain estimates of the propensity score ${pi_k (t, f_(k-1))}$ by regressing
+   Now we do not include the latest time varying covariate $covariatecensored(k)$
+   in the regression, so that
+   $tilde(nu)_(k-1,tau) = bb(E)_(hat(P)) [macron(Z)^a_(k,tau) (hat(S)_(k-1)^(c), nu_(k,tau)) | treatcensored(k) = a_k, statuscensored(k) = d_k, historycensored(k-1) = f_(k-1)]$.
+3. Find ${hat(Lambda)_k^x}$ for $x=a,ell,d,y$ and ${hat(Lambda)^c_k}$ using step 1 in @alg:ipcwice.
+4. Obtain an estimator of the propensity score ${pi_k (t, f_(k-1))}$ by regressing
    $treatcensored(k)$ on $(eventcensored(k), historycensored(k-1))$ among
    subjects with $statuscensored(k) = a$ and $statuscensored(k-1) in {a, ell}$ for each $k$
    and for $k=0$ estimate $pi_0 (L(0))$ by regressing $treat(0)$ on $L(0)$.
-5. Use the estimates $tilde(nu)_(k,tau) (f_k)$ and the estimates of $Lambda_(k)^x, x=a,ell,d,y$ to numerically compute $mu_(k-1)$
+5. Use the estimates $tilde(nu)_(k,tau) (f_k)$ and the estimates of $hat(Lambda)_(k)^x, x=a,ell,d,y$ to numerically compute $mu_(k-1)$
    via @eq:mu.
 6. Use the estimated survival functions from the cumulative hazards in step 3 to compute the martingale term in @eq:onestep-eif.
    See also @section:censmg for details on how to approximately compute the censoring martingale term.
@@ -1139,8 +1145,9 @@ but for all $i = 1, dots, n$ to estimate the term in the efficient influence fun
 //This simplification leads to slightly conservative standard error estimates.
 
 We have also elected not to estimate @eq:Qbaru using the procedure described in the algorithm in @alg:ipcwice (ICE-IPCW), as it
-may be prohibitively expensive to do so along a sufficiently fine time grid.
-Moreover, the resulting estimators are not guaranteed to be monotone in $u$.
+may be prohibitively expensive to do so even along a sparse grid of time points.
+Moreover, the resulting estimators are not guaranteed to be monotone in $u$
+which $Qbar(k) (u | historycensored(k))$ is.
 
 //For instance, the ICE-IPCW approach would be computationally infeasible along a dense grid of time points.
 Now, we turn to the resulting one-step procedure. 
@@ -1255,13 +1262,15 @@ $ <eq:hk>
 ] <lemma:mgterm>
     #proof[
 We first note that
-    $
+        $
         &mean(P_0) [ integral_(eventcensored(k - 1))^(tau and eventcensored(k)) (mu_(k-1) (tau | historycensored(k-1)) - mu_(k-1, tau) (u |historycensored(k-1))) 1/(tilde(S)^c (u | historycensored(k-1)) S (u- | historycensored(k-1))) tilde(Lambda)^c (dif u) | historycensored(k-1)] \
         &=mean(P_0) [ integral_(eventcensored(k - 1))^(tau and eventcensored(k)) (mu_(k-1) (tau | historycensored(k-1)) - mu_(k-1, tau) (u |historycensored(k-1))) 1/(tilde(S)^c (u | historycensored(k-1)) S (u- | historycensored(k-1))) tilde(Lambda)^c_(k) (dif u | historycensored(k-1)) | historycensored(k-1)] \
-            &= mean(P_0) [integral_(eventcensored(k - 1))^(tau) bb(1) {eventcensored(k) <= t}(mu_(k-1) (tau | historycensored(k-1)) - mu_(k-1, tau) (u |historycensored(k-1)) ) 1/(tilde(S)^c (u | historycensored(k-1)) S (u- | historycensored(k-1))) tilde(Lambda)^c_(k) (dif u | historycensored(k-1)) | historycensored(k-1)] \
+            &= mean(P_0) [integral_(eventcensored(k - 1))^(tau) bb(1) {eventcensored(k) <= t} \
+                &qquad times (mu_(k-1) (tau | historycensored(k-1)) - mu_(k-1, tau) (u |historycensored(k-1)) ) 1/(tilde(S)^c (u | historycensored(k-1)) S (u- | historycensored(k-1))) tilde(Lambda)^c_(k) (dif u | historycensored(k-1)) | historycensored(k-1)] \
             &= integral_(eventcensored(k - 1))^(tau) mean(P_0) [bb(1) {eventcensored(k) <= t} | historycensored(k-1)] (mu_(k-1) (tau | historycensored(k-1)) - mu_(k-1, tau) (u |historycensored(k-1))) 1/(tilde(S)^c (u | historycensored(k-1)) S (u- | historycensored(k-1))) tilde(Lambda)^c_(k) (dif u | historycensored(k-1))  \
             &=integral_(eventcensored(k - 1))^(tau) (mu_(k-1) (tau | historycensored(k-1)) - mu_(k-1, tau) (u |historycensored(k-1))) (tilde(S)^c_0 (u- | historycensored(k-1)) S_0 (u- | historycensored(k-1)))/(tilde(S)^c (u | historycensored(k-1)) S (u- | historycensored(k-1))) tilde(Lambda)_k^c (d u | historycensored(k-1))
-$ <eq:test>
+        $ <eq:test>
+        by simply interchanging the integral and the expectation (see for instance Lemma 3.1.4 of @last1995marked).
 Finally, let $A in historycensored(k-1)$.
         Then, using the compensator of $tilde(N)^c (t)$ under $P_0$ is $tilde(Lambda)^c_0 = sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} tilde(Lambda)_(k,0)^c (dif t | historycensored(k-1))$
          and that $bb(1) {A} bb(1) {eventcensored(k-1) < s <= eventcensored(k)}$ is predictable, we have
@@ -1308,7 +1317,7 @@ $
         &quad+integral_(eventcensored(k - 1))^(tau) integral_((eventcensored(k-1), u)) ((S_0 (s- | historycensored(k-1))) / (S (s- | historycensored(k-1))) - 1)  (tilde(S)^c_0 (s- | historycensored(k-1)))/(tilde(S)^c (s | historycensored(k-1))) (tilde(Lambda)^c_(k,0) (d s | historycensored(k-1)) - tilde(Lambda)_k^c (d s | historycensored(k-1))) mu_(k-1, tau) (d u |historycensored(k-1)) \
 $ <eq:decomposeProofRemainder>
 
-    Since we also have for $k >= 1$:
+    Since it also holds for $k >= 1$ that,
     $
         &integral bb(1) {t_1 < dots < t_(k-1) < tau} bb(1) {a_0 = dots= a_(k-1) = 1}  (pi_(0,0) (l_0))/ (pi_0 (l_0))
     product_(j = 1)^(k-1) ((pi_(0,j) (t_k, f_(j-1))) / (pi_(j) (t_k, f_(j-1))))^(bb(1) {d_j = a}) (1)/( product_(j=1)^(k-1) tilde(S)^c (t_j- | f_(j-1))) bb(1) {d_1 in {ell, a}, dots, d_(k-1) in {ell, a}} \
@@ -1323,7 +1332,7 @@ $ <eq:decomposeProofRemainder>
             &qquad times (nu_k (f_k) - Qbar(k) (f_k)) P_(0,historycensored(k)) (d f_(k))
 
     $
-so that    
+we have that  
 $
     &integral bb(1) {t_1 < dots < t_(k) < tau} bb(1) {a_0 = dots= a_k = 1} (pi_(0,0) (l_0))/ (pi_0 (l_0))
     product_(j = 1)^(k) ((pi_(0,j) (t_j, f_(j-1))) / (pi_(j) (t_j, f_(j-1))))^(bb(1) {d_j = a}) (1)/( product_(j=1)^(k) tilde(S)^c (t_j- | f_(j-1))) bb(1) {d_1 in {ell, a}, dots, d_(k) in {ell, a}} \
@@ -1412,7 +1421,6 @@ This means that we usually select $t_1=0$ and $t_m <= tau - min_i macron(T)_(k+1
     $hat("MG")_i <- sum_(j=1)^(k_i) (hat(nu)_(tau) (t_(j_"max") | cal(F)_(macron(T)_(k,i))) - hat(nu)_(tau) (t_j | cal(F)_(macron(T)_(k,i))) ) 1/(hat(S)^c (t_j) hat(S)_j ) (hat(M)^c (t_j) - hat(M)^c (t_(j-1)))$ #d \
     return $hat("MG")$
 ]
-
 
 = Real data application <ref:dataapplication>
 How should the methods be applied to real data and what data can we use?
