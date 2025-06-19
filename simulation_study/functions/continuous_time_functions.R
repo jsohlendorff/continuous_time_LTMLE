@@ -32,8 +32,13 @@ get_propensity_scores <- function(last_event_number,
     }
     
     ## Full history of variables, i.e., covariates used in regressions
-    history_of_variables <- c(time_history, baseline_covariates)
-    
+      history_of_variables <- c(time_history, baseline_covariates)
+
+    ## Remove variables from history_of_variables that do not have more than one value
+    ## in the data
+      history_of_variables <- setdiff(history_of_variables, 
+                                         names(which(sapply(at_risk_interevent[, ..history_of_variables], function(x) length(unique(x)) <= 1))))
+      
     ## Fit censoring model if there is censoring
     if (is_censored) {
       formula_censoring <- as.formula(paste0(
@@ -138,7 +143,7 @@ get_propensity_scores <- function(last_event_number,
 #'   treated as time-varying covariates. Must include values of time-varying covariates at baseline.
 #' @param baseline_covariates A character vector of column names in \code{data} that are
 #'   considered baseline (time-invariant) covariates. Must include treatment and time-varying covariates.
-#' @param last_event_number Optional numeric indicating the last event number to consider
+#' @param last_event_number Optional numeric indicating the last nonterminal event number to consider
 #'   in the outcome.
 #' @param return_ipw Logical; if \code{TRUE}, adds inverse probability weight estimator to the output.
 #'   Default is \code{TRUE}.
@@ -204,16 +209,16 @@ debias_ice_ipcw <- function(data,
   
   data[, ic := 0]
   is_censored <- FALSE
-  first_event <- TRUE
-  
-  ## Check if there is any censoring event
+    
+  ## Check if there is any censoring event before tau
   for (j in seq_len(last_event_number)) {
-    is_censored <- nrow(data[event_j == "C", env = list(event_j = paste0("event_", j))]) > 0
-    if (is_censored) {
-      break
-    }
+      is_censored <- nrow(data[event_j == "C" & time_j < tau, env = list(event_j = paste0("event_", j), time_j = paste0("time_", j))]) > 0
+      if (is_censored) {
+          break
+      }
   }
-  
+  first_event <- TRUE
+    
   ## Get propensity scores and models for the censoring.
   ## NOTE: Modifies data in place, so that the propensity scores are added to the data.
   censoring_models <- tryCatch({
@@ -323,7 +328,14 @@ debias_ice_ipcw <- function(data,
     ## ICE-IPCW estimator
     ## Pseudo-outcome and its regression, i.e., this is hat(Z)^a_k which we will regress on cal(F)_(T_(k-1))
     at_risk_before_tau[, weight := 1 / (survival_censoring_k) * ((get(paste0("event_", k)) == "Y" &
-                                                                    get(paste0("time_", k)) <= tau) + (get(paste0("event_", k)) %in% c("A", "L")) * future_prediction), env = list(survival_censoring_k = paste0("survival_censoring_", k))]
+                                                                  get(paste0("time_", k)) <= tau) + (get(paste0("event_", k)) %in% c("A", "L")) * future_prediction), env = list(survival_censoring_k = paste0("survival_censoring_", k))]
+
+    ## Remove variables from history_of_variables that do not have more than one value
+    ## in the data
+    history_of_variables <- setdiff(history_of_variables, 
+                                     names(which(sapply(at_risk_before_tau[, ..history_of_variables], function(x) length(unique(x)) <= 1))))
+     
+      
     nu_hat <- predict_iterative_conditional_expectation(model_pseudo_outcome, history_of_variables, at_risk_before_tau)
     at_risk_before_tau[, pred := nu_hat(data = .SD)]
     
@@ -335,7 +347,7 @@ debias_ice_ipcw <- function(data,
     ## NOTE: The following code is the non-conservative version of the debiasing procedure.
     ## We fit cause-spefific Cox models for each current event that is not censoring
     ## And calculate martingale terms
-    if (!conservative) {
+    if (!conservative & is_censored) {
       if (first_event) {
         causes <- c("Y", "D")
       } else {
