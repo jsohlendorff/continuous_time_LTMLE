@@ -3,9 +3,9 @@
 ## Author: Johan Sebastian Ohlendorff
 ## Created: Jun  6 2025 (11:34) 
 ## Version: 
-## Last-Updated: Jun 18 2025 (18:54) 
+## Last-Updated: Jun 19 2025 (23:04) 
 ##           By: Johan Sebastian Ohlendorff
-##     Update #: 52
+##     Update #: 158
 #----------------------------------------------------------------------
 ## 
 ### Commentary: 
@@ -18,20 +18,22 @@ library(survival)
 library(data.table)
 library(targets)
 library(rtmle)
+library(riskRegression)
 try(setwd("~/phd/continuous_time_LTMLE/simulation_study"))
 tar_source("functions")
 
-tau <- 80 # time horizon in days
+tau <- 90 # time horizon in days
 n <- 1000 # number of individuals
 n_true_value <- 1000000 # number of individuals for true value calculation
 
 # First compute the true value 
 data_continuous_intervention <- simulate_continuous_time_data(n = n_true_value,
-                                                              static_intervention = 1,                                                              number_events = 3)
+                                                              static_intervention = 1,
+                                                              K = 3)
 calculate_mean(data_continuous_intervention, tau = tau)
 
 # Simulate continuous time data with continuous and irregular event times
-data_continuous <- simulate_continuous_time_data(n = n, number_events = 3)
+data_continuous <- simulate_continuous_time_data(n = n, K = 3)
 
 # Run debiased ICE-IPCW procedure
 debias_ice_ipcw(data = copy(data_continuous),
@@ -58,6 +60,3 @@ apply_rtmle( copy(data_continuous),
             time_confounders_baseline = c("L_01", "L_02"),
             baseline_confounders = c("sex","age"),
             learner = "learn_glmnet")
-
-######################################################################
-### example.R ends here

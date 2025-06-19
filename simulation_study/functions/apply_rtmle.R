@@ -3,9 +3,9 @@
 ## Author: Johan Sebastian Ohlendorff
 ## Created: Jun 18 2025 (17:27) 
 ## Version: 
-## Last-Updated: Jun 18 2025 (22:35) 
+## Last-Updated: Jun 19 2025 (22:58) 
 ##           By: Johan Sebastian Ohlendorff
-##     Update #: 19
+##     Update #: 22
 #----------------------------------------------------------------------
 ## 
 ### Commentary: 
@@ -54,9 +54,9 @@ apply_rtmle <- function(data,
 }
 
 ## Function to create a boxplot of the estimates and standard errors
-fun_boxplot_rtmle <- function(d, true_value){
+fun_boxplot_rtmle <- function(d, true_value, by = NULL){
     ## calculate coverage
-    cov <- d[, .(coverage=mean((true_value > Lower) & (true_value < Upper)))]
+    cov <- d[, .(coverage=mean((true_value > Lower) & (true_value < Upper))), by = by]
     p<-ggplot2::ggplot(data = d, aes(y = Estimate)) +
         ggplot2::geom_boxplot() +
         ggplot2::geom_hline(aes(yintercept = true_value, color = "red")) +
@@ -64,7 +64,11 @@ fun_boxplot_rtmle <- function(d, true_value){
     q <- ggplot2::ggplot(data = d, aes(y = Standard_error)) +
         ggplot2::geom_boxplot() +
         ggplot2::geom_hline(aes(yintercept = sd(Estimate), color = "red")) +
-        ggplot2::theme_minimal() 
+        ggplot2::theme_minimal()
+    if (!is.null(by)) {
+        p <- p + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))))
+        q <- q + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))))
+    }
     list(p, q, cov)
 }
 
