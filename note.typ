@@ -1,3 +1,4 @@
+
 #import "template/definitions.typ": *
 #import "@preview/arkheion:0.1.0": arkheion, arkheion-appendices
 #import "@preview/colorful-boxes:1.4.3": *
@@ -52,18 +53,12 @@
 
 // = TODO
 
-// - [x] Clean up figures.
-// - [x] Clean up existence of compensator + integral. 
-// - [x] identifiability. My potential outcome approach. Add figure for potential outcome processes.
-//       Show full identification formula without reweighting
-// - [x] Censoring. Independent censoring IPCW rigorously.
-// - [x] Consistency of estimator. Skip not done in other papers.
-// - [/] Efficient influence function. Cleanup.
+// - [/] Identifiability under censoring
 // - [ ] Simulation study (ML?).
-// - [ ] Comparison of EIF and target parameter with @rytgaardContinuoustimeTargetedMinimum2022.
+// - [ ] Application to real data (e.g., EHR data).
+// - [/] Comparison of EIF and target parameter with @rytgaardContinuoustimeTargetedMinimum2022.
 // - [ ] Consistency of variance estimator?
-// - [/] Debiased estimator
-// - [/] DR properties + ML rates/criteria (rate conditions + conditions for $hat(nu)^*$)
+// - [ ] Empirical process conditions 
 // - [/] Cross-fitting
 // - [x] Discussion. Bayesian approach + pooling/rare events. 
 
@@ -533,6 +528,18 @@ Also, the model should be chosen such that the predictions are $[0,1]$-valued.
 
 For use of the algorithm in practice, we shall choose $K$ such that $K=max_(i in {1, dots, n}) K_i (tau)$,
 where $K_i (tau)$ is the number of non-terminal events for individual $i$ in the sample.
+However, we note that this may not always be possible as there might be few people with many events.
+Therefore, one may have to prespecify $K$ instead
+and define a composite outcome. Specifically, we let
+$k^* = inf {k in {K+1, dots, max_i K_i (tau)} | statuscensored(k) in {y, d, c}}$,
+and $macron(T)^*_((K+1)) = eventcensored(k^*)$ and $macron(D)^*_((K+1)) = statuscensored(k^*)$
+and use the data set where $eventcensored(k), statuscensored(k), treatcensored(k), covariatecensored(k)$ for $k > K+1, dots, k^*$
+are removed from the data and instead $macron(T)^*_((K+1))$ and $macron(D)^*_((K+1))$ are used as the event time and status for the $(K+1)$'th event.
+Strictly speaking, we are not estimating the interventional cumulative incidence function at time $tau$
+as we set out to do originally because the intervention has changed.
+In this situation, the doctor will only have to prescribe treatment to patients who visit the doctor
+as part of their $k^*$ first events. However, this estimand is likely to be close to the original estimand
+of interest.
 The algorithm can then be stated as follows:
 
 - For each event point $k = K+1, K, dots, 1$ (starting with $k = K$):
@@ -1125,7 +1132,7 @@ Overall, we consider the same procedure as in @alg:ipcwice with additional steps
    via @eq:mu.
 6. Use the estimated survival functions from the cumulative hazards in step 3 to compute the martingale term in @eq:onestep-eif.
    See also @section:censmg for details on how to approximately compute the censoring martingale term.
-7. Substitute the rest of the estimates  into @eq:onestep-eif and obtain the estimate of the efficient influence function.
+7. Substitute the rest of the estimates into @eq:onestep-eif and obtain the estimate of the efficient influence function.
 
 There are multiple computational aspects of the stated procedure
 that should be addressed. 
@@ -1148,6 +1155,12 @@ We have also elected not to estimate @eq:Qbaru using the procedure described in 
 may be prohibitively expensive to do so even along a sparse grid of time points.
 Moreover, the resulting estimators are not guaranteed to be monotone in $u$
 which $Qbar(k) (u | historycensored(k))$ is.
+
+Another alternative is to use parametric/semi-parametric models
+for the estimation of the cumulative cause-specific hazard functions
+for the censoring. In that case, we may not actually need to debias
+the censoring martingale, but can still apply machine learning methods
+to iterated regressions.
 
 //For instance, the ICE-IPCW approach would be computationally infeasible along a dense grid of time points.
 Now, we turn to the resulting one-step procedure. 

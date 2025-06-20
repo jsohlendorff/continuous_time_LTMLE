@@ -14,13 +14,14 @@ calculate_mean <- function(data_interventional, tau) {
 fun_boxplot <- function(d, true_value, by = NULL){
     ## calculate coverage
     cov <- d[, .(coverage=mean((true_value > lower) & (true_value < upper))), by = by]
+    d[, sd_est := sd(estimate), by = by]
+    d[, gr := do.call(paste, c(.SD, sep = "_")), .SDcols = by]
     p<-ggplot2::ggplot(data = d, aes(y = estimate)) +
         ggplot2::geom_boxplot() +
         ggplot2::geom_hline(aes(yintercept = true_value, color = "red")) +
         ggplot2::theme_minimal()
-    q <- ggplot2::ggplot(data = d, aes(y = se)) +
+    qz <- ggplot2::ggplot(data = d, aes(y = se)) +
         ggplot2::geom_boxplot() +
-        ggplot2::geom_hline(aes(yintercept = sd(estimate), color = "red")) +
         ggplot2::theme_minimal() 
     r <- ggplot2::ggplot(data = d, aes(y = ice_ipcw_estimate)) +
         ggplot2::geom_boxplot() +
@@ -28,11 +29,21 @@ fun_boxplot <- function(d, true_value, by = NULL){
         ggplot2::theme_minimal()
     if (!is.null(by)) {
         p <- p + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))))
-        q <- q + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))))
+        qz <- qz + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))))
+        ## for q add different geom hlines with sd(estimate) for each compination of variables in by
+        qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est, color = gr), linetype = "dashed")
         r <- r + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))))
+    } else {
+        qz <-  qz + ggplot2::geom_hline(aes(yintercept = sd(estimate), color = "red"))
     }
-    list(p, q, r, cov)
+    list(p, qz, r, cov)
 }
+#d[,sd_est := sd(estimate),by = c("uncensored","model_pseudo_outcome")]
+## ggplot2::ggplot(data = d, aes(y = se,col = uncensored)) +
+##     ggplot2::geom_boxplot() +
+##     facet_wrap(~model_pseudo_outcome) +
+##        ggplot2::theme_minimal() + ggplot2::geom_hline(aes(yintercept = sd_est,col = uncensored,linetype = model_pseudo_outcome)) + ggplot2::geom_boxplot() 
+
 
 ## Simulate and run a function with the simulated data
 simulate_and_run <- function(n,

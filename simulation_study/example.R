@@ -3,9 +3,9 @@
 ## Author: Johan Sebastian Ohlendorff
 ## Created: Jun  6 2025 (11:34) 
 ## Version: 
-## Last-Updated: Jun 19 2025 (23:04) 
+## Last-Updated: Jun 20 2025 (09:43) 
 ##           By: Johan Sebastian Ohlendorff
-##     Update #: 158
+##     Update #: 163
 #----------------------------------------------------------------------
 ## 
 ### Commentary: 
@@ -60,3 +60,32 @@ apply_rtmle( copy(data_continuous),
             time_confounders_baseline = c("L_01", "L_02"),
             baseline_confounders = c("sex","age"),
             learner = "learn_glmnet")
+
+## ATE; K=1
+data_continuous_ate <- simulate_continuous_time_data(n = n, K = 1)
+
+debias_ice_ipcw(data = copy(data_continuous_ate),
+                tau = tau,
+                model_pseudo_outcome = "scaled_quasibinomial",
+                model_treatment = "learn_glm_logistic",
+                model_hazard = "learn_coxph",
+                time_covariates = c("A", "L1", "L2"),
+                baseline_covariates = c("sex", "age", "A_0", "L_01", "L_02"),
+                conservative = FALSE)
+
+run_ate(data_continuous_ate, tau = tau)
+
+## Compare run times between ate (riskRegression) and debiased ICE-IPCW (rtmle)
+library(microbenchmark)
+
+microbenchmark(
+    run_ate(data_continuous_ate, tau = tau),
+    debias_ice_ipcw(data = copy(data_continuous_ate),
+                tau = tau,
+                model_pseudo_outcome = "scaled_quasibinomial",
+                model_treatment = "learn_glm_logistic",
+                model_hazard = "learn_coxph",
+                time_covariates = c("A", "L1", "L2"),
+                baseline_covariates = c("sex", "age", "A_0", "L_01", "L_02"),
+                conservative = FALSE)
+    , times = 1)
