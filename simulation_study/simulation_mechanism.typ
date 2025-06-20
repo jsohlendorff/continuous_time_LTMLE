@@ -1,43 +1,99 @@
 #import "definitions.typ": *
 
-= Simulating longitudinal data for time-to-event analysis in continuous time.
-Each observation $O= (event(K), status(K), treat(K-1), covariate(K-1), event(K-1), status(K-1), dots, treat(0), covariate(0))$
-is generated in the following way. Recall from the main note
-that we put $history(k) = sigma(event(k), status(k), treat(k-1), covariate(k-1)) or history(k-1)$.
+= Simulating longitudinal data for time-to-event analysis in continuous time
 
-Let $densitytrt(t, k)$ be the probability of being treated at the $k$'th event given $status(k) =a, event(k) = t$, and $history(k-1)$.
-Similarly, let $densitycov(t, dot, k)$ be the probability measure for the covariate value given $status(k) = ell, event(k) = t$, and $history(k-1)$.
-Let also $cumhazard(k, x, dif t)$ be the cumulative cause-specific hazard measure
-for the $k$'th event and cause $x$ given $history(k-1)$, where $x = a, ell, d, y, c$.
-At baseline, we let $pi_0 (covariate(0))$ be the probability of being treated given $covariate(0)$
-and $mu_0 (dot)$ be the probability measure for the covariate value.
+We simulate a cohort of patients who initiate treatment at time $t = 0$, denoted by $A(0) = 1$
+and who are initially stroke-free, $L(0) = 0$.
+All individuals are followed for up to $tauend = 730 "days"$ or until death.
+Initially, we do not consider censoring or competing events. 
+During follow-up, patients may experience (at most) one stroke, stop treatment (irreversibly), and die,
+that is $N^x (t) <= 1$ for $x = a, ell, y$.
+With these assumptions $K=2$ in the main note (at most two non-terminal events).
+The primary outcome is the _risk of death within 2 years_.
 
-We let $L(t)$ consist of the covariates _age_, _sex_, $L_1 (t)$, $L_2 (t)$ (e.g., recurrent events).
-Then we generate the baseline variables as follows
+As in the note, we assume that a treatment event and a covariate event cannot happen at the same time,
+which is not a significant limitation.
+Our observations consist of
 $
-    &"age" tilde "Unif"(40,90) \
-        &"sex" tilde "Bernoulli"(0.4) \
-        &L_1 (0) tilde "Bernoulli"(0.4) \
-        &L_2 (0) tilde "Bernoulli"(0.25) \
-        & treat(0)  tilde "Bernoulli"("expit"((beta_0^a)^T cal(F)_(0)^"-A"+beta^(a,*)_0)),
+    O = (event(3), status(3), treat(2), covariate(2), event(2), status(2), treat(1), covariate(1), event(1), status(1), treat(0), covariate(0), "age"),
 $
-where $cal(F)_(0)^"-A" = ("age", "sex", L_1 (0), L_2 (0))$.
+where $event(k)$ is the time of the $k$'th event, $status(k) in {ell, a, y, c}$ (stroke, visit, death, censored),
+$treat(k)$ is the treatment status at time $event(k)$, and $covariate(k)$ is the value of the covariate at time $event(k)$.
+We reserve $c$ for administrative censoring, corresponding to the event happening after the end of the study period, $tauend$.
+Note that we let $event(k) = oo$ if the $k$'th event cannot happen (because the previous event was a terminal event or the end of the study period was reached).
 
-Then, the observation is drawn iteratively as follows,
-
+Then, we generate the baseline variables as follows
 $
-    &S_((k))^x | history(k-1) = f_(t_(k-1)) tilde "Exp"(lambda^x_k exp((beta^x_k)^T f_(t_(k-1)))), x = a, ell, d, y, c \
-        &status(k) = x "if" S_((k))^x < S_((k))^z "for all" z != x \
-        &event(k) = event(k-1) + S_((k))^x "if" status(k) = x \
-        &L^* | event(k), history(k-1) = f_(t_(k-1))tilde "Bernoulli(expit("alpha^L_k)^T f_(t_(k-1)) + alpha^(L,*)_k) \
-        &L_1 (0) = cases(L_1 (k-1) + L^* "if" status(k) = ell "and" k < K, L_1 (k-1) "otherwise") \
-        &L_2 (0) = cases(L_2 (k-1) + L^* "if" status(k) = ell "and" k < K, L_2 (k-1) "otherwise") \
-        &treat(k) = "Bernoulli(expit("(alpha^A k)^T f_(t_(k-1)) + alpha^(A,*)_k)) "if" status(k) = a \
+    &"age" tilde "Unif"(40,90), \
+        &L = 0, \
+        & treat(0) = 1,
 $
 
-where Exp$(lambda)$ denotes the exponential distribution with rate $lambda$.
+Now we describe the simulation mechanism corresponding to the first event that can happen.
+To allow for administrative censoring, let $T_((1))^c = 2$.
+We define $T_((1))^a$ such that the patient can be expected
+to go to the doctor within the first year,
+if the two other events have not occurred first.
+Let Exp($lambda$) denote the exponential distribution with rate $lambda >= 0$.
+We let $lambda = 0$ correspond to the case that the event cannot happen, i.e., $T_((1))^x = oo$.
+As the first event, we draw
+$
+    &T_((1))^x  tilde "Exp"(lambda^x_0 exp(beta^x_(0,"age") "age")), qquad x = ell, y \
+        &T_((1))^a tilde 1 + cal(N)(0, delta) \
+        &status(1) = "argmin"_(x = a, ell, y, c) T_((1))^x \
+        &event(1) = T_((1))^status(1) \
+        &treat(1) | event(1) = t, "age" = x cases(tilde "Bernoulli(expit"(alpha_(00) + alpha_(0, "age") x + alpha_(0, T_((1))) t) "if" status(1) = a, 1 "otherwise") \
+        &covariate(1) = 1, \
+$
+Note that we simulate "competing events" by finding the first event times by defining latent variables $T_((1))^x$ for each possible event type $x$.
+
+We now describe the second event that can happen.
+If the first event was a terminal event -- either outcome or administrative censoring --
+we stop and do not generate more data for this patient.
+Now, we let $S_((2))$ denote the time between $event(1)$ and the second event $event(2)$,
+i.e., $S_((2)) = event(2) - event(1)$.
+As we required that $N^x (t) <= 1$,
+if the first event was a stroke, we cannot have a second stroke,
+and if the first event was a visit, we cannot have a second visit.
+If the first event was a stroke, the doctor visit is likely to happen soon after,
+so we simulate the corresponding latent time as an exponential random variable.
+We will then generate the second event time $event(2)$ as follows:
+
+$
+    &S_((2))^ell tilde "Exp"(lambda^ell_1 exp(beta^ell_(1,"age") "age" + beta^ell_(1, A) (1-treat(1))) bb(1) {status(1) = a}) \
+        &S_((2))^y tilde "Exp"(lambda^y_1 exp(beta^y_(1,"age") "age" + beta^y_(1, A) (1-treat(1)) + beta^ell_(1, L) covariate(1))) \ 
+            &S_((2))^c = 2 - event(1) \
+        &S_((2))^a tilde "Exp"(gamma_0 exp(gamma_"age" "age") bb(1) {status(1) =ell}) \
+            &status(2) = "argmin"_(x = a, ell, y, c) S_((2))^x \
+            &event(2) = event(1) + S_((2))^status(2) \
+        &treat(2) | event(2) = t, "age" = x, treat(1) = a_1, covariate(1) = l_1 \
+        &qquad =cases(tilde "Bernoulli(expit"(alpha_(10) + alpha_(1, "age") x + alpha_(1, T) t + alpha_(1,A) (1-treat(1)) + alpha(1,L) ( 1- treat(1))) "if" status(2) = a, 1 "otherwise") \
+            &covariate(2) = 1, \
+$
+
+Finally, we let $event(3) = S_((3)) + event(2)$ denote the time of the third event,
+if it can happen.
+We define the time $S_((3))$ as follows:
+$
+    S_((3))^y tilde "Exp"(lambda^y_2 exp(beta^y_(2,"age") "age" + beta^y_(2, A) (1-treat(2)) + beta^ell_(2, L) covariate(2) + beta_(2*, A) (1-treat(1)) + beta_(2*, L) covariate(1))) \
+    S_((3))^c = 2 - event(2) \
+    status(3) = "argmin"_(x = y, c) S_((3))^x \
+    event(3) = event(2) + S_((3))^status(3).
+$
+
 When the static intervention is applied, we put $treat(k) = 1$ for each $k = 1, dots, K$.
-When the uncensored data argument is used, we put $S_((k))^c = oo$.
-So the parameters we can vary are the $alpha$'s, $beta$'s, and $lambda$'s.
-A limitation of the current implementation is that the Markov assumption is used for the time-varying variables, i.e.,
-$S_((k))^x$ depends only on $history(k-1)$ through $(treat(k-1), covariate(k-1), event(k-1), status(k-1))$.
+It is not too difficult to see that the likelihood factorizes
+corresponding to the intervention that we are interested in.
+
+//\eqn{Δ(k) = \arg\min_x Sₓ(k)}
+//\eqn{T(k) = T(k-1) + S_{Δ(k)}(k)}
+
+= Plain Language Summary (for Clinical Audience)
+
+We simulate patients who all begin treatment and are initially healthy.
+Over two years, they may have a stroke, stop treatment (only at doctor visits), or die.
+A routine doctor visit is scheduled about a year after treatment begins,
+unless a stroke happens first, in which case a visit is likely to occur soon after.
+Doctors are less likely to stop treatment after a stroke.
+The chance of dying depends on whether the patient has had a stroke and whether they are still on treatment.
+
