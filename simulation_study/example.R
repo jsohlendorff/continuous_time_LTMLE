@@ -20,6 +20,7 @@ library(targets)
 library(rtmle)
 library(riskRegression)
 try(setwd("~/phd/continuous_time_LTMLE/simulation_study"))
+try(setwd("~/research/SuperVision/Johan/continuous_time_LTMLE/simulation_study/"))
 tar_source("functions")
 
 tau <- 90 # time horizon in days
@@ -89,3 +90,28 @@ microbenchmark(
                 baseline_covariates = c("sex", "age", "A_0", "L_01", "L_02"),
                 conservative = FALSE)
     , times = 1)
+
+# compare with rtmle
+x <- rtmle_init(intervals = 3,name_id = "id",name_outcome = "Y",name_competing = "Dead",
+                name_censoring = "Censored",censored_label = "censored",censored_levels = c("uncensored","censored"))
+x <- add_long_data(x,
+                   outcome_data=data_continuous$timevarying_data[event == "Y",.(id = id,date = time)],
+                   censored_data=data_continuous$timevarying_data[event == "C",.(id = id,date = time)],
+                   competing_data=data_continuous$timevarying_data[event == "D",.(id = id,date = time)],
+                   timevar_data=list("A" = data_continuous$timevarying_data[event == "A" & A == 1,.(id = id,date = time)],
+                                     "L1" = data_continuous$timevarying_data[event == "L" & L1 == 1,.(id = id,date = time)],
+                                     "L2" = data_continuous$timevarying_data[event == "L" & L2 == 1,.(id = id,date = time)]))
+x <- add_baseline_data(x,data=data_continuous$baseline_data[,.(id,sex,age)])
+x <- long_to_wide(x,intervals = seq(0,0.03,length.out = 4),start_followup_date = 0)
+x <- protocol(x,name = "Always_A",
+              intervention = data.frame("A" = factor("1",levels = c("0","1"))))
+x <- prepare_data(x)
+x <- target(x,name = "Outcome_risk",
+            estimator = "tmle",
+            protocols = c("Always_A"))
+x <- model_formula(x)
+x <- run_rtmle(x,learner = "learn_glmnet",time_horizon = 1:tau)
+summary(x)
+
+######################################################################
+### example.R ends here
