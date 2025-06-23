@@ -45,7 +45,7 @@ $
         &treat(1) | event(1) = t, "age" = x cases(tilde "Bernoulli(expit"(alpha_(00) + alpha_(0, "age") x) "if" status(1) = a, 1 "otherwise") \
         &covariate(1) = 1, \
 $
-Note that we simulate "competing events" by defining latent variables $T_((1))^x$ for each possible event type $x$.
+Note that we simulate from a "competing event setup" by defining latent variables $T_((1))^x$ for each possible event type $x$.
 
 We now describe the second event that can happen.
 If the first event was a terminal event -- either outcome or administrative censoring --
@@ -87,8 +87,8 @@ it does not matter whether the patient had a stroke first
 and then visited the doctor, or visited the doctor first and then had a stroke.
 
 When the static intervention is applied, we put $treat(k) = 1$ for each $k = 1, dots, K$.
-It is not too difficult to see that the likelihood factorizes
-corresponding to the intervention that we are interested in (see e.g., Theorem II.7.1 of Andersen et al., 1993).
+It is not too difficult to see that the likelihood factorizes as in #cite(<rytgaardContinuoustimeTargetedMinimum2022>, form: "prose")
+corresponding to the intervention that we are interested in (see e.g., Theorem II.7.1 of #cite(<andersenStatisticalModelsBased1993>, form: "prose")).
 
 //\eqn{Δ(k) = \arg\min_x Sₓ(k)}
 //\eqn{T(k) = T(k-1) + S_{Δ(k)}(k)}
@@ -102,3 +102,4 @@ unless a stroke happens first, in which case a visit is likely to occur soon aft
 Doctors are less likely to stop treatment after a stroke.
 The chance of dying depends on whether the patient has had a stroke and whether they are still on treatment.
 
+#bibliography("ref.bib", style: "apa")
