@@ -30,7 +30,6 @@ get_propensity_scores <- function(last_event_number,
             time_history <- setdiff(unlist(lapply(c(time_covariates , "time", "event"), function(x)
                 paste0(x, "_", seq_len(k-1)))), paste0("time_", k - 1))
         }
-        
         ## Full history of variables, i.e., covariates used in regressions
         history_of_variables <- c(time_history, baseline_covariates)
 
@@ -74,36 +73,57 @@ get_propensity_scores <- function(last_event_number,
         
         ## Fit propensity score (treatment) model 
         if (k < last_event_number) {
-            formula_treatment <- as.formula(paste0("A_", k, " ~ ", paste(
-                                                                       c(history_of_variables, paste0("time_", k)), collapse = "+"
+            ## Stupid check to remove variables that do not have more than one value
+            history_of_variables <-  c(history_of_variables, paste0("time_", k))
+            history_of_variables <- setdiff(history_of_variables, 
+                                        names(which(sapply(data[event_k == "A", ..history_of_variables, env =  list(event_k = paste0("event_", k))], function(x) length(unique(x)) <= 1))))
+            formula_treatment <- as.formula(paste0("A_", k, " ~ ", paste0(history_of_variables, collapse = "+"
                                                                    )))
-            data[event_k == "A", propensity_k :=
-                                     tryCatch(
-                                         do.call(model_treatment, list(
-                                                                      character_formula = formula_treatment, data = .SD
-                                                                  ))$pred,
-                                         error = function(e) {
-                                             stop("Error in fitting treatment propensity model: ", e, " for event ", k)
-                                         }
-                                     ), env = list(
-                                            propensity_k = paste0("propensity_", k),
-                                            event_k = paste0("event_", k)
-                                        )]
-            
+            ## check whether all values of A are 1; if so put propensity to 1
+            if (all(data[event_k == "A", A_k == 1, env = list(
+                                                        event_k = paste0("event_", k),
+                                                        A_k = paste0("A_", k)
+                )])){
+                data[event_k == "A", propensity_k := 1, env = list(
+                    propensity_k = paste0("propensity_", k),
+                    event_k = paste0("event_", k)
+                )]
+            } else {
+                data[event_k == "A", propensity_k := tryCatch(
+                    do.call(model_treatment, list(
+                        character_formula = formula_treatment, data = .SD
+                    ))$pred,
+                    error = function(e) {
+                        stop("Error in fitting treatment propensity model: ", e, " for event ", k)
+                    }
+                ), env = list(
+                    propensity_k = paste0("propensity_", k),
+                    event_k = paste0("event_", k)
+                )]
+            } 
         }
     }
     ## Baseline propensity model
     formula_treatment <- as.formula(paste0("A_0 ~ ", paste(
                                                          setdiff(baseline_covariates, "A_0"), collapse = "+"
                                                      )))
-    data[, propensity_0 := tryCatch(
+    ## check whether all values of A_0 are 1; if so put propensity to 1
+    if (all(data$A_0 == 1)) {
+        data[, propensity_0 := 1]
+    } else {
+        ## Fit the baseline treatment propensity model
+        ## check whethe any baseline covariates should be deleted
+        baseline_covariates <- setdiff(baseline_covariates, 
+                                       names(which(sapply(data[, ..baseline_covariates], function(x) length(unique(x)) <= 1))))
+        data[, propensity_0 := tryCatch(
                do.call(model_treatment, list(
                                             character_formula = formula_treatment, data = .SD
                                         ))$pred,
                error = function(e) {
                    stop("Error in fitting baseline treatment propensity model: ", e)
                })
-         ]
+             ]
+    }
     censoring_models
 }
 
