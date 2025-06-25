@@ -436,6 +436,64 @@ vary_effect <- function(effect_A_on_Y = -0.15,
             age = 0.015))
     }                             
 
+vary_dropout <- function(a_intercept = 0.3) {
+    list(
+        alpha_A_0 = list(intercept = a_intercept,
+                         age = 0.002),
+        alpha_A_1 = list(
+            intercept = a_intercept, 
+            age = 0.002,
+            L = -0.07,
+            T = 0),
+        alpha_A_2 = list(
+            intercept = a_intercept,
+            age = 0.002,
+            L = -0.07,
+            T = 0),
+        beta_l_1 = list(
+            A = -0.2,
+            age = 0.015
+        ),
+        beta_l_2 = list(
+            A = -0.2,
+            age = 0.015
+        ),
+        beta_c_1 = list(
+            A = 0,
+            age = 0
+        ),
+        beta_c_2 = list(
+            A = 0,
+            age = 0
+        ),
+        beta_y_1 = list(
+            A = -0.15,
+            L = 0.02,
+            age = 0.025
+        ),
+        beta_y_2 = list(
+            A = -0.15,
+            L = 0.02,
+            age = 0.025
+        ),
+        beta_y_3 = list(
+            A = -0.15,
+            L = 0.02,
+            age = 0.025),
+        beta_d_1 = list(
+            A = -1.2,
+            L = 0.4,
+            age = 0.015),
+        beta_d_2 = list(
+            A = -1.2,
+            L = 0.4,
+            age = 0.015),
+        beta_d_3 = list(
+            A = -1.2,
+            L = 0.4,
+            age = 0.015))
+}
+
 simulate_simple_continuous_time_data <- function(n,
                                                  effects =
                                                      list(
