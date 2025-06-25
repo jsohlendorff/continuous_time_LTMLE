@@ -3,9 +3,9 @@
 ## Author: Johan Sebastian Ohlendorff
 ## Created: Jun 18 2025 (17:27) 
 ## Version: 
-## Last-Updated: Jun 19 2025 (22:58) 
+## Last-Updated: Jun 24 2025 (22:39) 
 ##           By: Johan Sebastian Ohlendorff
-##     Update #: 22
+##     Update #: 29
 #----------------------------------------------------------------------
 ## 
 ### Commentary: 
@@ -49,27 +49,14 @@ apply_rtmle <- function(data,
         estimator = "tmle",
         protocols = "Always_A"
     )
-    ## why does this not work?
-    summary(run_rtmle(x, learner = learner, time_horizon = data_discrete$tau_discrete))
-}
-
-## Function to create a boxplot of the estimates and standard errors
-fun_boxplot_rtmle <- function(d, true_value, by = NULL){
-    ## calculate coverage
-    cov <- d[, .(coverage=mean((true_value > Lower) & (true_value < Upper))), by = by]
-    p<-ggplot2::ggplot(data = d, aes(y = Estimate)) +
-        ggplot2::geom_boxplot() +
-        ggplot2::geom_hline(aes(yintercept = true_value, color = "red")) +
-        ggplot2::theme_minimal() 
-    q <- ggplot2::ggplot(data = d, aes(y = Standard_error)) +
-        ggplot2::geom_boxplot() +
-        ggplot2::geom_hline(aes(yintercept = sd(Estimate), color = "red")) +
-        ggplot2::theme_minimal()
-    if (!is.null(by)) {
-        p <- p + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))))
-        q <- q + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))))
-    }
-    list(p, q, cov)
+    ## Run the RTMLE
+    res<-summary(run_rtmle(x, learner = learner, time_horizon = data_discrete$tau_discrete))
+    res <- res[, c("Estimate", "Standard_error", "Lower", "Upper"), with = FALSE]
+    setnames(res, c("Estimate", "Lower", "Upper", "Standard_error"),
+             c("estimate", "lower", "upper", "se"))
+    res$ice_ipcw_estimate<-NA
+    res$ipw <-NA
+    res
 }
 
 ######################################################################

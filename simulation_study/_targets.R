@@ -15,336 +15,129 @@ tar_option_set(
                  "ranger",
                  "survival",
                  "ggplot2",
-                 "rtmle"),
+                 "rtmle",
+                 "survminer"),
     controller = crew_controller_local(workers = 8)
 )
 
 tar_source("functions")
-time_covariates <- c("A", "L1", "L2")
-baseline_covariates <- c("sex", "age", "A_0", "L_01", "L_02")
-tau <- 90 ## time horizon (in days)
+time_covariates <- c("A", "L")
+baseline_covariates <- c("age", "A_0", "L_0")
 
-values <- data.frame(conservative = c(TRUE, TRUE, TRUE, TRUE),
-                     uncensored = c(TRUE, TRUE, FALSE, FALSE),
-                     model_hazard = c(NA, NA, "learn_coxph", "learn_coxph"),
-                     model_pseudo_outcome = c("quasibinomial","quasibinomial", "tweedie", "scaled_quasibinomial"))
+## Here, we vary the effects of the treatment A and the time-varying confounder L
+## has on the outcome via A on Y, L on Y, and L on A. The last three cases correspond to no confounding effect.
+values <- data.frame(
+    effect_A_on_Y = c(-0.15, 0, 0.15, -0.15, -0.15, -0.15, -0.15, -0.15, 0, 0.15),
+    effect_L_on_Y = c(0.25, 0.25, 0.25, -0.25, 0, 0.25, 0.25, 0, 0, 0),
+    effect_L_on_A = c(-0.1, -0.1, -0.1, -0.1, -0.1,0, 0.1, 0, 0, 0)
+)
 
-## Controlling coefficients for no effect
-effects_no_effect <- list(
-    alpha_A_0 = list(intercept = 0,
-                     sex = 0,
-                     age = 0,
-                     L_01 = 0,
-                     L_02 = 0),
-    alpha_A_k = list(
-        intercept = 0,
-        A = 0,
-        L1 = 0,
-        L2 = 0,
-        sex = 0,
-        age = 0),
-    alpha_L_k = list(
-        intercept = 0,
-        A = 0,
-        L1 = 0,
-        L2 = 0,
-        sex = 0,
-        age = 0),
-    beta_l = list(
-        A = 0,
-        L1 = 0,
-        L2 =  0,
-        sex =  0,
-        age = 0
-    ),
-    beta_c = list(
-        A = 0,
-        L1 = 0,
-        L2 = 0,
-        sex = 0,
-        age = 0
-    ),
-    beta_y = list(
-        A = 0,
-        L1 = 0,
-        L2 = 0,
-        sex = 0,
-        age = 0
-    ),
-    beta_d = list(
-        A = 0,
-        L1 = 0,
-        L2 = 0,
-        sex = 0,
-        age = 0))
+tau <- 720 ## time horizon (in days)
 
-## Controlling coefficients for some effect of treatment but no effect of time-varying confounders
-effects_no_effect_confounding <- list(
-    alpha_A_0 = list(intercept = 0,
-                     sex = 0,
-                     age = 0,
-                     L_01 = 0,
-                     L_02 = 0),
-    alpha_A_k = list(
-        intercept = 0,
-        A = 0.2,
-        L1 = 0,
-        L2 = 0,
-        sex = 0,
-        age = 0),
-    alpha_L_k = list(
-        intercept = 0,
-        A = -0.4,
-        L1 = 0,
-        L2 = 0,
-        sex = 0,
-        age = 0),
-    beta_l = list(
-        A = 0,
-        L1 = 0,
-        L2 =  0,
-        sex =  0,
-        age = 0
+sim_and_true_value <- tar_map(
+    values = values,
+    tar_target(
+        true_value,
+        {
+            d_int <- simulate_simple_continuous_time_data(n = 2500000,
+                                                          static_intervention = 1,
+                                                          no_competing_events = TRUE, 
+                                                          effects = vary_effect(
+                                                              effect_A_on_Y,
+                                                              effect_L_on_Y,
+                                                              effect_L_on_A
+                                                          ))
+            data.table(value = calculate_mean(d_int, tau), 
+                       effect_A_on_Y = effect_A_on_Y,
+                       effect_L_on_Y = effect_L_on_Y,
+                       effect_L_on_A = effect_L_on_A)
+        }
     ),
-    beta_c = list(
-        A = 0.5,
-        L1 = 0,
-        L2 = 0,
-        sex = 0,
-        age = 0
-    ),
-    beta_y = list(
-        A = 0.4,
-        L1 = 0,
-        L2 = 0,
-        sex = 0,
-        age = 0
-    ),
-    beta_d = list(
-        A = 0.4,
-        L1 = 0,
-        L2 = 0,
-        sex = 0,
-        age = 0))
-
-## Controlling coefficients for some effect of treatment and time-varying confounders
-effects_some_confounding =
-    list(
-        alpha_A_0 = list(intercept = 0,
-                         sex = 0,
-                         age = 0,
-                         L_01 = 0.2,
-                         L_02 = 0),
-        alpha_A_k = list(
-            intercept = 0,
-            A = 0,
-            L1 = 0.1,
-            L2 = 0,
-            sex = 0,
-            age = 0),
-        alpha_L_k = list(
-            intercept = 0,
-            A = 0,
-            L1 = 0,
-            L2 = 0,
-            sex = 0,
-            age = 0),
-        beta_l = list(
-            A = -0.2,
-            L1 = 0.05,
-            L2 =  0,
-            sex =  0,
-            age = 0
-        ),
-        beta_c = list(
-            A = 0,
-            L1 = 0,
-            L2 = 0,
-            sex = 0,
-            age = 0
-        ),
-        beta_y = list(
-            A = - 0.9,
-            L1 = 0.3,
-            L2 = 0,
-            sex = 0,
-            age = 0
-        ),
-        beta_d = list(
-            A = -0.8,
-            L1 = 0.25,
-            L2 = 0,
-            sex = 0,
-            age = 0))
-
+    tar_rep(results,
+            simulate_and_run_simple(n = 1000,
+                                    function_name = debias_ice_ipcw,
+                                    simulate_args = list(uncensored = TRUE,
+                                                         no_competing_events = TRUE,
+                                                         effects = vary_effect(
+                                                             effect_A_on_Y,
+                                                             effect_L_on_Y,
+                                                             effect_L_on_A
+                                                         )),
+                                    add_info = data.table(effect_A_on_Y = effect_A_on_Y,
+                                                          effect_L_on_Y = effect_L_on_Y,
+                                                          effect_L_on_A = effect_L_on_A),
+                                    function_args = list(
+                                        tau = tau,
+                                        model_pseudo_outcome = "quasibinomial",
+                                        model_treatment = "learn_glm_logistic",
+                                        model_hazard = NA,
+                                        time_covariates = time_covariates,
+                                        baseline_covariates = baseline_covariates,
+                                        conservative = TRUE
+                                    ),
+                                    function_name_2 = apply_rtmle,
+                                    function_args_2 = list(
+                                        tau = tau,
+                                        grid_size = 8,
+                                        time_confounders = setdiff(time_covariates, "A"),
+                                        time_confounders_baseline = "L_0",
+                                        baseline_confounders = baseline_covariates,
+                                        learner = "learn_glmnet"
+                                     )),
+            reps = 500,
+            batch = 10
+            ))
 
 # ######################################################################
 list(
-    ## Calculate mean interventional value corresponding to P_G(T <= tau and D = 1)
-    tar_target(true_value_three_event, {
-        d_int <- simulate_continuous_time_data(n = 2500000, static_intervention = 1, K=3)
-        calculate_mean(d_int, tau)
-    }),
-    ## Apply debiased ICE-IPCW procedure in this situation
-    tar_map_rep(
-        name = debias_ipcw,
-        command = simulate_and_run(
-            n = 1000,
-            K = 3,
-            function_name = debias_ice_ipcw,
-            uncensored = uncensored,
-            function_args = list(
-                tau = tau,
-                model_pseudo_outcome = model_pseudo_outcome,
-                model_treatment = "learn_glm_logistic",
-                model_hazard = model_hazard,
-                time_covariates = time_covariates,
-                baseline_covariates = baseline_covariates,
-                conservative = conservative
-            )
-        ),
-        values = values,
-        reps = 100,
-        batch = 10
+    sim_and_true_value,
+    ## combine results
+    tar_combine(
+        sim_combine,
+        sim_and_true_value[["results"]],
+        command = dplyr::bind_rows(!!!.x, .id = "method")
     ),
-    ## LTMLE (vary grid size)
-    tar_map_rep(
-        name = ltmle_grid,
-        command = simulate_and_run(n = 1000,
-                                   K = 3,
-                                   function_name = apply_rtmle,
-                                   uncensored = uncensored,
-                                   function_args = list(
-                                       tau = tau,
-                                       grid_size = grid_size,
-                                       time_confounders = setdiff(time_covariates, "A"),
-                                       time_confounders_baseline = c("L_01", "L_02"),
-                                       baseline_confounders = baseline_covariates,
-                                       learner = "learn_glmnet"
-                                   )),
-        values = expand.grid(grid_size = c(3, 5, 10), uncensored = c(TRUE, FALSE)),
-        reps = 100,
-        batch = 10
+    ## combine true value
+    tar_combine(
+        true_value_combined,
+        sim_and_true_value[["true_value"]],
+        command = dplyr::bind_rows(!!!.x, .id = "method")
     ),
-    ## true value (test)
-    tar_target(true_value_three_event_test, {
-        d_int <- simulate_continuous_time_data(n = 2500000, static_intervention = 1, K=3,
-                                               effects = effects_no_effect)
-        calculate_mean(d_int, tau)
-    }),
-    ## Apply procedure under no effects at all; replace with tar_map_rep and consider also uncensored=FALSE
-    tar_map_rep(
-        name = debias_ipcw_test,
-        command = simulate_and_run(
-            n = 1000,
-            K = 3,
-            function_name = debias_ice_ipcw,
-            uncensored = uncensored,
-            effects = effects_no_effect,
-            function_args = list(
-                tau = tau,
-                model_pseudo_outcome = model_pseudo_outcome,
-                model_treatment = "learn_glm_logistic",
-                model_hazard = model_hazard,
-                time_covariates = time_covariates,
-                baseline_covariates = baseline_covariates,
-                conservative = TRUE
-            )
-        ),
-        values = data.frame(
-            model_hazard = c(NA, "learn_coxph"),
-            model_pseudo_outcome = c("quasibinomial", "scaled_quasibinomial"),
-            uncensored = c(TRUE, FALSE)
-        ),
-        reps = 100,
-        batch = 10
+    ## merge the true values with the debiased results by effect_A_on_Y, effect_L_on_Y, effect_L_on_A
+    tar_target(
+        sim_merge,
+        merge(sim_combine, true_value_combined,
+              by = c("effect_A_on_Y", "effect_L_on_Y", "effect_L_on_A"))
     ),
-    ## rtmle under perfect compliance
-    tar_rep(ltmle_grid_test, simulate_and_run(n = 1000,
-                                               K = 3,
-                                               function_name = apply_rtmle,
-                                              uncensored = TRUE,
-                                                  effects = effects_no_effect,
-                                               function_args = list(
-                                                   tau = tau,
-                                                   grid_size = 10,
-                                                   time_confounders = setdiff(time_covariates, "A"),
-                                                   time_confounders_baseline = c("L_01", "L_02"),
-                                                   baseline_confounders = baseline_covariates,
-                                                   learner = "learn_glmnet"
-                                               )),
-            reps = 100,
-            batch = 10),
-    ## true value (test no time varying confounders)
-    tar_target(true_value_three_event_test_no_confounders, {
-        d_int <- simulate_continuous_time_data(n = 2500000, static_intervention = 1, K=3,
-                                               effects = effects_no_effect_confounding)
-        calculate_mean(d_int, tau)
-    }),
-    ## Apply procedure (no time-varying confounders)
-    tar_map_rep(debias_ipcw_test_no_confounders,
-                simulate_and_run(n = 1000,
-                                 K = 3,
-                                 function_name = debias_ice_ipcw,
-                                 uncensored = uncensored,
-                                 effects = effects_no_effect_confounding,
-                                 function_args = list(
-                                     tau = tau,
-                                     model_pseudo_outcome = model_pseudo_outcome,
-                                     model_treatment = "learn_glm_logistic",
-                                     model_hazard = model_hazard,
-                                     time_covariates = time_covariates,
-                                     baseline_covariates = baseline_covariates,
-                                     conservative = TRUE
-                                 )),
-                values = data.frame(
-                    model_hazard = c(NA, "learn_coxph"),
-                    model_pseudo_outcome = c("quasibinomial", "scaled_quasibinomial"),
-                    uncensored = c(TRUE, FALSE)
-                ),
-                reps = 100,
-                batch = 10),
-    ## true value (three events, some confounding)
-    tar_target(true_value_three_event_some_confounding, {
-        d_int <- simulate_continuous_time_data(n = 2500000, static_intervention = 1, K=3,
-                                               effects = effects_some_confounding)
-        calculate_mean(d_int, 170)
-    }),
-    ## Apply procedure (some confounding)
-    tar_map_rep(debias_ipcw_test_some_confounding,
-                simulate_and_run(n = 1000,
-                                 K = 3,
-                                 function_name = debias_ice_ipcw,
-                                 uncensored = uncensored,
-                                 effects = effects_some_confounding,
-                                 function_args = list(
-                                     tau = 170,
-                                     model_pseudo_outcome = model_pseudo_outcome,
-                                     model_treatment = "learn_glm_logistic",
-                                     model_hazard = model_hazard,
-                                     time_covariates = time_covariates,
-                                     baseline_covariates = baseline_covariates,
-                                     conservative = TRUE
-                                 )),
-                values = data.frame(
-                    model_hazard = c(NA, "learn_coxph"),
-                    model_pseudo_outcome = c("quasibinomial", "scaled_quasibinomial"),
-                    uncensored = c(TRUE, FALSE)
-                ),
-                reps = 100,
-                batch = 10),
+    ## calculate coverage
+    tar_target(
+        results_table,
+        {
+            sim_merge[, cov := (value > lower) & (value < upper)]
+            res_cov <-sim_merge[, .(coverage = mean(cov)), 
+                                by = .(effect_A_on_Y, effect_L_on_Y, effect_L_on_A, type)]
+            res_se <- sim_merge[, .(SEmean = mean(se)), 
+                                by = .(effect_A_on_Y, effect_L_on_Y, effect_L_on_A, type)]
+            res_mse <- sim_merge[, .(mse = mean((estimate-value)^2)), 
+                                 by = .(effect_A_on_Y, effect_L_on_Y, effect_L_on_A, type)]
+            list(res_cov = res_cov, res_se = res_se, res_mse = res_mse)
+        }
+    ),
+    ## boxplot the debiased results
+    tar_target(
+        boxplot_results,
+        fun_boxplot(sim_merge, by = c("effect_A_on_Y", "effect_L_on_Y", "effect_L_on_A"))
+    ),
+    ## drop out plot
+    tar_target(
+        dropout_plot,
+        plot_dropout(n = 10000, values = values, max_fup = 900)
+    )
+
+    ## descriptive statistics
     
-    ## Boxplots for debiased IPCW estimates
-    tar_target(boxplot_debias_ipcw, fun_boxplot(debias_ipcw, true_value_three_event, by = c("model_pseudo_outcome", "conservative", "uncensored", "model_hazard"))),
-    ## Boxplots for LTMLE estimates
-    tar_target(boxplot_ltmle_grid, fun_boxplot_rtmle(ltmle_grid, true_value_three_event, by =  c("grid_size", "uncensored"))),
-    ## Boxplots for debiased IPCW estimates (test)
-    tar_target(boxplot_debias_ipcw_test, fun_boxplot(debias_ipcw_test, true_value_three_event_test, by = c("model_pseudo_outcome", "uncensored", "model_hazard"))),
-    ## Boxplots for LTMLE estimates (test)
-    tar_target(boxplot_ltmle_grid_test, fun_boxplot_rtmle(ltmle_grid_test, true_value_three_event_test)),
-    ## Boxplots for debiased IPCW estimates (test no time-varying confounders)
-    tar_target(boxplot_debias_ipcw_test_no_confounders, fun_boxplot(debias_ipcw_test_no_confounders, true_value_three_event_test_no_confounders, by = c("model_pseudo_outcome", "uncensored", "model_hazard"))),
-    ## Boxplots for debiased IPCW estimates (some confounding)
-    tar_target(boxplot_debias_ipcw_test_some_confounding, fun_boxplot(debias_ipcw_test_some_confounding, true_value_three_event_some_confounding, by = c("model_pseudo_outcome", "uncensored", "model_hazard")))
+    ## vary prevalence
+
+    ## vary dropout
 )
 # ######################################################################

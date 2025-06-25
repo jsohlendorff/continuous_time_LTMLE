@@ -41,6 +41,7 @@ widen_continuous_data <- function(data, time_covariates) {
   data_wide <- data.table::dcast(data$timevarying_data,
                                  id ~ event_number,
                                  value.var = c("time", "event", time_covariates))
+
   ## Merge with baseline data
   merge(data_wide, data$baseline_data, by = "id")
 }

@@ -589,6 +589,13 @@ altering the event times in the history to "time since last event" instead of th
 (note that we should then remove $macron(T)_(k-1)$ from the history as it is identically zero).
 This makes our regression procedure in step 1 intuitively look like a simple regression procedure at time zero.
 
+We also need to discuss what models should be used for $Qbar(k)$.
+Note that 
+$
+    bb(1) {event(k) < tau and status(k) in {a,ell}} Qbar(k) =  mean(P^(G^*)) [N^y (tau)  | history(k)] bb(1) {event(k) < tau and status(k) in {a,ell}} 
+$
+We see thus see that we should use a model for $Qbar(k)$ that is able to capture the counterfactual probability of the primary event occuring at or before time $tau$
+given the history up to and including the $k$'th event (among the people who are at risk of the event before time $tau$ after $k$ events).
 //Looking at the algorithm, we see that this does not matter as no observations; indicator functions are all zero.
 // otherwise we would not have data.
 

@@ -3,9 +3,9 @@
 ## Author: Johan Sebastian Ohlendorff
 ## Created: Jun 18 2025 (17:08) 
 ## Version: 
-## Last-Updated: Jun 18 2025 (19:43) 
+## Last-Updated: Jun 24 2025 (17:27) 
 ##           By: Johan Sebastian Ohlendorff
-##     Update #: 16
+##     Update #: 20
 #----------------------------------------------------------------------
 ## 
 ### Commentary: 
@@ -28,7 +28,7 @@ discretize_time <- function(data_continuous,
     ))
     tau_discrete <- length(time_seq) - 1
 
-    timevarying_baseline_data <- data_continuous$baseline_data[, c("id", "A_0", "L_01", "L_02")]
+    timevarying_baseline_data <- data_continuous$baseline_data[, c("id", "A_0", time_confounders_baseline), with = FALSE]
     timevarying_baseline_data[,c("time","event") := list(0, "base")]
     timevarying_baseline_data[, c("Y", "Dead") := 0]
     timevarying_baseline_data[, c("Censored") := "uncensored"]

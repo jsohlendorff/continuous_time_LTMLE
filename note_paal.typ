@@ -53,6 +53,86 @@ time-varying covariates and without baseline covariates.
 
 = Causal framework
 
+Let us say that we are interested in
+the effect of staying treated on being survival or death at time $t$.
+We suppose that the event time $T$ is a positive continuous random variable $T tilde Q$ with say distribution function $F$.
+The event time $T$ represents a counterfactual world in which
+a patient may go to the doctor, but the doctor cannot make the decision not to treat the patient.
+
+However, in the real world, doctors can make the decision to not treat the patient.
+In the observed data $O = (T_((2)), T_((1)), D_((1)), A(T_((1)))) tilde P_(Q, G^*)$
+and, as a shorthand, we let $P = P_(Q, G^*)$ be the probability law for both the observed data and the counterfactual world.
+Here $T_((1))$ is the first event time in the sample, $D_((1))$ is the event status
+(outcome $y$ or gone to the doctor $a$) at time $T_((1))$ and $A(T_((1)))$ is the treatment assignment at time $T_((1))$ ($A(T_((1))) in {0, 1}$).
+$T_((2))$ is the terminal event time if the first event is not the terminal event.
+We take $T_((2)) = oo$ otherwise. We suppose that $T_((1))$ is also a continuous random variable
+and that $T_((2))$ is continuous if $D_((1)) != y$.
+
+We can then formulate consistency as follows:
+$
+    T_((1)) = T " if " D_((1)) = y "or" T_((2)) = T " if " D_((1)) = a " and " A(T_((1))) = 1
+$
+
+Following @gill1997coarsening, we may then formulate Coarsening at Random as
+$
+    P(T_((1)) in dif tilde(t), D_((1)) = a, A(T_((1))) = 0 | T = t)
+$
+does not depend on $t$ for $tilde(t) < t$ (if either $D_((1)) = y$ or $D_((1)) = a$ and $A(T_((1))) = 1$, the variable is fully observed).
+
+We can then let 
+$
+    G(tilde(t)) = P(T_((1)) <= tilde(t), D_((1)) = a, A(T_((1))) = 0 | T = t),
+$
+for $t > tilde(t)$.
+Thus,
+$
+    G(t-) = lim_(tilde(t) -> t-) G(tilde(t)) = P(D_((1)) = a, A(T_((1))) = 0 | T = t)
+$
+which means that
+$
+    1- G(t-) = P(D_((1)) = y or (D_((1)) = a and A(T_((1))) = 1) | T = t)
+$
+
+
+
+Hence, we have that
+$
+    &P (T_((1)) <= t, D_((1)) = y or (T_((2)) <= t and D_((1)) = a and A(T_((1))) = 1))
+        &=integral_0^t (1 - G(s-)) F(dif s) \
+$
+On the other hand,
+$
+    &P(T_((1)) <= t, D_((1)) = y) = integral_0^t exp(- integral_0^s Lambda^y (u) + Lambda^a (u) d u) Lambda^y (dif s) \
+        &P(T_((1)) <= 2, D_((1)) =a, A_1 = 1)= integral_0^t exp(- integral_0^s Lambda^y (u) + Lambda^a (u) d u) integral_(s)^t exp(-Lambda^y (s,u)) Lambda^y (s,u) pi (s) Lambda^a (dif s) \ 
+$
+What this suggests is that we may use Inverse Probability Weighting to obtain
+$
+    Q(T <= t) &= mean(P) [1/(1-G(T_((1))-)) bb(1) {T_((1)) <= t, D_((1)) = y or (T_((2)) <= t and D_((1)) = a and A(T_((1))) = 1)}] \
+        &=mean(P) [(1-bb(1) {T_((1)) <= t, D_((1)) = a, A(T_((1))) = 0}) /(1-G(T_((1))-)) bb(1) {T_((1)) <= t, D_((1)) = y or T_((2)) <= t}].
+$ <eq:ipwpaalcar>
+Letting $tau^A = T_((1)) "if " D_((1)) = a, A(T_((1))) = 0$ and $tau^A = oo$ otherwise
+and $N_t (y) = bb(1) {T_((1)) <= t, D_((1)) = y or T_((2)) <= t}$ (observed outcome), we see that
+$
+    Q(T <= t) &= mean(P) [(bb(1) {tau^A > t}) / (1-G(T_((1))-)) N^y (t)],
+$
+which coincides Equation (29) of @ryalenPotentialOutcomes
+if we can show that
+$
+    1-G(t-) = product_(s in (0,t)) (1-Lambda^a (t))
+$
+where $Lambda^a$ denotes the compensator of
+$bb(1) {tau^A <= t}$. We can choose $Lambda^a$ on
+the form,
+$
+    Lambda^a (t) = integral_0^t bb(1) { t<= T_((1))} Lambda
+$
+according to @last1995marked, which shows that they are the same. 
+
+Note that if we assunme additionally that the $Lambda_t (dot)$ is locally independent of $T$,
+we are in trouble. The observed data requires that the treatment is always administred in the observed data.
+
+= Causal framework
+
 // JOHAN: elaborate on the definition of g. g seems to operate on A only. need to discuss if g affects N^a because we assume
 // that A can only change where N^a changes
 // and discuss (briefly) what interventions are of interest (static, dynamic, stochastic) in applications, then say

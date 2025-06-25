@@ -532,3 +532,4 @@ debias_ice_ipcw <- function(data,
 ## TODO: Add possibility to simulate (impute) when few event points are available
 ## TODO: Add cross-fitting as a possibility
 ## TODO: Add pooling later
+

@@ -11,115 +11,41 @@ calculate_mean <- function(data_interventional, tau) {
 }
 
 ## Function to create a boxplot of the estimates and standard errors
-fun_boxplot <- function(d, true_value, by = NULL){
+fun_boxplot <- function(d, by = NULL){
     ## calculate coverage
-    cov <- d[, .(coverage=mean((true_value > lower) & (true_value < upper))), by = by]
-    d[, sd_est := sd(estimate), by = by]
-    d[, gr := do.call(paste, c(.SD, sep = "_")), .SDcols = by]
-    p<-ggplot2::ggplot(data = d, aes(y = estimate)) +
+    ##cov <- d[, .(coverage=mean((true_value > lower) & (true_value < upper))), by = by]
+    d[, sd_est := sd(estimate), by = c(by, "type")]
+    ## interaction for 
+    ##d[, gr := do.call(paste, c(.SD, sep = "_")), .SDcols = by]
+    p <- ggplot2::ggplot(data = d, aes(y = estimate, color = type)) +
         ggplot2::geom_boxplot() +
-        ggplot2::geom_hline(aes(yintercept = true_value, color = "red")) +
+        ggplot2::geom_hline(aes(yintercept = value)) +
         ggplot2::theme_minimal()
-    qz <- ggplot2::ggplot(data = d, aes(y = se)) +
+    qz <- ggplot2::ggplot(data = d, aes(y = se,color = type)) +
         ggplot2::geom_boxplot() +
         ggplot2::theme_minimal() 
     r <- ggplot2::ggplot(data = d, aes(y = ice_ipcw_estimate)) +
         ggplot2::geom_boxplot() +
-        ggplot2::geom_hline(aes(yintercept = true_value, color = "red")) +
+        ggplot2::geom_hline(aes(yintercept = value, color = "red")) +
         ggplot2::theme_minimal()
     if (!is.null(by)) {
-        p <- p + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))))
-        qz <- qz + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))))
+        p <- p + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
+        qz <- qz + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
         ## for q add different geom hlines with sd(estimate) for each compination of variables in by
-        qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est, color = gr), linetype = "dashed")
-        r <- r + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))))
+        qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est), linetype = "dashed")
+        r <- r + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
     } else {
         qz <-  qz + ggplot2::geom_hline(aes(yintercept = sd(estimate), color = "red"))
     }
-    list(p, qz, r, cov)
+    list(p, qz, r)
 }
-#d[,sd_est := sd(estimate),by = c("uncensored","model_pseudo_outcome")]
-## ggplot2::ggplot(data = d, aes(y = se,col = uncensored)) +
-##     ggplot2::geom_boxplot() +
-##     facet_wrap(~model_pseudo_outcome) +
-##        ggplot2::theme_minimal() + ggplot2::geom_hline(aes(yintercept = sd_est,col = uncensored,linetype = model_pseudo_outcome)) + ggplot2::geom_boxplot() 
-
 
 ## Simulate and run a function with the simulated data
 simulate_and_run <- function(n,
                              function_name,
                              function_args,
-                             baseline_rate,
-                             K = 3,
-                             effects =
-                                 list(
-                                     alpha_A_0 = list(intercept = 0,
-                                                      sex = 0,
-                                                      age = 0,
-                                                      L_01 = 0.7,
-                                                      L_02 = 0),
-                                     alpha_A_k = list(
-                                         intercept = 0.3,
-                                         A = 0.2,
-                                         L1 = 0.25,
-                                         L2 = 0,
-                                         sex = 0,
-                                         age = 0),
-                                     alpha_L_k = list(
-                                         intercept = 0.3,
-                                         A = 0,
-                                         L1 = 0,
-                                         L2 = 0.7,
-                                         sex = 0,
-                                         age = 0),
-                                     beta_l = list(
-                                         A = -0.2,
-                                         L1 = 0.4,
-                                         L2 =  0,
-                                         sex =  0,
-                                         age = 0.015
-                                     ),
-                                     beta_c = list(
-                                         A = 0,
-                                         L1 = 0.6,
-                                         L2 = 0,
-                                         sex = 0,
-                                         age = 0
-                                     ),
-                                     beta_y = list(
-                                         A = - 1,
-                                         L1 = 0.4,
-                                         L2 = 0,
-                                         sex = 0,
-                                         age = 0.025
-                                     ),
-                                     beta_d = list(
-                                         A = -1.2,
-                                         L1 = 0.4,
-                                         L2 = 0,
-                                         sex = 0,
-                                         age = 0.015)),
-                             static_intervention = NULL,
-                             baseline_rate_list = list(
-                                 A = 0.003,
-                                 L = 0.004,
-                                 C = 0.005,
-                                 Y = 0.0015,
-                                 D = 0.002
-                             ),
-                             max_fup = 1000,
-                             visitation_interval = 20,
-                             visitation_sd = 5,
-                             uncensored = FALSE) {
-    d <- simulate_continuous_time_data(n = n, K = K, 
-                                       baseline_rate = baseline_rate,
-                                       effects = effects,
-                                       static_intervention = static_intervention,
-                                       baseline_rate_list = baseline_rate_list,
-                                       max_fup = max_fup,
-                                       visitation_interval = visitation_interval,
-                                       visitation_sd = visitation_sd,
-                                       uncensored = uncensored)
+                             simulate_args = NULL) {
+    d <- do.call(simulate_continuous_time_data, c(list(n = n), simulate_args))
     do.call(function_name, c(list(d), function_args))
 }
 
@@ -150,7 +76,7 @@ simulate_and_run <- function(n,
 #' If \eqn{Δ(k) = \ell} and \eqn{k < K}, then
 #' \itemize{
 #'   \item \code{L1(T(k)) = L1(T(k-1)) + L^*}
-#'   \item \code{L2(T(k)) = L2(T(k-1)) + L^*}
+#'   \item \code{L2(T(k)) = L2(T(k-1)) + 1-L^*}
 #' }
 #' Otherwise, the values of \code{L1} and \code{L2} are carried forward unchanged.
 #'
@@ -173,7 +99,6 @@ simulate_and_run <- function(n,
 #' simulate_continuous_time_data(10)
 #' @export
 simulate_continuous_time_data <- function(n,
-                                          baseline_rate,
                                           K = 3,
                                           effects =
                                               list(
@@ -414,4 +339,473 @@ simulate_continuous_time_data <- function(n,
     baseline_data <- baseline_data[!duplicated(baseline_data$id)]
     timevarying_data <- pop[, setdiff(names(pop), baseline_vars), with = FALSE]
     list(baseline_data = baseline_data, timevarying_data = timevarying_data)
+}
+
+simulate_and_run_simple <- function(n,
+                                    function_name = debias_ice_ipcw,
+                                          function_args = list(
+                                     tau = 500,
+                                     model_pseudo_outcome = model_pseudo_outcome,
+                                     model_treatment = "learn_glm_logistic",
+                                     model_hazard = model_hazard,
+                                     conservative = TRUE
+                                     ),
+                                    function_name_2 = NULL,
+                                    function_args_2 = NULL,
+                                    function_nice_names = c("Debiased ICE-IPCW",
+                                                            "RTMLE"),
+                                    simulate_args = NULL,
+                                    uncensored = FALSE,
+                                    add_info = NULL) {
+    d <- do.call(simulate_simple_continuous_time_data, c(list(n = n), simulate_args))
+    res<-do.call(function_name, c(list(copy(d)), function_args))
+    res$type <- function_nice_names[1]
+    if (!is.null(add_info)) {
+        res <- cbind(res, add_info)
+    }
+    if (!is.null(function_name_2)) {
+        res_2 <- do.call(function_name_2, c(list(d), function_args_2))
+        res_2$type <- function_nice_names[2]
+        if (!is.null(add_info)) {
+            res_2 <- cbind(res_2, add_info)
+        }
+        res <- rbind(res, res_2)
+    }
+    res
+}
+
+vary_effect <- function(effect_A_on_Y = -0.15,
+                        effect_L_on_Y = 0.25,
+                        effect_L_on_A = -0.1,
+                        effect_A_on_L = -0.2) {
+    list(
+        alpha_A_0 = list(intercept = 0.3,
+                         L = effect_L_on_A,
+                         age = 0.002),
+        alpha_A_1 = list(
+            intercept = 0.3,
+            age = 0.002,
+            L = effect_L_on_A,
+            T = 0),
+        alpha_A_2 = list(
+            intercept = 0.3,
+            age = 0.002,
+            L = effect_L_on_A,
+            T = 0),
+        beta_l_1 = list(
+            A = effect_A_on_L,
+            age = 0.015
+        ),
+        beta_l_2 = list(
+            A = effect_A_on_L,
+            age = 0.015
+        ),
+        beta_c_1 = list(
+            A = 0,
+            age = 0
+        ),
+        beta_c_2 = list(
+            A = 0,
+            age = 0
+        ),
+        beta_y_1 = list(
+            A = effect_A_on_Y,
+            L = effect_L_on_Y,
+            age = 0.025
+        ),
+        beta_y_2 = list(
+            A = effect_A_on_Y,
+            L = effect_L_on_Y,
+            age = 0.025
+        ),
+        beta_y_3 = list(
+            A = effect_A_on_Y,
+            L = effect_L_on_Y,
+            age = 0.025),
+        beta_d_1 = list(
+            A = -1.2,
+            L = 0.4,
+            age = 0.015),
+        beta_d_2 = list(
+            A = -1.2,
+            L = 0.4,
+            age = 0.015),
+        beta_d_3 = list(
+            A = -1.2,
+            L = 0.4,
+            age = 0.015))
+    }                             
+
+simulate_simple_continuous_time_data <- function(n,
+                                                 effects =
+                                                     list(
+                                                         alpha_A_0 = list(intercept = 0,
+                                                                          age = 0.002),
+                                                         alpha_A_1 = list(
+                                                             intercept = 0.3,
+                                                             age = 0.002,
+                                                             L = -0.07,
+                                                             T = 0),
+                                                         alpha_A_2 = list(
+                                                             intercept = 0.3,
+                                                             age = 0.002,
+                                                             L = -0.07,
+                                                             T = 0),
+                                                         beta_l_1 = list(
+                                                             A = -0.2,
+                                                             age = 0.015
+                                                         ),
+                                                         beta_l_2 = list(
+                                                             A = -0.2,
+                                                             age = 0.015
+                                                         ),
+                                                         beta_c_1 = list(
+                                                             A = 0,
+                                                             age = 0
+                                                         ),
+                                                         beta_c_2 = list(
+                                                             A = 0,
+                                                             age = 0
+                                                         ),
+                                                         beta_y_1 = list(
+                                                             A = -0.15,
+                                                             L = 0.02,
+                                                             age = 0.025
+                                                         ),
+                                                         beta_y_2 = list(
+                                                             A = -0.15,
+                                                             L = 0.02,
+                                                             age = 0.025
+                                                         ),
+                                                         beta_y_3 = list(
+                                                             A = -0.15,
+                                                             L = 0.02,
+                                                             age = 0.025),
+                                                         beta_d_1 = list(
+                                                             A = -1.2,
+                                                             L = 0.4,
+                                                             age = 0.015),
+                                                         beta_d_2 = list(
+                                                             A = -1.2,
+                                                             L = 0.4,
+                                                             age = 0.015),
+                                                         beta_d_3 = list(
+                                                             A = -1.2,
+                                                             L = 0.4,
+                                                             age = 0.015)),
+                                                 static_intervention = NULL,
+                                                 static_intervention_baseline = 1,
+                                                 baseline_rate_list = list(
+                                                     A = 0.005,
+                                                     L = 0.001,
+                                                     C = 0.00005,
+                                                     Y = 0.0001,
+                                                     D = 0.00015
+                                                 ),
+                                                 max_fup = 900,
+                                                 visitation_interval = 360,
+                                                 visitation_sd = 5,
+                                                 discretize_age = FALSE,
+                                                 no_competing_events = FALSE,
+                                                 uncensored = FALSE) {
+    if (!is.null(static_intervention)) {
+        static_intervention_baseline <- static_intervention
+    }
+    if (!discretize_age){
+        age <- stats::runif(n, 40, 90)
+    } else {
+        age <- sample(c(50,70), n, replace = TRUE)
+    }
+    
+    # baseline variables
+    pop <- data.table(
+        id = 1:n,
+        age = age,
+        L = as.numeric(rep(0, n)),
+        A = as.numeric(rep(NA, n)),
+        time = numeric(n),
+        event = rep("0", n)
+    )
+    pop[, L_0 := 0]
+    
+    # baseline treatment depends on baseline variables
+    if (is.null(static_intervention_baseline)) {
+        pop[, A_0 := stats::rbinom(n, 1, lava::expit(effects$alpha_A_0$intercept +
+                                                     effects$alpha_A_0$age * age))]
+    } else if (static_intervention_baseline %in% c(0, 1)) {
+        pop[, A_0 := static_intervention_baseline]
+    } else {
+        stop("Intervention must be 0, 1, or NULL")
+    }
+    pop[, L := L_0]
+    pop[, A := A_0]
+    
+    people_atrisk <- pop[, data.table::data.table(id, entrytime = time, age, L_0, A_0, A, L)]
+    if (!is.null(static_intervention)) {
+        uncensored <- TRUE
+    }
+    # fup_info collects followup information has_terminal collects terminal information
+    fup_info <- NULL
+    has_terminal <- NULL
+    # time loop
+    j <- 1
+    people_atrisk[, visitation_times := visitation_interval + rnorm(nrow(people_atrisk), 0, visitation_sd)]
+
+    ## j = 1
+    a_time <- people_atrisk$visitation_times
+    l_time <- rexponential_proportional_hazard(
+        n = nrow(people_atrisk),
+        rate = baseline_rate_list$L,
+        eta = effects$beta_l_1$A * people_atrisk$A +
+            effects$beta_l_1$age * people_atrisk$age
+    )
+    if (!uncensored) {
+        c_time <- rexponential_proportional_hazard(
+            n = nrow(people_atrisk),
+            rate = baseline_rate_list$C,
+            eta = effects$beta_c_1$A * people_atrisk$A +
+                effects$beta_c_1$age * people_atrisk$age
+        )
+    } else {
+        c_time <- rep(max_fup + 1, nrow(people_atrisk))
+    }
+    y_time <- rexponential_proportional_hazard(
+        n = nrow(people_atrisk),
+        rate = baseline_rate_list$Y,
+        eta = effects$beta_y_1$A * people_atrisk$A +
+            effects$beta_y_1$L * people_atrisk$L +
+            effects$beta_y_1$age * people_atrisk$age
+    )
+    if (!no_competing_events) {
+        d_time <- rexponential_proportional_hazard(
+            n = nrow(people_atrisk),
+            rate = baseline_rate_list$D,
+            eta = effects$beta_d_1$A * people_atrisk$A +
+                effects$beta_d_1$L * people_atrisk$L +
+                effects$beta_d_1$age * people_atrisk$age
+        )
+    } else {
+        d_time <- rep(max_fup + 1, nrow(people_atrisk))
+    }
+
+    ttt = do.call(
+        "cbind",
+        list(
+            a_time,
+            l_time,
+            c_time,
+            y_time,
+            d_time
+        )
+    )
+    mins = Rfast::rowMins(ttt, value = FALSE)
+    people_atrisk[, event := factor(mins,
+                                    levels = 1:5,
+                                    labels = c("A", "L", "C", "Y", "D"))]
+    people_atrisk[, time := Rfast::rowMins(ttt, value = TRUE) + entrytime + 1] ## make sure that at least one day happens between each event
+    people_atrisk[time > max_fup, event := "C"]
+    people_atrisk[time > max_fup, time := max_fup]
+    is_terminal <- !(people_atrisk$event %in% c("A", "L"))
+    #------------------------------------------------------------------------------
+
+    # collect terminal information
+    has_terminal <- rbind(has_terminal, people_atrisk[is_terminal, data.table::data.table(id,
+                                                                                          time = time,
+                                                                                          event = event,
+                                                                                          age,
+                                                                                          L_0,
+                                                                                          A_0,
+                                                                                          A,
+                                                                                          L)])
+    #------------------------------------------------------------------------------
+    # restrict to people still at risk
+    people_atrisk = people_atrisk[!is_terminal]
+    # update propensity score
+    if (!is.null(static_intervention)) {
+        people_atrisk[event == "A", new_A := static_intervention]
+    }
+    else {
+        people_atrisk[event == "A", new_A := stats::rbinom(.N, 1, lava::expit(effects$alpha_A_1$intercept +
+                                                                              effects$alpha_A_1$age * age))]
+    }
+    people_atrisk[event == "L", L := 1]
+    people_atrisk[event == "A", A := new_A]
+    
+    # collect followup information
+    fup_info <- rbind(fup_info, people_atrisk[, names(pop), with = FALSE], fill = TRUE)
+    # -----------------------------------------------------------------------------
+    # update for next epoch
+    people_atrisk[, entrytime := time]
+
+    # j = 2
+    if (nrow(people_atrisk) > 0) {
+        treatment_event <- people_atrisk$event == "A"
+        a_time <- rep(nrow(people_atrisk), nrow(people_atrisk))
+        a_time[treatment_event] <- Inf
+        a_time[!treatment_event] <- rexponential_proportional_hazard(
+            n = nrow(people_atrisk[!treatment_event]),
+            rate = baseline_rate_list$A,
+            eta = 0
+        )
+        l_time <- rep(nrow(people_atrisk), nrow(people_atrisk))
+        l_time[!treatment_event] <- Inf
+        l_time[treatment_event] <- rexponential_proportional_hazard(
+            n = nrow(people_atrisk[treatment_event]),
+            rate = baseline_rate_list$L,
+            eta = effects$beta_l_2$A * people_atrisk[treatment_event, A] +
+                effects$beta_l_2$age * people_atrisk[treatment_event, age]
+        )
+        if (!uncensored) {
+            c_time <- rexponential_proportional_hazard(
+                n = nrow(people_atrisk),
+                rate = baseline_rate_list$C,
+                eta = effects$beta_c_2$A * people_atrisk$A +
+                    effects$beta_c_2$age * people_atrisk$age
+            )
+        } else {
+            c_time <- rep(max_fup + 1, nrow(people_atrisk))
+        }
+        y_time <- rexponential_proportional_hazard(
+            n = nrow(people_atrisk),
+            rate = baseline_rate_list$Y,
+            eta = effects$beta_y_2$A * people_atrisk$A +
+                effects$beta_y_2$L * people_atrisk$L +
+                effects$beta_y_2$age * people_atrisk$age
+        )
+        if (!no_competing_events) {
+            d_time <- rexponential_proportional_hazard(
+                n = nrow(people_atrisk),
+                rate = baseline_rate_list$D,
+                eta = effects$beta_d_2$A * people_atrisk$A +
+                    effects$beta_d_2$L * people_atrisk$L +
+                    effects$beta_d_2$age * people_atrisk$age
+            )
+        } else {
+            d_time <- rep(max_fup + 1, nrow(people_atrisk))
+        }
+        ttt = do.call(
+            "cbind",
+            list(
+                a_time,
+                l_time,
+                c_time,
+                y_time,
+                d_time
+            )
+        )
+        mins = Rfast::rowMins(ttt, value = FALSE)
+        people_atrisk[, event := factor(mins,
+                                        levels = 1:5,
+                                        labels = c("A", "L", "C", "Y", "D"))]
+        people_atrisk[, time := Rfast::rowMins(ttt, value = TRUE) + entrytime + 1] ## make sure that at least one day happens between each event
+        people_atrisk[time > max_fup, event := "C"]
+        people_atrisk[time > max_fup, time := max_fup]
+        is_terminal <- !(people_atrisk$event %in% c("A", "L"))
+        #------------------------------------------------------------------------------
+        # collect terminal information
+        has_terminal <- rbind(has_terminal, people_atrisk[is_terminal, data.table::data.table(id,
+                                                                                              time = time,
+                                                                                              event = event,
+                                                                                              age,
+                                                                                              L_0,
+                                                                                              A_0,
+                                                                                              A,
+                                                                                              L)])
+        #------------------------------------------------------------------------------
+        # restrict to people still at risk
+        people_atrisk = people_atrisk[!is_terminal]
+        # update propensity score
+        if (!is.null(static_intervention)) {
+            people_atrisk[event == "A", new_A := static_intervention]
+        }
+        else {
+            people_atrisk[event == "A", new_A := stats::rbinom(.N, 1, lava::expit(effects$alpha_A_2$intercept +
+                                                                                  effects$alpha_A_2$age * age))]
+        }
+        people_atrisk[event == "L", L := 1]
+        people_atrisk[event == "A", A := new_A]
+        # collect followup information
+        fup_info <- rbind(fup_info, people_atrisk[, names(pop), with = FALSE], fill = TRUE)
+        # -----------------------------------------------------------------------------
+        # update for next epoch
+        people_atrisk[, entrytime := time]
+
+    }
+    # j = 3
+    if (nrow(people_atrisk) > 0) {
+        if (!uncensored){
+            c_time <- rexponential_proportional_hazard(
+                n = nrow(people_atrisk),
+                rate = baseline_rate_list$C,
+                eta = effects$beta_c_2$A * people_atrisk$A +
+                    effects$beta_c_2$age * people_atrisk$age
+            )
+        }
+        else {
+            c_time <- rep(max_fup + 1, nrow(people_atrisk))
+        }
+
+        y_time <- rexponential_proportional_hazard(
+            n = nrow(people_atrisk),
+            rate = baseline_rate_list$Y,
+            eta = effects$beta_y_3$A * people_atrisk$A +
+                effects$beta_y_3$L * people_atrisk$L +
+                effects$beta_y_3$age * people_atrisk$age
+        )
+        if (!no_competing_events) {
+            d_time <- rexponential_proportional_hazard(
+                n = nrow(people_atrisk),
+                rate = baseline_rate_list$D,
+                eta = effects$beta_d_d$A * people_atrisk$A +
+                    effects$beta_d_d$L * people_atrisk$L +
+                    effects$beta_d_d$age * people_atrisk$age
+            )
+        } else {
+            d_time <- rep(max_fup + 1, nrow(people_atrisk))
+        }
+        ttt = do.call(
+            "cbind",
+            list(
+                c_time,
+                y_time,
+                d_time
+            )
+        )
+        mins = Rfast::rowMins(ttt, value = FALSE)
+        people_atrisk[, event := factor(mins,
+                                        levels = 1:3,
+                                        labels = c("C", "Y", "D"))]
+        people_atrisk[, time := Rfast::rowMins(ttt, value = TRUE) + entrytime + 1] ## make sure that at least one day happens between each event
+        people_atrisk[time > max_fup, event := "C"]
+        people_atrisk[time > max_fup, time := max_fup]
+        is_terminal <- !(people_atrisk$event %in% c("A", "L"))
+        #------------------------------------------------------------------------------
+        # collect terminal information
+        has_terminal <- rbind(has_terminal, people_atrisk[is_terminal, data.table::data.table(id,
+                                                                                              time = time,
+                                                                                              event = event,
+                                                                                              age,
+                                                                                              L_0,
+                                                                                              A_0,
+                                                                                              A,
+                                                                                              L)])
+        #------------------------------------------------------------------------------
+        # restrict to people still at risk
+        people_atrisk = people_atrisk[!is_terminal]
+        
+        # collect followup information
+        fup_info <- rbind(fup_info, people_atrisk[, names(pop), with = FALSE], fill = TRUE)
+        # -----------------------------------------------------------------------------
+        # update for next epoch
+        people_atrisk[, entrytime := time]
+
+    }
+    pop <- rbind(has_terminal, fup_info)
+    setkey(pop, id, time, event)
+    baseline_vars <-  c("age", "A_0", "L_0")
+    baseline_data <- pop[, c("id", baseline_vars), with = FALSE]
+    ## remove duplicate ids from baseline
+    baseline_data <- baseline_data[!duplicated(baseline_data$id)]
+    timevarying_data <- pop[, setdiff(names(pop), baseline_vars), with = FALSE]
+    list(baseline_data = baseline_data, timevarying_data = timevarying_data)   
 }
