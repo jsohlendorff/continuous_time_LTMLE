@@ -3,9 +3,9 @@
 ## Author: Johan Sebastian Ohlendorff
 ## Created: Jun  6 2025 (11:34) 
 ## Version: 
-## Last-Updated: Jun 20 2025 (09:43) 
-##           By: Johan Sebastian Ohlendorff
-##     Update #: 163
+## Last-Updated: Jun 26 2025 (16:39) 
+##           By: Anders Munch
+##     Update #: 164
 #----------------------------------------------------------------------
 ## 
 ### Commentary: 
@@ -21,6 +21,7 @@ library(rtmle)
 library(riskRegression)
 try(setwd("~/phd/continuous_time_LTMLE/simulation_study"))
 try(setwd("~/research/SuperVision/Johan/continuous_time_LTMLE/simulation_study/"))
+try(setwd(here::here("simulation_study")))
 tar_source("functions")
 
 tau <- 90 # time horizon in days
