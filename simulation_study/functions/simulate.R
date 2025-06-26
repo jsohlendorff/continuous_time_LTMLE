@@ -32,7 +32,7 @@ fun_boxplot <- function(d, by = NULL){
         p <- p + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
         qz <- qz + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
         ## for q add different geom hlines with sd(estimate) for each compination of variables in by
-        qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est), linetype = "dashed")
+        qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est, color = type), linetype = "dashed")
         r <- r + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
     } else {
         qz <-  qz + ggplot2::geom_hline(aes(yintercept = sd(estimate), color = "red"))
@@ -47,6 +47,16 @@ simulate_and_run <- function(n,
                              simulate_args = NULL) {
     d <- do.call(simulate_continuous_time_data, c(list(n = n), simulate_args))
     do.call(function_name, c(list(d), function_args))
+}
+
+## Calculate info for tables, i.e., coverage, mean squared error, bias, standard errors
+get_tables <- function(results, by = NULL) {
+    results <- results[, .(coverage = mean((value > lower) & (value < upper)),
+                           mse = mean((estimate - value)^2),
+                           bias = mean(estimate - value),
+                           sd = sd(estimate),
+                           mean_se = mean(se)),
+                       by = c(by, "type")]
 }
 
 #' Simulate Longitudinal Continuous-Time Data for Time-to-Event Analysis
@@ -353,23 +363,50 @@ simulate_and_run_simple <- function(n,
                                     function_name_2 = NULL,
                                     function_args_2 = NULL,
                                     function_nice_names = c("Debiased ICE-IPCW",
-                                                            "RTMLE"),
+                                                            "RTMLE",
+                                                            "Artificial censoring (Cox)"),
                                     simulate_args = NULL,
+                                    function_name_3 = NULL,
+                                    function_args_3 = NULL,
                                     uncensored = FALSE,
                                     add_info = NULL) {
-    d <- do.call(simulate_simple_continuous_time_data, c(list(n = n), simulate_args))
-    res<-do.call(function_name, c(list(copy(d)), function_args))
+    tryCatch({d <- do.call(simulate_simple_continuous_time_data, c(list(n = n), simulate_args))},
+                error = function(e) {
+                    message("Error in simulation: ", e$message)
+                    return(NULL)
+                })
+    tryCatch({res<-do.call(function_name, c(list(d), function_args))},
+                error = function(e) {
+                    message("Error in function ", function_name, ": ", e$message)
+                    return(NULL)
+                })
     res$type <- function_nice_names[1]
     if (!is.null(add_info)) {
         res <- cbind(res, add_info)
     }
     if (!is.null(function_name_2)) {
-        res_2 <- do.call(function_name_2, c(list(d), function_args_2))
+        tryCatch({res_2 <- do.call(function_name_2, c(list(copy(d)), function_args_2))},
+                    error = function(e) {
+                        message("Error in function ", function_name_2, ": ", e$message)
+                        return(NULL)
+                    })
         res_2$type <- function_nice_names[2]
         if (!is.null(add_info)) {
             res_2 <- cbind(res_2, add_info)
         }
         res <- rbind(res, res_2)
+    }
+    if (!is.null(function_name_3)) {
+        tryCatch({res_3 <- do.call(function_name_3, c(list(d), function_args_3))},
+                    error = function(e) {
+                        message("Error in function ", function_name_3, ": ", e$message)
+                        return(NULL)
+                    })
+        res_3$type <- function_nice_names[3]
+        if (!is.null(add_info)) {
+            res_3 <- cbind(res_3, add_info)
+        }
+        res <- rbind(res, res_3)
     }
     res
 }
@@ -377,19 +414,21 @@ simulate_and_run_simple <- function(n,
 vary_effect <- function(effect_A_on_Y = -0.15,
                         effect_L_on_Y = 0.25,
                         effect_L_on_A = -0.1,
-                        effect_A_on_L = -0.2) {
+                        effect_A_on_L = -0.2,
+                        effect_age_on_Y = 0.025,
+                        effect_age_on_A = 0.002) {
     list(
         alpha_A_0 = list(intercept = 0.3,
                          L = effect_L_on_A,
                          age = 0.002),
         alpha_A_1 = list(
             intercept = 0.3,
-            age = 0.002,
+            age = effect_age_on_A,
             L = effect_L_on_A,
             T = 0),
         alpha_A_2 = list(
             intercept = 0.3,
-            age = 0.002,
+            age = effect_age_on_A,
             L = effect_L_on_A,
             T = 0),
         beta_l_1 = list(
@@ -411,17 +450,17 @@ vary_effect <- function(effect_A_on_Y = -0.15,
         beta_y_1 = list(
             A = effect_A_on_Y,
             L = effect_L_on_Y,
-            age = 0.025
+            age = effect_age_on_Y
         ),
         beta_y_2 = list(
             A = effect_A_on_Y,
             L = effect_L_on_Y,
-            age = 0.025
+            age = effect_age_on_Y
         ),
         beta_y_3 = list(
             A = effect_A_on_Y,
             L = effect_L_on_Y,
-            age = 0.025),
+            age = effect_age_on_Y),
         beta_d_1 = list(
             A = -1.2,
             L = 0.4,
@@ -866,4 +905,25 @@ simulate_simple_continuous_time_data <- function(n,
     baseline_data <- baseline_data[!duplicated(baseline_data$id)]
     timevarying_data <- pop[, setdiff(names(pop), baseline_vars), with = FALSE]
     list(baseline_data = baseline_data, timevarying_data = timevarying_data)   
+}
+
+# Custom function to combine data frames
+combine_results_and_true_values <- function(..., .id = NULL, by = by) {
+    # Find from ... the elements starting with "results"
+    res <- list(...)
+    .x <- res[grepl("results", names(res))]
+    # Combine all data frames passed to the function
+    sim_combined <- dplyr::bind_rows(!!!.x, .id = .id)
+    
+    ## Find the elements starting with "true_value"
+    .y <- res[grepl("true_value", names(res))]
+    # Combine all true value data frames passed to the function
+    true_value_combined <- dplyr::bind_rows(!!!.y, .id = .id)
+    ## Now merge the combined results with the combined true values
+    if (!is.null(by)) {
+        combined <- merge(sim_combined, true_value_combined, by = by)
+    } else {
+        combined <- merge(sim_combined, true_value_combined)
+    }
+    return(combined)
 }
