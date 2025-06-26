@@ -16,37 +16,40 @@ get_propensity_scores <- function(last_event_number,
             at_risk_interevent <- data
             time_history <- NULL
         } else {
-            at_risk_interevent <- data[get(paste0("event_", k - 1)) %in% c("A", "L")]
-            if (nrow(at_risk_interevent) == 0) {
-                next
-            }
-            at_risk_interevent[, paste0("time_", k) := get(paste0("time_", k)) - get(paste0("time_", k - 1))]
-            for (j in seq_len(k-1)) {
-                at_risk_interevent[, paste0("time_", j) := get(paste0("time_", k - 1)) - get(paste0("time_", j))]
-                at_risk_interevent[, paste0("event_", j) := droplevels(get(paste0("event_", j)))]
-            }
+            if (is_censored) {
+                at_risk_interevent <- data[get(paste0("event_", k - 1)) %in% c("A", "L")]
+                if (nrow(at_risk_interevent) == 0) {
+                    next
+                }
+                at_risk_interevent[, paste0("time_", k) := get(paste0("time_", k)) - get(paste0("time_", k - 1))]
+                for (j in seq_len(k-1)) {
+                    at_risk_interevent[, paste0("time_", j) := get(paste0("time_", k - 1)) - get(paste0("time_", j))]
+                    at_risk_interevent[, paste0("event_", j) := droplevels(get(paste0("event_", j)))]
+                }
+            } 
             
             ## Time-varying covariates to use in regressions
             time_history <- setdiff(unlist(lapply(c(time_covariates , "time", "event"), function(x)
                 paste0(x, "_", seq_len(k-1)))), paste0("time_", k - 1))
         }
-        ## Full history of variables, i.e., covariates used in regressions
-        history_of_variables <- c(time_history, baseline_covariates)
-
-        ## Remove variables from history_of_variables that do not have more than one value
-        ## in the data
-        history_of_variables <- setdiff(history_of_variables, 
-                                        names(which(sapply(at_risk_interevent[, ..history_of_variables], function(x) length(unique(x)) <= 1))))
         
         ## Fit censoring model if there is censoring
         if (is_censored) {
+            ## Full history of variables, i.e., covariates used in regressions
+            history_of_variables_hazard <- c(time_history, baseline_covariates)
+
+            ## Remove variables from history_of_variables that do not have more than one value
+            ## in the data
+            history_of_variables_hazard <- setdiff(history_of_variables_hazard, 
+                                        names(which(sapply(at_risk_interevent[, ..history_of_variables_hazard], function(x) length(unique(x)) <= 1))))
+
             formula_censoring <- as.formula(paste0(
                 "Surv(time_",
                 k,
                 ", event_",
                 k,
                 " == \"C\") ~ ",
-                paste(history_of_variables, collapse = "+")
+                paste(history_of_variables_hazard, collapse = "+")
             ))
             learn_censoring <- do.call(
                 model_hazard,
@@ -73,11 +76,16 @@ get_propensity_scores <- function(last_event_number,
         
         ## Fit propensity score (treatment) model 
         if (k < last_event_number) {
-            ## Stupid check to remove variables that do not have more than one value
-            history_of_variables <-  c(history_of_variables, paste0("time_", k))
-            history_of_variables <- setdiff(history_of_variables, 
-                                        names(which(sapply(data[event_k == "A", ..history_of_variables, env =  list(event_k = paste0("event_", k))], function(x) length(unique(x)) <= 1))))
-            formula_treatment <- as.formula(paste0("A_", k, " ~ ", paste0(history_of_variables, collapse = "+"
+            ## Check to remove variables that do not have more than one value
+            ## Full history of variables, i.e., covariates used in regressions
+            time_history <- c(time_history, paste0("time_", k - 1), paste0("time_", k))
+            if (k == 1) {
+                time_history <- setdiff(time_history, "time_0")
+            }
+            history_of_variables_propensity <- c(time_history, baseline_covariates)
+            history_of_variables_propensity <- setdiff(history_of_variables_propensity, 
+                                        names(which(sapply(data[event_k == "A", ..history_of_variables_propensity, env =  list(event_k = paste0("event_", k))], function(x) length(unique(x)) <= 1))))
+            formula_treatment <- as.formula(paste0("A_", k, " ~ ", paste0(history_of_variables_propensity, collapse = "+"
                                                                    )))
             ## check whether all values of A are 1; if so put propensity to 1
             if (all(data[event_k == "A", A_k == 1, env = list(
@@ -103,14 +111,14 @@ get_propensity_scores <- function(last_event_number,
             } 
         }
     }
-    ## Baseline propensity model
-    formula_treatment <- as.formula(paste0("A_0 ~ ", paste(
-                                                         setdiff(baseline_covariates, "A_0"), collapse = "+"
-                                                     )))
     ## check whether all values of A_0 are 1; if so put propensity to 1
     if (all(data$A_0 == 1)) {
         data[, propensity_0 := 1]
     } else {
+        ## Baseline propensity model
+        formula_treatment <- as.formula(paste0("A_0 ~ ", paste(
+                                                         setdiff(baseline_covariates, "A_0"), collapse = "+"
+                                                     )))
         ## Fit the baseline treatment propensity model
         ## check whethe any baseline covariates should be deleted
         baseline_covariates <- setdiff(baseline_covariates, 
@@ -199,6 +207,8 @@ debias_ice_ipcw <- function(data,
                             return_ipw = TRUE,
                             return_ic = FALSE,
                             grid_size = NULL) {
+    ## Do not ALTER the original data
+    data <- copy(data)
     ## TODO: Need to more thorougly check user input. At this point *not important*.
     data$timevarying_data <- data$timevarying_data[, event_number := seq_len(.N), by = id]
     
@@ -242,6 +252,14 @@ debias_ice_ipcw <- function(data,
         }
     }
     first_event <- TRUE
+
+    has_competing_event <- FALSE
+    for (j in seq_len(last_event_number)) {
+        if (nrow(data[event_j == "D", env = list(event_j = paste0("event_", j))]) > 0) {
+            has_competing_event <- TRUE
+            break
+        }
+    }
     
     ## Get propensity scores and models for the censoring.
     ## NOTE: Modifies data in place, so that the propensity scores are added to the data.
@@ -259,7 +277,6 @@ debias_ice_ipcw <- function(data,
     }, error = function(e) {
         stop("Error in getting censoring/propensity models: ", e)
     })
-
     ## Main procedure for the ICE-IPCW estimator and the debiasing
     for (k in rev(seq_len(last_event_number))) {
         ## Find those at risk of the k'th event and at risk before tau
@@ -272,21 +289,20 @@ debias_ice_ipcw <- function(data,
             if (nrow(at_risk_before_tau) == 0) {
                 next
             }
-            ## Shift the other times according to time_(k-1); makes modeling more natural
-            at_risk_interevent[, paste0("time_", k) := get(paste0("time_", k)) - get(paste0("time_", k - 1))]
-            for (j in seq_len(k - 1)) {
-                at_risk_interevent[, paste0("time_", j) := get(paste0("time_", k - 1)) - get(paste0("time_", j))]
-                at_risk_interevent[, paste0("event_", j) := droplevels(get(paste0("event_", j)))]
+            if (is_censored) {
+                ## Shift the interevent times according to time_(k-1); makes modeling more natural
+                at_risk_interevent[, paste0("time_", k) := get(paste0("time_", k)) - get(paste0("time_", k - 1))]
+                for (j in seq_len(k - 1)) {
+                    at_risk_interevent[, paste0("time_", j) := get(paste0("time_", k - 1)) - get(paste0("time_", j))]
+                    at_risk_interevent[, paste0("event_", j) := droplevels(get(paste0("event_", j)))]
+                }
             }
             
             ## Time-varying covariates to use in regressions
-            time_history <- setdiff(unlist(lapply(c(time_covariates , "time", "event"), function(x)
-                paste0(x, "_", seq_len(k - 1)))), paste0("time_", k - 1))
+            time_history <- unlist(lapply(c(time_covariates , "time", "event"), function(x)
+                paste0(x, "_", seq_len(k - 1))))
         }
-        
-        ## Full history of variables, i.e., covariates used in regressions
-        history_of_variables <- c(time_history, baseline_covariates)
-        
+                
         ## Estimate IPW weights in efficient influence function
         ## Corresponding to
         ## (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) product_(j = 1)^(k-1) ((bb(1) {A(j) = 1}) / (pi_j (T(j), H(j-1))))^(bb(1) {D(j) = a})
@@ -354,13 +370,15 @@ debias_ice_ipcw <- function(data,
         at_risk_before_tau[, weight := 1 / (survival_censoring_k) * ((get(paste0("event_", k)) == "Y" &
                                                                       get(paste0("time_", k)) <= tau) + (get(paste0("event_", k)) %in% c("A", "L")) * future_prediction), env = list(survival_censoring_k = paste0("survival_censoring_", k))]
 
+        ## Full history of variables, i.e., covariates used in regressions
+        history_of_variables_ice <- c(time_history, baseline_covariates)
+
         ## Remove variables from history_of_variables that do not have more than one value
         ## in the data
-        history_of_variables <- setdiff(history_of_variables, 
-                                        names(which(sapply(at_risk_before_tau[, ..history_of_variables], function(x) length(unique(x)) <= 1))))
+        history_of_variables_ice <- setdiff(history_of_variables_ice, 
+                                        names(which(sapply(at_risk_before_tau[, ..history_of_variables_ice], function(x) length(unique(x)) <= 1))))
         
-        
-        nu_hat <- predict_iterative_conditional_expectation(model_pseudo_outcome, history_of_variables, at_risk_before_tau)
+        nu_hat <- predict_iterative_conditional_expectation(model_pseudo_outcome, history_of_variables_ice, at_risk_before_tau)
         at_risk_before_tau[, pred := nu_hat(data = .SD)]
         
         ## Warn if any predictions are NA or below or above 1
@@ -372,15 +390,18 @@ debias_ice_ipcw <- function(data,
         ## We fit cause-spefific Cox models for each current event that is not censoring
         ## And calculate martingale terms
         if (!conservative & is_censored) {
-            if (first_event) {
-                causes <- c("Y", "D")
-            } else {
-                causes <- c("Y", "D", "A", "L")
-            }
+            ## FIXME: sometimes may not contain all causes; in this case need to set hazards to zero for those causes
+            causes <- unique(at_risk_interevent[[paste0("event_", k)]])
             
             if (model_hazard != "learn_coxph"){
                 stop("Only Cox proportional hazards model is supported for estimation of the martingale term")
             }
+
+            ## History of variables for the hazard model
+            if (k > 1) {
+                time_history <- setdiff(time_history, paste0("time_", k - 1))
+            }
+            history_of_variables_hazard <- c(time_history, baseline_covariates)
             
             learn_causes <- list()
             for (cause in causes) {
@@ -392,15 +413,12 @@ debias_ice_ipcw <- function(data,
                     " == \"",
                     cause,
                     "\") ~ ",
-                    paste(history_of_variables, collapse = "+")
+                    paste(history_of_variables_hazard, collapse = "+")
                 ))
                 learn_causes[[cause]] <- do.call(
                     model_hazard,
                     list(character_formula = formula_event, data = at_risk_interevent)
                 )
-            }
-            if (k > 1) {
-                history_of_variables <- c(history_of_variables, paste0("time_", (k - 1)))
             }
             
             ## MG calculation
@@ -409,9 +427,13 @@ debias_ice_ipcw <- function(data,
             setkeyv(martingale_data, paste0("time_", k))
             setnames(martingale_data, c(paste0("event_", k), paste0("time_", k)), c("event", "time"))
             non_zero <- martingale_data$ic_term_part != 0
-            
+
+            if (k > 1) {
+                time_history <- c(time_history, paste0("time_", k - 1))
+            }
             ## History without latest covariate value
-            get_variables <- c(history_of_variables,
+            history_of_variables_mg <- c(time_history, baseline_covariates)
+            get_variables <- c(history_of_variables_mg,
                                "event",
                                "time",
                                "id",
@@ -467,8 +489,8 @@ debias_ice_ipcw <- function(data,
             }
             
             if (k > 1) {
-                history_of_variables <- setdiff(history_of_variables, paste0(setdiff(time_covariates, "A"), "_", k - 1))
-                tilde_nu <- predict_iterative_conditional_expectation(model_pseudo_outcome, history_of_variables, at_risk_before_tau)
+                history_of_variables_ice2 <- setdiff(history_of_variables_ice, paste0(setdiff(time_covariates, "A"), "_", k - 1))
+                tilde_nu <- predict_iterative_conditional_expectation(model_pseudo_outcome, history_of_variables_ice2, at_risk_before_tau)
             }
             
             mg <- mg_y |> 

@@ -5,7 +5,7 @@
 ## Version: 
 ## Last-Updated: Jun 26 2025 (17:03) 
 ##           By: Anders Munch
-##     Update #: 168
+##     Update #: 252
 #----------------------------------------------------------------------
 ## 
 ### Commentary: 
@@ -35,7 +35,7 @@ data_continuous_intervention <- simulate_continuous_time_data(n = n_true_value,
 calculate_mean(data_continuous_intervention, tau = tau)
 
 # Simulate continuous time data with continuous and irregular event times
-data_continuous <- simulate_continuous_time_data(n = n, K = 3)
+data_continuous <- simulate_continuous_time_data(n = n, K = 3, uncensored = TRUE)
 
 # Run debiased ICE-IPCW procedure
 debias_ice_ipcw(data = copy(data_continuous),
@@ -113,6 +113,27 @@ x <- target(x,name = "Outcome_risk",
 x <- model_formula(x)
 x <- run_rtmle(x,learner = "learn_glmnet",time_horizon = 1:tau)
 summary(x)
+
+data_continuous <- simulate_simple_continuous_time_data(n = n,
+                                                        uncensored = TRUE,
+                                                        no_competing_events = TRUE,
+                                                        effects = vary_effect(effect_A_on_Y = -0.15,
+                                                                              effect_L_on_Y = 0.25,
+                                                                              effect_L_on_A = -0.1,
+                                                                              effect_age_on_Y = 0.025,
+                                                                              effect_age_on_A = 0.002))
+# Run debiased ICE-IPCW procedure with simple continuous time data
+
+tau <- 720
+debias_ice_ipcw(data = copy(data_continuous),
+                tau = tau,
+                model_pseudo_outcome = "scaled_quasibinomial",
+                model_treatment = "learn_glm_logistic",
+                model_hazard = "learn_coxph",
+                time_covariates = c("A", "L"),
+                baseline_covariates = c("age", "A_0", "L_0"),
+                conservative = TRUE)
+
 
 ######################################################################
 ### example.R ends here
