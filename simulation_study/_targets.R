@@ -3,7 +3,8 @@
 ## of the mean interventional absolute risk for the "as-treated" intervention.
 ## Focus on three events in total (K = 3).
 ## Compare with LTMLE (Longitudinal Targeted Maximum Likelihood Estimation)
-## Check functions/simulate.R for details about the simulation mechanism.
+## from the rtmle package and a naive Cox model treating discontinuation as censoring.
+## Check functions/simulate.R and the main document for details about the simulation mechanism.
 library(targets)
 library(tarchetypes)
 library(crew)
@@ -24,16 +25,28 @@ tar_source("functions")
 time_covariates <- c("A", "L")
 baseline_covariates <- c("age", "A_0", "L_0")
 
-## Here, we vary the effects of the treatment A and the time-varying confounder L
-## has on the outcome via A on Y, L on Y, and L on A. The last three cases correspond to no confounding effect.
+## Here, we vary the effects as in the main document.
 values <- data.frame(
+    effect_A_on_Y = c(-0.15, 0, 0.15, -0.15, -0.15, -0.15, -0.15, -0.15, 0, 0.15, -0.6, 0.6, -0.15, 0, 0.15, -0.15, -0.15),
+    effect_L_on_Y = c(0.25, 0.25, 0.25, -0.25, 0, 0.25, 0.25, 0, 0, 0, 0.5,0.5,0,0,0, 0.25, 0.25),
+    effect_L_on_A = c(-0.1, -0.1, -0.1, -0.1, -0.1,0, 0.1, 0, 0, 0,-0.4,0.4,0,0,0, -0.1, -0.1),
+    effect_A_on_L =  c(rep(-0.2, 15), 0, 0.2),
+    effect_age_on_Y = c(rep(0.010, 12), rep(0, 3), rep(0.010, 2)),
+    effect_age_on_A = c(rep(0.0015, 12), rep(0, 3), rep(0.0015, 2)),
+    baseline_rate_Y = c(rep(0.0002, 12), rep(0.00035, 3), rep(0.0002, 2))
+)
+
+values_old <- data.frame(
     effect_A_on_Y = c(-0.15, 0, 0.15, -0.15, -0.15, -0.15, -0.15, -0.15, 0, 0.15, -0.4, 0.4, -0.15, 0, 0.15, -0.15, -0.15),
     effect_L_on_Y = c(0.25, 0.25, 0.25, -0.25, 0, 0.25, 0.25, 0, 0, 0, 0.5,0.5,0,0,0, 0.25, 0.25),
     effect_L_on_A = c(-0.1, -0.1, -0.1, -0.1, -0.1,0, 0.1, 0, 0, 0,-0.3,0.3,0,0,0, -0.1, -0.1),
     effect_A_on_L =  c(rep(-0.2, 15), 0, 0.2),
     effect_age_on_Y = c(rep(0.025, 12), rep(0, 3), rep(0.025, 2)),
-    effect_age_on_A = c(rep(0.002, 12), rep(0, 3), rep(0.002, 2))
+    effect_age_on_A = c(rep(0.002, 12), rep(0, 3), rep(0.002, 2)),
+    baseline_rate_Y = rep(0.0001, 17) ## old values
 )
+
+values <- rbind(values, values_old) ## combine old and new values
 
 tau <- 720 ## time horizon (in days)
 
@@ -41,14 +54,16 @@ reps <- 100 ## number of repetitions for each simulation
 batches <- 50 ## number of batches to run in parallel
 
 n_fixed <- 1000 ## number of observations for each simulation
-n_true_value <- 2500000 ## number of observations for the true value estimation
+n_true_value <- 3500000 ## number of observations for the true value estimation
 
-by_vars <- c("effect_A_on_Y", "effect_L_on_Y", "effect_L_on_A", "effect_A_on_L", "effect_age_on_Y", "effect_age_on_A") ##  variables to group by in many results
+by_vars <- c("effect_A_on_Y", "effect_L_on_Y", "effect_L_on_A", "effect_A_on_L", "effect_age_on_Y", "effect_age_on_A", "baseline_rate_Y") ##  variables to group by in many results
 
+## Main simulation study; vary coefficients
 sim_and_true_value <- tar_map(
     values = values,
     tar_target(
         true_value,
+        ### calculate true value of treatment in a large data set for each set of parameters
         {
             d_int <- simulate_simple_continuous_time_data(n = n_true_value,
                                                           static_intervention = 1,
@@ -60,17 +75,26 @@ sim_and_true_value <- tar_map(
                                                               effect_A_on_L,
                                                               effect_age_on_Y,
                                                               effect_age_on_A
-                                                          ))
+                                                          ),
+                                                            baseline_rate_list = list(
+                                                                A = 0.005,
+                                                                L = 0.001,
+                                                                C = 0.00005,
+                                                                Y = baseline_rate_Y,
+                                                                D = 0.00015
+                                                            ))
             data.table(value = calculate_mean(d_int, tau), 
                        effect_A_on_Y = effect_A_on_Y,
                        effect_L_on_Y = effect_L_on_Y,
                        effect_L_on_A = effect_L_on_A,
                        effect_A_on_L = effect_A_on_L,
                        effect_age_on_Y = effect_age_on_Y,
-                       effect_age_on_A = effect_age_on_A)
+                       effect_age_on_A = effect_age_on_A,
+                          baseline_rate_Y = baseline_rate_Y)
         }
     ),
     tar_rep(results,
+            ## main simulation; run the debiased ICE-IPCW procedure, LTMLE, and Cox procedures.
             simulate_and_run_simple(n = n_fixed,
                                     function_name = debias_ice_ipcw,
                                     simulate_args = list(uncensored = TRUE,
@@ -82,13 +106,21 @@ sim_and_true_value <- tar_map(
                                                              effect_A_on_L,
                                                              effect_age_on_Y,
                                                              effect_age_on_A
-                                                         )),
+                                                         ),
+                                                            baseline_rate_list = list(
+                                                                A = 0.005,
+                                                                L = 0.001,
+                                                                C = 0.00005,
+                                                                Y = baseline_rate_Y,
+                                                                D = 0.00015
+                                                            )),
                                     add_info = data.table(effect_A_on_Y = effect_A_on_Y,
                                                           effect_L_on_Y = effect_L_on_Y,
                                                           effect_L_on_A = effect_L_on_A,
                                                           effect_A_on_L = effect_A_on_L,
                                                           effect_age_on_Y = effect_age_on_Y,
-                                                          effect_age_on_A = effect_age_on_A),
+                                                          effect_age_on_A = effect_age_on_A,
+                                                          baseline_rate_Y = baseline_rate_Y),
                                     function_args = list(
                                         tau = tau,
                                         model_pseudo_outcome = "quasibinomial",
@@ -104,7 +136,7 @@ sim_and_true_value <- tar_map(
                                     function_name_2 = apply_rtmle,
                                     function_args_2 = list(
                                         tau = tau,
-                                        grid_size = 5,
+                                        grid_size = 8,
                                         time_confounders = setdiff(time_covariates, "A"),
                                         time_confounders_baseline = "L_0",
                                         baseline_confounders = baseline_covariates,
@@ -116,7 +148,8 @@ sim_and_true_value <- tar_map(
                                         baseline_confounders = baseline_covariates
                                     )),
             reps = reps,
-            batch = batches
+            batch = batches,
+            error = "null"
             ),
     ## censored case
     tar_rep(results_censored,
@@ -131,13 +164,21 @@ sim_and_true_value <- tar_map(
                                                              effect_A_on_L,
                                                              effect_age_on_Y,
                                                              effect_age_on_A
-                                                         )),
+                                                         ),
+                                                            baseline_rate_list = list(
+                                                                A = 0.005,
+                                                                L = 0.001,
+                                                                C = 0.00005,
+                                                                Y = baseline_rate_Y,
+                                                                D = 0.00015
+                                                            )),
                                     add_info = data.table(effect_A_on_Y = effect_A_on_Y,
                                                           effect_L_on_Y = effect_L_on_Y,
                                                           effect_L_on_A = effect_L_on_A,
                                                           effect_A_on_L = effect_A_on_L,
                                                           effect_age_on_Y = effect_age_on_Y,
-                                                          effect_age_on_A = effect_age_on_A),
+                                                          effect_age_on_A = effect_age_on_A,
+                                                            baseline_rate_Y = baseline_rate_Y),
                                     function_args = list(
                                         tau = tau,
                                         model_pseudo_outcome = "scaled_quasibinomial",
@@ -245,8 +286,9 @@ sim_sample_size <- tar_map(
                         effect_L_on_Y = c(0.25, 0.25, 0.25, 0.25),
                         effect_L_on_A = c(-0.1, -0.1, -0.1, -0.1),
                         effect_A_on_L = c(-0.2, -0.2, -0.2, -0.2),
-                        effect_age_on_Y = c(0.025, 0.025, 0.025, 0.025),
-                        effect_age_on_A = c(0.002, 0.002, 0.002, 0.002)),    
+                        effect_age_on_Y = c(0.01, 0.01, 0.01, 0.01),
+                        effect_age_on_A = c(0.0015, 0.0015, 0.0015, 0.0015),
+                        baseline_rate_Y = c(0.0002, 0.0002, 0.0002, 0.0002)),
     tar_rep(results_sample_size,
             simulate_and_run_simple(n = n,
                                     function_name = debias_ice_ipcw,
@@ -259,14 +301,22 @@ sim_sample_size <- tar_map(
                                                              effect_A_on_L,
                                                              effect_age_on_Y,
                                                              effect_age_on_A
-                                                         )),
+                                                         ),
+                                                            baseline_rate_list = list(
+                                                                A = 0.005,
+                                                                L = 0.001,
+                                                                C = 0.00005,
+                                                                Y = baseline_rate_Y,
+                                                                D = 0.00015
+                                                            )),
                                     add_info = data.table(n = n,
                                                           effect_A_on_Y = effect_A_on_Y,
                                                           effect_L_on_Y = effect_L_on_Y,
                                                           effect_L_on_A = effect_L_on_A,
                                                           effect_A_on_L = effect_A_on_L,
                                                           effect_age_on_Y = effect_age_on_Y,
-                                                          effect_age_on_A = effect_age_on_A),
+                                                          effect_age_on_A = effect_age_on_A,
+                                                            baseline_rate_Y = baseline_rate_Y),
                                     function_args = list(
                                         tau = tau,
                                         model_pseudo_outcome = "quasibinomial",
@@ -301,6 +351,12 @@ list(
     
     ## simulate 
     sim_and_true_value,
+    ## true value table
+    tar_combine(
+        true_vals,
+        sim_and_true_value[["true_value"]],
+        command = dplyr::bind_rows(!!!.x)
+    ),
     ## combine results
     tar_combine(
         sim_merge,

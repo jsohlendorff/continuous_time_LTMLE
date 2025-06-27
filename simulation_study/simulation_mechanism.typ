@@ -102,7 +102,14 @@ Consider the following example coefficients for the simulation mechanism, corres
 which is compatible with the time-varying Cox model, e.g., $lambda_1^y = lambda_2^y = lambda_3^y$ (see e.g., @sec:intensities). We vary the treatment
 effect on the outcome $beta_(k, A)^y$, corresponding to $beta_(k, A)^y > 0$, $beta_(k, A)^y = 0$, and $beta_(k, A)^y < 0$,
 and the effect of a stroke on the outcome $beta_(k, L)^y$, corresponding to $beta_(k, L)^y > 0$, $beta_(k, L)^y = 0$, and $beta_(k, L)^y < 0$.
-We also vary the effect of a stroke on the treatment propensity $alpha_(k, "L")$.
+We also vary the effect of a stroke on the treatment propensity $alpha_(k, "L")$
+and the effect of treatment on stroke $beta_(k, A)^ell$.
+
+We consider three overall scenarios:
+- *No baseline and time-varying confounding*.
+- *No time-varying confounding but baseline confounding*.
+- *Time-varying confounding*
+- *Strong confounding*.
 
 We highlight the interpretation of the most important parameters in the simulation mechanism:
 - $alpha_(k, "age")$: If positive: You will more likely be treated if you are older.
@@ -142,7 +149,7 @@ when fixed.
     [$beta^y_(k, "age")$], [0.025],
     [$beta^ell_(k, "age")$], [0.015],
     [$beta^y_(k, A)$], [*-0.15*, 0, 0.15],
-    [$beta^ell_(k, A)$], [-0.2],
+    [$beta^ell_(k, A)$], [*-0.2*, 0, 0.2],
     [$beta^y_(k, "L")$], [-0.25, 0, *0.25*],
     [$lambda_k^y$], [0.0001],
     [$lambda_k^ell$], [0.001],
@@ -150,6 +157,29 @@ when fixed.
     [$gamma_0$], [0.005]
 )])
 
+Strong confounding is considered in the following table
+in two different simulation settings. 
+#align(center, [
+#table(
+  columns: ( auto, auto),
+  inset: 10pt,
+  align: horizon,
+  table.header(
+    [*Parameters*], [*Values*],
+  ),
+    [$alpha_(k 0)$], [0.3],
+    [$alpha_(k, "age")$], [0.02],
+    [$alpha_(k, "L")$], [-0.3, 0.3],
+    [$beta^y_(k, "age")$], [0.025],
+    [$beta^ell_(k, "age")$], [0.015],
+    [$beta^y_(k, A)$], [-0.4, 0.4],
+    [$beta^ell_(k, A)$], [-0.2],
+    [$beta^y_(k, "L")$], [0.5],
+    [$lambda_k^y$], [0.0001],
+    [$lambda_k^ell$], [0.001],
+    [$gamma_"age"$], [0],
+    [$gamma_0$], [0.005]
+)])
 Additionally, we consider the setting of no confounding
 effect on treatment and outcome, i.e., we set
 $alpha_(k, "L") = 0$ and $beta^y_(k, L) = 0$.
@@ -236,6 +266,19 @@ $
     S_((3))^y tilde "Exp"(lambda^y_3 exp(beta^y_(3,"age") "age" + beta^y_(3, A) treat(2) + beta^y_(3, L) covariate(2) + beta^y_(3, T^ell) T^ell)),
 $
 or we might consider a model in which the baseline hazard is not constant.
+It also might be easier to state a realistic model in terms of the intensities directly,
+in which case, we can then "transform" to the interevent scale. For example, a realistic intensity for the primary event,
+$
+    lambda^y (t) &= lambda_0^y (t) exp(beta^y_("age") "age") exp(beta_L^y exp(beta^(y *)_L (t-T^ell)) L(t-) + beta_A^y  exp(beta^(y *)_A (t-T^a)) (1-A(t-)) \
+        &+ beta^y_Z bb(1) {event(2) < t} bb(1) {status(1)=a} bb(1) {status(2)=ell}) bb(1) {t <= T^y}
+$
+Here $T^a$ denotes the time to the last treatment. 
+Note that each term is zero if the corresponding event has not happened yet, so we do not condition on the future. 
+Here, we can let each coefficient depend on event number, but for simplicity of notation, we do not do so.
+The last term corresponds to there being an effect of the order in which the events happened
+after two events. 
+This is one way to include longe range dependencies.
+Simulating from this model is significantly more complicated, because we have to rely on numeric integration.
 
 More generally, let $cumhazard(k, x, t)$ denote the cumulative hazard function for the $k$'th event of type $x$ at time $t$
 conditional on the history $history(k-1)$.
