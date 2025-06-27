@@ -3,9 +3,9 @@
 ## Author: Johan Sebastian Ohlendorff
 ## Created: Jun 18 2025 (17:27) 
 ## Version: 
-## Last-Updated: Jun 24 2025 (22:39) 
+## Last-Updated: Jun 27 2025 (16:45) 
 ##           By: Johan Sebastian Ohlendorff
-##     Update #: 29
+##     Update #: 71
 #----------------------------------------------------------------------
 ## 
 ### Commentary: 
@@ -15,7 +15,7 @@
 ## 
 ### Code:
 
-apply_rtmle <- function(data,
+apply_rtmle  <- function(data,
                         tau,
                         grid_size = 10,
                         time_confounders = c("L1", "L2"),
@@ -38,17 +38,17 @@ apply_rtmle <- function(data,
     x$data$timevar_data <- data_discrete$timevar_data
     x$data$outcome_data <- data_discrete$outcome_data
     x$data$baseline_data <- data_discrete$baseline_data
-    protocol(x) <- list(
+    x<- protocol(x,
         name = "Always_A",
         intervention = data.frame("A" = factor("1", levels = levels(data_discrete$timevar_data$A$A_0)))
-    )
-    prepare_data(x) <- list()
-    target(x) <- list(
+        )
+    x<- prepare_data(x)
+    x<- target(x,
         name = "Outcome_risk",
-        strategy = "additive",
         estimator = "tmle",
         protocols = "Always_A"
-    )
+        )
+        x <- model_formula(x)
     ## Run the RTMLE
     res<-summary(run_rtmle(x, learner = learner, time_horizon = data_discrete$tau_discrete))
     res <- res[, c("Estimate", "Standard_error", "Lower", "Upper"), with = FALSE]
@@ -58,6 +58,6 @@ apply_rtmle <- function(data,
     res$ipw <-NA
     res
 }
-
+  
 ######################################################################
 ### apply_rtmle.R ends here

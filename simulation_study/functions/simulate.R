@@ -370,26 +370,35 @@ simulate_and_run_simple <- function(n,
                                     function_args_3 = NULL,
                                     uncensored = FALSE,
                                     add_info = NULL) {
-    tryCatch({d <- do.call(simulate_simple_continuous_time_data, c(list(n = n), simulate_args))},
+    d <- tryCatch({do.call(simulate_simple_continuous_time_data, c(list(n = n), simulate_args))},
                 error = function(e) {
                     message("Error in simulation: ", e$message)
                     return(NULL)
                 })
-    tryCatch({res<-do.call(function_name, c(list(d), function_args))},
+    if (is.null(d)) {
+        return(NULL)
+    }
+    res<-tryCatch({do.call(function_name, c(list(d), function_args))},
                 error = function(e) {
                     message("Error in function ", function_name, ": ", e$message)
                     return(NULL)
                 })
+    if (is.null(res)) {
+        res <- data.table(estimate = NA, lower = NA, upper = NA, se = NA, ice_ipcw_estimate = NA, ipw = NA)
+    } 
     res$type <- function_nice_names[1]
     if (!is.null(add_info)) {
         res <- cbind(res, add_info)
     }
     if (!is.null(function_name_2)) {
-        tryCatch({res_2 <- do.call(function_name_2, c(list(copy(d)), function_args_2))},
+        res_2 <- tryCatch({do.call(function_name_2, c(list(copy(d)), function_args_2))},
                     error = function(e) {
                         message("Error in function ", function_name_2, ": ", e$message)
                         return(NULL)
                     })
+        if (is.null(res_2)) {
+            res_2 <- data.table(estimate = NA, lower = NA, upper = NA, se = NA, ice_ipcw_estimate = NA, ipw = NA)
+        }
         res_2$type <- function_nice_names[2]
         if (!is.null(add_info)) {
             res_2 <- cbind(res_2, add_info)
@@ -397,11 +406,14 @@ simulate_and_run_simple <- function(n,
         res <- rbind(res, res_2)
     }
     if (!is.null(function_name_3)) {
-        tryCatch({res_3 <- do.call(function_name_3, c(list(d), function_args_3))},
+        res_3 <- tryCatch({do.call(function_name_3, c(list(d), function_args_3))},
                     error = function(e) {
                         message("Error in function ", function_name_3, ": ", e$message)
                         return(NULL)
                     })
+        if (is.null(res_3)) {
+            res_3 <- data.table(estimate = NA, lower = NA, upper = NA, se = NA, ice_ipcw_estimate = NA, ipw = NA)
+        }
         res_3$type <- function_nice_names[3]
         if (!is.null(add_info)) {
             res_3 <- cbind(res_3, add_info)
@@ -499,10 +511,12 @@ vary_dropout <- function(a_intercept = 0.3) {
         ),
         beta_c_1 = list(
             A = 0,
+            L = 0,
             age = 0
         ),
         beta_c_2 = list(
             A = 0,
+            L = 0,
             age = 0
         ),
         beta_y_1 = list(
@@ -558,10 +572,12 @@ simulate_simple_continuous_time_data <- function(n,
                                                          ),
                                                          beta_c_1 = list(
                                                              A = 0,
+                                                             L = 0,
                                                              age = 0
                                                          ),
                                                          beta_c_2 = list(
                                                              A = 0,
+                                                             L = 0,
                                                              age = 0
                                                          ),
                                                          beta_y_1 = list(
@@ -661,6 +677,7 @@ simulate_simple_continuous_time_data <- function(n,
             n = nrow(people_atrisk),
             rate = baseline_rate_list$C,
             eta = effects$beta_c_1$A * people_atrisk$A +
+                effects$beta_c_1$L * people_atrisk$L +
                 effects$beta_c_1$age * people_atrisk$age
         )
     } else {
@@ -723,7 +740,9 @@ simulate_simple_continuous_time_data <- function(n,
     }
     else {
         people_atrisk[event == "A", new_A := stats::rbinom(.N, 1, lava::expit(effects$alpha_A_1$intercept +
-                                                                              effects$alpha_A_1$age * age))]
+                                                                              effects$alpha_A_1$L * people_atrisk$L +
+                                                                              effects$alpha_A_1$T * people_atrisk$time +
+                                                                              effects$alpha_A_1$age * people_atrisk$age))]
     }
     people_atrisk[event == "L", L := 1]
     people_atrisk[event == "A", A := new_A]
@@ -757,6 +776,7 @@ simulate_simple_continuous_time_data <- function(n,
                 n = nrow(people_atrisk),
                 rate = baseline_rate_list$C,
                 eta = effects$beta_c_2$A * people_atrisk$A +
+                    effects$beta_c_2$L * people_atrisk$L +
                     effects$beta_c_2$age * people_atrisk$age
             )
         } else {
@@ -817,7 +837,9 @@ simulate_simple_continuous_time_data <- function(n,
         }
         else {
             people_atrisk[event == "A", new_A := stats::rbinom(.N, 1, lava::expit(effects$alpha_A_2$intercept +
-                                                                                  effects$alpha_A_2$age * age))]
+                                                                                  effects$alpha_A_2$L * people_atrisk$L +
+                                                                                  effects$alpha_A_2$T * people_atrisk$time +
+                                                                                  effects$alpha_A_2$age * people_atrisk$age))]
         }
         people_atrisk[event == "L", L := 1]
         people_atrisk[event == "A", A := new_A]
@@ -835,6 +857,7 @@ simulate_simple_continuous_time_data <- function(n,
                 n = nrow(people_atrisk),
                 rate = baseline_rate_list$C,
                 eta = effects$beta_c_2$A * people_atrisk$A +
+                    effects$beta_c_2$L * people_atrisk$L +
                     effects$beta_c_2$age * people_atrisk$age
             )
         }
