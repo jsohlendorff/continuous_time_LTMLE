@@ -1,63 +1,66 @@
-### apply_rtmle.R --- 
+### apply_rtmle.R ---
 #----------------------------------------------------------------------
 ## Author: Johan Sebastian Ohlendorff
-## Created: Jun 18 2025 (17:27) 
-## Version: 
-## Last-Updated: Jun 27 2025 (16:45) 
+## Created: Jun 18 2025 (17:27)
+## Version:
+## Last-Updated: Jun 27 2025 (16:45)
 ##           By: Johan Sebastian Ohlendorff
 ##     Update #: 71
 #----------------------------------------------------------------------
-## 
-### Commentary: 
-## 
+##
+### Commentary:
+##
 ### Change Log:
 #----------------------------------------------------------------------
-## 
+##
 ### Code:
 
-apply_rtmle  <- function(data,
+apply_rtmle <- function(data,
                         tau,
                         grid_size = 10,
                         time_confounders = c("L1", "L2"),
                         time_confounders_baseline = c("L_01", "L_02"),
-                        baseline_confounders =  c("sex","age"),
+                        baseline_confounders = c("sex", "age"),
                         learner = "learn_glmnet") {
-    # Then compare with rtmle
-    data_discrete <- discretize_time(
-        data_continuous = data,
-        time_confounders = time_confounders,
-        time_confounders_baseline = time_confounders_baseline,
-        baseline_confounders = baseline_confounders,
-        tau = tau,
-        grid_size = grid_size)
+  # Then compare with rtmle
+  data_discrete <- discretize_time(
+    data_continuous = data,
+    time_confounders = time_confounders,
+    time_confounders_baseline = time_confounders_baseline,
+    baseline_confounders = baseline_confounders,
+    tau = tau,
+    grid_size = grid_size
+  )
 
-    x <- rtmle_init(
-        intervals = data_discrete$tau_discrete, name_id = "id", name_outcome = "Y", name_competing = "Dead",
-        name_censoring = "Censored", censored_label = "censored"
-    )
-    x$data$timevar_data <- data_discrete$timevar_data
-    x$data$outcome_data <- data_discrete$outcome_data
-    x$data$baseline_data <- data_discrete$baseline_data
-    x<- protocol(x,
-        name = "Always_A",
-        intervention = data.frame("A" = factor("1", levels = levels(data_discrete$timevar_data$A$A_0)))
-        )
-    x<- prepare_data(x)
-    x<- target(x,
-        name = "Outcome_risk",
-        estimator = "tmle",
-        protocols = "Always_A"
-        )
-        x <- model_formula(x)
-    ## Run the RTMLE
-    res<-summary(run_rtmle(x, learner = learner, time_horizon = data_discrete$tau_discrete))
-    res <- res[, c("Estimate", "Standard_error", "Lower", "Upper"), with = FALSE]
-    setnames(res, c("Estimate", "Lower", "Upper", "Standard_error"),
-             c("estimate", "lower", "upper", "se"))
-    res$ice_ipcw_estimate<-NA
-    res$ipw <-NA
-    res
+  x <- rtmle_init(
+    intervals = data_discrete$tau_discrete, name_id = "id", name_outcome = "Y", name_competing = "Dead",
+    name_censoring = "Censored", censored_label = "censored"
+  )
+  x$data$timevar_data <- data_discrete$timevar_data
+  x$data$outcome_data <- data_discrete$outcome_data
+  x$data$baseline_data <- data_discrete$baseline_data
+  x <- protocol(x,
+    name = "Always_A",
+    intervention = data.frame("A" = factor("1", levels = levels(data_discrete$timevar_data$A$A_0)))
+  )
+  x <- prepare_data(x)
+  x <- target(x,
+    name = "Outcome_risk",
+    estimator = "tmle",
+    protocols = "Always_A"
+  )
+  x <- model_formula(x)
+  ## Run the RTMLE
+  res <- summary(run_rtmle(x, learner = learner, time_horizon = data_discrete$tau_discrete))
+  res <- res[, c("Estimate", "Standard_error", "Lower", "Upper"), with = FALSE]
+  setnames(
+    res, c("Estimate", "Lower", "Upper", "Standard_error"),
+    c("estimate", "lower", "upper", "se")
+  )
+  res$ice_ipcw_estimate <- NA
+  res$ipw <- NA
+  res
 }
-  
+
 ######################################################################
 ### apply_rtmle.R ends here

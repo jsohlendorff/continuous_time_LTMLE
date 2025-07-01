@@ -3,11 +3,11 @@
 ## Wrapper function to predict the outcome under an intervention
 predict_intervention <- function(data, k, predict_fun, static_intervention) {
   intervened_data <- copy(data)
-  intervened_data[event_k == "A", paste0("A_", k) := static_intervention, env = list(event_k = paste0("event_", k))]
-  ## for (j in seq(0,k)) {
-  ##   intervened_data[, paste0("A_", j) := static_intervention]
-  ## }
-  # intervened_data[[paste0("event_", k)]] <- droplevels(intervened_data[[paste0("event_", k)]])
+  if (k > 0) {
+    intervened_data[event_k == "A", paste0("A_", k) := static_intervention, env = list(event_k = paste0("event_", k))]
+  } else {
+    intervened_data[, A_0 := static_intervention]
+  }
   f <- predict_fun(intervened_data)
   ## TODO: Check if the predictions are in the range [0,1]
   ## Warn if any predictions are NA or below or above 1
@@ -28,7 +28,7 @@ safe_merge <- function(x, y, by) {
     z <- merge(x, y, by = by)
     ## Add the columns of cens_mg and Qs together if they exist
     if (all(c("cens_mg", "Q") %in% names(x) &
-            c("cens_mg", "Q") %in% names(y))) {
+      c("cens_mg", "Q") %in% names(y))) {
       z[, cens_mg := cens_mg.x + cens_mg.y]
       z[, Q := Q.x + Q.y]
       z[, c("cens_mg.x", "cens_mg.y", "Q.x", "Q.y") := NULL]
@@ -40,8 +40,9 @@ safe_merge <- function(x, y, by) {
 # Function to widen continuous data from the long format to the wide format
 widen_continuous_data <- function(data, time_covariates) {
   data_wide <- data.table::dcast(data$timevarying_data,
-                                 id ~ event_number,
-                                 value.var = c("time", "event", time_covariates))
+    id ~ event_number,
+    value.var = c("time", "event", time_covariates)
+  )
 
   ## Merge with baseline data
   merge(data_wide, data$baseline_data, by = "id")

@@ -11,59 +11,24 @@ library(tarchetypes)
 library(crew)
 setwd("~/phd/continuous_time_LTMLE/simulation_study")
 tar_option_set(
-    packages = c("tarchetypes",
-                 "data.table",
-                 "riskRegression",
-                 "ranger",
-                 "survival",
-                 "ggplot2",
-                 "prodlim",
-                 "rtmle", ## !!!REQUIRES NEW VERSION!!!
-                 "survminer"),
-    controller = crew_controller_local(workers = 8)
+  packages = c(
+    "tarchetypes",
+    "data.table",
+    "riskRegression",
+    "ranger",
+    "survival",
+    "ggplot2",
+    "prodlim",
+    "rtmle",
+    ## !!!REQUIRES NEW VERSION!!!
+    "survminer"
+  ),
+  controller = crew_controller_local(workers = 8)
 )
 
 tar_source("functions")
 time_covariates <- c("A", "L")
 baseline_covariates <- c("age", "A_0", "L_0")
-
-## Here, we vary the effects as in the main document.
-values <- data.frame(
-    effect_A_on_Y = c(-0.15, 0, 0.15, -0.15, -0.15, -0.15, -0.15, -0.15, 0, 0.15, -0.4, 0.4, -0.15, 0, 0.15, -0.15, -0.15),
-    effect_L_on_Y = c(0.25, 0.25, 0.25, -0.25, 0, 0.25, 0.25, 0, 0, 0, 0.5,0.5,0,0,0, 0.25, 0.25),
-    effect_L_on_A = c(-0.1, -0.1, -0.1, -0.1, -0.1,0, 0.1, 0, 0, 0,-0.3,0.3,0,0,0, -0.1, -0.1),
-    effect_A_on_L =  c(rep(-0.2, 15), 0, 0.2),
-    effect_age_on_Y = c(rep(0.025, 12), rep(0, 3), rep(0.025, 2)),
-    effect_age_on_A = c(rep(0.002, 12), rep(0, 3), rep(0.002, 2)),
-    baseline_rate_Y = rep(0.0001, 17)
-)
-
-## If this does not work, we just have to look at the censored case without treatment effect and confounding
-values_censoring <- values[c(1,9),]
-values_censoring2 <- expand.grid(
-    baseline_rate_C = c(0.0002, 0.0005, 0.0008), 
-    model_type = c("scaled_quasibinomial", "tweedie", "lm"),
-    conservative = TRUE #c(TRUE, FALSE)
-)
-values_censoring <- merge(values_censoring, values_censoring2, by = character(), all = TRUE)
-values_censoring <- as.data.table(values_censoring)
-
-effects_strong_confounding <- data.frame(effect_A_on_Y = -1.3,
-                                         effect_L_on_Y = 1.5,
-                                         effect_L_on_A = -1,
-                                         effect_A_on_L = -0.2,
-                                         effect_age_on_Y = 0,
-                                         effect_age_on_A = 0,
-                                         baseline_rate_Y = 0.001)
-
-## effects_strong_confounding <- rbind(efff, efff2, efff3)
-baseline_rate_list_strong_confounding <- list(
-    A = 0.007,
-    L = 0.0015,
-    C = 0.00005,
-    Y = 0.001,
-    D = 0.015
-)
 
 tau <- 720 ## time horizon (in days)
 
@@ -73,524 +38,667 @@ batches <- 50 ## number of batches to run in parallel
 n_fixed <- 1000 ## number of observations for each simulation
 n_true_value <- 3500000 ## number of observations for the true value estimation
 
-by_vars <- c("effect_A_on_Y", "effect_L_on_Y", "effect_L_on_A", "effect_A_on_L", "effect_age_on_Y", "effect_age_on_A", "baseline_rate_Y") ##  variables to group by in many results
-
 ## Main simulation study; vary coefficients
+## Here, we vary the effects as in the main document.
+parameter_vary <- data.frame(
+  effect_A_on_Y = 2*c(
+    -0.15,
+    0,
+    0.15,
+    -0.15,
+    -0.15,
+    -0.15,
+    -0.15,
+    -0.15,
+    0,
+    0.15,
+    -0.4,
+    0.4,
+    -0.15,
+    0,
+    0.15,
+    -0.15,
+    -0.15
+  ),
+  effect_L_on_Y = 2*c(
+    0.25,
+    0.25,
+    0.25,
+    -0.25,
+    0,
+    0.25,
+    0.25,
+    0,
+    0,
+    0,
+    0.5,
+    0.5,
+    0,
+    0,
+    0,
+    0.25,
+    0.25
+  ),
+  effect_L_on_A = 2*c(
+    -0.1,
+    -0.1,
+    -0.1,
+    -0.1,
+    -0.1,
+    0,
+    0.1,
+    0,
+    0,
+    0,
+    -0.3,
+    0.3,
+    0,
+    0,
+    0,
+    -0.1,
+    -0.1
+  ),
+  effect_A_on_L =  c(rep(-0.2, 15), 0, 0.2),
+  effect_age_on_Y = c(rep(0.025, 12), rep(0, 3), rep(0.025, 2)),
+  effect_age_on_A = c(rep(0.002, 12), rep(0, 3), rep(0.002, 2)),
+  baseline_rate_Y = rep(0.0001, 17)
+)
+
+by_vars <- c(
+  "effect_A_on_Y",
+  "effect_L_on_Y",
+  "effect_L_on_A",
+  "effect_A_on_L",
+  "effect_age_on_Y",
+  "effect_age_on_A",
+  "baseline_rate_Y"
+) ##  variables to group by in many results
+
 sim_and_true_value <- tar_map(
-    values = values,
-    tar_target(
-        true_value,
-        ### calculate true value of treatment in a large data set for each set of parameters
-        {
-            d_int <- simulate_simple_continuous_time_data(n = n_true_value,
-                                                          static_intervention = 1,
-                                                          no_competing_events = TRUE, 
-                                                          effects = vary_effect(
-                                                              effect_A_on_Y,
-                                                              effect_L_on_Y,
-                                                              effect_L_on_A,
-                                                              effect_A_on_L,
-                                                              effect_age_on_Y,
-                                                              effect_age_on_A
-                                                          ),
-                                                            baseline_rate_list = list(
-                                                                A = 0.005,
-                                                                L = 0.001,
-                                                                C = 0.00005,
-                                                                Y = baseline_rate_Y,
-                                                                D = 0.00015
-                                                            ))
-            data.table(value = calculate_mean(d_int, tau), 
-                       effect_A_on_Y = effect_A_on_Y,
-                       effect_L_on_Y = effect_L_on_Y,
-                       effect_L_on_A = effect_L_on_A,
-                       effect_A_on_L = effect_A_on_L,
-                       effect_age_on_Y = effect_age_on_Y,
-                       effect_age_on_A = effect_age_on_A,
-                          baseline_rate_Y = baseline_rate_Y)
-        }
+  values = parameter_vary,
+  tar_target(
+    true_value,
+    ### calculate true value of treatment in a large data set for each set of parameters
+    {
+      d_int <- simulate_simple_continuous_time_data(
+        n = n_true_value,
+        static_intervention = 1,
+        no_competing_events = TRUE,
+        effects = vary_effect(
+          effect_A_on_Y,
+          effect_L_on_Y,
+          effect_L_on_A,
+          effect_A_on_L,
+          effect_age_on_Y,
+          effect_age_on_A
+        ),
+        baseline_rate_list = list(
+          A = 0.005,
+          L = 0.001,
+          C = 0.00005,
+          Y = baseline_rate_Y,
+          D = 0.00015
+        )
+      )
+      data.table(
+        value = calculate_mean(d_int, tau),
+        effect_A_on_Y = effect_A_on_Y,
+        effect_L_on_Y = effect_L_on_Y,
+        effect_L_on_A = effect_L_on_A,
+        effect_A_on_L = effect_A_on_L,
+        effect_age_on_Y = effect_age_on_Y,
+        effect_age_on_A = effect_age_on_A,
+        baseline_rate_Y = baseline_rate_Y
+      )
+    }
+  ),
+  tar_rep(
+    results,
+    ## main simulation; run the debiased ICE-IPCW procedure, LTMLE, and Cox procedures.
+    simulate_and_run_simple(
+      n = n_fixed,
+      function_name = "debias_ice_ipcw",
+      simulate_args = list(
+        uncensored = TRUE,
+        no_competing_events = TRUE,
+        effects = vary_effect(
+          effect_A_on_Y,
+          effect_L_on_Y,
+          effect_L_on_A,
+          effect_A_on_L,
+          effect_age_on_Y,
+          effect_age_on_A
+        ),
+        baseline_rate_list = list(
+          A = 0.005,
+          L = 0.001,
+          C = 0.00005,
+          Y = baseline_rate_Y,
+          D = 0.00015
+        )
+      ),
+      add_info = data.table(
+        effect_A_on_Y = effect_A_on_Y,
+        effect_L_on_Y = effect_L_on_Y,
+        effect_L_on_A = effect_L_on_A,
+        effect_A_on_L = effect_A_on_L,
+        effect_age_on_Y = effect_age_on_Y,
+        effect_age_on_A = effect_age_on_A,
+        baseline_rate_Y = baseline_rate_Y
+      ),
+      function_args = list(
+        tau = tau,
+        model_pseudo_outcome = "quasibinomial",
+        model_treatment = "learn_glm_logistic",
+        model_hazard = NA,
+        time_covariates = time_covariates,
+        baseline_covariates = baseline_covariates,
+        conservative = TRUE
+      ),
+      function_nice_names = c("Debiased ICE-IPCW", "LTMLE (grid size = 8)", "Naive Cox"),
+      function_name_2 = "apply_rtmle",
+      function_args_2 = list(
+        tau = tau,
+        grid_size = 8,
+        time_confounders = setdiff(time_covariates, "A"),
+        time_confounders_baseline = "L_0",
+        baseline_confounders = baseline_covariates,
+        learner = "learn_glmnet"
+      ),
+      function_name_3 = "naive_cox",
+      function_args_3 = list(tau = tau, baseline_confounders = baseline_covariates)
     ),
-    tar_rep(results,
-            ## main simulation; run the debiased ICE-IPCW procedure, LTMLE, and Cox procedures.
-            simulate_and_run_simple(n = n_fixed,
-                                    function_name = "debias_ice_ipcw",
-                                    simulate_args = list(uncensored = TRUE,
-                                                         no_competing_events = TRUE,
-                                                         effects = vary_effect(
-                                                             effect_A_on_Y,
-                                                             effect_L_on_Y,
-                                                             effect_L_on_A,
-                                                             effect_A_on_L,
-                                                             effect_age_on_Y,
-                                                             effect_age_on_A
-                                                         ),
-                                                            baseline_rate_list = list(
-                                                                A = 0.005,
-                                                                L = 0.001,
-                                                                C = 0.00005,
-                                                                Y = baseline_rate_Y,
-                                                                D = 0.00015
-                                                            )),
-                                    add_info = data.table(effect_A_on_Y = effect_A_on_Y,
-                                                          effect_L_on_Y = effect_L_on_Y,
-                                                          effect_L_on_A = effect_L_on_A,
-                                                          effect_A_on_L = effect_A_on_L,
-                                                          effect_age_on_Y = effect_age_on_Y,
-                                                          effect_age_on_A = effect_age_on_A,
-                                                          baseline_rate_Y = baseline_rate_Y),
-                                    function_args = list(
-                                        tau = tau,
-                                        model_pseudo_outcome = "quasibinomial",
-                                        model_treatment = "learn_glm_logistic",
-                                        model_hazard = NA,
-                                        time_covariates = time_covariates,
-                                        baseline_covariates = baseline_covariates,
-                                        conservative = TRUE
-                                    ),
-                                    function_nice_names = c("Debiased ICE-IPCW",
-                                                            "LTMLE (grid size = 8)",
-                                                            "Naive Cox"),
-                                    function_name_2 = "apply_rtmle",
-                                    function_args_2 = list(
-                                        tau = tau,
-                                        grid_size = 8,
-                                        time_confounders = setdiff(time_covariates, "A"),
-                                        time_confounders_baseline = "L_0",
-                                        baseline_confounders = baseline_covariates,
-                                        learner = "learn_glmnet"
-                                    ),
-                                    function_name_3 = "naive_cox",
-                                    function_args_3 = list(
-                                        tau = tau,
-                                        baseline_confounders = baseline_covariates
-                                    )),
-            reps = reps,
-            batch = batches
-            )
+    reps = reps,
+    batch = batches
+  )
 )
 
 ## Censored case
+parameter_vary_censoring <- parameter_vary[c(1, 9), ]
+parameter_vary_censoring2 <- expand.grid(
+  baseline_rate_C = c(0.0002, 0.0005, 0.0008),
+  model_type = c("scaled_quasibinomial", "tweedie", "lm"),
+  conservative = TRUE #c(TRUE, FALSE)
+)
+parameter_vary_censoring <- merge(
+  parameter_vary_censoring,
+  parameter_vary_censoring2,
+  by = character(),
+  all = TRUE
+)
+parameter_vary_censoring <- as.data.table(parameter_vary_censoring)
+
 sim_censored <- tar_map(
-    values = values_censoring,
-    tar_rep(
-        results_censored,
-        ## main simulation; run the debiased ICE-IPCW procedure, LTMLE, and Cox procedures.
-        simulate_and_run_simple(n = n_fixed,
-                                function_name = "debias_ice_ipcw",
-                                simulate_args = list(uncensored = FALSE,
-                                                     no_competing_events = TRUE,
-                                                     max_fup = 6000, # if conservative=FALSE, it will be biased, see example.R. Therefore set max_fup to a large value
-                                                     effects = vary_effect(
-                                                         effect_A_on_Y,
-                                                         effect_L_on_Y,
-                                                         effect_L_on_A,
-                                                         effect_A_on_L,
-                                                         effect_age_on_Y,
-                                                         effect_age_on_A
-                                                     ),
-                                                        baseline_rate_list = list(
-                                                            A = 0.005,
-                                                            L = 0.001,
-                                                            C = baseline_rate_C,
-                                                            Y = baseline_rate_Y,
-                                                            D = 0.00015
-                                                        )),
-                                add_info = data.table(effect_A_on_Y = effect_A_on_Y,
-                                                      effect_L_on_Y = effect_L_on_Y,
-                                                      effect_L_on_A = effect_L_on_A,
-                                                      effect_A_on_L = effect_A_on_L,
-                                                      effect_age_on_Y = effect_age_on_Y,
-                                                      effect_age_on_A = effect_age_on_A,
-                                                      baseline_rate_Y = baseline_rate_Y,
-                                                      baseline_rate_C = baseline_rate_C,
-                                                      model_type = model_type,
-                                                      conservative = conservative),
-                                function_args = list(
-                                    tau = tau,
-                                    model_pseudo_outcome = model_type,
-                                    model_treatment = "learn_glm_logistic",
-                                    model_hazard = "learn_coxph",
-                                    time_covariates = time_covariates,
-                                    baseline_covariates = baseline_covariates,
-                                    conservative = conservative,
-                                    marginal_censoring_hazard = TRUE
-                                )),
-        reps = reps,
-        batch = batches
-    )
+  values = parameter_vary_censoring,
+  tar_rep(
+    results_censored,
+    ## main simulation; run the debiased ICE-IPCW procedure, LTMLE, and Cox procedures.
+    simulate_and_run_simple(
+      n = n_fixed,
+      function_name = "debias_ice_ipcw",
+      simulate_args = list(
+        uncensored = FALSE,
+        no_competing_events = TRUE,
+        # if conservative=FALSE, it will be biased, see example.R. Therefore set max_fup to a large value
+        effects = vary_effect(
+          effect_A_on_Y,
+          effect_L_on_Y,
+          effect_L_on_A,
+          effect_A_on_L,
+          effect_age_on_Y,
+          effect_age_on_A
+        ),
+        baseline_rate_list = list(
+          A = 0.005,
+          L = 0.001,
+          C = baseline_rate_C,
+          Y = baseline_rate_Y,
+          D = 0.00015
+        )
+      ),
+      add_info = data.table(
+        effect_A_on_Y = effect_A_on_Y,
+        effect_L_on_Y = effect_L_on_Y,
+        effect_L_on_A = effect_L_on_A,
+        effect_A_on_L = effect_A_on_L,
+        effect_age_on_Y = effect_age_on_Y,
+        effect_age_on_A = effect_age_on_A,
+        baseline_rate_Y = baseline_rate_Y,
+        baseline_rate_C = baseline_rate_C,
+        model_type = model_type,
+        conservative = conservative
+      ),
+      function_args = list(
+        tau = tau,
+        model_pseudo_outcome = model_type,
+        model_treatment = "learn_glm_logistic",
+        model_hazard = "learn_coxph",
+        time_covariates = time_covariates,
+        baseline_covariates = baseline_covariates,
+        conservative = conservative,
+        marginal_censoring_hazard = TRUE
+      )
+    ),
+    reps = reps,
+    batch = batches
+  )
 )
 
 ## vary prevalence
 sim_and_true_value_prevalence <- tar_map(
-    values = data.frame(baseline_rate_Y =  c(0.00005, 0.0001, 0.0002)),
-    tar_target(
-        true_value_prevalence,
-        {
-            d_int <- simulate_simple_continuous_time_data(n = n_true_value,
-                                                          static_intervention = 1,
-                                                          no_competing_events = TRUE,
-                                                          baseline_rate_list = list(
-                                                              A = 0.005,
-                                                              L = 0.001,
-                                                              C = 0.00005,
-                                                              Y = baseline_rate_Y,
-                                                              D = 0.00015
-                                                          ))
-            data.table(value = calculate_mean(d_int, tau), 
-                       baseline_rate_Y = baseline_rate_Y)
-        }
+  values = data.frame(baseline_rate_Y =  c(0.00005, 0.0001, 0.0002)),
+  tar_target(true_value_prevalence, {
+    d_int <- simulate_simple_continuous_time_data(
+      n = n_true_value,
+      static_intervention = 1,
+      no_competing_events = TRUE,
+      baseline_rate_list = list(
+        A = 0.005,
+        L = 0.001,
+        C = 0.00005,
+        Y = baseline_rate_Y,
+        D = 0.00015
+      )
+    )
+    data.table(value = calculate_mean(d_int, tau), baseline_rate_Y = baseline_rate_Y)
+  }),
+  tar_rep(
+    results_prevalence,
+    simulate_and_run_simple(
+      n = n_fixed,
+      function_name = "debias_ice_ipcw",
+      simulate_args = list(
+        uncensored = TRUE,
+        no_competing_events = TRUE,
+        baseline_rate_list = list(
+          A = 0.005,
+          L = 0.001,
+          C = 0.00005,
+          Y = baseline_rate_Y,
+          D = 0.00015
+        )
+      ),
+      add_info = data.table(baseline_rate_Y = baseline_rate_Y),
+      function_args = list(
+        tau = tau,
+        model_pseudo_outcome = "quasibinomial",
+        model_treatment = "learn_glm_logistic",
+        model_hazard = NA,
+        time_covariates = time_covariates,
+        baseline_covariates = baseline_covariates,
+        conservative = TRUE
+      )
     ),
-    tar_rep(results_prevalence,
-            simulate_and_run_simple(n = n_fixed,
-                                    function_name = "debias_ice_ipcw",
-                                    simulate_args = list(uncensored = TRUE,
-                                                         no_competing_events = TRUE,
-                                                         baseline_rate_list = list(
-                                                             A = 0.005,
-                                                             L = 0.001,
-                                                             C = 0.00005,
-                                                             Y = baseline_rate_Y,
-                                                             D = 0.00015
-                                                         )),
-                                    add_info = data.table(baseline_rate_Y = baseline_rate_Y),
-                                    function_args = list(
-                                        tau = tau,
-                                        model_pseudo_outcome = "quasibinomial",
-                                        model_treatment = "learn_glm_logistic",
-                                        model_hazard = NA,
-                                        time_covariates = time_covariates,
-                                        baseline_covariates = baseline_covariates,
-                                        conservative = TRUE
-                                    )),
-            reps = reps,
-            batch = batches
-            )
+    reps = reps,
+    batch = batches
+  )
 )
 
 ## vary dropout
 sim_and_true_value_dropout <- tar_map(
-    values = data.frame(a_intercept = c(-2.5,-1.1,-0.5, 0.3, 1.1)),
-    tar_target(
-        true_value_dropout,
-        {
-            d_int <- simulate_simple_continuous_time_data(n = n_true_value,
-                                                          static_intervention = 1,
-                                                          no_competing_events = TRUE, 
-                                                          effects = vary_dropout(
-                                                              a_intercept = a_intercept
-                                                          ))
-            data.table(value = calculate_mean(d_int, tau),
-                       a_intercept = a_intercept)
-        }
+  values = data.frame(a_intercept = c(-2.5, -1.1, -0.5, 0.3, 1.1)),
+  tar_target(true_value_dropout, {
+    d_int <- simulate_simple_continuous_time_data(
+      n = n_true_value,
+      static_intervention = 1,
+      no_competing_events = TRUE,
+      effects = vary_dropout(a_intercept = a_intercept)
+    )
+    data.table(value = calculate_mean(d_int, tau), a_intercept = a_intercept)
+  }),
+  tar_rep(
+    results_dropout,
+    simulate_and_run_simple(
+      n = n_fixed,
+      function_name = "debias_ice_ipcw",
+      simulate_args = list(
+        uncensored = TRUE,
+        no_competing_events = TRUE,
+        effects = vary_dropout(a_intercept = a_intercept)
+      ),
+      add_info = data.table(a_intercept = a_intercept),
+      function_args = list(
+        tau = tau,
+        model_pseudo_outcome = "quasibinomial",
+        model_treatment = "learn_glm_logistic",
+        model_hazard = NA,
+        time_covariates = time_covariates,
+        baseline_covariates = baseline_covariates,
+        conservative = TRUE
+      )
     ),
-    tar_rep(results_dropout,
-            simulate_and_run_simple(n = n_fixed,
-                                    function_name = "debias_ice_ipcw",
-                                    simulate_args = list(uncensored = TRUE,
-                                                         no_competing_events = TRUE,
-                                                         effects = vary_dropout(
-                                                             a_intercept = a_intercept
-                                                         )),
-                                    add_info = data.table(a_intercept = a_intercept),
-                                    function_args = list(
-                                        tau = tau,
-                                        model_pseudo_outcome = "quasibinomial",
-                                        model_treatment = "learn_glm_logistic",
-                                        model_hazard = NA,
-                                        time_covariates = time_covariates,
-                                        baseline_covariates = baseline_covariates,
-                                        conservative = TRUE
-                                    )),
-            reps = reps,
-            batch = batches
-            )
+    reps = reps,
+    batch = batches
+  )
 )
+
+n_values <- c(100, 200, 500, 1000)
 
 ## vary sample size
 sim_sample_size <- tar_map(
-    values = data.frame(n = c(100,200,500,1000),
-                        effect_A_on_Y = c(-0.15, -0.15, -0.15, -0.15),
-                        effect_L_on_Y = c(0.25, 0.25, 0.25, 0.25),
-                        effect_L_on_A = c(-0.1, -0.1, -0.1, -0.1),
-                        effect_A_on_L = c(-0.2, -0.2, -0.2, -0.2),
-                        effect_age_on_Y = c(0.01, 0.01, 0.01, 0.01),
-                        effect_age_on_A = c(0.0015, 0.0015, 0.0015, 0.0015),
-                        baseline_rate_Y = c(0.0002, 0.0002, 0.0002, 0.0002)),
-    tar_rep(results_sample_size,
-            simulate_and_run_simple(n = n,
-                                    function_name = "debias_ice_ipcw",
-                                    simulate_args = list(uncensored = TRUE,
-                                                         no_competing_events = TRUE,
-                                                         effects = vary_effect(
-                                                             effect_A_on_Y,
-                                                             effect_L_on_Y,
-                                                             effect_L_on_A,
-                                                             effect_A_on_L,
-                                                             effect_age_on_Y,
-                                                             effect_age_on_A
-                                                         ),
-                                                            baseline_rate_list = list(
-                                                                A = 0.005,
-                                                                L = 0.001,
-                                                                C = 0.00005,
-                                                                Y = baseline_rate_Y,
-                                                                D = 0.00015
-                                                            )),
-                                    add_info = data.table(n = n,
-                                                          effect_A_on_Y = effect_A_on_Y,
-                                                          effect_L_on_Y = effect_L_on_Y,
-                                                          effect_L_on_A = effect_L_on_A,
-                                                          effect_A_on_L = effect_A_on_L,
-                                                          effect_age_on_Y = effect_age_on_Y,
-                                                          effect_age_on_A = effect_age_on_A,
-                                                            baseline_rate_Y = baseline_rate_Y),
-                                    function_args = list(
-                                        tau = tau,
-                                        model_pseudo_outcome = "quasibinomial",
-                                        model_treatment = "learn_glm_logistic",
-                                        model_hazard = NA,
-                                        time_covariates = time_covariates,
-                                        baseline_covariates = baseline_covariates,
-                                        conservative = TRUE
-                                    )),
-            reps = reps,
-            batch = batches
-            )
+  values = cbind(data.frame(n = n_values), parameter_vary[1, ]),
+  tar_rep(
+    results_sample_size,
+    simulate_and_run_simple(
+      n = n,
+      function_name = "debias_ice_ipcw",
+      simulate_args = list(
+        uncensored = TRUE,
+        no_competing_events = TRUE,
+        effects = vary_effect(
+          effect_A_on_Y,
+          effect_L_on_Y,
+          effect_L_on_A,
+          effect_A_on_L,
+          effect_age_on_Y,
+          effect_age_on_A
+        ),
+        baseline_rate_list = list(
+          A = 0.005,
+          L = 0.001,
+          C = 0.00005,
+          Y = baseline_rate_Y,
+          D = 0.00015
+        )
+      ),
+      add_info = data.table(
+        n = n,
+        effect_A_on_Y = effect_A_on_Y,
+        effect_L_on_Y = effect_L_on_Y,
+        effect_L_on_A = effect_L_on_A,
+        effect_A_on_L = effect_A_on_L,
+        effect_age_on_Y = effect_age_on_Y,
+        effect_age_on_A = effect_age_on_A,
+        baseline_rate_Y = baseline_rate_Y
+      ),
+      function_args = list(
+        tau = tau,
+        model_pseudo_outcome = "quasibinomial",
+        model_treatment = "learn_glm_logistic",
+        model_hazard = NA,
+        time_covariates = time_covariates,
+        baseline_covariates = baseline_covariates,
+        conservative = TRUE
+      )
+    ),
+    reps = reps,
+    batch = batches
+  )
+)
+
+## Strong confounding
+effects_strong_confounding <- data.frame(
+  effect_A_on_Y = -1.3,
+  effect_L_on_Y = 1.5,
+  effect_L_on_A = -1,
+  effect_A_on_L = -0.2,
+  effect_age_on_Y = 0,
+  effect_age_on_A = 0,
+  baseline_rate_Y = 0.001
+)
+
+baseline_rate_list_strong_confounding <- list(
+  A = 0.007,
+  L = 0.0015,
+  C = 0.00005,
+  Y = 0.001,
+  D = 0.015
 )
 
 sim_and_true_value_strong_confounding <- tar_map(
-    values = effects_strong_confounding,
-    tar_target(
-        true_value,
-        ### calculate true value of treatment in a large data set for each set of parameters
-        {
-            d_int <- simulate_simple_continuous_time_data(n = n_true_value,
-                                                          static_intervention = 1,
-                                                          no_competing_events = TRUE, 
-                                                          effects = vary_effect(
-                                                              effect_A_on_Y,
-                                                              effect_L_on_Y,
-                                                              effect_L_on_A,
-                                                              effect_A_on_L,
-                                                              effect_age_on_Y,
-                                                              effect_age_on_A
-                                                          ),
-                                                            baseline_rate_list = baseline_rate_list_strong_confounding)
-            data.table(value = calculate_mean(d_int, tau), 
-                       effect_A_on_Y = effect_A_on_Y,
-                       effect_L_on_Y = effect_L_on_Y,
-                       effect_L_on_A = effect_L_on_A,
-                       effect_A_on_L = effect_A_on_L,
-                       effect_age_on_Y = effect_age_on_Y,
-                       effect_age_on_A = effect_age_on_A,
-                          baseline_rate_Y = baseline_rate_Y)
-        }
+  values = effects_strong_confounding,
+  tar_target(
+    true_value,
+    ### calculate true value of treatment in a large data set for each set of parameters
+    {
+      d_int <- simulate_simple_continuous_time_data(
+        n = n_true_value,
+        static_intervention = 1,
+        no_competing_events = TRUE,
+        effects = vary_effect(
+          effect_A_on_Y,
+          effect_L_on_Y,
+          effect_L_on_A,
+          effect_A_on_L,
+          effect_age_on_Y,
+          effect_age_on_A
+        ),
+        baseline_rate_list = baseline_rate_list_strong_confounding
+      )
+      data.table(
+        value = calculate_mean(d_int, tau),
+        effect_A_on_Y = effect_A_on_Y,
+        effect_L_on_Y = effect_L_on_Y,
+        effect_L_on_A = effect_L_on_A,
+        effect_A_on_L = effect_A_on_L,
+        effect_age_on_Y = effect_age_on_Y,
+        effect_age_on_A = effect_age_on_A,
+        baseline_rate_Y = baseline_rate_Y
+      )
+    }
+  ),
+  tar_rep(
+    results_strong_confounding,
+    ## main simulation; run the debiased ICE-IPCW procedure, LTMLE, and Cox procedures.
+    simulate_and_run_simple(
+      n = n_fixed,
+      function_name = "debias_ice_ipcw",
+      simulate_args = list(
+        uncensored = TRUE,
+        no_competing_events = TRUE,
+        effects = vary_effect(
+          effect_A_on_Y,
+          effect_L_on_Y,
+          effect_L_on_A,
+          effect_A_on_L,
+          effect_age_on_Y,
+          effect_age_on_A
+        ),
+        baseline_rate_list = baseline_rate_list_strong_confounding
+      ),
+      add_info = data.table(
+        effect_A_on_Y = effect_A_on_Y,
+        effect_L_on_Y = effect_L_on_Y,
+        effect_L_on_A = effect_L_on_A,
+        effect_A_on_L = effect_A_on_L,
+        effect_age_on_Y = effect_age_on_Y,
+        effect_age_on_A = effect_age_on_A,
+        baseline_rate_Y = baseline_rate_Y
+      ),
+      function_args = list(
+        tau = tau,
+        model_pseudo_outcome = "quasibinomial",
+        model_treatment = "learn_glm_logistic",
+        model_hazard = NA,
+        time_covariates = time_covariates,
+        baseline_covariates = baseline_covariates,
+        conservative = TRUE
+      ),
+      function_nice_names = c("Debiased ICE-IPCW", "LTMLE (grid size = 8)", "Naive Cox"),
+      function_name_2 = "apply_rtmle",
+      function_args_2 = list(
+        tau = tau,
+        grid_size = 8,
+        time_confounders = setdiff(time_covariates, "A"),
+        time_confounders_baseline = "L_0",
+        baseline_confounders = baseline_covariates,
+        learner = "learn_glmnet"
+      ),
+      function_name_3 = "naive_cox",
+      function_args_3 = list(tau = tau, baseline_confounders = baseline_covariates)
     ),
-    tar_rep(results_strong_confounding,
-            ## main simulation; run the debiased ICE-IPCW procedure, LTMLE, and Cox procedures.
-            simulate_and_run_simple(n = n_fixed,
-                                    function_name = "debias_ice_ipcw",
-                                    simulate_args = list(uncensored = TRUE,
-                                                         no_competing_events = TRUE,
-                                                         effects = vary_effect(
-                                                             effect_A_on_Y,
-                                                             effect_L_on_Y,
-                                                             effect_L_on_A,
-                                                             effect_A_on_L,
-                                                             effect_age_on_Y,
-                                                             effect_age_on_A
-                                                         ),
-                                                            baseline_rate_list = baseline_rate_list_strong_confounding),
-                                    add_info = data.table(effect_A_on_Y = effect_A_on_Y,
-                                                          effect_L_on_Y = effect_L_on_Y,
-                                                          effect_L_on_A = effect_L_on_A,
-                                                          effect_A_on_L = effect_A_on_L,
-                                                          effect_age_on_Y = effect_age_on_Y,
-                                                          effect_age_on_A = effect_age_on_A,
-                                                          baseline_rate_Y = baseline_rate_Y),
-                                    function_args = list(
-                                        tau = tau,
-                                        model_pseudo_outcome = "quasibinomial",
-                                        model_treatment = "learn_glm_logistic",
-                                        model_hazard = NA,
-                                        time_covariates = time_covariates,
-                                        baseline_covariates = baseline_covariates,
-                                        conservative = TRUE
-                                    ),
-                                    function_nice_names = c("Debiased ICE-IPCW",
-                                                            "LTMLE (grid size = 8)",
-                                                            "Naive Cox"),
-                                    function_name_2 = "apply_rtmle",
-                                    function_args_2 = list(
-                                        tau = tau,
-                                        grid_size = 8,
-                                        time_confounders = setdiff(time_covariates, "A"),
-                                        time_confounders_baseline = "L_0",
-                                        baseline_confounders = baseline_covariates,
-                                        learner = "learn_glmnet"
-                                    ),
-                                    function_name_3 = "naive_cox",
-                                    function_args_3 = list(
-                                        tau = tau,
-                                        baseline_confounders = baseline_covariates
-                                    )),
-            reps = reps,
-            batch = batches,
-            error = "null"
-            )
+    reps = reps,
+    batch = batches,
+    error = "null"
+  )
 )
 
 # ######################################################################
 list(
-    ## drop out plot (varying intercept; see how well method performs under practical positivity violation conditions)
-    tar_target(
-        dropout_plot_vary,
-        plot_dropout_vary(n = 10000, values = data.frame(a_intercept = c(-2.5,-1.2,-0.5, 0.3, 1.1)), max_fup = 900)
-    ),
-    ## drop out plot (for varying coefficients)
-    tar_target(
-        dropout_plot,
-        plot_dropout(n = 10000, values = values, max_fup = 900)
-    ),
-    ## support for ice_ipcw; do we have enough people at risk after each event point?
-    tar_target(
-        support_ice_ipcw,
-        support_ice(values = values, tau = tau, large_n = 100000, no_competing_event = TRUE)
-    ),
-    
-    ## simulate 
-    sim_and_true_value,
-    ## true value table
-    tar_combine(
-        true_vals,
-        sim_and_true_value[["true_value"]],
-        command = dplyr::bind_rows(!!!.x)
-    ),
-    ## combine results
-    tar_combine(
-        sim_merge,
-        list(sim_and_true_value[["results"]],
-             sim_and_true_value[["true_value"]]),
-        command = combine_results_and_true_values(!!!.x, .id = "method", by = by_vars)
-    ),    
-    ## calculate coverage
-    tar_target(
-        results_table, get_tables(sim_merge, 
-                                  by = by_vars)
-    ),
-    ## boxplot the debiased results (no confounding)
-    tar_target(
-        boxplot_results_no_confounding,
-        fun_boxplot(sim_merge[effect_L_on_Y == 0 & effect_L_on_A == 0 & effect_age_on_Y == 0 & effect_age_on_A == 0]
-                  , by = by_vars
-                  )
-    ),
-    ## boxplot the debiased results (strong confounding)
-    tar_target(
-        boxplot_results_strong_time_confounding,
-        fun_boxplot(sim_merge[effect_L_on_Y == 0.5]
-                  , by = by_vars)
-    ),
-    ## boxplot the debiased results (no time confounding, but baseline confounding)
-    tar_target(
-        boxplot_results_no_time_confounding,
-        fun_boxplot(sim_merge[effect_L_on_Y == 0 & effect_L_on_A == 0 & effect_age_on_Y != 0 & effect_age_on_A != 0]
-                  , by = by_vars)
-    ),
-    ## boxplot the debiased results (vary effect_A_on_Y)
-    tar_target(
-        boxplot_results_vary_effect_A_on_Y,
-        fun_boxplot(sim_merge[effect_L_on_Y == 0.25 & effect_L_on_A == -0.1 & 
-                     effect_A_on_L == -0.2]
-                  , by = by_vars)
-    ),
-    ## boxplot the debiased results (vary effect_L_on_Y)
-    tar_target(
-        boxplot_results_vary_effect_L_on_Y,
-        fun_boxplot(sim_merge[effect_A_on_Y == -0.15 & effect_L_on_A == -0.1 & 
-                     effect_A_on_L == -0.2]
-                  , by = by_vars)
-    ),
-    ## boxplot the debiased results (vary effect_L_on_A)
-    tar_target(
-        boxplot_results_vary_effect_L_on_A,
-        fun_boxplot(sim_merge[effect_A_on_Y == -0.15 & effect_L_on_Y == 0.25 & effect_A_on_L == -0.2]
-                  , by = by_vars)
-    ),
-    ## boxplot the debiased results (vary effect_A_on_L)
-    tar_target(
-        boxplot_results_vary_effect_A_on_L,
-        fun_boxplot(sim_merge[effect_A_on_Y == -0.15 & effect_L_on_Y == 0.25 & effect_L_on_A == -0.1]
-                  , by = by_vars)
-    ),
-
-    sim_censored,
-    ## merge the true values with the debiased results for the censored case
-    tar_combine(
-        sim_merge_censored,
-        list(sim_censored[["results_censored"]],
-             sim_and_true_value[["true_value"]]),
-        command = combine_results_and_true_values(!!!.x, .id = "method", by = by_vars)
-    ),
-    ## calculate coverage for the censored case
-    tar_target(
-        results_table_censored, get_tables(sim_merge_censored, 
-                                           by = c(by_vars, "baseline_rate_C", "model_type", "conservative"))
-    ),
-    ## boxplot the debiased results (censored)
-    tar_target(
-        boxplot_results_censored,
-        fun_boxplot_censoring(sim_merge_censored, by = c(by_vars, "conservative"))
-    ),
-    
-    ## vary dropout
-    sim_and_true_value_dropout,
-    tar_combine(
-        sim_merge_dropout,
-        list(sim_and_true_value_dropout[["results_dropout"]],
-             sim_and_true_value_dropout[["true_value_dropout"]]),
-        command = combine_results_and_true_values(!!!.x, .id = "method", by = "a_intercept")
-    ),
-    tar_target(
-        results_table_dropout, get_tables(sim_merge_dropout, by = "a_intercept")
-    ),
-    tar_target(
-        boxplot_results_dropout,
-        fun_boxplot(sim_merge_dropout, by = "a_intercept")
-    ),
-
-    ## ## vary sample size
-    sim_sample_size,
-    ##v tar combine
-    tar_combine(
-        sim_merge_sample_size,
-        list(sim_sample_size[["results_sample_size"]],
-             sim_and_true_value[["true_value"]]),
-        command = combine_results_and_true_values(!!!.x, .id = "method", by = by_vars)
-    ),
-    tar_target(
-        results_table_sample_size, get_tables(sim_merge_sample_size, by = "n")
-    ),
-    tar_target(
-        boxplot_results_sample_size,
-        fun_boxplot(sim_merge_sample_size, by = "n")
-    ),
-
-    ## strong confounding
-    sim_and_true_value_strong_confounding,
-    ## combine results
-    tar_combine(
-        sim_merge_strong_confounding,
-        list(sim_and_true_value_strong_confounding[["results_strong_confounding"]],
-             sim_and_true_value_strong_confounding[["true_value"]]),
-        command = combine_results_and_true_values(!!!.x, .id = "method", by = by_vars)
-    ),
-    tar_target(
-        results_table_strong_confounding, get_tables(sim_merge_strong_confounding, by = by_vars)
-    ),
-    tar_target(
-        boxplot_results_strong_confounding,
-        fun_boxplot(sim_merge_strong_confounding, by = by_vars)
+  ## drop out plot (varying intercept; see how well method performs under practical positivity violation conditions)
+  tar_target(
+    dropout_plot_vary,
+    plot_dropout_vary(
+      n = 10000,
+      values = data.frame(a_intercept = c(-2.5, -1.2, -0.5, 0.3, 1.1)),
+      max_fup = 900
     )
+  ),
+  ## drop out plot (for varying coefficients)
+  tar_target(
+    dropout_plot,
+    plot_dropout(
+      n = 10000,
+      values = parameter_vary,
+      max_fup = 900
+    )
+  ),
+  ## support for ice_ipcw; do we have enough people at risk after each event point?
+  tar_target(
+    support_ice_ipcw,
+    support_ice(
+      values = parameter_vary,
+      tau = tau,
+      large_n = 100000,
+      no_competing_event = TRUE
+    )
+  ),
+  
+  ## simulate
+  sim_and_true_value,
+  ## true value table
+  tar_combine(true_vals, sim_and_true_value[["true_value"]], command = dplyr::bind_rows(!!!.x)),
+  ## combine results
+  tar_combine(
+    sim_merge,
+    list(sim_and_true_value[["results"]], sim_and_true_value[["true_value"]]),
+    command = combine_results_and_true_values(!!!.x, .id = "method", by = by_vars)
+  ),
+  ## calculate coverage
+  tar_target(results_table, get_tables(sim_merge, by = by_vars)),
+  ## boxplot the debiased results (no confounding)
+  tar_target(
+    boxplot_results_no_confounding,
+    fun_boxplot(sim_merge[effect_L_on_Y == 0 &
+                            effect_L_on_A == 0 & effect_age_on_Y == 0 & effect_age_on_A == 0]
+                , by = by_vars)
+  ),
+  ## boxplot the debiased results (strong confounding)
+  tar_target(
+    boxplot_results_strong_time_confounding,
+    fun_boxplot(sim_merge[effect_L_on_Y == 1]
+                , by = by_vars)
+  ),
+  ## boxplot the debiased results (no time confounding, but baseline confounding)
+  tar_target(
+    boxplot_results_no_time_confounding,
+    fun_boxplot(sim_merge[effect_L_on_Y == 0 &
+                            effect_L_on_A == 0 & effect_age_on_Y != 0 & effect_age_on_A != 0]
+                , by = by_vars)
+  ),
+  ## boxplot the debiased results (vary effect_A_on_Y)
+  tar_target(
+    boxplot_results_vary_effect_A_on_Y,
+    fun_boxplot(sim_merge[effect_L_on_Y == 2*0.25 &
+                            effect_L_on_A == -2*0.1 &
+                            effect_A_on_L == -0.2]
+                , by = by_vars)
+  ),
+  ## boxplot the debiased results (vary effect_L_on_Y)
+  tar_target(
+    boxplot_results_vary_effect_L_on_Y,
+    fun_boxplot(sim_merge[effect_A_on_Y == -2*0.15 &
+                            effect_L_on_A == -2*0.1 &
+                            effect_A_on_L == -0.2]
+                , by = by_vars)
+  ),
+  ## boxplot the debiased results (vary effect_L_on_A)
+  tar_target(
+    boxplot_results_vary_effect_L_on_A,
+    fun_boxplot(sim_merge[effect_A_on_Y == -2*0.15 &
+                            effect_L_on_Y == 2*0.25 & effect_A_on_L == -0.2]
+                , by = by_vars)
+  ),
+  ## boxplot the debiased results (vary effect_A_on_L)
+  tar_target(
+    boxplot_results_vary_effect_A_on_L,
+    fun_boxplot(sim_merge[effect_A_on_Y == -2*0.15 &
+                            effect_L_on_Y == 2*0.25 & effect_L_on_A == -0.1]
+                , by = by_vars)
+  ),
+  
+  sim_censored,
+  ## merge the true values with the debiased results for the censored case
+  tar_combine(
+    sim_merge_censored,
+    list(sim_censored[["results_censored"]], sim_and_true_value[["true_value"]]),
+    command = combine_results_and_true_values(!!!.x, .id = "method", by = by_vars)
+  ),
+  ## calculate coverage for the censored case
+  tar_target(
+    results_table_censored,
+    get_tables(
+      sim_merge_censored,
+      by = c(by_vars, "baseline_rate_C", "model_type", "conservative")
+    )
+  ),
+  ## boxplot the debiased results (censored)
+  tar_target(
+    boxplot_results_censored,
+    fun_boxplot_censoring(sim_merge_censored, by = c(by_vars, "conservative"))
+  ),
+  
+  ## vary dropout
+  sim_and_true_value_dropout,
+  tar_combine(
+    sim_merge_dropout,
+    list(sim_and_true_value_dropout[["results_dropout"]], sim_and_true_value_dropout[["true_value_dropout"]]),
+    command = combine_results_and_true_values(!!!.x, .id = "method", by = "a_intercept")
+  ),
+  tar_target(
+    results_table_dropout,
+    get_tables(sim_merge_dropout, by = "a_intercept")
+  ),
+  tar_target(
+    boxplot_results_dropout,
+    fun_boxplot(sim_merge_dropout, by = "a_intercept")
+  ),
+  
+  ## ## vary sample size
+  sim_sample_size,
+  ##v tar combine
+  tar_combine(
+    sim_merge_sample_size,
+    list(sim_sample_size[["results_sample_size"]], sim_and_true_value[["true_value"]]),
+    command = combine_results_and_true_values(!!!.x, .id = "method", by = by_vars)
+  ),
+  tar_target(
+    results_table_sample_size,
+    get_tables(sim_merge_sample_size, by = "n")
+  ),
+  tar_target(
+    boxplot_results_sample_size,
+    fun_boxplot(sim_merge_sample_size, by = "n")
+  ),
+  
+  ## strong confounding
+  sim_and_true_value_strong_confounding,
+  ## combine results
+  tar_combine(
+    sim_merge_strong_confounding,
+    list(
+      sim_and_true_value_strong_confounding[["results_strong_confounding"]],
+      sim_and_true_value_strong_confounding[["true_value"]]
+    ),
+    command = combine_results_and_true_values(!!!.x, .id = "method", by = by_vars)
+  ),
+  tar_target(
+    results_table_strong_confounding,
+    get_tables(sim_merge_strong_confounding, by = by_vars)
+  ),
+  tar_target(
+    boxplot_results_strong_confounding,
+    fun_boxplot(sim_merge_strong_confounding, by = by_vars)
+  )
 )
 # ######################################################################
