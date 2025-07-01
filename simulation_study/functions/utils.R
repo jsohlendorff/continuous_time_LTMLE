@@ -3,15 +3,16 @@
 ## Wrapper function to predict the outcome under an intervention
 predict_intervention <- function(data, k, predict_fun, static_intervention) {
   intervened_data <- copy(data)
-  for (j in seq(0,k)) {
-    intervened_data[, paste0("A_", j) := static_intervention]
-  }
+  intervened_data[event_k == "A", paste0("A_", k) := static_intervention, env = list(event_k = paste0("event_", k))]
+  ## for (j in seq(0,k)) {
+  ##   intervened_data[, paste0("A_", j) := static_intervention]
+  ## }
   # intervened_data[[paste0("event_", k)]] <- droplevels(intervened_data[[paste0("event_", k)]])
   f <- predict_fun(intervened_data)
   ## TODO: Check if the predictions are in the range [0,1]
   ## Warn if any predictions are NA or below or above 1
   if (any(is.na(f))) {
-    warning("Predictions contain NA values.")
+    stop("Predictions contain NA values.")
   }
   f
 }

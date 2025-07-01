@@ -28,16 +28,60 @@ fun_boxplot <- function(d, by = NULL){
         ggplot2::geom_boxplot() +
         ggplot2::geom_hline(aes(yintercept = value, color = "red")) +
         ggplot2::theme_minimal()
+    w <- ggplot2::ggplot(data = d, aes(y = ipw)) +
+        ggplot2::geom_boxplot() +
+        ggplot2::geom_hline(aes(yintercept = value, color = "red")) +
+        ggplot2::theme_minimal()
     if (!is.null(by)) {
         p <- p + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
         qz <- qz + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
         ## for q add different geom hlines with sd(estimate) for each compination of variables in by
         qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est, color = type), linetype = "dashed")
         r <- r + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
+        w <- w + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
     } else {
         qz <-  qz + ggplot2::geom_hline(aes(yintercept = sd(estimate), color = "red"))
     }
-    list(p, qz, r)
+    list(p, qz, r, w)
+}
+
+## Function to create a boxplot of the estimates and standard errors
+fun_boxplot_censoring <- function(d, by = NULL){
+    ## calculate coverage
+    ##cov <- d[, .(coverage=mean((true_value > lower) & (true_value < upper))), by = by]
+    d[, baseline_rate_C := factor(baseline_rate_C)]
+    d[, model_type := factor(model_type)]
+    d[, interact_model_rate_C := interaction(model_type, baseline_rate_C)]
+    d[, sd_est := sd(estimate), by = c(by, "interact_model_rate_C")]
+    ## interaction for 
+    ##d[, gr := do.call(paste, c(.SD, sep = "_")), .SDcols = by]
+    p <- ggplot2::ggplot(data = d, aes(y = estimate, color = model_type)) +
+        ggplot2::geom_boxplot() +
+        ggplot2::geom_hline(aes(yintercept = value)) +
+        ggplot2::theme_minimal()
+    ## in d add interaction between model_type and baseline_rate_C
+    qz <- ggplot2::ggplot(data = d, aes(y = se,color = interact_model_rate_C)) +
+        ggplot2::geom_boxplot() +
+        ggplot2::theme_minimal() 
+    r <- ggplot2::ggplot(data = d, aes(y = ice_ipcw_estimate, color = model_type)) +
+        ggplot2::geom_boxplot() +
+        ggplot2::geom_hline(aes(yintercept = value, color = "red")) +
+        ggplot2::theme_minimal()
+    w <- ggplot2::ggplot(data = d, aes(y = ipw)) +
+        ggplot2::geom_boxplot() +
+        ggplot2::geom_hline(aes(yintercept = value, color = "red")) +
+        ggplot2::theme_minimal()
+    if (!is.null(by)) {
+        p <- p + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
+        qz <- qz + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
+        ## for q add different geom hlines with sd(estimate) for each compination of variables in by
+        qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est), linetype = "dashed")
+        r <- r + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
+        w <- w + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
+    } else {
+        qz <-  qz + ggplot2::geom_hline(aes(yintercept = sd(estimate), color = "red"))
+    }
+    list(p, qz, r, w)
 }
 
 ## Simulate and run a function with the simulated data
@@ -372,17 +416,18 @@ simulate_and_run_simple <- function(n,
                                     add_info = NULL) {
     d <- tryCatch({do.call(simulate_simple_continuous_time_data, c(list(n = n), simulate_args))},
                 error = function(e) {
-                    message("Error in simulation: ", e$message)
+                    stop("Error in simulation: ", e$message)
                     return(NULL)
                 })
     if (is.null(d)) {
         return(NULL)
     }
-    res<-tryCatch({do.call(function_name, c(list(d), function_args))},
-                error = function(e) {
-                    message("Error in function ", function_name, ": ", e$message)
-                    return(NULL)
-                })
+    ## res<-tryCatch({do.call(function_name, c(list(d), function_args))},
+    ##               error = function(e) {
+    ##                   message("Error in function ", function_name, ": ", e$message)
+    ##                   return(NULL)
+    ##               })
+    res <- do.call(function_name, c(list(copy(d)), function_args))
     if (is.null(res)) {
         res <- data.table(estimate = NA, lower = NA, upper = NA, se = NA, ice_ipcw_estimate = NA, ipw = NA)
     } 
@@ -459,6 +504,10 @@ vary_effect <- function(effect_A_on_Y = -0.15,
             A = 0,
             age = 0
         ),
+        beta_c_3 = list(
+            A = 0,
+            age = 0
+        ),
         beta_y_1 = list(
             A = effect_A_on_Y,
             L = effect_L_on_Y,
@@ -515,6 +564,11 @@ vary_dropout <- function(a_intercept = 0.3) {
             age = 0
         ),
         beta_c_2 = list(
+            A = 0,
+            L = 0,
+            age = 0
+        ),
+        beta_c_3 = list(
             A = 0,
             L = 0,
             age = 0
@@ -580,6 +634,11 @@ simulate_simple_continuous_time_data <- function(n,
                                                              L = 0,
                                                              age = 0
                                                          ),
+                                                         beta_c_3 = list(
+                                                             A = 0,
+                                                             L = 0,
+                                                             age = 0
+                                                         ),
                                                          beta_y_1 = list(
                                                              A = -0.15,
                                                              L = 0.02,
@@ -608,6 +667,7 @@ simulate_simple_continuous_time_data <- function(n,
                                                              age = 0.015)),
                                                  static_intervention = NULL,
                                                  static_intervention_baseline = 1,
+                                                 debug_intervention = FALSE,
                                                  baseline_rate_list = list(
                                                      A = 0.005,
                                                      L = 0.001,
@@ -654,14 +714,13 @@ simulate_simple_continuous_time_data <- function(n,
     pop[, A := A_0]
     
     people_atrisk <- pop[, data.table::data.table(id, entrytime = time, age, L_0, A_0, A, L)]
-    if (!is.null(static_intervention)) {
+    if (!is.null(static_intervention) && !debug_intervention) {
         uncensored <- TRUE
     }
     # fup_info collects followup information has_terminal collects terminal information
     fup_info <- NULL
     has_terminal <- NULL
     # time loop
-    j <- 1
     people_atrisk[, visitation_times := visitation_interval + rnorm(nrow(people_atrisk), 0, visitation_sd)]
 
     ## j = 1
@@ -677,7 +736,6 @@ simulate_simple_continuous_time_data <- function(n,
             n = nrow(people_atrisk),
             rate = baseline_rate_list$C,
             eta = effects$beta_c_1$A * people_atrisk$A +
-                effects$beta_c_1$L * people_atrisk$L +
                 effects$beta_c_1$age * people_atrisk$age
         )
     } else {
@@ -776,7 +834,6 @@ simulate_simple_continuous_time_data <- function(n,
                 n = nrow(people_atrisk),
                 rate = baseline_rate_list$C,
                 eta = effects$beta_c_2$A * people_atrisk$A +
-                    effects$beta_c_2$L * people_atrisk$L +
                     effects$beta_c_2$age * people_atrisk$age
             )
         } else {
@@ -856,9 +913,8 @@ simulate_simple_continuous_time_data <- function(n,
             c_time <- rexponential_proportional_hazard(
                 n = nrow(people_atrisk),
                 rate = baseline_rate_list$C,
-                eta = effects$beta_c_2$A * people_atrisk$A +
-                    effects$beta_c_2$L * people_atrisk$L +
-                    effects$beta_c_2$age * people_atrisk$age
+                eta = effects$beta_c_3$A * people_atrisk$A +
+                    effects$beta_c_3$age * people_atrisk$age
             )
         }
         else {
@@ -876,9 +932,9 @@ simulate_simple_continuous_time_data <- function(n,
             d_time <- rexponential_proportional_hazard(
                 n = nrow(people_atrisk),
                 rate = baseline_rate_list$D,
-                eta = effects$beta_d_d$A * people_atrisk$A +
-                    effects$beta_d_d$L * people_atrisk$L +
-                    effects$beta_d_d$age * people_atrisk$age
+                eta = effects$beta_d_3$A * people_atrisk$A +
+                    effects$beta_d_3$L * people_atrisk$L +
+                    effects$beta_d_3$age * people_atrisk$age
             )
         } else {
             d_time <- rep(max_fup + 1, nrow(people_atrisk))

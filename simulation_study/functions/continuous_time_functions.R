@@ -6,7 +6,9 @@ get_propensity_scores <- function(last_event_number,
                                   model_hazard = "learn_coxph",
                                   is_censored,
                                   time_covariates,
-                                  baseline_covariates) {
+                                  baseline_covariates,
+                                  marginal_censoring_hazard,
+                                  fit_cens) {
     censoring_models <- list()
     for (k in rev(seq_len(last_event_number))) {
         ## Find those at risk of the k'th event; subset data (i.e., people who have not died before the k'th event)
@@ -21,10 +23,12 @@ get_propensity_scores <- function(last_event_number,
                 if (nrow(at_risk_interevent) == 0) {
                     next
                 }
-                at_risk_interevent[, paste0("time_", k) := get(paste0("time_", k)) - get(paste0("time_", k - 1))]
-                for (j in seq_len(k-1)) {
-                    at_risk_interevent[, paste0("time_", j) := get(paste0("time_", k - 1)) - get(paste0("time_", j))]
-                    at_risk_interevent[, paste0("event_", j) := droplevels(get(paste0("event_", j)))]
+                if (!marginal_censoring_hazard) {
+                    at_risk_interevent[, paste0("time_", k) := get(paste0("time_", k)) - get(paste0("time_", k - 1))]
+                    for (j in seq_len(k-1)) {
+                        at_risk_interevent[, paste0("time_", j) := get(paste0("time_", k - 1)) - get(paste0("time_", j))]
+                        at_risk_interevent[, paste0("event_", j) := droplevels(get(paste0("event_", j)))]
+                    }
                 }
             } 
             
@@ -35,26 +39,42 @@ get_propensity_scores <- function(last_event_number,
         
         ## Fit censoring model if there is censoring
         if (is_censored) {
-            ## Full history of variables, i.e., covariates used in regressions
-            history_of_variables_hazard <- c(time_history, baseline_covariates)
+            if (!marginal_censoring_hazard) {
+                ## Full history of variables, i.e., covariates used in regressions
+                history_of_variables_hazard <- c(time_history, baseline_covariates)
+                
+                ## Remove variables from history_of_variables that do not have more than one value
+                ## in the data
+                history_of_variables_hazard <- setdiff(history_of_variables_hazard, 
+                                                       names(which(sapply(at_risk_interevent[, ..history_of_variables_hazard], function(x) length(unique(x)) <= 1))))
 
-            ## Remove variables from history_of_variables that do not have more than one value
-            ## in the data
-            history_of_variables_hazard <- setdiff(history_of_variables_hazard, 
-                                        names(which(sapply(at_risk_interevent[, ..history_of_variables_hazard], function(x) length(unique(x)) <= 1))))
-
-            formula_censoring <- as.formula(paste0(
-                "Surv(time_",
-                k,
-                ", event_",
-                k,
-                " == \"C\") ~ ",
-                paste(history_of_variables_hazard, collapse = "+")
-            ))
-            learn_censoring <- do.call(
-                model_hazard,
-                list(character_formula = formula_censoring, data = at_risk_interevent)
-            )
+                formula_censoring <- as.formula(paste0(
+                    "Surv(time_",
+                    k,
+                    ", event_",
+                    k,
+                    " == \"C\") ~ ",
+                    paste(history_of_variables_hazard, collapse = "+")
+                ))
+                learn_censoring <- do.call(
+                    model_hazard,
+                    list(character_formula = formula_censoring, data = at_risk_interevent)
+                )
+            } else {
+                exp_lp <- predict(fit_cens, newdata = data, type = "risk", reference = "zero")[at_risk_interevent$id]
+                baseline_hazard <- as.data.table(basehaz(fit_cens, centered = FALSE))
+                sindex_k <- sindex(baseline_hazard$time,at_risk_interevent[[paste0("time_", k)]], strict = TRUE) + 1
+                baseline_hazard_k <- baseline_hazard[sindex_k, "hazard"]$hazard
+                if (k > 1) {
+                    sindex_k_minus_one <- sindex(baseline_hazard$time,at_risk_interevent[[paste0("time_", k - 1)]]) + 1
+                    baseline_hazard_k_minus_one <- baseline_hazard[sindex_k_minus_one, "hazard"]$hazard
+                } else {
+                    baseline_hazard_k_minus_one <- rep(0, nrow(at_risk_interevent))
+                }
+                learn_censoring <- list()
+                learn_censoring$fit <- NULL
+                learn_censoring$pred <- exp(-exp_lp* (baseline_hazard_k - baseline_hazard_k_minus_one))
+            }
             if (k > 1) {
                 data[event_k_prev %in% c("A", "L"), 
                      survival_censoring_k := learn_censoring$pred, env = list(
@@ -84,30 +104,30 @@ get_propensity_scores <- function(last_event_number,
             }
             history_of_variables_propensity <- c(time_history, baseline_covariates)
             history_of_variables_propensity <- setdiff(history_of_variables_propensity, 
-                                        names(which(sapply(data[event_k == "A", ..history_of_variables_propensity, env =  list(event_k = paste0("event_", k))], function(x) length(unique(x)) <= 1))))
+                                                       names(which(sapply(data[event_k == "A", ..history_of_variables_propensity, env =  list(event_k = paste0("event_", k))], function(x) length(unique(x)) <= 1))))
             formula_treatment <- as.formula(paste0("A_", k, " ~ ", paste0(history_of_variables_propensity, collapse = "+"
-                                                                   )))
+                                                                          )))
             ## check whether all values of A are 1; if so put propensity to 1
             if (all(data[event_k == "A", A_k == 1, env = list(
-                                                        event_k = paste0("event_", k),
-                                                        A_k = paste0("A_", k)
-                )])){
+                                                       event_k = paste0("event_", k),
+                                                       A_k = paste0("A_", k)
+                                                   )])){
                 data[event_k == "A", propensity_k := 1, env = list(
-                    propensity_k = paste0("propensity_", k),
-                    event_k = paste0("event_", k)
-                )]
+                                                            propensity_k = paste0("propensity_", k),
+                                                            event_k = paste0("event_", k)
+                                                        )]
             } else {
                 data[event_k == "A", propensity_k := tryCatch(
-                    do.call(model_treatment, list(
-                        character_formula = formula_treatment, data = .SD
-                    ))$pred,
-                    error = function(e) {
-                        stop("Error in fitting treatment propensity model: ", e, " for event ", k)
-                    }
-                ), env = list(
-                    propensity_k = paste0("propensity_", k),
-                    event_k = paste0("event_", k)
-                )]
+                                         do.call(model_treatment, list(
+                                                                      character_formula = formula_treatment, data = .SD
+                                                                  ))$pred,
+                                         error = function(e) {
+                                             stop("Error in fitting treatment propensity model: ", e, " for event ", k)
+                                         }
+                                     ), env = list(
+                                            propensity_k = paste0("propensity_", k),
+                                            event_k = paste0("event_", k)
+                                        )]
             } 
         }
     }
@@ -117,19 +137,19 @@ get_propensity_scores <- function(last_event_number,
     } else {
         ## Baseline propensity model
         formula_treatment <- as.formula(paste0("A_0 ~ ", paste(
-                                                         setdiff(baseline_covariates, "A_0"), collapse = "+"
-                                                     )))
+                                                             setdiff(baseline_covariates, "A_0"), collapse = "+"
+                                                         )))
         ## Fit the baseline treatment propensity model
         ## check whethe any baseline covariates should be deleted
         baseline_covariates <- setdiff(baseline_covariates, 
                                        names(which(sapply(data[, ..baseline_covariates], function(x) length(unique(x)) <= 1))))
         data[, propensity_0 := tryCatch(
-               do.call(model_treatment, list(
-                                            character_formula = formula_treatment, data = .SD
-                                        ))$pred,
-               error = function(e) {
-                   stop("Error in fitting baseline treatment propensity model: ", e)
-               })
+                   do.call(model_treatment, list(
+                                                character_formula = formula_treatment, data = .SD
+                                            ))$pred,
+                   error = function(e) {
+                       stop("Error in fitting baseline treatment propensity model: ", e)
+                   })
              ]
     }
     censoring_models
@@ -199,6 +219,7 @@ debias_ice_ipcw <- function(data,
                             model_pseudo_outcome = "scaled_quasibinomial",
                             model_treatment = "learn_glm_logistic",
                             model_hazard = "learn_coxph",
+                            marginal_censoring_hazard = FALSE,
                             conservative = FALSE,
                             time_covariates,
                             baseline_covariates,
@@ -238,6 +259,15 @@ debias_ice_ipcw <- function(data,
     data$timevarying_data <- data$timevarying_data[to_delete == FALSE]
     last_event_number <- last_event_number + 1
 
+    if (marginal_censoring_hazard) {
+        data_censoring <- copy(data$timevarying_data[event %in% c("C", "Y", "D")])
+        ## merge baseline covariates
+        ## message(nrow(data_censoring[event == "C" & time < tau]))
+        data_censoring <- merge(data_censoring, data$baseline_data, by = "id", all.x = TRUE)
+    } else {
+        data_censoring <- NULL
+    }
+    
     ## Convert the data from long format to wide format
     data <- widen_continuous_data(data, time_covariates)
     
@@ -260,6 +290,23 @@ debias_ice_ipcw <- function(data,
             break
         }
     }
+
+    if (is_censored && marginal_censoring_hazard) {
+        ## remove baseline covariates that do not have more than one value
+        baseline_variables_to_use <- setdiff(baseline_covariates, 
+                                       names(which(sapply(data_censoring[, ..baseline_covariates], function(x) length(unique(x)) <= 1))))
+        formula_cens <- as.formula(paste0(
+            "Surv(time, event == \"C\") ~ ",
+            paste(baseline_variables_to_use, collapse = "+")
+        ))
+        fit_cens <- coxph(
+            formula_cens,
+            data = data_censoring,
+            x = TRUE, y = TRUE
+        )
+    } else {
+        fit_cens <- NULL
+    }
     
     ## Get propensity scores and models for the censoring.
     ## NOTE: Modifies data in place, so that the propensity scores are added to the data.
@@ -272,7 +319,9 @@ debias_ice_ipcw <- function(data,
             model_hazard,
             is_censored,
             time_covariates,
-            baseline_covariates
+            baseline_covariates,
+            marginal_censoring_hazard,
+            fit_cens
         )
     }, error = function(e) {
         stop("Error in getting censoring/propensity models: ", e)
@@ -364,7 +413,6 @@ debias_ice_ipcw <- function(data,
                                get(paste0("time_", k)) <= tau, future_prediction := predict_intervention(.SD, k, nu_hat, static_intervention)]
             
         }
-        
         ## ICE-IPCW estimator
         ## Pseudo-outcome and its regression, i.e., this is hat(Z)^a_k which we will regress on cal(F)_(T_(k-1))
         at_risk_before_tau[, weight := 1 / (survival_censoring_k) * ((get(paste0("event_", k)) == "Y" &
@@ -377,7 +425,6 @@ debias_ice_ipcw <- function(data,
         ## in the data
         history_of_variables_ice <- setdiff(history_of_variables_ice, 
                                         names(which(sapply(at_risk_before_tau[, ..history_of_variables_ice], function(x) length(unique(x)) <= 1))))
-        
         nu_hat <- predict_iterative_conditional_expectation(model_pseudo_outcome, history_of_variables_ice, at_risk_before_tau)
         at_risk_before_tau[, pred := nu_hat(data = .SD)]
         

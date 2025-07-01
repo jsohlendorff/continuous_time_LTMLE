@@ -1,5 +1,10 @@
 #import "definitions.typ": *
+#import "@preview/colorful-boxes:1.4.3": *
 #set heading(numbering: "1")
+#let example = thmplain("example", "Example").with(numbering: none)
+#set math.equation(numbering: "(1)")
+
+#show: thmrules.with(qed-symbol: $square$)
 
 = Simulating longitudinal data for time-to-event analysis in continuous time
 
@@ -207,6 +212,269 @@ In this case, the corresponding table is:
     [$gamma_0$], [0.005]
 )])
 
+= Target estimand
+
+We explain here what the target estimand is
+and how to arrive at the iterative conditional expectation formula. 
+Let $cumhazard( k, x, t)$ denote the cumulative cause-specific hazard function
+for $event(k)$ and $status(k) = x$ at time $t$ given the history $history(k-1)$.
+For instance, if $k=2$ and $x=y$, then in the simulation mechanism, we have
+$
+    cumhazard(2, y, t) = lambda^y_2 exp(beta^y_(2, "age") "age" + beta^y_(2, A) treat(1) + beta^y_(2, L) covariate(1)) 
+$
+Furthermore, let $densitytrt(t,k)$ denote the probability of being treated as the $k$'th event
+given that you go to the doctor at time $t$, i.e., $status(k)=a$,
+and your history $history(k-1)$.
+If $k=2$, this equals in the simulation mechanism
+$
+    densitytrt(t, 2) = "expit"(alpha_(20) + alpha_(2, "age") "age" + alpha_(2, "L") covariate(1)) = "expit"(alpha_(20) + alpha_(2, "age") "age" + alpha_(2, "L") ).
+$
+Let, for convenience of notation, "age" be included in $L (0)$.
+We "define"
+$
+    history(0) &= (treat(0), covariate(0)),\
+    history(1) &= (event(1), status(1), treat(1), covariate(1), treat(0), covariate(0), "age"), \
+    history(2) &= (event(2), status(2), treat(2), covariate(2), event(1), status(1), treat(1), covariate(1), treat(0), covariate(0), "age"),
+$
+Using the notation $f_(t_k) = (t_k, d_k, a_k, l_k, dots, a_0, l_0)$
+with $f_0 = (a_0, l_0)$, we, analogously to @rytgaardContinuoustimeTargetedMinimum2022, define our target parameter $Psi_tau : cal(P) -> RR$
+for a non-parametric model $cal(P)$ as
+$
+    Psi_tau (P) &= integral (integral_((0, tau]) (integral_((t_1,tau]) (integral_((t_2,tau])  product_(w_3 in (t_3, tau)) (1 - Lambda^y_3 (dif w_3 | f_(t_2))) Lambda_3^y (dif t_3 | f_(t_2))) \
+        &qquad times  product_(w_2 in (t_2, tau)) (1 - sum_(x=a,y) Lambda^x_2 (dif w_2 | f_(t_1))) bb(1) {a_2=1} times Lambda_2^a (dif t_2 | f_(t_1))) \
+        &qquad times product_(w_1 in (t_1, tau)) (1 - sum_(x=a,y,ell) Lambda^x_1 (dif w_1 | f_0))
+        Lambda_1^ell (dif t_1 | f_0) )P_(L(0)) (dif l_0) \
+        &+integral (integral_((0, tau]) (integral_((t_1,tau]) (integral_((t_2,tau])  product_(w_3 in (t_3, tau)) (1 - Lambda^y_3 (dif w_3 | f_(t_2))) Lambda_3^y (dif t_3 | f_(t_2))) \
+        &qquad times  product_(w_2 in (t_2, tau)) (1 - sum_(x=y,ell) Lambda^x_2 (dif w_2 | f_(t_1))) Lambda_2^ell (dif t_2 | f_(t_1))) \
+        &qquad times product_(w_1 in (t_1, tau)) (1 - sum_(x=a,y,ell) Lambda^x_1 (dif w_1 | f_0))
+        bb(1) {a_1 = 1} times Lambda_1^a (dif t_1 | f_0) )P_(L(0)) (dif l_0) \
+        &+integral (integral_((0, tau]) (integral_((t_1,tau])  product_(w_2 in (t_2, tau)) (1 - sum_(x=a,y) Lambda^x_2 (dif w_2 | f_(t_1)))  Lambda_2^y (dif t_2 | f_(t_1))) \
+        &qquad times product_(w_1 in (t_1, tau)) (1 - sum_(x=a,y,ell) Lambda^x_1 (dif w_1 | f_0))
+        Lambda_1^ell (dif t_1 | f_0) )P_(L(0)) (dif l_0) \
+        &+integral (integral_((0, tau]) (integral_((t_1,tau])  product_(w_2 in (t_2, tau)) (1 - sum_(x=a,y) Lambda^x_2 (dif w_2 | f_(t_1))) Lambda_2^y (dif t_2 | f_(t_1))) \
+        &qquad times product_(w_1 in (t_1, tau)) (1 - sum_(x=a,y,ell) Lambda^x_1 (dif w_1 | f_0))
+        bb(1) {a_1=1} times Lambda_1^a (dif t_1 | f_0) )P_(L(0)) (dif l_0) \
+        &+integral (integral_((0, tau]) product_(w_1 in (t_1, tau)) (1 - sum_(x=a,y,ell) Lambda^x_1 (dif w_1 | f_(0))) Lambda_1^y (dif t_1 | f_(0))) P_(L(0)) (dif l_0),
+$
+corresponding to setting $densitytrt(t, k) = 1$.
+This expression is fairly long and quite complicated.
+
+We now explain how one goes from this apparently complicated expression
+to the iterative conditional expectation formula,
+which reduces the dimensionality of the problem significantly.
+
+#example[
+    First define,
+    $
+        , \
+        Z^a_2 &= 
+    $
+    Writing,
+    $
+        &Z^a_3 = bb(1) {event(3) <= tau}, \ \
+    &Qbar(2) (f_(t_2)) \
+            &= mean(P) [Z^a_3 | history(2) = f_(t_2)]], \ \
+            &Z^a_2 = bb(1) {event(2) <= tau, status(2) = y} + bb(1) {event(2) < tau, status(2) = ell} Qbar(2) (history(2)) + 
+        bb(1) {event(2) < tau, status(2) = a} Qbar(2) (cal(F)^bold(1)_(event(2))) \
+        
+        &Qbar(1) (f_(t_1)) \
+        &= mean(P) [Z_2^a | history(1) = f_(t_1)], \ \
+
+            &Z^a_1 = bb(1) {event(1) <= tau, status(1) = y} + bb(1) {event(1) < tau, status(1) = ell} Qbar(1) (history(1)) +
+        bb(1) {event(1) < tau, status(1) = a} Qbar(1) (cal(F)^bold(1)_(event(1))) \
+        &Qbar(0) (f_0) \
+        &= mean(P) [Z_1^a | history(0)=f_0],
+$
+and letting
+$
+    cal(F)^bold(1)_(event(2)) &= (event(2), status(2), 1, covariate(2), event(1), status(1), treat(1), covariate(1), treat(0), covariate(0), "age"),\
+    cal(F)^bold(1)_(event(1)) &= (event(1), status(1), 1, covariate(1), treat(0), covariate(0), "age"),
+$
+Then, our claim is that $Psi_tau (P) = mean(P_(L(0))) [Qbar(0) (history(0))]$,
+    where $P_(L(0))$ is the distribution of the baseline confounders.
+]
+#proof[
+
+First note that,
+
+$
+    P (event(k) <= t, status(k) = x | history(k-1) = f_(t_(k-1))) = integral_((t_(k-1), s]) product_(u in (t_(k-1), s)) (1 - sum_(x=a,ell,y) Lambda^x_k (dif u | f_(t_(k-1)))) Lambda^x_k (dif s | f_(t_(k-1))) , t < tauend
+$
+for $x = y, ell$ by definition
+and
+$
+    &P (event(k) <= t, status(k) = a, treat(k) = 1 | history(k-1) = f_(t_(k-1))) \
+        &qquad = integral_((t_(k-1), s]) product_(u in (t_(k-1), s)) (1 - sum_(x=a,ell,y) Lambda^x_k (dif u | f_(t_(k-1)))) pi_k (event(k), history(k-1)) Lambda^a_k (dif s | f_(t_(k-1))) 
+$
+and
+$
+    &P (event(k) <= t, status(k) = a, treat(k) = 0 | history(k-1) = f_(t_(k-1))) \
+        &qquad = integral_((t_(k-1), s]) product_(u in (t_(k-1), s)) (1 - sum_(x=a,ell,y) Lambda^x_k (dif u | f_(t_(k-1)))) (1 - pi_k (event(k), history(k-1))) Lambda^a_k (dif s | f_(t_(k-1)))
+$
+
+Now, we can rewrite the target parameter as follows:
+$
+    Psi_tau (P) &= mean(P_(L(0))) [mean(P) [bb(1) {event(1) < tau, status(1) = ell}  mean(P) [ bb(1) {event(2) < tau, status(2) = a} (bb(1) {treat(2)=1})/(pi_2 (event(2), history(1)))  \
+        &qquad qquad times mean(P) [bb(1) {event(3) <= tau} | history(2)] | history(1) ] | history(0)] ] \
+        &+ mean(P_(L(0))) [mean(P) [bb(1) {event(1) < tau, status(1) = a} (bb(1) {treat(1) = 1})/(pi_1 (event(1), history(0)))  mean(P) [ bb(1) {event(2) < tau, status(2) = ell}  \
+            &qquad qquad times mean(P) [bb(1) {event(3) <= tau} | history(2)] | history(1) ] | history(0)] ] \
+        &+ mean(P_(L(0))) [mean(P) [bb(1) {event(1) < tau, status(1) = ell} mean(P) [bb(1) {event(2) <= tau, status(2) = y} | history(1)] | history(0)] ] \
+        &+ mean(P_(L(0))) [mean(P) [(bb(1) {event(1) < tau, status(1) = a}) /(pi_1 (event(1), history(0))) bb(1) {treat(1) = 1} mean(P) [bb(1) {event(2) <= tau, status(2) = y} | history(1)] | history(0)] ] \
+        &+ mean(P_(L(0))) [mean(P) [bb(1) {event(1) <= tau, status(1) = y}  | history(0)] ] \
+        &= mean(P_(L(0))) [mean(P) [(bb(1) {event(1) < tau, status(1) = ell} + bb(1) {event(1) < tau, status(1) = a} (bb(1) {treat(1) = 1})/(pi_1 (event(1), history(0)))) \
+            &qquad times mean(P) [ bb(1) {event(2) < tau, status(2) = a} (bb(1) {treat(2)=1})/(pi_2 (event(2), history(1)))  \
+                &qquad qquad times mean(P) [bb(1) {event(3) <= tau} | history(2)] | history(1) ] | history(0)] ] \
+        &+ mean(P_(L(0))) [mean(P) [(bb(1) {event(1) < tau, status(1) = ell} + bb(1) {event(1) < tau, status(1) = a} (bb(1) {treat(1) = 1})/(pi_1 (event(1), history(0)))) \
+            &qquad times mean(P) [ bb(1) {event(2) < tau, status(2) = ell} times mean(P) [bb(1) {event(3) <= tau} | history(2)] | history(1) ] | history(0)] ] \
+        &+ mean(P_(L(0))) [mean(P) [(bb(1) {event(1) < tau, status(1) = ell} + (bb(1) {event(1) < tau, status(1) = a}) /(pi_1 (event(1), history(0))) bb(1) {treat(1) = 1}) \
+            &qquad times mean(P) [bb(1) {event(2) <= tau, status(2) = y} | history(1)] | history(0)] ] \
+        &+ mean(P_(L(0))) [mean(P) [bb(1) {event(1) <= tau, status(1) = y}  | history(0)] ] 
+$ <eq:something>
+where we simply add terms which are zero corresponding to two treatments and two strokes
+and we let $P_(L(0))$ denote the distribution of the baseline confounders.
+
+(i.e., the history where we set the _current_ treatment to 1),
+we will argue that $Psi_tau (P) = mean(P_(L(0))) [Qbar(0) (history(0))]$.
+Using, @eq:something, we can rewrite the target parameter as follows:
+$
+    Psi_tau (P) &=^(*) mean(P_(L(0))) [mean(P) [(bb(1) {event(1) < tau, status(1) = ell} + bb(1) {event(1) < tau, status(1) = a} (bb(1) {treat(1) = 1})/(pi_1 (event(1), history(0)))) \
+        &qquad times mean(P) [bb(1) {event(2) < tau, status(2) = a} Qbar(2) (cal(F)^bold(1)_(event(2)))| history(1) ] | history(0)] ] \
+        &+ mean(P_(L(0))) [mean(P) [(bb(1) {event(1) < tau, status(1) = ell} + bb(1) {event(1) < tau, status(1) = a} (bb(1) {treat(1) = 1})/(pi_1 (event(1), history(0)))) \
+            &qquad times mean(P) [ bb(1) {event(2) < tau, status(2) = ell} Qbar(2) (history(2)) | history(1) ] | history(0)] ] \
+        &+ mean(P_(L(0))) [mean(P) [(bb(1) {event(1) < tau, status(1) = ell} + (bb(1) {event(1) < tau, status(1) = a}) /(pi_1 (event(1), history(0))) bb(1) {treat(1) = 1}) \
+            &qquad times mean(P) [bb(1) {event(2) <= tau, status(2) = y} | history(1)] | history(0)] ] \
+        &+ mean(P_(L(0))) [mean(P) [bb(1) {event(1) <= tau, status(1) = y}  | history(0)] ] \
+        &= mean(P_(L(0))) [mean(P) [(bb(1) {event(1) < tau, status(1) = ell} + bb(1) {event(1) < tau, status(1) = a} (bb(1) {treat(1) = 1})/(pi_1 (event(1), history(0)))) \
+            &qquad times Qbar(1) (history(1))  | history(0)] ] \
+        &+ mean(P_(L(0))) [mean(P) [bb(1) {event(1) <= tau, status(1) = y}  | history(0)] ] \
+        &=^(**) mean(P_(L(0))) [mean(P) [bb(1) {event(1) < tau, status(1) = ell} Qbar(1) (history(1)) + bb(1) {event(1) < tau, status(1) = a} Qbar(1) (cal(F)^1_(event(1)))
+            &+ bb(1) {event(1) <= tau, status(1) = y} | history(0)] ] \
+        &+ mean(P_(L(0))) [mean(P) [bb(1) {event(1) <= tau, status(1) = y}  | history(0)] ] \
+        &= mean(P_(L(0))) [Qbar(0) (history(0))].
+$
+In $*$, we used that
+$
+    &mean(P) [ bb(1) {event(2) < tau, status(2) = a} (bb(1) {treat(2)=1})/(pi_2 (event(2), history(1))) Qbar(2) (history(2)) | history(1) ]\
+        &=mean(P) [ bb(1) {event(2) < tau, status(2) = a} (bb(1) {treat(2)=1})/(pi_2 (event(2), history(1))) Qbar(2) (cal(F)^bold(1)_(event(2))) | history(1) ]\
+        &=mean(P) [ bb(1) {event(2) < tau, status(2) = a} (mean(P) [bb(1) {treat(2)=1} | history(1), status(2), event(2) ])/(pi_2 (event(2), history(1))) Qbar(2) (cal(F)^bold(1)_(event(2))) | history(1) ]\
+        &=mean(P) [ bb(1) {event(2) < tau, status(2) = a} Qbar(2) (cal(F)^bold(1)_(event(2))) | history(1) ],
+$
+by the law of iterated expectation. Similarly, in $**$, we used that
+$
+    &mean(P) [bb(1) {event(1) < tau, status(1) = a} (bb(1) {treat(1) = a} )/(pi_1 (event(1), history(0))) Qbar(1) (history(1)) | history(0)] \
+        &=mean(P) [bb(1) {event(1) < tau, status(1) = a} Qbar(1) (cal(F)^bold(1)_(event(1))) | history(0)],
+$
+]
+Thus, regression techniques can be used to estimate the target parameter $Psi_tau (P)$.
+Not only can it be used for the estimates of the target parameter,
+but it turns that the terms $
+    Qbar(0)$, $Qbar(1)$, and $Qbar(2)$, $Psi_tau (P)$,
+as well as $pi_k (t, history(k-1))$ are precisely the terms
+we encounter in the efficient influence function. Therefore, inference
+can be obtained as part of the procedure
+where we estimate $Qbar(0)$, $Qbar(1)$, and $Qbar(2)$ by considering a one-step estimator.
+Furthermore, the resulting estimator will be doubly robust. 
+
+== Example usage of the Algorithm <section:example>
+
+To help illustrate the algorithm, we present a simple example in @fig:longitudinaldataice in the case where $tau = 5$.
+We start at $k=3$.
+As in the rest of the paper, we suppose that the time horizon is $tau = 720$.
+
+#outline-colorbox(
+      title: [Iteration $k=3$],
+        color: "blue",
+        radius: 2pt,
+    width: auto,
+    centering: true,
+)[
+    Denote by $R_(3,tau) $ the set of people for which it is possible that may die as their
+    third event before time $tau$, that is people with $event(2) < tau$ and $event(2) in {a, ell}$
+    (otherwise the probability we are trying to determine is zero).
+    We find that $R_(3,tau) = {6, 7}$.
+    For each of these people find $Z^a_(3)$ and regress on $historycensored(2)$ to obtain a prediction function $hat(nu)_(2)$.
+    In *R*, this can be done as follows via e.g., `glm` assuming the data is given as `data`:
+    ```r        
+    D_3 <- data[data$status_2 %in% c("a", "l") & data$time_2 < tau, ] ## data set  thatconsists of ids from R_3
+    data$Z_3 <- 1*(D_3$time_3 <= tau)
+    fit <- glm(Z_3 ~ time_2+status_2+A_2+L_2+ time_1+status_1+A_1+L_1+A_0+L_0+age, data = D_3, family = "binomial")
+    hat_nu_2 <- function(data) { predict(fit, newdata=data, type = "response")}
+    ```
+          ]
+#outline-colorbox(
+        title: [Iteration $k=2$],
+          color: "blue",
+          radius: 2pt,
+            width: auto,
+            centering: true,
+            )[
+
+As in the case $k=3$, we find $R_(2,tau) = {3, 4, 6, 7}$.
+- For $i=3$, we produce the altered history, where
+                $cal(F)^1_(macron(T)_(2,i)) = (55,0, 1,1, 1,62, ell, 1, 1)$ to $hat(nu)_2$
+                and find $hat(nu)_2 (cal(F)^1_(macron(T)_(2,i)))$.
+                Based on this we calculate $hat(Z)^a_(2,i) = 1 times hat(nu)_2 (cal(F)^1_(macron(T)_(2,i)))$.
+- For $i = 4$, we apply the actual history $cal(F)_(macron(T)_(2,4))$ to $hat(nu)_2$. Again,
+  we calculate $hat(Z)^a_(2,4) = 1 times cal(F)_(macron(T)_(2,4))$.
+- For $i=7$, similarly calculate $hat(Z)^a_(2,4) = 1 cal(F)_(macron(T)_(2,6))$.
+- For $i=6$, we simply find $hat(Z)^a_(2,7) = 1$.
+Regress the predicted values $hat(Z)^a_(2)$ on $historycensored(1)$ to obtain a prediction function $hat(nu)_(1)$.
+                In *R*, this can be done as follows via e.g., `lm` assuming the data is given as `data`:
+                ```r
+                D_2 <- data[data$status_1 %in% c("a", "l") & data$time_1 < tau, ] ## data set that consists of ids from R_2
+                D_2^a <- copy(data)
+                D_2^a[data$status_2 == "a", "treat_2"] <- 1 ## alter treat_2 to 1 for those with status_2 = a
+                data$Z_2 <- 1*(D_2$time_2 <= tau & D_2$status_2 == "y") + 
+                    1*(D_2$time_2 < tau & D_2$status_2 == "l") * hat_nu_2(D_2) + 
+                    1*(D_2$time_2 < tau & D_2$status_2 == "a") * hat_nu_2(D_2)
+                fit <- lm(Z_2 ~ time_1+status_1+A_1+L_1+A_0+L_0+age, data = D_2)
+                hat_nu_1 <- function(data) { predict(fit, newdata=data, type = "response")}
+                ```
+            ]
+#outline-colorbox(
+        title: [Iteration $k=1$],
+          color: "blue",
+          radius: 2pt,
+            width: auto,
+            centering: true,
+            )[
+
+Same procedure as $k=2$. Note that we find $R_(1,tau) = {1, 2, 3, 4, 5, 6, 7}$.
+            ]
+#outline-colorbox(
+        title: [Iteration $k=0$],
+          color: "blue",
+          radius: 2pt,
+            width: auto,
+            centering: true,
+            )[
+
+We get the estimate $hat(Psi)_n = 1/7 sum_(i=1)^7 hat(nu)_(0) (1, 0, "sex"_i (0))$ for $n=7$,
+where we obtained $hat(nu)_(0)$ from $k=1$.
+            ]
+
+#figure(table(
+    columns: (auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto),
+                inset: 10pt,
+    table.header(
+        [id], [age],[$covariate(0)$], [$treat(0)$], 
+        [$covariate(1)$], [$treat(1)$], [$event(1)$], [$status(1)$],
+        [$covariate(2)$], [$treat(2)$], [$event(2)$], [$status(2)$],
+        [$event(3)$], [$status(3)$]
+    ),
+    [1], [60], [0], [1], [0], [1], [745], [$a$], [Ø], [Ø], [770], [$y$], [$oo$], [Ø],
+    [2], [50],[0], [1], [Ø], [Ø], [140], [$y$], [Ø], [Ø], [$oo$], [Ø], [$oo$], [Ø],
+    [3], [55],[0], [1], [1], [1], [62], [$ell$], [1], [0], [850], [$a$], [$870$], [$y$],
+    [4], [46],[0], [1], [1], [1], [70], [$ell$], [1], [1], [170], [$a$], [$182$], [$y$],
+    [5], [67],[0], [1], [Ø], [Ø], [60], [$y$], [Ø], [Ø], [$oo$], [Ø], [$oo$], [Ø],
+    [6], [52],[0], [1], [1], [1], [120], [$ell$], [Ø], [Ø], [175], [$y$], [$oo$], [Ø],
+    [7], [56], [0], [1], [0], [0], [40], [$a$], [1], [0], [80], [$ell$], [$645$], [$y$],
+
+                ),
+                caption: [
+                    Example data for illustration of the ICE algorithm. 
+                ])<fig:longitudinaldataice>
+
 = Modeling
 
 To apply our debiased ICE estimator in the uncensored situation, we need to estimate
@@ -229,7 +497,7 @@ so we only need to estimate it for the individuals who are still at risk, i.e., 
 This can be estimated by e.g., logistic regression.
 Importantly, in this first step, we do not impose any intervention,
 as you cannot visit the doctor for $k=3$.
-Denote this estimator by $hat(nu)_2$.
+Denote this estimator by $hat(nu)_2$ of $Qbar(2)$.
 
 For $k=2$, we should model
 the conditional counterfactual probability $Qbar(1)$ of
