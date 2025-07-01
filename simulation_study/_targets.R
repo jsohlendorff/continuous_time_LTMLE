@@ -426,113 +426,6 @@ sim_sample_size <- tar_map(
   )
 )
 
-## Strong confounding
-effects_strong_confounding <- data.frame(
-  effect_A_on_Y = -1.3,
-  effect_L_on_Y = 1.5,
-  effect_L_on_A = -1,
-  effect_A_on_L = -0.2,
-  effect_age_on_Y = 0,
-  effect_age_on_A = 0,
-  baseline_rate_Y = 0.001
-)
-
-baseline_rate_list_strong_confounding <- list(
-  A = 0.007,
-  L = 0.0015,
-  C = 0.00005,
-  Y = 0.001,
-  D = 0.015
-)
-
-sim_and_true_value_strong_confounding <- tar_map(
-  values = effects_strong_confounding,
-  tar_target(
-    true_value,
-    ### calculate true value of treatment in a large data set for each set of parameters
-    {
-      d_int <- simulate_simple_continuous_time_data(
-        n = n_true_value,
-        static_intervention = 1,
-        no_competing_events = TRUE,
-        effects = vary_effect(
-          effect_A_on_Y,
-          effect_L_on_Y,
-          effect_L_on_A,
-          effect_A_on_L,
-          effect_age_on_Y,
-          effect_age_on_A
-        ),
-        baseline_rate_list = baseline_rate_list_strong_confounding
-      )
-      data.table(
-        value = calculate_mean(d_int, tau),
-        effect_A_on_Y = effect_A_on_Y,
-        effect_L_on_Y = effect_L_on_Y,
-        effect_L_on_A = effect_L_on_A,
-        effect_A_on_L = effect_A_on_L,
-        effect_age_on_Y = effect_age_on_Y,
-        effect_age_on_A = effect_age_on_A,
-        baseline_rate_Y = baseline_rate_Y
-      )
-    }
-  ),
-  tar_rep(
-    results_strong_confounding,
-    ## main simulation; run the debiased ICE-IPCW procedure, LTMLE, and Cox procedures.
-    simulate_and_run_simple(
-      n = n_fixed,
-      function_name = "debias_ice_ipcw",
-      simulate_args = list(
-        uncensored = TRUE,
-        no_competing_events = TRUE,
-        effects = vary_effect(
-          effect_A_on_Y,
-          effect_L_on_Y,
-          effect_L_on_A,
-          effect_A_on_L,
-          effect_age_on_Y,
-          effect_age_on_A
-        ),
-        baseline_rate_list = baseline_rate_list_strong_confounding
-      ),
-      add_info = data.table(
-        effect_A_on_Y = effect_A_on_Y,
-        effect_L_on_Y = effect_L_on_Y,
-        effect_L_on_A = effect_L_on_A,
-        effect_A_on_L = effect_A_on_L,
-        effect_age_on_Y = effect_age_on_Y,
-        effect_age_on_A = effect_age_on_A,
-        baseline_rate_Y = baseline_rate_Y
-      ),
-      function_args = list(
-        tau = tau,
-        model_pseudo_outcome = "quasibinomial",
-        model_treatment = "learn_glm_logistic",
-        model_hazard = NA,
-        time_covariates = time_covariates,
-        baseline_covariates = baseline_covariates,
-        conservative = TRUE
-      ),
-      function_nice_names = c("Debiased ICE-IPCW", "LTMLE (grid size = 8)", "Naive Cox"),
-      function_name_2 = "apply_rtmle",
-      function_args_2 = list(
-        tau = tau,
-        grid_size = 8,
-        time_confounders = setdiff(time_covariates, "A"),
-        time_confounders_baseline = "L_0",
-        baseline_confounders = baseline_covariates,
-        learner = "learn_glmnet"
-      ),
-      function_name_3 = "naive_cox",
-      function_args_3 = list(tau = tau, baseline_confounders = baseline_covariates)
-    ),
-    reps = reps,
-    batch = batches,
-    error = "null"
-  )
-)
-
 # ######################################################################
 list(
   ## drop out plot (varying intercept; see how well method performs under practical positivity violation conditions)
@@ -664,7 +557,7 @@ list(
     fun_boxplot(sim_merge_dropout, by = "a_intercept")
   ),
   
-  ## ## vary sample size
+  ## vary sample size
   sim_sample_size,
   ##v tar combine
   tar_combine(
@@ -679,26 +572,6 @@ list(
   tar_target(
     boxplot_results_sample_size,
     fun_boxplot(sim_merge_sample_size, by = "n")
-  ),
-  
-  ## strong confounding
-  sim_and_true_value_strong_confounding,
-  ## combine results
-  tar_combine(
-    sim_merge_strong_confounding,
-    list(
-      sim_and_true_value_strong_confounding[["results_strong_confounding"]],
-      sim_and_true_value_strong_confounding[["true_value"]]
-    ),
-    command = combine_results_and_true_values(!!!.x, .id = "method", by = by_vars)
-  ),
-  tar_target(
-    results_table_strong_confounding,
-    get_tables(sim_merge_strong_confounding, by = by_vars)
-  ),
-  tar_target(
-    boxplot_results_strong_confounding,
-    fun_boxplot(sim_merge_strong_confounding, by = by_vars)
   )
 )
 # ######################################################################

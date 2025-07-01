@@ -12,11 +12,8 @@ calculate_mean <- function(data_interventional, tau) {
 
 ## Function to create a boxplot of the estimates and standard errors
 fun_boxplot <- function(d, by = NULL) {
-  ## calculate coverage
-  ## cov <- d[, .(coverage=mean((true_value > lower) & (true_value < upper))), by = by]
   d[, sd_est := sd(estimate), by = c(by, "type")]
   ## interaction for
-  ## d[, gr := do.call(paste, c(.SD, sep = "_")), .SDcols = by]
   p <- ggplot2::ggplot(data = d, aes(y = estimate, color = type)) +
     ggplot2::geom_boxplot() +
     ggplot2::geom_hline(aes(yintercept = value)) +
@@ -47,12 +44,9 @@ fun_boxplot <- function(d, by = NULL) {
 
 ## Function to create a boxplot of the estimates and standard errors
 fun_boxplot_censoring <- function(d, by = NULL) {
-  ## calculate coverage
-  ## cov <- d[, .(coverage=mean((true_value > lower) & (true_value < upper))), by = by]
   d[, baseline_rate_C := factor(baseline_rate_C)]
   d[, model_type := factor(model_type)]
-  d[, interact_model_rate_C := interaction(model_type, baseline_rate_C)]
-  d[, sd_est := sd(estimate), by = c(by, "interact_model_rate_C")]
+  d[, sd_est := sd(estimate), by = c(by, "model_type", "baseline_rate_C")]
   ## interaction for
   ## d[, gr := do.call(paste, c(.SD, sep = "_")), .SDcols = by]
   p <- ggplot2::ggplot(data = d, aes(y = estimate, color = model_type)) +
@@ -60,12 +54,12 @@ fun_boxplot_censoring <- function(d, by = NULL) {
     ggplot2::geom_hline(aes(yintercept = value)) +
     ggplot2::theme_minimal()
   ## in d add interaction between model_type and baseline_rate_C
-  qz <- ggplot2::ggplot(data = d, aes(y = se, color = interact_model_rate_C)) +
+  qz <- ggplot2::ggplot(data = d, aes(y = se, color = model_type)) +
     ggplot2::geom_boxplot() +
     ggplot2::theme_minimal()
   r <- ggplot2::ggplot(data = d, aes(y = ice_ipcw_estimate, color = model_type)) +
     ggplot2::geom_boxplot() +
-    ggplot2::geom_hline(aes(yintercept = value, color = "red")) +
+    ggplot2::geom_hline(aes(yintercept = value, color = model_type)) +
     ggplot2::theme_minimal()
   w <- ggplot2::ggplot(data = d, aes(y = ipw)) +
     ggplot2::geom_boxplot() +
@@ -75,7 +69,7 @@ fun_boxplot_censoring <- function(d, by = NULL) {
     p <- p + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
     qz <- qz + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
     ## for q add different geom hlines with sd(estimate) for each compination of variables in by
-    qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est), linetype = "dashed")
+    qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est, color = model_type), linetype = "dashed")
     r <- r + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
     w <- w + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
   } else {
