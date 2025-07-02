@@ -110,6 +110,10 @@ simulate_and_run <- function(n,
 
 ## Calculate info for tables, i.e., coverage, mean squared error, bias, standard errors
 get_tables <- function(results, by = NULL) {
+  if (!is.null(by)) {
+    ## delete values of by that do not have more than one value in d
+    by <- by[sapply(by, function(x) length(unique(results[[x]])) > 1)]
+  }
   ## remove all methods columns
   ipw_ice_results <-  na.omit(
     melt(

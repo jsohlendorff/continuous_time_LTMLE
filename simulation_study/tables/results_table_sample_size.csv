@@ -1,0 +1,13 @@
+"n","type","coverage","mse","bias","sd","mean_se"
+100,"Debiased ICE-IPCW",0.934,0.00324,0.000725,0.0569,0.0552
+100,"Inverse Probability Weighting",,0.00325,0.000794,0.057,
+100,"ICE-IPCW",,0.00315,0.000809,0.0561,
+200,"Debiased ICE-IPCW",0.949,0.00149,-0.000574,0.0386,0.0388
+200,"Inverse Probability Weighting",,0.00149,-0.000537,0.0386,
+200,"ICE-IPCW",,0.00148,-0.000456,0.0385,
+500,"Debiased ICE-IPCW",0.948,0.000601,0.000509,0.0245,0.0245
+500,"Inverse Probability Weighting",,0.000603,0.000547,0.0245,
+500,"ICE-IPCW",,0.0006,0.000535,0.0245,
+1000,"Debiased ICE-IPCW",0.957,0.000292,0.0000674,0.0171,0.0173
+1000,"Inverse Probability Weighting",,0.000292,0.0000475,0.0171,
+1000,"ICE-IPCW",,0.000291,0.0000857,0.0171,
