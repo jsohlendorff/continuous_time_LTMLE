@@ -12,34 +12,47 @@ calculate_mean <- function(data_interventional, tau) {
 
 ## Function to create a boxplot of the estimates and standard errors
 fun_boxplot <- function(d, by = NULL) {
+  ipw_ice_results <-  na.omit(
+    melt(
+      d,
+      id.vars = c(by, "value"),
+      measure.vars = c("ipw", "ice_ipcw_estimate"),
+      variable.name = "type",
+      value.name = "estimate"
+    )
+  )
+  ipw_ice_results$se <- NA
+  ipw_ice_results$lower <- NA
+  ipw_ice_results$upper <- NA
+  ## rename levels of type from ipw, ice_ipcw_estimate to Inverse Probability Weighting, ICE-IPCW
+  ipw_ice_results$type <- factor(ipw_ice_results$type,
+                                 levels = c("ipw", "ice_ipcw_estimate"),
+                                 labels = c("Inverse Probability Weighting", "ICE-IPCW")
+  )
+  cols_to_remove <- grepl("method|tar|ice_ipcw_estimate|ipw", names(d))
+  d <- d[, !cols_to_remove, with = FALSE]
+  d <- rbind(d, ipw_ice_results,fill = TRUE)
+  
   d[, sd_est := sd(estimate), by = c(by, "type")]
   ## interaction for
   p <- ggplot2::ggplot(data = d, aes(y = estimate, color = type)) +
     ggplot2::geom_boxplot() +
     ggplot2::geom_hline(aes(yintercept = value)) +
     ggplot2::theme_minimal()
-  qz <- ggplot2::ggplot(data = d, aes(y = se, color = type)) +
+  d_se <- copy(d)
+  d_se <- d_se[!type %in% c("ICE-IPCW", "Inverse Probability Weighting", "Naive Cox")]
+  qz <- ggplot2::ggplot(data = d_se, aes(y = se, color = type)) +
     ggplot2::geom_boxplot() +
-    ggplot2::theme_minimal()
-  r <- ggplot2::ggplot(data = d, aes(y = ice_ipcw_estimate)) +
-    ggplot2::geom_boxplot() +
-    ggplot2::geom_hline(aes(yintercept = value, color = "red")) +
-    ggplot2::theme_minimal()
-  w <- ggplot2::ggplot(data = d, aes(y = ipw)) +
-    ggplot2::geom_boxplot() +
-    ggplot2::geom_hline(aes(yintercept = value, color = "red")) +
     ggplot2::theme_minimal()
   if (!is.null(by)) {
     p <- p + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
     qz <- qz + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
     ## for q add different geom hlines with sd(estimate) for each compination of variables in by
     qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est, color = type), linetype = "dashed")
-    r <- r + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
-    w <- w + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
   } else {
     qz <- qz + ggplot2::geom_hline(aes(yintercept = sd(estimate), color = "red"))
   }
-  list(p, qz, r, w)
+  list(p, qz)
 }
 
 ## Function to create a boxplot of the estimates and standard errors
@@ -89,7 +102,28 @@ simulate_and_run <- function(n,
 
 ## Calculate info for tables, i.e., coverage, mean squared error, bias, standard errors
 get_tables <- function(results, by = NULL) {
-  results <- results[, .(
+  ## remove all methods columns
+  ipw_ice_results <-  na.omit(
+    melt(
+      results,
+      id.vars = c(by, "value"),
+      measure.vars = c("ipw", "ice_ipcw_estimate"),
+      variable.name = "type",
+      value.name = "estimate"
+    )
+  )
+  ipw_ice_results$se <- NA
+  ipw_ice_results$lower <- NA
+  ipw_ice_results$upper <- NA
+  ## rename levels of type from ipw, ice_ipcw_estimate to Inverse Probability Weighting, ICE-IPCW
+  ipw_ice_results$type <- factor(ipw_ice_results$type,
+    levels = c("ipw", "ice_ipcw_estimate"),
+    labels = c("Inverse Probability Weighting", "ICE-IPCW")
+  )
+  cols_to_remove <- grepl("method|tar|ice_ipcw_estimate|ipw", names(results))
+  results <- results[, !cols_to_remove, with = FALSE]
+  results <- rbind(results, ipw_ice_results, fill = TRUE)
+  results<- results[, .(
     coverage = mean((value > lower) & (value < upper)),
     mse = mean((estimate - value)^2),
     bias = mean(estimate - value),
@@ -98,6 +132,9 @@ get_tables <- function(results, by = NULL) {
   ),
   by = c(by, "type")
   ]
+  results <- as.data.table(results)
+  setkeyv(results, c(by,"type"))
+  results
 }
 
 #' Simulate Longitudinal Continuous-Time Data for Time-to-Event Analysis
