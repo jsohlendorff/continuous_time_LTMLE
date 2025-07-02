@@ -7,11 +7,15 @@ rexponential_proportional_hazard <- function(n, rate, eta) {
 ## Simple function for calculating true value in simulation studies
 ## NOTE: We allow for administrative censoring in this calculation
 calculate_mean <- function(data_interventional, tau) {
-  data_interventional$timevarying_data[event %in% c("C", "Y", "D"), mean(event == "Y" & time <= tau)]
+  data_interventional$timevarying_data[event %in% c("tauend", "Y", "D"), mean(event == "Y" & time <= tau)]
 }
 
 ## Function to create a boxplot of the estimates and standard errors
 fun_boxplot <- function(d, by = NULL) {
+  if (!is.null(by)) {
+    ## delete values of by that do not have more than one value in d
+    by <- by[sapply(by, function(x) length(unique(d[[x]])) > 1)]
+  }
   ipw_ice_results <-  na.omit(
     melt(
       d,
@@ -57,6 +61,10 @@ fun_boxplot <- function(d, by = NULL) {
 
 ## Function to create a boxplot of the estimates and standard errors
 fun_boxplot_censoring <- function(d, by = NULL) {
+  if (!is.null(by)) {
+    ## delete values of by that do not have more than one value in d
+    by <- by[sapply(by, function(x) length(unique(d[[x]])) > 1)]
+  }
   d[, baseline_rate_C := factor(baseline_rate_C)]
   d[, model_type := factor(model_type)]
   d[, sd_est := sd(estimate), by = c(by, "model_type", "baseline_rate_C")]
@@ -858,7 +866,7 @@ simulate_simple_continuous_time_data <- function(n,
     labels = c("A", "L", "C", "Y", "D")
   )]
   people_atrisk[, time := Rfast::rowMins(ttt, value = TRUE) + entrytime + 1] ## make sure that at least one day happens between each event
-  people_atrisk[time > max_fup, event := "C"]
+  people_atrisk[time > max_fup, event := "tauend"]
   people_atrisk[time > max_fup, time := max_fup]
   is_terminal <- !(people_atrisk$event %in% c("A", "L"))
   #------------------------------------------------------------------------------
@@ -956,7 +964,7 @@ simulate_simple_continuous_time_data <- function(n,
       labels = c("A", "L", "C", "Y", "D")
     )]
     people_atrisk[, time := Rfast::rowMins(ttt, value = TRUE) + entrytime + 1] ## make sure that at least one day happens between each event
-    people_atrisk[time > max_fup, event := "C"]
+    people_atrisk[time > max_fup, event := "tauend"]
     people_atrisk[time > max_fup, time := max_fup]
     is_terminal <- !(people_atrisk$event %in% c("A", "L"))
     #------------------------------------------------------------------------------
@@ -1035,7 +1043,7 @@ simulate_simple_continuous_time_data <- function(n,
       labels = c("C", "Y", "D")
     )]
     people_atrisk[, time := Rfast::rowMins(ttt, value = TRUE) + entrytime + 1] ## make sure that at least one day happens between each event
-    people_atrisk[time > max_fup, event := "C"]
+    people_atrisk[time > max_fup, event := "tauend"]
     people_atrisk[time > max_fup, time := max_fup]
     is_terminal <- !(people_atrisk$event %in% c("A", "L"))
     #------------------------------------------------------------------------------
