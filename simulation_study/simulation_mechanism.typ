@@ -531,7 +531,7 @@ $
 $
 Our data set then consists of
 $
-    O = ("age", treat(0), covariate(0), Y_1, L_1, A_1, dots, Y_(K-1), L_(K-1), A_(K-1), Y_K)
+    O = ("age", covariate(0), treat(0), Y_1, L_1, A_1, dots, Y_(K-1), L_(K-1), A_(K-1), Y_K)
 $
 
 == Nuisance parameter modeling
@@ -898,32 +898,47 @@ Overall conclusions for the censored case:
         ],
 ) <fig:boxplot_results_censored_ice_ipcw>
 
-= Extensions <sec:extensions>
-Let $T^ell$ be the time since the last stroke (i.e., 0 if stroke occurred as the previous event and $event(2)-event(1)$ if it happened as the first event).
-Then, we might consider
-$
-    S_((3))^y tilde "Exp"(lambda^y_3 exp(beta^y_(3,"age") "age" + beta^y_(3, A) treat(2) + beta^y_(3, L) covariate(2) + beta^y_(3, T^ell) T^ell)),
-$
-or we might consider a model in which the baseline hazard is not constant.
-It also might be easier to state a realistic model in terms of the intensities directly,
-in which case, we can then "transform" to the interevent scale. For example, a realistic intensity for the primary event,
+= Extensions of simulation procedure <sec:extensions>
+In this section, we briefly outline some extensions of the
+simulation procedure, which can be used to simulate from more complex, realistic models.
+For instance, the simulation procedure outlined above does not use the timing of the events.
+It may therefore be interesting to see if the discrete time methods
+become even more biased in this case.
+We might also use a model in which the baseline hazard is not constant.
+We now consider an example.
+
+Let $T^ell$ be the time since the last stroke (i.e., 0 if stroke occurred as the previous event and $event(2)-event(1)$ if it happened as the first event
+and $T^a$ denotes the time to the last treatment. 
+
+//Then, we might consider
+//$
+//    S_((3))^y tilde "Exp"(lambda^y_3 exp(beta^y_(3,"age") "age" + beta^y_(3, A) treat(2) + beta^y_(3, L) covariate(2) + beta^y_(3, T^ell) T^ell)).
+//$
+//It also might be easier to state a realistic model in terms of the intensities directly,
+//in which case, we can then "transform" to the interevent scale.
+A realistic intensity for the primary event might be
 $
     lambda^y (t) &= lambda_0^y (t) exp(beta^y_("age") "age") exp(beta_L^y exp(beta^(y *)_L (t-T^ell)) L(t-) + beta_A^y  exp(beta^(y *)_A (t-T^a)) (1-A(t-)) \
         &+ beta^y_Z bb(1) {event(2) < t} bb(1) {status(1)=a} bb(1) {status(2)=ell}) bb(1) {t <= T^y}
 $
-Here $T^a$ denotes the time to the last treatment. 
-Note that each term is zero if the corresponding event has not happened yet, so we do not condition on the future. 
-Here, we can let each coefficient depend on event number, but for simplicity of notation, we do not do so.
+Note that each term is zero if the corresponding event has not happened yet, so we do not condition on the future.
+For stroke, we may have $beta_L^y > 0$ and $beta^(y *)_L < 0$.
+The term for the stroke can now be interpreted: The intensity for death when
+a stroke occurs spikes at the time of the stroke, and then decays exponentially
+on the intensity scale, corresponding to the stroke having less of an impact
+on death as time passes. A similar interpretation can be given for treatment. 
+//Here, we can let each coefficient depend on event number, but for simplicity of notation, we do not do so.
 The last term corresponds to there being an effect of the order in which the events happened
 after two events. 
-This is one way to include longe range dependencies.
-Simulating from this model is significantly more complicated, because we have to rely on numeric integration.
-Otherwise, there is the possibility of using Ogata's thinning algorithm @ogata1981lewis.
-It is likely here that the LTMLE algorithm considered would be even more biased
-as it cannot take into account the timing of the events. 
+//This is one way to include longe range dependencies.
 
-More generally, let $cumhazard(k, x, t)$ denote the cumulative hazard function for the $k$'th event of type $x$ at time $t$
-conditional on the history $history(k-1)$.
+Simulating from this model is significantly more complicated,
+because we have to rely on numeric integration if we are
+to use a similar simulation procedure as we outlined previously (@sec:interevent-time-scale).
+Otherwise, we can use thinning algorithms such as Ogata's thinning algorithm @ogata1981lewis.
+
+== Simulating from the interevent time scale <sec:interevent-time-scale>
+
 The cumulative hazard-cause specific hazard of $S_((k))$ of the $k$'th event type $x$ is given by
 $
     [tauend - event(k-1), 0) in.rev t mapsto cumhazard(k, x, t + event(k-1)) - Lambda^x_k (event(k-1), history(k-2))
@@ -953,10 +968,11 @@ $
         N^(a 0) (t) &= sum_(k=1)^2 bb(1) {status(k) = a, event(k) <= t, treat(k) = 0}.
 $
 Using Theorem II.7.1 of #cite(<andersenStatisticalModelsBased1993>, form: "prose"),
-we find that $N^y$ has the compensator
+we find that $N^y$ has the $P$-$cal(F)_t$ compensator
 $
-    Lambda^y (t) &= integral_0^t sum_(k=1)^3 bb(1) {event(k-1) < s <= event(k)} lambda_k^y exp(beta^y_(k, "age") "age" + beta^y_(k, A) treat(k-1) + beta^y_(k, L) covariate(k-1)) dif s 
+    Lambda^y (t) &= integral_0^t sum_(k=1)^3 bb(1) {event(k-1) < s <= event(k)} lambda_k^y exp(beta^y_(k, "age") "age" + beta^y_(k, A) treat(k-1) + beta^y_(k, L) covariate(k-1)) dif s ,
 $
+with respect to the natural filtration $cal(F)_t$.
 If $lambda_1^y = lambda_2^y = lambda_3^y$, we can write the intensity as
 $
     lambda^y (t) &= lambda_1^y \
@@ -978,7 +994,7 @@ $
         Lambda^(a 0) (t) &= integral_0^t pi_s (0) lambda^a (s) dif s.
 $
 respectively. Simulating from the interventional mechanism corresponds to
-having the compensators
+using the compensators for $N^(a i)$,
 $
     Lambda^(a 1) (t) &= integral_0^t pi_s^* (1) lambda^a (s) dif s, \
         Lambda^(a 0) (t) &= integral_0^t pi_s^* (0) lambda^a (s) dif s.
