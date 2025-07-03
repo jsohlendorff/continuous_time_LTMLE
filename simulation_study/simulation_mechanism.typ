@@ -242,7 +242,7 @@ $
     zeta_4 (P) &= mean(P_(L(0))) [mean(P) [(bb(1) {event(1) < tau, status(1) = a}) /(pi_1 (event(1), history(0))) bb(1) {treat(1) = 1} mean(P) [bb(1) {event(2) <= tau, status(2) = y} | history(1)] | history(0)] ] \
     zeta_5 (P) &= mean(P_(L(0))) [mean(P) [bb(1) {event(1) <= tau, status(1) = y}  | history(0)] ] \
 $
-First, we need to note that,
+Now we note that
 $
     &mean(P) [ bb(1) {event(2) < tau, status(2) = a} (bb(1) {treat(2)=1})/(pi_2 (event(2), history(1))) Qbar(2) (history(2)) | history(1) ]\
         &=mean(P) [ bb(1) {event(2) < tau, status(2) = a} (bb(1) {treat(2)=1})/(pi_2 (event(2), history(1))) Qbar(2) (cal(F)^bold(1)_(event(2))) | history(1) ]\
@@ -290,7 +290,7 @@ We also give the ICE formula in case of censoring.
 Let $Lambda_k^c (dif t | history(k-1))$ denote the cumulative cause-specific hazard function
 for the censoring for the $k$'th event. Also,
 let $Lambda^c (t)$ denote the compensator for
-the censoring process with respect to the natural filtration
+the censoring process with respect to the natural filtration (e.g., the observed filtration)
 of all processes involved. 
 
 #example[
@@ -335,11 +335,11 @@ We apply the definitions given in @example:ice.
     width: auto,
     centering: true,
 )[
-    Denote by $R_(3,tau) $ the set of people for which it is possible that may die as their
+    Denote by $R_(3,tau) $ the set of people for which it is possible for them to die as their
     third event before time $tau$, that is people with $event(2) < tau$ and $event(2) in {a, ell}$
-    (otherwise the probability we are trying to determine is zero).
+    (otherwise the probability we are trying to determine $Qbar(2)$ is zero).
     We find that $R_(3,tau) = {6, 7}$.
-    For each of these people find $Z^a_(3)$ and regress on $historycensored(2)$ to obtain a prediction function $hat(nu)_(2)$.
+    For each of these people find $Z^a_(3)$ and regress on $history(2)$ to obtain a prediction function $hat(nu)_(2)$.
     In *R*, this can be done as follows via e.g., `glm` assuming the data is given as `data`:
     ```r        
     D_3 <- data[data$status_2 %in% c("a", "l") & data$time_2 < tau, ] ## data set that consists of ids from R_3
@@ -358,13 +358,13 @@ We apply the definitions given in @example:ice.
 
 As in the case $k=3$, we find $R_(2,tau) = {3, 4, 6, 7}$.
 - For $i=3$, we produce the altered history, where
-                $cal(F)^1_(macron(T)_(2,i)) = (55,0, 1,1, 1,62, ell, 1, 1)$ to $hat(nu)_2$
-                and find $hat(nu)_2 (cal(F)^1_(macron(T)_(2,i)))$.
-                Based on this we calculate $hat(Z)^a_(2,i) = 1 times hat(nu)_2 (cal(F)^1_(macron(T)_(2,i)))$.
+                $cal(F)^1_(macron(T)_(2,3)) = (55,0, 1,1, 1,62, ell, 1, 1)$ to $hat(nu)_2$
+                and find $hat(nu)_2 (cal(F)^1_(macron(T)_(2,3)))$.
+                Based on this we calculate $hat(Z)^a_(2,3) = 0 times hat(nu)_2 (cal(F)^1_(macron(T)_(2,3)))$.
 - For $i = 4$, we apply the actual history $cal(F)_(macron(T)_(2,4))$ to $hat(nu)_2$. Again,
-  we calculate $hat(Z)^a_(2,4) = 1 times cal(F)_(macron(T)_(2,4))$.
-- For $i=7$, similarly calculate $hat(Z)^a_(2,4) = 1 cal(F)_(macron(T)_(2,6))$.
-- For $i=6$, we simply find $hat(Z)^a_(2,7) = 1$.
+  we calculate $hat(Z)^a_(2,4) = 1 times hat(nu)_2 (cal(F)_(macron(T)_(2,4)))$.
+- For $i=6$, we simply find $hat(Z)^a_(2,6) = 1$.
+- For $i=7$, similarly calculate $hat(Z)^a_(2,7) = 1 times hat(nu)_2 (cal(F)_(macron(T)_(2,7)))$.
 Regress the predicted values $hat(Z)^a_(2)$ on $history(1)$ to obtain a prediction function $hat(nu)_(1)$.
                 In *R*, this can be done as follows via e.g., `lm` assuming the data is given as `data`:
                 ```r
@@ -438,12 +438,11 @@ enabling comparisons with Longitudinal Targeted Maximum Likelihood Estimation (L
 We consider both the debiased ICE estimator and the simple ICE estimator;
 the difference between them being that we add the efficient influence function
 to the first, which allows us to obtain doubly robust inference.
-Only the first of these are used to obtain standard errors.
 Finally, we also compare with a continuous-time inverse probability weighting
-estimator which cannot be misspecified.
+estimator which cannot be misspecified if one knows the true data generating mechanism.
 
 Additionally, we vary sample size $n in {100, 2000, 500, 1000}$.
-In all cases, we fix $n=1000$.
+In all other cases, we fix $n=1000$.
 
 We thus consider three overall scenarios:
 - *No baseline and time-varying confounding*.
@@ -458,18 +457,14 @@ We highlight the interpretation of the most important parameters in the simulati
 - $beta_(k, A)^ell$: If negative: The risk of having a stroke is lower if you are treated.
 - $beta_(k, L)^y$: If positive: The risk of having a primary event is higher if you have had a stroke.
 
-Proposed values for the parameters are shown in the table below.
-Each value is varied, holding the others fixed.
-The values with bold font correspond to the values used
-when fixed. The corresponding cases
-corresponding to no effect of baseline confounders
-are marked with an overline, and the cases corresponding to no effect of time-varying confounders
-are marked with an underline.
+Proposed values for the parameters are shown in @table:simulation-parameters.
+Strong confounding is considered in @table:simulation-parameters-strong
+in two different simulation settings. 
 
 #pagebreak()
 
-#align(center, [
-#table(
+#figure(
+table(
   columns: ( auto, auto),
   inset: 10pt,
   align: horizon,
@@ -488,12 +483,18 @@ are marked with an underline.
     [$lambda_k^ell$], [0.001],
     [$gamma_"age"$], [0],
     [$gamma_0$], [0.005]
-)])
+    ),
+    caption: [
+        Simulation parameters for the simulation study. Each value is varied, holding the others fixed.
+The values with bold font correspond to the values used
+when fixed. The corresponding cases
+corresponding to no effect of baseline confounders
+are marked with an overline, and the cases corresponding to no effect of time-varying confounders
+are marked with an underline.
+    ]) <table:simulation-parameters>
 
-Strong confounding is considered in the following table
-in two different simulation settings. 
-#align(center, [
-#table(
+#figure(
+table(
   columns: ( auto, auto),
   inset: 10pt,
   align: horizon,
@@ -512,7 +513,10 @@ in two different simulation settings.
     [$lambda_k^ell$], [0.001],
     [$gamma_"age"$], [0],
     [$gamma_0$], [0.005]
-)])
+),
+        caption: [
+                Simulation parameters for the strong confounding simulation study. Each value is varied, holding the others fixed.
+        ]) <table:simulation-parameters-strong>
 
 == Discretizing time <sec:discretizing-time>
 We briefly illustrate how to discretize the time horizon into $K$ intervals,
@@ -542,9 +546,9 @@ using logistic regression.
 
 For modeling the conditional counterfactual probabilities $Qbar(k)$,
 we a generalized linear model (GLM) with the option `family = quasibinomial()`,
-using no interactions in the history, as was discussed in @section:example.
+using no interactions in the history, as discussed in @section:example.
 
-For the LTMLE procedure, we use an undersmoothed LASSO (reference?) estimator.
+For the LTMLE procedure, we use an undersmoothed LASSO @lasso estimator.
 
 == Censoring
 We consider a simulation involving _completely_ independent censoring.
@@ -563,11 +567,10 @@ Here, we consider a linear model,
  as estimators of the conditional counterfactual probabilities $Qbar(k)$.
 
 We consider only two parameter settings for the censoring martingale
-as outlined below.
-1.
+as outlined in @table:simulation-parameters-censoring.
 
-#align(center, [
-#table(
+#figure(
+    table(
   columns: ( auto, auto),
   inset: 10pt,
   align: horizon,
@@ -586,7 +589,10 @@ as outlined below.
     [$lambda_k^ell$], [0.001],
     [$gamma_"age"$], [0],
     [$gamma_0$], [0.005]
-)])
+    ),
+    caption: [
+        Simulation parameters for the censoring simulation study. Each value is varied, holding the others fixed. ]
+) <table:simulation-parameters-censoring>
 
 = Results
 Here, the results are presented in a fairly unstructured format.
@@ -604,15 +610,17 @@ Overall conclusions for the uncensored case:
 3. LTMLE standard errors are generally a little bit smaller 
    than the debiased ICE-IPCW standard errors.
 4. In the case with no confounding and $beta_A^y =0.3$, 
-   no method appears to be unbiased. Some explanations: Either the simulation
-   mechanism is too extreme or the prevalence of the event is too low.
+   no method appears to be unbiased. Possible reasons: Either the simulation
+   mechanism is too extreme or the risk of the event is too low (within the time horizon).
 
 Overall conclusions for the censored case:
 1.  All choices of $lambda^c$ and all choices of nuisance parameter models seem
     to give unbiased estimates. 
-2. Standard errors appear to be conservative. Overall, the standard errors for
-   the tweedie model appear to be slightly higher.
-3. The linear model appears to give the most unstable estimates.
+2. Standard errors appear to be (slightly) conservative. Standard errors for
+   the tweedie model appear to be slightly higher than for the linear model
+   or the scaled quasibinomial model.
+3. The linear model appears to give the most unstable estimates. 
+   This can be seen in the boxplots for the (simple) ICE-IPCW estimator (@fig:boxplot_results_censored_ice_ipcw).
 
 == Tables
 
@@ -698,6 +706,8 @@ Overall conclusions for the censored case:
     [*MSE*], [*Bias*], [*sd(Est)*], [*Mean($hat("SE")$)*],
           ..results_table_vary_effect_L_on_A.flatten(),
 )
+
+==== Sample size
 
 #let results_table_sample_size = csv("tables/results_table_sample_size.csv")
 #let _ = results_table_sample_size.remove(0)
@@ -843,6 +853,8 @@ Overall conclusions for the censored case:
         ],
 )
 
+==== Sample size
+
 #figure(
     image("plots/boxplot_results_sample_size.svg"),
         caption: [
@@ -858,6 +870,8 @@ Overall conclusions for the censored case:
             The red line indicates the empirical standard error of the estimates for each estimator.
         ],
 )
+
+=== Censored
 
 #figure(
     image("plots/boxplot_results_censored.svg"),
@@ -882,7 +896,7 @@ Overall conclusions for the censored case:
             Different degrees of censoring are considered as well different model types for the pseudo-outcomes.
             Here, the (not debiased) ICE-IPCW estimator is shown.
         ],
-)
+) <fig:boxplot_results_censored_ice_ipcw>
 
 = Extensions <sec:extensions>
 Let $T^ell$ be the time since the last stroke (i.e., 0 if stroke occurred as the previous event and $event(2)-event(1)$ if it happened as the first event).
