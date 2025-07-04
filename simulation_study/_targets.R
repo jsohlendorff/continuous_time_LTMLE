@@ -215,19 +215,15 @@ sim_and_true_value <- tar_map(
 )
 
 ## Censored case
-parameter_vary_censoring <- parameter_vary[c(1, 9), ]
-parameter_vary_censoring2 <- expand.grid(
-  baseline_rate_C = c(0.0002, 0.0005, 0.0008),
-  model_type = c("scaled_quasibinomial", "tweedie", "lm"),
-  conservative = TRUE #c(TRUE, FALSE)
-)
 parameter_vary_censoring <- merge(
-  parameter_vary_censoring,
-  parameter_vary_censoring2,
-  by = character(),
+  parameter_vary[c(1, 9), ],
+  expand.grid(
+    baseline_rate_C = c(0.0002, 0.0005, 0.0008),
+    model_type = c("scaled_quasibinomial", "tweedie", "lm"),
+    conservative = TRUE 
+  ),
   all = TRUE
 )
-parameter_vary_censoring <- as.data.table(parameter_vary_censoring)
 
 sim_censored <- tar_map(
   values = parameter_vary_censoring,
