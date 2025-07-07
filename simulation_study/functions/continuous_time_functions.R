@@ -103,6 +103,7 @@ get_propensity_scores <- function(last_event_number,
       ## Check to remove variables that do not have more than one value
       ## Full history of variables, i.e., covariates used in regressions
       time_history <- c(time_history, paste0("time_", k - 1), paste0("time_", k))
+      time_history <- c(time_history,paste0(setdiff(time_covariates,"A"),"_",k)) ## Allow for A and L to occur at the same time
       if (k == 1) {
         time_history <- setdiff(time_history, "time_0")
       }
