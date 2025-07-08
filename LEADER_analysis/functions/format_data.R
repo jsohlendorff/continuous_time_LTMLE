@@ -43,7 +43,7 @@ format_data <- function(df,
   setnames(timevarying_data, "X", "event")
   timevarying_data[, event_number := seq_len(.N), by = id]
   timevarying_data[, to_delete := event_number > event_cutoff &
-    event == "A"]
+    event %in% c("A", "L")]
   timevarying_data <- timevarying_data[to_delete == FALSE] ## Delete all non-terminal events after the event_cutoff
   timevarying_data[event == outcomes[1], event := "D"]
   timevarying_data[event == outcomes[2], event := "Y"]

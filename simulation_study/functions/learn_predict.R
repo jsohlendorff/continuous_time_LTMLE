@@ -11,6 +11,9 @@ learn_Q <- function(model_type,
                     history_of_variables,
                     data_ice) {
   max_weight <- max(data_ice$weight)
+  if (is.null(max_weight) || is.na(max_weight)) {
+    stop("The 'weight' column in data_ice must not be NULL or NA.")
+  }
   if (max_weight == 0) {
     predict_fun <- function(data) {
       warning("All weights are zero. Returning a constant prediction of zero.")

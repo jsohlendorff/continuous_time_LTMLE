@@ -484,13 +484,15 @@ debias_ice_ipcw <- function(data,
 
     ## Iterated part
     if (!first_event) {
-      at_risk_before_tau[get(paste0("event_", k)) %in% c("A", "L") &
-        get(paste0("time_", k)) <= tau, future_prediction := predict_intervention(.SD, k, nu_hat, static_intervention)]
+      at_risk_before_tau[event_k %in% c("A", "L") &
+                           time_k < tau, future_prediction := predict_intervention(.SD, k, nu_hat, static_intervention), env = list(event_k = paste0("event_", k),
+                                                                                                                                     time_k = paste0("time_", k))]
     }
     ## ICE-IPCW estimator: weight = Z^a_k
     ## Pseudo-outcome and its regression, i.e., this is hat(Z)^a_k which we will regress on cal(F)_(T_(k-1))
-    at_risk_before_tau[, weight := 1 / (survival_censoring_k) * ((get(paste0("event_", k)) == "Y" &
-      get(paste0("time_", k)) <= tau) + (get(paste0("event_", k)) %in% c("A", "L")) * future_prediction), env = list(survival_censoring_k = paste0("survival_censoring_", k))]
+    at_risk_before_tau[, weight := 1 / (survival_censoring_k) * ((event_k == "Y" & time_k <= tau) + (event_k %in% c("A", "L")) * future_prediction), env = list(survival_censoring_k = paste0("survival_censoring_", k),
+                                                                                                                     event_k = paste0("event_", k),
+                                                                                                                     time_k = paste0("time_", k))]
 
     ## Full history of variables, i.e., covariates used in regressions
     history_of_variables_ice <- c(time_history, baseline_covariates)
@@ -655,7 +657,7 @@ debias_ice_ipcw <- function(data,
   if (return_ipw) {
     data[, ipw := 0]
     for (k in seq_len(last_event_number)) {
-      data[, ipw := ipw + get(paste0("ipw_", k))]
+      data[, ipw := ipw + ipw_k, env = list(ipw_k = paste0("ipw_", k))]
     }
     data[, ipw := mean(ipw)]
   }

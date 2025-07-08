@@ -23,7 +23,7 @@ tar_source("../simulation_study/functions/") ## Continuous time functions
 
 ## Time horizon is selected such that (essentially) no censoring occurs in the data.
 tau <- 3 * 360 # 3 years in days
-last_event_number <- 11 # We assume that the doctor enforces treatment as part of the first 11 events/registrations
+last_event_number <- 9 # 11 # We assume that the doctor enforces treatment as part of the first 11 events/registrations
 
 ## Which variables to use in the analysis?
 baseline_vars <- c(
@@ -204,6 +204,7 @@ list(
       tau = tau
     )
   ),
+  ## Run analysis. NOTE: Propensity scores do not seem to fit well?
   ## Run debiased procedure on Liraglutide
   tar_target(
     res_lira,
@@ -218,7 +219,8 @@ list(
         baseline_covariates = c("A_0", baseline_vars),
         last_event_number = last_event_number,
         conservative = TRUE,
-        from_k = 3 ## Only use three last events in nuisance parameter estimation
+        from_k = 3, ## Only use three last events in nuisance parameter estimation; Set verbose = TRUE to see what it does
+        verbose = FALSE
       )
       itt <- list(estimate = data_lira$timevarying_data[event %in% c("C", "Y", "D"), mean(time <= tau & event == "Y")])
       list(
@@ -241,7 +243,8 @@ list(
         baseline_covariates = c("A_0", baseline_vars),
         last_event_number = last_event_number,
         conservative = TRUE,
-        from_k = 3  ## Only use three last events in nuisance parameter estimation
+        from_k = 3, ## Only use three last events in nuisance parameter estimation
+        verbose = FALSE
       )
       itt <- list(estimate = data_placebo$timevarying_data[event %in% c("C", "Y", "D"), mean(time <= tau & event == "Y")])
       list(
@@ -250,7 +253,6 @@ list(
       )
     }
   ),
-  ## The procedure seems uncertain about placebo. The `ipw` and `ice_ipcw_estimate` estimates are close for Liraglutide but not Placebo?
   tar_target(
     risk_difference,
     {
@@ -290,63 +292,66 @@ list(
       every_event_visitation_time = FALSE,
       tau = tau
     )
+  ),
+  tar_target(
+    res_lira_sensitivity,
+    {
+      res <- debias_ice_ipcw(
+        data = data_lira_sensitivity,
+        tau = tau,
+        model_pseudo_outcome = "quasibinomial",
+        model_treatment = "learn_glm_logistic",
+        model_hazard = NULL,
+        time_covariates = c("A", timevarying_vars),
+        baseline_covariates = c("A_0", baseline_vars),
+        last_event_number = last_event_number,
+        conservative = TRUE,
+        from_k = 3, ## Only use three last events in nuisance parameter estimation
+        verbose = FALSE
+      )
+      itt <- list(estimate = data_lira_sensitivity$timevarying_data[event %in% c("C", "Y", "D"), mean(time <= tau & event == "Y")])
+      list(
+        res = res,
+        itt = itt
+      )
+    }
+  ),
+  tar_target(
+    res_placebo_sensitivity,
+    {
+      res <- debias_ice_ipcw(
+        data = data_placebo_sensitivity,
+        tau = tau,
+        model_pseudo_outcome = "quasibinomial",
+        model_treatment = "learn_glm_logistic",
+        model_hazard = NULL,
+        time_covariates = c("A", timevarying_vars),
+        baseline_covariates = c("A_0", baseline_vars),
+        last_event_number = last_event_number,
+        conservative = TRUE,
+        from_k = 3, ## Only use three last events in nuisance parameter estimation
+        verbose = FALSE
+      )
+      itt <- list(estimate = data_placebo_sensitivity$timevarying_data[event %in% c("C", "Y", "D"), mean(time <= tau & event == "Y")])
+      list(
+        res = res,
+        itt = itt
+      )
+    }
+  ),
+  tar_target(
+    risk_difference_sensitivity,
+    {
+      risk_diff <- res_lira_sensitivity$res$estimate - res_placebo_sensitivity$res$estimate
+      se <- sqrt(
+        res_lira_sensitivity$res$se^2 + res_placebo_sensitivity$res$se^2
+      )
+      list(
+        risk_difference = risk_diff,
+        se = se,
+        ci_lower = risk_diff - 1.96 * se,
+        ci_upper = risk_diff + 1.96 * se
+      )
+    }
   )
-  ## FIXME: Does not work.
-  # tar_target(
-  #   res_lira_sensitivity,
-  #   {
-  #     res <- debias_ice_ipcw(
-  #       data = data_lira_sensitivity,
-  #       tau = tau,
-  #       model_pseudo_outcome = "quasibinomial",
-  #       model_treatment = "learn_glm_logistic",
-  #       model_hazard = NULL,
-  #       time_covariates = c("A", timevarying_vars),
-  #       baseline_covariates = c("A_0", baseline_vars),
-  #       last_event_number = last_event_number,
-  #       conservative = TRUE
-  #     )
-  #     itt <- list(estimate = data_lira_sensitivity$timevarying_data[event %in% c("C", "Y", "D"), mean(time <= tau & event == "Y")])
-  #     list(
-  #       res = res,
-  #       itt = itt
-  #     )
-  #   }
-  # ),
-  # tar_target(
-  #   res_placebo_sensitivity,
-  #   {
-  #     res <- debias_ice_ipcw(
-  #       data = data_placebo_sensitivity,
-  #       tau = tau,
-  #       model_pseudo_outcome = "quasibinomial",
-  #       model_treatment = "learn_glm_logistic",
-  #       model_hazard = NULL,
-  #       time_covariates = c("A", timevarying_vars),
-  #       baseline_covariates = c("A_0", baseline_vars),
-  #       last_event_number = last_event_number,
-  #       conservative = TRUE
-  #     )
-  #     itt <- list(estimate = data_placebo_sensitivity$timevarying_data[event %in% c("C", "Y", "D"), mean(time <= tau & event == "Y")])
-  #     list(
-  #       res = res,
-  #       itt = itt
-  #     )
-  #   }
-  # ),
-  # tar_target(
-  #   risk_difference_sensitivity,
-  #   {
-  #     risk_diff <- res_lira_sensitivity$res$estimate - res_placebo_sensitivity$res$estimate
-  #     se <- sqrt(
-  #       res_lira_sensitivity$res$se^2 + res_placebo_sensitivity$res$se^2
-  #     )
-  #     list(
-  #       risk_difference = risk_diff,
-  #       se = se,
-  #       ci_lower = risk_diff - 1.96 * se,
-  #       ci_upper = risk_diff + 1.96 * se
-  #     )
-  #   }
-  # )
 )
