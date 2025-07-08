@@ -217,7 +217,8 @@ list(
         time_covariates = c("A", timevarying_vars),
         baseline_covariates = c("A_0", baseline_vars),
         last_event_number = last_event_number,
-        conservative = TRUE
+        conservative = TRUE,
+        from_k = 3 ## Only use three last events in nuisance parameter estimation
       )
       itt <- list(estimate = data_lira$timevarying_data[event %in% c("C", "Y", "D"), mean(time <= tau & event == "Y")])
       list(
@@ -239,7 +240,8 @@ list(
         time_covariates = c("A", timevarying_vars),
         baseline_covariates = c("A_0", baseline_vars),
         last_event_number = last_event_number,
-        conservative = TRUE
+        conservative = TRUE,
+        from_k = 3  ## Only use three last events in nuisance parameter estimation
       )
       itt <- list(estimate = data_placebo$timevarying_data[event %in% c("C", "Y", "D"), mean(time <= tau & event == "Y")])
       list(

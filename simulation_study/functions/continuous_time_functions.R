@@ -8,7 +8,9 @@ get_propensity_scores <- function(last_event_number,
                                   time_covariates,
                                   baseline_covariates,
                                   marginal_censoring_hazard,
-                                  fit_cens) {
+                                  fit_cens,
+                                  from_k,
+                                  verbose){
   censoring_models <- list()
   for (k in rev(seq_len(last_event_number))) {
     ## Find those at risk of the k'th event; subset data (i.e., people who have not died before the k'th event)
@@ -32,9 +34,20 @@ get_propensity_scores <- function(last_event_number,
         }
       }
 
+      if (!is.null(from_k)) {
+        if (k-from_k >= 1){
+          from = k-from_k
+        } else {
+          from = 1
+        }
+        event_points <- seq(from = from, to = k-1, by = 1)
+      } else {
+        event_points <- seq_len(k - 1)
+      }
+      
       ## Time-varying covariates to use in regressions
       time_history <- setdiff(unlist(lapply(c(time_covariates, "time", "event"), function(x) {
-        paste0(x, "_", seq_len(k - 1))
+        paste0(x, "_", event_points)
       })), paste0("time_", k - 1))
     }
 
@@ -79,6 +92,9 @@ get_propensity_scores <- function(last_event_number,
         learn_censoring$pred <- exp(-exp_lp * (baseline_hazard_k - baseline_hazard_k_minus_one))
       }
       if (k > 1) {
+        if (verbose){
+          message("Fitting censoring model for event ", k, " with formula: ", deparse(formula_censoring), "\n")
+        }
         data[event_k_prev %in% c("A", "L"),
           survival_censoring_k := learn_censoring$pred,
           env = list(
@@ -113,6 +129,9 @@ get_propensity_scores <- function(last_event_number,
         names(which(sapply(data[event_k == "A", ..history_of_variables_propensity, env = list(event_k = paste0("event_", k))], function(x) length(unique(x)) <= 1)))
       )
       formula_treatment <- as.formula(paste0("A_", k, " ~ ", paste0(history_of_variables_propensity, collapse = "+")))
+      if (verbose){
+        message("Fitting treatment propensity model for event ", k, " with formula: ", deparse(formula_treatment), "\n")
+      }
       ## check whether all values of A are 1; if so put propensity to 1
       if (all(data[event_k == "A", A_k == 1, env = list(
         event_k = paste0("event_", k),
@@ -152,6 +171,9 @@ get_propensity_scores <- function(last_event_number,
       baseline_covariates,
       names(which(sapply(data[, ..baseline_covariates], function(x) length(unique(x)) <= 1)))
     )
+    if (verbose){
+      message("Fitting baseline treatment propensity model with formula: ", deparse(formula_treatment), "\n")
+    }
     data[, propensity_0 := tryCatch(
       do.call(model_treatment, list(
         character_formula = formula_treatment, data = .SD
@@ -236,7 +258,9 @@ debias_ice_ipcw <- function(data,
                             static_intervention = 1,
                             return_ipw = TRUE,
                             return_ic = FALSE,
-                            grid_size = NULL) {
+                            grid_size = NULL,
+                            from_k = NULL,
+                            verbose = TRUE) {
   ## FIXME: Do not ALTER the original data
   data <- copy(data)
   ## TODO: Need to more thorougly check user input. At this point *not important*.
@@ -333,7 +357,9 @@ debias_ice_ipcw <- function(data,
         time_covariates,
         baseline_covariates,
         marginal_censoring_hazard,
-        fit_cens
+        fit_cens,
+        from_k,
+        verbose
       )
     },
     error = function(e) {
@@ -360,10 +386,21 @@ debias_ice_ipcw <- function(data,
           at_risk_interevent[, paste0("event_", j) := droplevels(get(paste0("event_", j)))]
         }
       }
+      
+      if (!is.null(from_k)) {
+        if (k-from_k >= 1){
+          from = k-from_k
+        } else {
+          from = 1
+        }
+        event_points <- seq(from = from, to = k-1, by = 1)
+      } else {
+        event_points <- seq_len(k - 1)
+      }
 
       ## Time-varying covariates to use in regressions
       time_history <- unlist(lapply(c(time_covariates, "time", "event"), function(x) {
-        paste0(x, "_", seq_len(k - 1))
+        paste0(x, "_", event_points)
       }))
     }
 
@@ -440,6 +477,10 @@ debias_ice_ipcw <- function(data,
       history_of_variables_ice,
       names(which(sapply(at_risk_before_tau[, ..history_of_variables_ice], function(x) length(unique(x)) <= 1)))
     )
+    if (verbose){
+      message("Fitting pseudo-outcome model for event ", k, " with formula: ", paste0("Z_k ~ ", paste(history_of_variables_ice, collapse = "+")), "\n")
+    }
+    
     nu_hat <- learn_Q(model_pseudo_outcome, history_of_variables_ice, at_risk_before_tau)
     at_risk_before_tau[, pred := nu_hat(data = .SD)] ## this is Q_k when used in the efficient influence function
 
