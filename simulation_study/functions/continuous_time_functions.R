@@ -21,15 +21,25 @@ get_propensity_scores <- function(last_event_number,
       time_history <- NULL
     } else {
       if (is_censored) {
-        at_risk_interevent <- data[get(paste0("event_", k - 1)) %in% c("A", "L")]
+        at_risk_interevent <- data[event_k_prev %in% c("A", "L"), env = list(event_k_prev = paste0("event_", k - 1))]
         if (nrow(at_risk_interevent) == 0) {
           next
         }
         if (!marginal_censoring_hazard) {
-          at_risk_interevent[, paste0("time_", k) := get(paste0("time_", k)) - get(paste0("time_", k - 1))]
+          at_risk_interevent[, paste0("time_", k) := time_k - time_k_minus_1, env = list(
+            time_k = paste0("time_", k),
+            time_k_minus_1 = paste0("time_", k - 1)
+          )]
           for (j in seq_len(k - 1)) {
-            at_risk_interevent[, paste0("time_", j) := get(paste0("time_", k - 1)) - get(paste0("time_", j))]
-            at_risk_interevent[, paste0("event_", j) := droplevels(get(paste0("event_", j)))]
+            at_risk_interevent[, paste0("time_", j) := time_k_minus_1 - time_j,
+                               env = list(
+                                 time_k_minus_1 = paste0("time_", k - 1),
+                                 time_j = paste0("time_", j)
+                               )]
+            at_risk_interevent[, paste0("event_", j) := droplevels(event_j),
+                               env = list(
+                                 event_j = paste0("event_", j)
+                               )]
           }
         }
       }
@@ -404,10 +414,21 @@ debias_ice_ipcw <- function(data,
       }
       if (is_censored) {
         ## Shift the interevent times according to time_(k-1); makes modeling more natural
-        at_risk_interevent[, paste0("time_", k) := get(paste0("time_", k)) - get(paste0("time_", k - 1))]
+        at_risk_interevent[, paste0("time_", k) := time_k - time_k_minus_1, 
+          env = list(
+            time_k = paste0("time_", k),
+            time_k_minus_1 = paste0("time_", k - 1)
+          )]
         for (j in seq_len(k - 1)) {
-          at_risk_interevent[, paste0("time_", j) := get(paste0("time_", k - 1)) - get(paste0("time_", j))]
-          at_risk_interevent[, paste0("event_", j) := droplevels(get(paste0("event_", j)))]
+          at_risk_interevent[, paste0("time_", j) := time_k_minus_1- time_j,
+                             env = list(
+                               time_k_minus_1 = paste0("time_", k - 1),
+                               time_j = paste0("time_", j)
+                             )]
+          at_risk_interevent[, paste0("event_", j) := droplevels(event_j),
+                             env = list(
+                               event_j = paste0("event_", j)
+                             )]
         }
       }
       
@@ -465,18 +486,19 @@ debias_ice_ipcw <- function(data,
     data[, ipw_k := 0, env = list(ipw_k = paste0("ipw_", k))]
     if (return_ipw) {
       if (k > 1) {
-        data[(get(paste0("event_", k - 1)) %in% c("A", "L")), ipw_k := (1 *
-          (get(paste0("event_", k)) == "Y" &
-            get(paste0("time_", k)) <= tau)) / (survival_censoring_k) * ic_term_part, env = list(
+        data[event_k_prev %in% c("A", "L"), ipw_k := (1 *
+          (event_k == "Y" &
+             time_k <= tau)) / (survival_censoring_k) * ic_term_part, env = list(
           survival_censoring_k = paste0("survival_censoring_", k),
-          ipw_k = paste0("ipw_", k)
+          ipw_k = paste0("ipw_", k),
+          event_k = paste0("event_", k),
+          time_k = paste0("time_", k),
+          event_k_prev = paste0("event_", k - 1)
         )]
       } else {
-        data[, ipw_k := (1 * (get(paste0("event_", k)) == "Y" &
-          get(paste0("time_", k)) <= tau)) / (survival_censoring_k) * ic_term_part, env = list(
-          survival_censoring_k = paste0("survival_censoring_", k),
-          ipw_k = paste0("ipw_", k)
-        )]
+        data[, ipw_1 := (1 * (event_1 == "Y" &
+          time_1 <= tau)) / (survival_censoring_1) * ic_term_part
+        ]
       }
     }
 
