@@ -72,9 +72,18 @@ get_propensity_scores <- function(last_event_number,
           " == \"C\") ~ ",
           paste(history_of_variables_hazard, collapse = "+")
         ))
-        learn_censoring <- do.call(
-          model_hazard,
-          list(character_formula = formula_censoring, data = at_risk_interevent)
+        withCallingHandlers(
+          {
+            learn_censoring <- do.call(model_hazard, list(
+              character_formula = formula_censoring, data = at_risk_interevent
+            ))
+          },
+          error = function(e) {
+            stop("Error in fitting censoring model: ", e, " for event ", k)
+          },
+          warning = function(w) {
+            message("Warning in fitting censoring model: ", w, " for event ", k)
+          }
         )
       } else {
         exp_lp <- predict(fit_cens, newdata = data, type = "risk", reference = "zero")[at_risk_interevent$id]
@@ -142,12 +151,16 @@ get_propensity_scores <- function(last_event_number,
           event_k = paste0("event_", k)
         )]
       } else {
-        data[event_k == "A", propensity_k := tryCatch(
+        data[event_k == "A", propensity_k := withCallingHandlers({
           do.call(model_treatment, list(
             character_formula = formula_treatment, data = .SD
-          ))$pred,
+          ))$pred
+          },
           error = function(e) {
             stop("Error in fitting treatment propensity model: ", e, " for event ", k)
+          },
+          warning = function(w) {
+            message("Warning in fitting treatment propensity model: ", w, " for event ", k)
           }
         ), env = list(
           propensity_k = paste0("propensity_", k),
@@ -174,12 +187,15 @@ get_propensity_scores <- function(last_event_number,
     if (verbose){
       message("Fitting baseline treatment propensity model with formula: ", deparse(formula_treatment), "\n")
     }
-    data[, propensity_0 := tryCatch(
+    data[, propensity_0 := withCallingHandlers({
       do.call(model_treatment, list(
         character_formula = formula_treatment, data = .SD
-      ))$pred,
+      ))$pred},
       error = function(e) {
         stop("Error in fitting baseline treatment propensity model: ", e)
+      },
+      warning = function(w) {
+        message("Warning in fitting baseline treatment propensity model: ", w)
       }
     )]
   }
@@ -334,10 +350,18 @@ debias_ice_ipcw <- function(data,
       "Surv(time, event == \"C\") ~ ",
       paste(baseline_variables_to_use, collapse = "+")
     ))
-    fit_cens <- coxph(
-      formula_cens,
-      data = data_censoring,
-      x = TRUE, y = TRUE
+    withCallingHandlers(
+      {
+        fit_cens <- do.call(model_hazard, list(
+          character_formula = formula_cens, data = data_censoring
+        ))
+      },
+      error = function(e) {
+        stop("Error in fitting censoring model: ", e)
+      },
+      warning = function(w) {
+        message("Warning in fitting censoring model: ", w)
+      }
     )
   } else {
     fit_cens <- NULL
@@ -481,7 +505,16 @@ debias_ice_ipcw <- function(data,
       message("Fitting pseudo-outcome model for event ", k, " with formula: ", paste0("Z_k ~ ", paste(history_of_variables_ice, collapse = "+")), "\n")
     }
     
-    nu_hat <- learn_Q(model_pseudo_outcome, history_of_variables_ice, at_risk_before_tau)
+    withCallingHandlers({
+      nu_hat <- learn_Q(model_pseudo_outcome, history_of_variables_ice, at_risk_before_tau)
+    },
+    error = function(e) {
+      stop("Error in fitting pseudo-outcome model: ", e, " for event ", k)
+    },
+    warning = function(w) {
+      message("Warning in fitting pseudo-outcome model: ", w, " for event ", k)
+    })
+      
     at_risk_before_tau[, pred := nu_hat(data = .SD)] ## this is Q_k when used in the efficient influence function
 
     ## Warn if any predictions are NA or below or above 1
