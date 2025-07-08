@@ -4,3 +4,6 @@ at_risk <- function(dt, tau){
   dt[time < tau  &
       !(X %in% c("censored", "mace", "all_cause_mortality")), .N, by = "event_number"]
 }
+# What event number do people deviate froom?
+# dt[, event_number := seq_len(.N), by = id]
+# dt[X=="placebo" & placebo==0]$event_number

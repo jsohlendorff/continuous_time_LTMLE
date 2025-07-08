@@ -1,5 +1,6 @@
 ## Function to remove superfluous information.
 ## We don't care if a patient stopped their treatment for less than a week and then started again.
+## That is, we do not care about very short interruptions of treatment.
 ## Otherwise, there is simply too much information from the time-varying covariates.
 ## That is, if the start date of a new registration is less 
 ## than 7 days after the end date of the previous event, we remove it
@@ -27,3 +28,24 @@ remove_superfluous_info <- function(x, period = 7) {
   res[, to_delete := NULL]
   res
 }
+
+## Here, we keep the visitation times
+remove_superfluous_info_primary_treatment <- function(x, period = 7) {
+  x$val <- 1
+  if (nrow(x) == 1) {
+    return(x)
+  }
+  for (i in 2:nrow(x)) {
+    if (x$start_time[i] - x$end_time[i - 1] > period) {
+      ## Add new row to x with val = 0 with start_time = end_time[i-1] + 1 and end_time = start_time[i] - 1
+      new_row <- data.table(
+        start_time = x$end_time[i - 1] + 1,
+        end_time = x$start_time[i] - 1,
+        val = 0
+      )
+      x <- rbind(x, new_row, use.names = FALSE)
+    } 
+  }
+  x
+}
+

@@ -15,7 +15,7 @@ if (dir.exists("~/projects/LEADER_analysis/_targets/objects/")) {
 tar_source("functions")
 tar_source("../simulation_study/functions/") ## Continuous time functions
 
-tau <- 3*360 # 3 years in days; time horizon for the analysis
+tau <- 3*360 # 3 years in days; time horizon for the analysis. Time horizon is selected such that (essentially) no censoring occurs in the data.
 baseline_vars <- c(
   "sex",
   "age",
@@ -94,10 +94,12 @@ list(
     dt_index[randomization_group == "Placebo", id],
   ),
   ## Clean the data
-  ## We only care about the times of medications if they are stopped or started for longer periods of time
+  ## !!! We only care about the times of medications if they are stopped or started for longer periods of time !!!
+  ## Here you are not counted as being off the medication if you stop it for less than 14 days.
+  ## See `remove_superfluous_info` function for details
   tar_target(
     comedication_cleaned, {
-      r <- clean(comedication, dt_index, period = 14, type = "treatment")
+      r <- clean(comedication, dt_index, period = 14, type = "comedication")
       r[X != "insulin_one", ]
     }
   ),
@@ -107,7 +109,7 @@ list(
   ),
   tar_target(
     regime_cleaned,
-    clean(regime, dt_index, period = 7, type = "treatment")
+    clean(regime, dt_index, period = 14, type = "primary_treatment")
   ),
   tar_target(
     outcome_cleaned,
@@ -127,7 +129,7 @@ list(
   ),
   ## Summarize the data;
   ## How many are at risk of a terminal event before tau after "event_number" events?
-  ## We cannot reliably enforce the intervention if there aren't enough people at risk 
+  ## !!! We cannot reliably enforce the intervention if there aren't enough people at risk !!!
   tar_target(
     at_risk_lira,
     at_risk(combined_data_lira, tau)
@@ -146,17 +148,18 @@ list(
     censored_plot(combined_data_placebo, "placebo", tau, outcomes = c("all_cause_mortality", "mace", "censored"))
   ),
   ## Make data into format for the continuous_time debiased ICE-IPCW estimation
-  ## NOTE: We make every non-terminal event a treatment event, so that we assume that the doctor makes treatment decisions at each event time
+  ## !!! We make every non-terminal event a treatment event, so that we assume that the doctor makes treatment decisions at each event time !!!
   ## Based on at_risk_lira and at_risk_placebo, we pick the first 10 events for each patient
+  ## The fact that the treatment variable has to be called "A" should be changed in the future.
   tar_target(
     data_lira,
-    format_data(combined_data_lira, dt_baseline, outcomes = c("all_cause_mortality", "mace", "censored"), treat_name = "lira", event_cutoff = 10)
+    format_data(combined_data_lira, dt_baseline, outcomes = c("all_cause_mortality", "mace", "censored"), treat_name = "lira", event_cutoff = 12)
   ),
   tar_target(
     data_placebo,
     format_data(combined_data_placebo, dt_baseline, outcomes = c("all_cause_mortality", "mace", "censored"), treat_name = "placebo", event_cutoff = 10)
   ),
-  ## Run debiased procedure on LIRA
+  ## Run debiased procedure on Liraglutide
   tar_target(
     res_lira, {
       res <- debias_ice_ipcw(data = data_lira,
@@ -166,7 +169,7 @@ list(
                     model_hazard = NULL,
                     time_covariates = c("A", timevarying_vars),
                     baseline_covariates = c("A_0", baseline_vars),
-                    last_event_number = 10,
+                    last_event_number = 12,
                     conservative = TRUE)
       itt <- list(estimate=data_lira$timevarying_data[event %in% c("C", "Y", "D"), mean(time<=tau & event=="Y")])
       list(
@@ -175,6 +178,7 @@ list(
       )
     }
   ),
+  ## Run debiased procedure on Placebo
   tar_target(
     res_placebo, {
       res <- debias_ice_ipcw(data = data_placebo,
@@ -190,6 +194,21 @@ list(
       list(
         res = res,
         itt = itt
+      )
+    }
+  ), 
+  tar_target(
+    risk_difference,
+    {
+      risk_diff <- res_lira$res$estimate - res_placebo$res$estimate
+      se <- sqrt(
+        res_lira$res$se^2 + res_placebo$res$se^2
+      )
+      list(
+        risk_difference = risk_diff,
+        se = se,
+        ci_lower = risk_diff - 1.96 * se,
+        ci_upper = risk_diff + 1.96 * se
       )
     }
   )
