@@ -23,7 +23,7 @@ tar_source("../simulation_study/functions/") ## Continuous time functions
 
 ## Time horizon is selected such that (essentially) no censoring occurs in the data.
 tau <- 3 * 360 # 3 years in days
-last_event_number <- 9 # 11 # We assume that the doctor enforces treatment as part of the first 11 events/registrations
+last_event_number <- 9 # We assume that the doctor enforces treatment as part of the first 11 events/registrations
 
 ## Which variables to use in the analysis?
 baseline_vars <- c(
@@ -264,11 +264,13 @@ list(
         risk_difference = risk_diff,
         se = se,
         ci_lower = risk_diff - 1.96 * se,
-        ci_upper = risk_diff + 1.96 * se
+        ci_upper = risk_diff + 1.96 * se,
+        p_value = 2 * pnorm(-abs(risk_diff / se))
       )
     }
   ),
-  ## Sensitivity analysis with every event visitation time = FALSE
+  ## Sensitivity analysis with every event visitation time = FALSE; that is events which do not have a treatment registration are set to the label "L"
+  ## That is the doctor cannot make the treatment decisions at that time. 
   tar_target(
     data_lira_sensitivity,
     format_data(
@@ -332,7 +334,8 @@ list(
         from_k = 3, ## Only use three last events in nuisance parameter estimation
         verbose = FALSE
       )
-      itt <- list(estimate = data_placebo_sensitivity$timevarying_data[event %in% c("C", "Y", "D"), mean(time <= tau & event == "Y")])
+      itt <- list(estimate = data_placebo_sensitivity$timevarying_data[event %in% c("C", "Y", "D"), mean(time <= tau &
+                                                                                                           event == "Y")])
       list(
         res = res,
         itt = itt
@@ -350,7 +353,8 @@ list(
         risk_difference = risk_diff,
         se = se,
         ci_lower = risk_diff - 1.96 * se,
-        ci_upper = risk_diff + 1.96 * se
+        ci_upper = risk_diff + 1.96 * se,
+        p_value = 2 * pnorm(-abs(risk_diff / se))
       )
     }
   )
