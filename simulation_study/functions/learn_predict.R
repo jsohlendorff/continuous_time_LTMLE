@@ -9,7 +9,8 @@
 # \code{"lm"}.
 learn_Q <- function(model_type,
                     history_of_variables,
-                    data_ice) {
+                    data_ice,
+                    outcome_name = "weight") {
   max_weight <- max(data_ice$weight)
   if (is.null(max_weight) || is.na(max_weight)) {
     stop("The 'weight' column in data_ice must not be NULL or NA.")
@@ -23,7 +24,8 @@ learn_Q <- function(model_type,
     if (model_type == "quasibinomial") {
       fit <- glm(
         as.formula(paste0(
-          "weight ~ ", paste(history_of_variables, collapse = "+")
+          outcome_name,
+          " ~ ", paste(history_of_variables, collapse = "+")
         )),
         data = data_ice,
         family = quasibinomial(link = "logit")
@@ -34,7 +36,8 @@ learn_Q <- function(model_type,
     } else if (model_type == "tweedie") {
       fit <- glm(
         as.formula(paste0(
-          "weight ~ ", paste(history_of_variables, collapse = "+")
+          outcome_name,
+          " ~ ", paste(history_of_variables, collapse = "+")
         )),
         data = data_ice,
         family = statmod::tweedie(var.power = 1.5)
@@ -43,7 +46,7 @@ learn_Q <- function(model_type,
         predict(fit, data, type = "response")
       }
     } else if (model_type == "scaled_quasibinomial") {
-      data_ice$f_weight <- data_ice$weight / max_weight
+      data_ice$f_weight <- data_ice[[outcome_name]] / max_weight
       fit <- glm(
         as.formula(paste0(
           "f_weight ~ ", paste(history_of_variables, collapse = "+")
@@ -56,7 +59,8 @@ learn_Q <- function(model_type,
       }
     } else if (model_type == "ranger") {
       fit <- ranger::ranger(as.formula(paste0(
-        "weight ~ ", paste(history_of_variables, collapse = "+")
+        outcome_name,
+        " ~ ", paste(history_of_variables, collapse = "+")
       )), data = data_ice)
       predict_fun <- function(data) {
         predict(fit, data = data)$predictions
@@ -64,14 +68,15 @@ learn_Q <- function(model_type,
     } else if (model_type == "log_normal_mixture") {
       fit_prob <- glm(
         as.formula(paste0(
-          "weight > 1 ~ ", paste(history_of_variables, collapse = "+")
+          outcome_name,
+          " > 1 ~ ", paste(history_of_variables, collapse = "+")
         )),
         data = data_ice,
         family = binomial
       )
       data_ice$weightminusone <- data_ice$weight - 1
       fit_normal <- lm(as.formula(paste0(
-        "log(weight) ~ ",
+        "log(", outcome_name, ") ~ ",
         paste(history_of_variables, collapse = "+")
       )), data = data_ice[get("weight") > 1])
       predict_fun <- function(data) {
@@ -79,7 +84,8 @@ learn_Q <- function(model_type,
       }
     } else if (model_type == "lm") {
       fit <- lm(as.formula(paste0(
-        "weight ~ ", paste(history_of_variables, collapse = "+")
+        outcome_name,
+        " ~ ", paste(history_of_variables, collapse = "+")
       )), data = data_ice)
       predict_fun <- function(data) {
         pred <- predict(fit, data, type = "response")

@@ -10,7 +10,7 @@ get_propensity_scores <- function(last_event_number,
                                   marginal_censoring_hazard,
                                   fit_cens,
                                   from_k,
-                                  verbose){
+                                  verbose) {
   censoring_models <- list()
   for (k in rev(seq_len(last_event_number))) {
     ## Find those at risk of the k'th event; subset data (i.e., people who have not died before the k'th event)
@@ -32,29 +32,31 @@ get_propensity_scores <- function(last_event_number,
           )]
           for (j in seq_len(k - 1)) {
             at_risk_interevent[, paste0("time_", j) := time_k_minus_1 - time_j,
-                               env = list(
-                                 time_k_minus_1 = paste0("time_", k - 1),
-                                 time_j = paste0("time_", j)
-                               )]
+              env = list(
+                time_k_minus_1 = paste0("time_", k - 1),
+                time_j = paste0("time_", j)
+              )
+            ]
             at_risk_interevent[, paste0("event_", j) := droplevels(event_j),
-                               env = list(
-                                 event_j = paste0("event_", j)
-                               )]
+              env = list(
+                event_j = paste0("event_", j)
+              )
+            ]
           }
         }
       }
 
       if (!is.null(from_k)) {
-        if (k-from_k >= 1){
-          from = k-from_k
+        if (k - from_k >= 1) {
+          from <- k - from_k
         } else {
-          from = 1
+          from <- 1
         }
-        event_points <- seq(from = from, to = k-1, by = 1)
+        event_points <- seq(from = from, to = k - 1, by = 1)
       } else {
         event_points <- seq_len(k - 1)
       }
-      
+
       ## Time-varying covariates to use in regressions
       time_history <- setdiff(unlist(lapply(c(time_covariates, "time", "event"), function(x) {
         paste0(x, "_", event_points)
@@ -82,6 +84,10 @@ get_propensity_scores <- function(last_event_number,
           " == \"C\") ~ ",
           paste(history_of_variables_hazard, collapse = "+")
         ))
+        if (verbose) {
+          message("Fitting censoring model for event ", k, " with formula: ", deparse(formula_censoring), "\n")
+        }
+
         withCallingHandlers(
           {
             learn_censoring <- do.call(model_hazard, list(
@@ -96,8 +102,8 @@ get_propensity_scores <- function(last_event_number,
           }
         )
       } else {
-        exp_lp <- predict(fit_cens, newdata = data, type = "risk", reference = "zero")[at_risk_interevent$id]
-        baseline_hazard <- as.data.table(basehaz(fit_cens, centered = FALSE))
+        exp_lp <- predict(fit_cens$fit, newdata = data, type = "risk", reference = "zero")[at_risk_interevent$id]
+        baseline_hazard <- as.data.table(basehaz(fit_cens$fit, centered = FALSE))
         sindex_k <- sindex(baseline_hazard$time, at_risk_interevent[[paste0("time_", k)]], strict = TRUE) + 1
         baseline_hazard_k <- baseline_hazard[sindex_k, "hazard"]$hazard
         if (k > 1) {
@@ -111,9 +117,6 @@ get_propensity_scores <- function(last_event_number,
         learn_censoring$pred <- exp(-exp_lp * (baseline_hazard_k - baseline_hazard_k_minus_one))
       }
       if (k > 1) {
-        if (verbose){
-          message("Fitting censoring model for event ", k, " with formula: ", deparse(formula_censoring), "\n")
-        }
         data[event_k_prev %in% c("A", "L"),
           survival_censoring_k := learn_censoring$pred,
           env = list(
@@ -138,7 +141,7 @@ get_propensity_scores <- function(last_event_number,
       ## Check to remove variables that do not have more than one value
       ## Full history of variables, i.e., covariates used in regressions
       time_history <- c(time_history, paste0("time_", k - 1), paste0("time_", k))
-      time_history <- c(time_history,paste0(setdiff(time_covariates,"A"),"_",k)) ## Allow for A and L to occur at the same time
+      time_history <- c(time_history, paste0(setdiff(time_covariates, "A"), "_", k)) ## Allow for A and L to occur at the same time
       if (k == 1) {
         time_history <- setdiff(time_history, "time_0")
       }
@@ -148,7 +151,7 @@ get_propensity_scores <- function(last_event_number,
         names(which(sapply(data[event_k == "A", ..history_of_variables_propensity, env = list(event_k = paste0("event_", k))], function(x) length(unique(x)) <= 1)))
       )
       formula_treatment <- as.formula(paste0("A_", k, " ~ ", paste0(history_of_variables_propensity, collapse = "+")))
-      if (verbose){
+      if (verbose) {
         message("Fitting treatment propensity model for event ", k, " with formula: ", deparse(formula_treatment), "\n")
       }
       ## check whether all values of A are 1; if so put propensity to 1
@@ -161,10 +164,11 @@ get_propensity_scores <- function(last_event_number,
           event_k = paste0("event_", k)
         )]
       } else {
-        data[event_k == "A", propensity_k := withCallingHandlers({
-          do.call(model_treatment, list(
-            character_formula = formula_treatment, data = .SD
-          ))$pred
+        data[event_k == "A", propensity_k := withCallingHandlers(
+          {
+            do.call(model_treatment, list(
+              character_formula = formula_treatment, data = .SD
+            ))$pred
           },
           error = function(e) {
             stop("Error in fitting treatment propensity model: ", e, " for event ", k)
@@ -194,13 +198,15 @@ get_propensity_scores <- function(last_event_number,
       baseline_covariates,
       names(which(sapply(data[, ..baseline_covariates], function(x) length(unique(x)) <= 1)))
     )
-    if (verbose){
+    if (verbose) {
       message("Fitting baseline treatment propensity model with formula: ", deparse(formula_treatment), "\n")
     }
-    data[, propensity_0 := withCallingHandlers({
-      do.call(model_treatment, list(
-        character_formula = formula_treatment, data = .SD
-      ))$pred},
+    data[, propensity_0 := withCallingHandlers(
+      {
+        do.call(model_treatment, list(
+          character_formula = formula_treatment, data = .SD
+        ))$pred
+      },
       error = function(e) {
         stop("Error in fitting baseline treatment propensity model: ", e)
       },
@@ -211,6 +217,7 @@ get_propensity_scores <- function(last_event_number,
   }
   censoring_models
 }
+
 
 #' @title Computes a one-step estimator of the ICE-IPCW estimator to estimate the mean interventional absolute risk
 #' at a given time horizon in continuous time.
@@ -286,7 +293,8 @@ debias_ice_ipcw <- function(data,
                             return_ic = FALSE,
                             grid_size = NULL,
                             from_k = NULL,
-                            verbose = TRUE) {
+                            verbose = TRUE,
+                            cens_mg_method = "integral_estimation") {
   ## FIXME: Do not ALTER the original data
   data <- copy(data)
   ## TODO: Need to more thorougly check user input. At this point *not important*.
@@ -319,10 +327,14 @@ debias_ice_ipcw <- function(data,
   last_event_number <- last_event_number + 1
 
   if (marginal_censoring_hazard) {
-    data_censoring <- copy(data$timevarying_data[event %in% c("C", "Y", "D")])
+    data_censoring <- copy(data$timevarying_data[event %in% c("tauend", "C", "Y", "D")])
     ## merge baseline covariates
     ## message(nrow(data_censoring[event == "C" & time < tau]))
-    data_censoring <- merge(data_censoring, data$baseline_data, by = "id", all.x = TRUE)
+    data_censoring <- merge(data_censoring,
+      data$baseline_data,
+      by = "id",
+      all.x = TRUE
+    )
   } else {
     data_censoring <- NULL
   }
@@ -335,7 +347,11 @@ debias_ice_ipcw <- function(data,
 
   ## Check if there is any censoring event before tau
   for (j in seq_len(last_event_number)) {
-    is_censored <- nrow(data[event_j == "C" & time_j < tau, env = list(event_j = paste0("event_", j), time_j = paste0("time_", j))]) > 0
+    is_censored <- nrow(data[event_j == "C" &
+      time_j < tau, env = list(
+      event_j = paste0("event_", j),
+      time_j = paste0("time_", j)
+    )]) > 0
     if (is_censored) {
       break
     }
@@ -352,10 +368,11 @@ debias_ice_ipcw <- function(data,
 
   if (is_censored && marginal_censoring_hazard) {
     ## remove baseline covariates that do not have more than one value
-    baseline_variables_to_use <- setdiff(
-      baseline_covariates,
-      names(which(sapply(data_censoring[, ..baseline_covariates], function(x) length(unique(x)) <= 1)))
-    )
+    baseline_variables_to_use <- setdiff(baseline_covariates, names(which(
+      sapply(data_censoring[, ..baseline_covariates], function(x) {
+        length(unique(x)) <= 1
+      })
+    )))
     formula_cens <- as.formula(paste0(
       "Surv(time, event == \"C\") ~ ",
       paste(baseline_variables_to_use, collapse = "+")
@@ -414,31 +431,34 @@ debias_ice_ipcw <- function(data,
       }
       if (is_censored) {
         ## Shift the interevent times according to time_(k-1); makes modeling more natural
-        at_risk_interevent[, paste0("time_", k) := time_k - time_k_minus_1, 
+        at_risk_interevent[, paste0("time_", k) := time_k - time_k_minus_1,
           env = list(
             time_k = paste0("time_", k),
             time_k_minus_1 = paste0("time_", k - 1)
-          )]
+          )
+        ]
         for (j in seq_len(k - 1)) {
-          at_risk_interevent[, paste0("time_", j) := time_k_minus_1- time_j,
-                             env = list(
-                               time_k_minus_1 = paste0("time_", k - 1),
-                               time_j = paste0("time_", j)
-                             )]
+          at_risk_interevent[, paste0("time_", j) := time_k_minus_1 - time_j,
+            env = list(
+              time_k_minus_1 = paste0("time_", k - 1),
+              time_j = paste0("time_", j)
+            )
+          ]
           at_risk_interevent[, paste0("event_", j) := droplevels(event_j),
-                             env = list(
-                               event_j = paste0("event_", j)
-                             )]
+            env = list(
+              event_j = paste0("event_", j)
+            )
+          ]
         }
       }
-      
+
       if (!is.null(from_k)) {
-        if (k-from_k >= 1){
-          from = k-from_k
+        if (k - from_k >= 1) {
+          from <- k - from_k
         } else {
-          from = 1
+          from <- 1
         }
-        event_points <- seq(from = from, to = k-1, by = 1)
+        event_points <- seq(from = from, to = k - 1, by = 1)
       } else {
         event_points <- seq_len(k - 1)
       }
@@ -488,7 +508,7 @@ debias_ice_ipcw <- function(data,
       if (k > 1) {
         data[event_k_prev %in% c("A", "L"), ipw_k := (1 *
           (event_k == "Y" &
-             time_k <= tau)) / (survival_censoring_k) * ic_term_part, env = list(
+            time_k <= tau)) / (survival_censoring_k) * ic_term_part, env = list(
           survival_censoring_k = paste0("survival_censoring_", k),
           ipw_k = paste0("ipw_", k),
           event_k = paste0("event_", k),
@@ -497,8 +517,7 @@ debias_ice_ipcw <- function(data,
         )]
       } else {
         data[, ipw_1 := (1 * (event_1 == "Y" &
-          time_1 <= tau)) / (survival_censoring_1) * ic_term_part
-        ]
+          time_1 <= tau)) / (survival_censoring_1) * ic_term_part]
       }
     }
 
@@ -507,14 +526,19 @@ debias_ice_ipcw <- function(data,
     ## Iterated part
     if (!first_event) {
       at_risk_before_tau[event_k %in% c("A", "L") &
-                           time_k < tau, future_prediction := predict_intervention(.SD, k, nu_hat, static_intervention), env = list(event_k = paste0("event_", k),
-                                                                                                                                     time_k = paste0("time_", k))]
+        time_k < tau, future_prediction := predict_intervention(.SD, k, nu_hat, static_intervention), env = list(
+        event_k = paste0("event_", k),
+        time_k = paste0("time_", k)
+      )]
     }
+
     ## ICE-IPCW estimator: weight = Z^a_k
     ## Pseudo-outcome and its regression, i.e., this is hat(Z)^a_k which we will regress on cal(F)_(T_(k-1))
-    at_risk_before_tau[, weight := 1 / (survival_censoring_k) * ((event_k == "Y" & time_k <= tau) + (event_k %in% c("A", "L")) * future_prediction), env = list(survival_censoring_k = paste0("survival_censoring_", k),
-                                                                                                                     event_k = paste0("event_", k),
-                                                                                                                     time_k = paste0("time_", k))]
+    at_risk_before_tau[, weight := 1 / (survival_censoring_k) * ((event_k == "Y" & time_k <= tau) + (event_k %in% c("A", "L")) * future_prediction), env = list(
+      survival_censoring_k = paste0("survival_censoring_", k),
+      event_k = paste0("event_", k),
+      time_k = paste0("time_", k)
+    )]
 
     ## Full history of variables, i.e., covariates used in regressions
     history_of_variables_ice <- c(time_history, baseline_covariates)
@@ -525,20 +549,22 @@ debias_ice_ipcw <- function(data,
       history_of_variables_ice,
       names(which(sapply(at_risk_before_tau[, ..history_of_variables_ice], function(x) length(unique(x)) <= 1)))
     )
-    if (verbose){
-      message("Fitting pseudo-outcome model for event ", k, " with formula: ", paste0("Z_k ~ ", paste(history_of_variables_ice, collapse = "+")), "\n")
+    if (verbose) {
+      message("Fitting pseudo-outcome model for event ", k, " with formula: ", paste0("Z_", k, " ~ ", paste(history_of_variables_ice, collapse = "+")), "\n")
     }
-    
-    withCallingHandlers({
-      nu_hat <- learn_Q(model_pseudo_outcome, history_of_variables_ice, at_risk_before_tau)
-    },
-    error = function(e) {
-      stop("Error in fitting pseudo-outcome model: ", e, " for event ", k)
-    },
-    warning = function(w) {
-      message("Warning in fitting pseudo-outcome model: ", w, " for event ", k)
-    })
-      
+
+    withCallingHandlers(
+      {
+        nu_hat <- learn_Q(model_pseudo_outcome, history_of_variables_ice, at_risk_before_tau)
+      },
+      error = function(e) {
+        stop("Error in fitting pseudo-outcome model: ", e, " for event ", k)
+      },
+      warning = function(w) {
+        message("Warning in fitting pseudo-outcome model: ", w, " for event ", k)
+      }
+    )
+
     at_risk_before_tau[, pred := nu_hat(data = .SD)] ## this is Q_k when used in the efficient influence function
 
     ## Warn if any predictions are NA or below or above 1
@@ -550,117 +576,214 @@ debias_ice_ipcw <- function(data,
     ## We fit cause-spefific Cox models for each current event that is not censoring
     ## And calculate martingale terms
     if (!conservative & is_censored) {
-      ## FIXME: sometimes may not contain all causes; in this case need to set hazards to zero for those causes
-      causes <- unique(at_risk_interevent[[paste0("event_", k)]])
+      if (cens_mg_method == "multiple_ice") {
+        if (!is.null(grid_size) && grid_size > 0) {
+          if (!marginal_censoring_hazard) {
+            stop("Grid size is only supported for marginal censoring hazard (for now).")
+          }
+          ## If grid size is specified, we need to create a grid of time points
+          ## and interpolate the predictions on that grid.
 
-      if (model_hazard != "learn_coxph") {
-        stop("Only Cox proportional hazards model is supported for estimation of the martingale term")
-      }
+          utimes <- unique(sort(data_censoring$time))
+          min_utimes <- min(diff(c(0, utimes))) / 2
+          exists_censored_event_k <- nrow(at_risk_before_tau[event_k == "C" & time_k <= tau, env = list(
+            event_k = paste0("event_", k),
+            time_k = paste0("time_", k)
+          )]) > 0
+          if (exists_censored_event_k) {
+            # time_grid <- seq(min(at_risk_before_tau[[paste0("time_", k - 1)]]), pmin(tau, max(at_risk_before_tau[[paste0("time_", k)]])), length.out = grid_size)[1:(grid_size - 1)]
+            time_grid_min <- min(at_risk_before_tau[event_k == "C", paste0("time_", k),
+              env = list(event_k = paste0("event_", k)),
+              with = FALSE
+            ]) - min_utimes
+            time_grid_max <- pmin(tau, max(at_risk_before_tau[[paste0("time_", k)]]))
+            time_grid <- seq(time_grid_min, time_grid_max, length.out = grid_size)[1:(grid_size - 1)]
+            time_k <- at_risk_interevent[[paste0("time_", k)]]
 
-      ## History of variables for the hazard model
-      if (k > 1) {
-        time_history <- setdiff(time_history, paste0("time_", k - 1))
-      }
-      history_of_variables_hazard <- c(time_history, baseline_covariates)
+            at_risk_before_tau[, Lambda_C_previous := 0]
+            at_risk_before_tau[, censoring_counting_process_term_mg := 0]
+            at_risk_before_tau[, mg_lambda_term := 0]
+            for (v in seq_len(grid_size - 1)) {
+              ids <- at_risk_before_tau$id
+              ## get censoring survival predictions for v for those ids
+              ## We use IPCW to regress back on those with observed times >= v
+              ## For those with time_grid[v-1] < T_k <= time_grid[v] and are censored; set censoring_counting_process_term_mg to mg_Lambda_term_(v-1)
+              if (v > 1) {
+                at_risk_before_tau[time_k > time_grid[v - 1] & time_k <= time_grid[v] & event_k == "C", censoring_counting_process_term_mg := mg_Lambda_term_v, env = list(
+                  time_k = paste0("time_", k),
+                  event_k = paste0("event_", k)
+                )]
+              }
+              at_risk_before_tau[, Gminus_v := c(1 - riskRegression::predictRisk(fit_cens$fit, times = time_grid[v] - min_utimes, newdata = data_censoring[id %in% ids]))]
+              at_risk_before_tau[, G_v := c(1 - riskRegression::predictRisk(fit_cens$fit, times = time_grid[v], newdata = data_censoring[id %in% ids]))]
+              at_risk_before_tau[, Lambda_C_current := -log(G_v)]
+              at_risk_before_tau[, weight_f := weight * Gminus_v]
 
-      learn_causes <- list()
-      for (cause in causes) {
-        formula_event <- as.formula(paste0(
-          "Surv(time_",
-          k,
-          ", event_",
-          k,
-          " == \"",
-          cause,
-          "\") ~ ",
-          paste(history_of_variables_hazard, collapse = "+")
-        ))
-        learn_causes[[cause]] <- do.call(
-          model_hazard,
-          list(character_formula = formula_event, data = at_risk_interevent)
+              ## = Q (tau)- Q(u) / S(u); note the density of (t_k,d_k = x,a_k,l_k) | T >= u is I(t_k <= u) lambda^x (tau) S (tau) / S(u) (uncensored). Getting this in the censored case is (tilde t_k,d_k = x,a_k,l_k) | tilde(T) >= u is I(tilde(t)_k <= u) lambda^x (tau) S^c (tau) / S^c (u) S (tau) / S(u)
+              zeta_hat_u <- learn_Q(model_pseudo_outcome,
+                history_of_variables_ice,
+                at_risk_before_tau[time_k >= time_grid[v], env = list(time_k = paste0("time_", k))],
+                outcome_name = paste0("weight_f")
+              )
+
+              at_risk_before_tau[, zeta_pred_u := predict_intervention(.SD, k, zeta_hat_u, static_intervention)]
+              if (k > 1) {
+                at_risk_before_tau[time_k_minus_one >= time_grid[v] | time_grid[v] > time_k, zeta_pred_u := 0, env = list(
+                  time_k_minus_one = paste0("time_", k - 1),
+                  time_k = paste0("time_", k)
+                )]
+              } else {
+                at_risk_before_tau[time_grid[v] > time_k, zeta_pred_u := 0, env = list(
+                  time_k = paste0("time_", k)
+                )]
+              }
+
+              at_risk_before_tau[, mg_Lambda_term_v := zeta_pred_u * 1 / G_v]
+              at_risk_before_tau[, mg_lambda_term := mg_lambda_term + mg_Lambda_term_v * (Lambda_C_current - Lambda_C_previous)]
+              at_risk_before_tau[, Lambda_C_previous := Lambda_C_current]
+            }
+            at_risk_before_tau[, cens_mg := censoring_counting_process_term_mg - mg_lambda_term]
+            at_risk_before_tau[, c("censoring_counting_process_term_mg", "mg_Lambda_term_v", "Lambda_C_previous", "Lambda_C_current", "Gminus_v", "G_v", "zeta_pred_u", "mg_lambda_term", "weight_f") := NULL]
+          } else {
+            at_risk_before_tau[, cens_mg := 0]
+          }
+          ic_final <- merge(at_risk_before_tau[, c("weight", "pred", "id", "cens_mg")], data[, c("ic_term_part", "id")], by = "id")
+          ic_final <- ic_final[, ic_term_part := ic_term_part * (weight - pred + cens_mg)] # weight: Z. pred: Q
+        }
+      } else {
+        ## FIXME: sometimes may not contain all causes; in this case need to set hazards to zero for those causes
+        causes <- unique(at_risk_interevent[[paste0("event_", k)]])
+
+        if (model_hazard != "learn_coxph") {
+          stop(
+            "Only Cox proportional hazards model is supported for estimation of the martingale term"
+          )
+        }
+
+        if (marginal_censoring_hazard) {
+          ## If marginal censoring hazard, we need to use the baseline hazard
+          ## and the cumulative hazard function to calculate the martingale terms
+          stop(
+            "Marginal censoring hazard is not supported for integral estimation of Q_k (yet)."
+          )
+        }
+
+        ## History of variables for the hazard model
+        if (k > 1) {
+          time_history <- setdiff(time_history, paste0("time_", k - 1))
+        }
+        history_of_variables_hazard <- c(time_history, baseline_covariates)
+
+        learn_causes <- list()
+        for (cause in causes) {
+          formula_event <- as.formula(paste0(
+            "Surv(time_",
+            k,
+            ", event_",
+            k,
+            " == \"",
+            cause,
+            "\") ~ ",
+            paste(history_of_variables_hazard, collapse = "+")
+          ))
+          learn_causes[[cause]] <- do.call(
+            model_hazard,
+            list(character_formula = formula_event, data = at_risk_interevent)
+          )
+        }
+
+        ## MG calculation
+        ## integral_(T(k - 1))^(tau and T(k)) (mu_(k-1)(tau | T(k-1))-mu_(k-1)(u | F(k-1))) 1/(tilde(S)^(c) (u | F(k-1)) S (u- | F(k-1))) (tilde(N)^c (dif u) - tilde(Lambda)_k^c (dif u | F(k-1))
+        martingale_data <- copy(data)
+        setkeyv(martingale_data, paste0("time_", k))
+        setnames(
+          martingale_data,
+          c(paste0("event_", k), paste0("time_", k)),
+          c("event", "time")
         )
-      }
+        non_zero <- martingale_data$ic_term_part != 0
 
-      ## MG calculation
-      ## integral_(T(k - 1))^(tau and T(k)) (mu_(k-1)(tau | T(k-1))-mu_(k-1)(u | F(k-1))) 1/(tilde(S)^(c) (u | F(k-1)) S (u- | F(k-1))) (tilde(N)^c (dif u) - tilde(Lambda)_k^c (dif u | F(k-1))
-      martingale_data <- copy(data)
-      setkeyv(martingale_data, paste0("time_", k))
-      setnames(martingale_data, c(paste0("event_", k), paste0("time_", k)), c("event", "time"))
-      non_zero <- martingale_data$ic_term_part != 0
-
-      if (k > 1) {
-        time_history <- c(time_history, paste0("time_", k - 1))
-      }
-      ## History without latest covariate value
-      history_of_variables_mg <- c(time_history, baseline_covariates)
-      get_variables <- c(
-        history_of_variables_mg,
-        "event",
-        "time",
-        "id",
-        paste0("A_", k)
-      )
-      martingale_data <- martingale_data[, ..get_variables]
-      if (k == 1) {
-        martingale_data[, time_0 := 0]
-      }
-      ## Compute martingale terms separetely for each cause
-      ## Needs to be able to handle the non-Cox case
-      ## Maybe faster to calculate them all at once, but then there is the issue with memory ...
-      mg_y <- influence_curve_censoring_martingale(
-        dt = copy(martingale_data),
-        learn_causes = learn_causes,
-        learn_censor = censoring_models[[k]],
-        cause = "Y",
-        non_zero = non_zero,
-        tau = tau,
-        k = k,
-        tilde_nu = NULL,
-        static_intervention = static_intervention,
-        grid_size = grid_size
-      )
-      if (k != last_event_number) {
-        mg_a <- influence_curve_censoring_martingale(
+        if (k > 1) {
+          time_history <- c(time_history, paste0("time_", k - 1))
+        }
+        ## History without latest covariate value
+        history_of_variables_mg <- c(time_history, baseline_covariates)
+        get_variables <- c(
+          history_of_variables_mg,
+          "event",
+          "time",
+          "id",
+          paste0("A_", k)
+        )
+        martingale_data <- martingale_data[, ..get_variables]
+        if (k == 1) {
+          martingale_data[, time_0 := 0]
+        }
+        ## Compute martingale terms separetely for each cause
+        ## Needs to be able to handle the non-Cox case
+        ## Maybe faster to calculate them all at once, but then there is the issue with memory ...
+        mg_y <- influence_curve_censoring_martingale(
           dt = copy(martingale_data),
           learn_causes = learn_causes,
           learn_censor = censoring_models[[k]],
-          cause = "A",
+          cause = "Y",
           non_zero = non_zero,
           tau = tau,
           k = k,
-          tilde_nu = tilde_nu,
+          tilde_nu = NULL,
           static_intervention = static_intervention,
           grid_size = grid_size
         )
+        if (k != last_event_number) {
+          mg_a <- influence_curve_censoring_martingale(
+            dt = copy(martingale_data),
+            learn_causes = learn_causes,
+            learn_censor = censoring_models[[k]],
+            cause = "A",
+            non_zero = non_zero,
+            tau = tau,
+            k = k,
+            tilde_nu = tilde_nu,
+            static_intervention = static_intervention,
+            grid_size = grid_size
+          )
 
-        mg_l <- influence_curve_censoring_martingale(
-          dt = copy(martingale_data),
-          learn_causes = learn_causes,
-          learn_censor = censoring_models[[k]],
-          cause = "L",
-          non_zero = non_zero,
-          tau = tau,
-          k,
-          tilde_nu = tilde_nu,
-          static_intervention = static_intervention,
-          grid_size = grid_size
-        )
-      } else {
-        mg_a <- mg_l <- NULL
+          mg_l <- influence_curve_censoring_martingale(
+            dt = copy(martingale_data),
+            learn_causes = learn_causes,
+            learn_censor = censoring_models[[k]],
+            cause = "L",
+            non_zero = non_zero,
+            tau = tau,
+            k,
+            tilde_nu = tilde_nu,
+            static_intervention = static_intervention,
+            grid_size = grid_size
+          )
+        } else {
+          mg_a <- mg_l <- NULL
+        }
+
+        if (k > 1) {
+          history_of_variables_ice2 <- setdiff(
+            history_of_variables_ice,
+            paste0(setdiff(time_covariates, "A"), "_", k - 1)
+          )
+          tilde_nu <- learn_Q(
+            model_pseudo_outcome,
+            history_of_variables_ice2,
+            at_risk_before_tau
+          )
+        }
+
+        mg <- mg_y |>
+          safe_merge(at_risk_before_tau[, c("weight", "pred", "id")], by = "id") |>
+          safe_merge(mg_a, by = "id") |>
+          safe_merge(mg_l, by = "id")
+
+        ic_final <- merge(mg, data[, c("ic_term_part", "id")], by = "id")
+        ic_final <- ic_final[, ic_term_part := ic_term_part * (weight - pred + cens_mg)]
       }
-
-      if (k > 1) {
-        history_of_variables_ice2 <- setdiff(history_of_variables_ice, paste0(setdiff(time_covariates, "A"), "_", k - 1))
-        tilde_nu <- learn_Q(model_pseudo_outcome, history_of_variables_ice2, at_risk_before_tau)
-      }
-
-      mg <- mg_y |>
-        safe_merge(at_risk_before_tau[, c("weight", "pred", "id")], by = "id") |>
-        safe_merge(mg_a, by = "id") |>
-        safe_merge(mg_l, by = "id")
-
-      ic_final <- merge(mg, data[, c("ic_term_part", "id")], by = "id")
-      ic_final <- ic_final[, ic_term_part := ic_term_part * (weight - pred + cens_mg)]
     } else {
       ## If conservative, we do not compute the martingale terms
       ic_final <- merge(at_risk_before_tau[, c("weight", "pred", "id")], data[, c("ic_term_part", "id")], by = "id")
@@ -696,10 +819,7 @@ debias_ice_ipcw <- function(data,
     ipw = ipw[.N]
   )]
   if (return_ic) {
-    list(
-      result = result,
-      ic = data[, ic]
-    )
+    list(result = result, ic = data[, ic])
   } else {
     result
   }

@@ -16,7 +16,7 @@ fun_boxplot <- function(d, by = NULL) {
     ## delete values of by that do not have more than one value in d
     by <- by[sapply(by, function(x) length(unique(d[[x]])) > 1)]
   }
-  ipw_ice_results <-  na.omit(
+  ipw_ice_results <- na.omit(
     melt(
       d,
       id.vars = c(by, "value"),
@@ -30,13 +30,13 @@ fun_boxplot <- function(d, by = NULL) {
   ipw_ice_results$upper <- NA
   ## rename levels of type from ipw, ice_ipcw_estimate to Inverse Probability Weighting, ICE-IPCW
   ipw_ice_results$type <- factor(ipw_ice_results$type,
-                                 levels = c("ipw", "ice_ipcw_estimate"),
-                                 labels = c("Inverse Probability Weighting", "ICE-IPCW")
+    levels = c("ipw", "ice_ipcw_estimate"),
+    labels = c("Inverse Probability Weighting", "ICE-IPCW")
   )
   cols_to_remove <- grepl("method|tar|ice_ipcw_estimate|ipw", names(d))
   d <- d[, !cols_to_remove, with = FALSE]
-  d <- rbind(d, ipw_ice_results,fill = TRUE)
-  
+  d <- rbind(d, ipw_ice_results, fill = TRUE)
+
   d[, sd_est := sd(estimate), by = c(by, "type")]
   ## interaction for
   p <- ggplot2::ggplot(data = d, aes(y = estimate, color = type)) +
@@ -115,7 +115,7 @@ get_tables <- function(results, by = NULL) {
     by <- by[sapply(by, function(x) length(unique(results[[x]])) > 1)]
   }
   ## remove all methods columns
-  ipw_ice_results <-  na.omit(
+  ipw_ice_results <- na.omit(
     melt(
       results,
       id.vars = c(by, "value"),
@@ -135,7 +135,7 @@ get_tables <- function(results, by = NULL) {
   cols_to_remove <- grepl("method|tar|ice_ipcw_estimate|ipw", names(results))
   results <- results[, !cols_to_remove, with = FALSE]
   results <- rbind(results, ipw_ice_results, fill = TRUE)
-  results<- results[, .(
+  results <- results[, .(
     coverage = mean((value > lower) & (value < upper)),
     mse = mean((estimate - value)^2),
     bias = mean(estimate - value),
@@ -145,7 +145,7 @@ get_tables <- function(results, by = NULL) {
   by = c(by, "type")
   ]
   results <- as.data.table(results)
-  setkeyv(results, c(by,"type"))
+  setkeyv(results, c(by, "type"))
   results
 }
 

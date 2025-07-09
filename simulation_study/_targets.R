@@ -41,7 +41,7 @@ n_true_value <- 7000000 ## number of observations for the true value estimation
 ## Main simulation study; vary coefficients
 ## Here, we vary the effects as in the main document.
 parameter_vary <- data.frame(
-  effect_A_on_Y = 2*c(
+  effect_A_on_Y = 2 * c(
     -0.15,
     0,
     0.15,
@@ -60,7 +60,7 @@ parameter_vary <- data.frame(
     -0.15,
     -0.15
   ),
-  effect_L_on_Y = 2*c(
+  effect_L_on_Y = 2 * c(
     0.25,
     0.25,
     0.25,
@@ -79,7 +79,7 @@ parameter_vary <- data.frame(
     0.25,
     0.25
   ),
-  effect_L_on_A = 2*c(
+  effect_L_on_A = 2 * c(
     -0.1,
     -0.1,
     -0.1,
@@ -98,7 +98,7 @@ parameter_vary <- data.frame(
     -0.1,
     -0.1
   ),
-  effect_A_on_L =  c(rep(-0.2, 15), 0, 0.2),
+  effect_A_on_L = c(rep(-0.2, 15), 0, 0.2),
   effect_age_on_Y = c(rep(0.025, 12), rep(0, 3), rep(0.025, 2)),
   effect_age_on_A = c(rep(0.002, 12), rep(0, 3), rep(0.002, 2)),
   baseline_rate_Y = rep(0.0001, 17)
@@ -220,7 +220,7 @@ parameter_vary_censoring <- merge(
   expand.grid(
     baseline_rate_C = c(0.0002, 0.0005, 0.0008),
     model_type = c("scaled_quasibinomial", "tweedie", "lm"),
-    conservative = TRUE 
+    conservative = TRUE
   ),
   all = TRUE
 )
@@ -284,7 +284,7 @@ sim_censored <- tar_map(
 
 ## vary prevalence
 sim_and_true_value_prevalence <- tar_map(
-  values = data.frame(baseline_rate_Y =  c(0.00005, 0.0001, 0.0002)),
+  values = data.frame(baseline_rate_Y = c(0.00005, 0.0001, 0.0002)),
   tar_target(true_value_prevalence, {
     d_int <- simulate_simple_continuous_time_data(
       n = n_true_value,
@@ -457,7 +457,7 @@ list(
       no_competing_event = TRUE
     )
   ),
-  
+
   ## simulate
   sim_and_true_value,
   ## true value table
@@ -471,22 +471,27 @@ list(
   ## boxplot the debiased results (no confounding)
   tar_target(
     boxplot_results_no_confounding,
-    fun_boxplot(sim_merge[effect_L_on_Y == 0 &
-                            effect_L_on_A == 0 & effect_age_on_Y == 0 & effect_age_on_A == 0]
-                , by = by_vars)
+    fun_boxplot(
+      sim_merge[effect_L_on_Y == 0 &
+        effect_L_on_A == 0 & effect_age_on_Y == 0 & effect_age_on_A == 0],
+      by = by_vars
+    )
   ),
   ## now get as a table
   tar_target(
     results_table_no_confounding,
-    get_tables(sim_merge[effect_L_on_Y == 0 &
-                           effect_L_on_A == 0 & effect_age_on_Y == 0 & effect_age_on_A == 0]
-               , by = by_vars)
+    get_tables(
+      sim_merge[effect_L_on_Y == 0 &
+        effect_L_on_A == 0 & effect_age_on_Y == 0 & effect_age_on_A == 0],
+      by = by_vars
+    )
   ),
   ## boxplot the debiased results (strong confounding)
   tar_target(
     boxplot_results_strong_time_confounding,
-    fun_boxplot(sim_merge[effect_L_on_Y == 1]
-                , by = by_vars)
+    fun_boxplot(sim_merge[effect_L_on_Y == 1],
+      by = by_vars
+    )
   ),
   ## now get as a table
   tar_target(
@@ -496,76 +501,95 @@ list(
   ## boxplot the debiased results (no time confounding, but baseline confounding)
   tar_target(
     boxplot_results_no_time_confounding,
-    fun_boxplot(sim_merge[effect_L_on_Y == 0 &
-                            effect_L_on_A == 0 & effect_age_on_Y != 0 & effect_age_on_A != 0]
-                , by = by_vars)
+    fun_boxplot(
+      sim_merge[effect_L_on_Y == 0 &
+        effect_L_on_A == 0 & effect_age_on_Y != 0 & effect_age_on_A != 0],
+      by = by_vars
+    )
   ),
   ## now get as a table
   tar_target(
     results_table_no_time_confounding,
-    get_tables(sim_merge[effect_L_on_Y == 0 &
-                           effect_L_on_A == 0 & effect_age_on_Y != 0 & effect_age_on_A != 0]
-               , by = by_vars)
+    get_tables(
+      sim_merge[effect_L_on_Y == 0 &
+        effect_L_on_A == 0 & effect_age_on_Y != 0 & effect_age_on_A != 0],
+      by = by_vars
+    )
   ),
   ## boxplot the debiased results (vary effect_A_on_Y)
   tar_target(
     boxplot_results_vary_effect_A_on_Y,
-    fun_boxplot(sim_merge[effect_L_on_Y == 2*0.25 &
-                            effect_L_on_A == -2*0.1 &
-                            effect_A_on_L == -0.2]
-                , by = by_vars)
+    fun_boxplot(
+      sim_merge[effect_L_on_Y == 2 * 0.25 &
+        effect_L_on_A == -2 * 0.1 &
+        effect_A_on_L == -0.2],
+      by = by_vars
+    )
   ),
   ## now get as a table
   tar_target(
     results_table_vary_effect_A_on_Y,
-    get_tables(sim_merge[effect_L_on_Y == 2*0.25 &
-                           effect_L_on_A == -2*0.1 & effect_A_on_L == -0.2]
-               , by = by_vars)
+    get_tables(
+      sim_merge[effect_L_on_Y == 2 * 0.25 &
+        effect_L_on_A == -2 * 0.1 & effect_A_on_L == -0.2],
+      by = by_vars
+    )
   ),
   ## boxplot the debiased results (vary effect_L_on_Y)
   tar_target(
     boxplot_results_vary_effect_L_on_Y,
-    fun_boxplot(sim_merge[effect_A_on_Y == -2*0.15 &
-                            effect_L_on_A == -2*0.1 &
-                            effect_A_on_L == -0.2]
-                , by = by_vars)
+    fun_boxplot(
+      sim_merge[effect_A_on_Y == -2 * 0.15 &
+        effect_L_on_A == -2 * 0.1 &
+        effect_A_on_L == -0.2],
+      by = by_vars
+    )
   ),
   ## now get as a table
   tar_target(
     results_table_vary_effect_L_on_Y,
-    get_tables(sim_merge[effect_A_on_Y == -2*0.15 &
-                           effect_L_on_A == -2*0.1 & effect_A_on_L == -0.2]
-               , by = by_vars)
+    get_tables(
+      sim_merge[effect_A_on_Y == -2 * 0.15 &
+        effect_L_on_A == -2 * 0.1 & effect_A_on_L == -0.2],
+      by = by_vars
+    )
   ),
   ## boxplot the debiased results (vary effect_L_on_A)
   tar_target(
     boxplot_results_vary_effect_L_on_A,
-    fun_boxplot(sim_merge[effect_A_on_Y == -2*0.15 &
-                            effect_L_on_Y == 2*0.25 & effect_A_on_L == -0.2]
-                , by = by_vars)
+    fun_boxplot(
+      sim_merge[effect_A_on_Y == -2 * 0.15 &
+        effect_L_on_Y == 2 * 0.25 & effect_A_on_L == -0.2],
+      by = by_vars
+    )
   ),
   ## now get as a table
   tar_target(
     results_table_vary_effect_L_on_A,
-    get_tables(sim_merge[effect_A_on_Y == -2*0.15 &
-                           effect_L_on_Y == 2*0.25 & effect_A_on_L == -0.2]
-               , by = by_vars)
+    get_tables(
+      sim_merge[effect_A_on_Y == -2 * 0.15 &
+        effect_L_on_Y == 2 * 0.25 & effect_A_on_L == -0.2],
+      by = by_vars
+    )
   ),
   ## boxplot the debiased results (vary effect_A_on_L)
   tar_target(
     boxplot_results_vary_effect_A_on_L,
-    fun_boxplot(sim_merge[effect_A_on_Y == -2*0.15 &
-                            effect_L_on_Y == 2*0.25 & effect_L_on_A == -2*0.1]
-                , by = by_vars)
+    fun_boxplot(
+      sim_merge[effect_A_on_Y == -2 * 0.15 &
+        effect_L_on_Y == 2 * 0.25 & effect_L_on_A == -2 * 0.1],
+      by = by_vars
+    )
   ),
   ## now get as a table
   tar_target(
     results_table_vary_effect_A_on_L,
-    get_tables(sim_merge[effect_A_on_Y == -2*0.15 &
-                           effect_L_on_Y == 2*0.25 & effect_L_on_A == -2*0.1]
-               , by = by_vars)
+    get_tables(
+      sim_merge[effect_A_on_Y == -2 * 0.15 &
+        effect_L_on_Y == 2 * 0.25 & effect_L_on_A == -2 * 0.1],
+      by = by_vars
+    )
   ),
-  
   sim_censored,
   ## merge the true values with the debiased results for the censored case
   tar_combine(
@@ -575,12 +599,13 @@ list(
   ),
   ## calculate coverage for the censored case
   tar_target(
-    results_table_censored, {
+    results_table_censored,
+    {
       tab <- get_tables(
         sim_merge_censored,
         by = c(by_vars, "baseline_rate_C", "model_type", "conservative")
       )
-      ## refactor the model_type to nice names 
+      ## refactor the model_type to nice names
       tab$model_type <- factor(
         tab$model_type,
         levels = c("scaled_quasibinomial", "tweedie", "lm"),
@@ -594,7 +619,7 @@ list(
     boxplot_results_censored,
     fun_boxplot_censoring(sim_merge_censored, by = c(by_vars, "conservative"))
   ),
-  
+
   ## vary dropout
   sim_and_true_value_dropout,
   tar_combine(
@@ -610,10 +635,10 @@ list(
     boxplot_results_dropout,
     fun_boxplot(sim_merge_dropout, by = "a_intercept")
   ),
-  
+
   ## vary sample size
   sim_sample_size,
-  ##v tar combine
+  ## v tar combine
   tar_combine(
     sim_merge_sample_size,
     list(sim_sample_size[["results_sample_size"]], sim_and_true_value[["true_value"]]),

@@ -270,7 +270,7 @@ list(
     }
   ),
   ## Sensitivity analysis with every event visitation time = FALSE; that is events which do not have a treatment registration are set to the label "L"
-  ## That is the doctor cannot make the treatment decisions at that time. 
+  ## That is the doctor cannot make the treatment decisions at that time.
   tar_target(
     data_lira_sensitivity,
     format_data(
@@ -335,7 +335,7 @@ list(
         verbose = FALSE
       )
       itt <- list(estimate = data_placebo_sensitivity$timevarying_data[event %in% c("C", "Y", "D"), mean(time <= tau &
-                                                                                                           event == "Y")])
+        event == "Y")])
       list(
         res = res,
         itt = itt
