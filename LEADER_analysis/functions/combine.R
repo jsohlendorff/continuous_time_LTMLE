@@ -31,11 +31,21 @@ combine <- function(comed,
     dt[, (event) := cumsum(X == event), by = id]
   }
 
-  message("Following medication types found: ", paste(medication_types, collapse = ", "))
+  ## message("Following medication types found: ", paste(medication_types, collapse = ", "))
   for (med in medication_types) {
-    message("Processing medication: ", med)
-    dt <- dt[, jump_process_format_fast(copy(.SD), med), by = id]
+    ## message("Processing medication: ", med)
+    match_idx <- dt$X == med
+    
+    # Create a new column with val where X == med, else NA
+    dt[, (med) := fifelse(match_idx, val, NA_real_)]
+    
+    # Fill forward (last observation carried forward)
+    dt[, (med) := nafill(get(med), type = "locf"), by = "id"]
+    
+    # Replace remaining NAs (before first match) with 0
+    dt[is.na(get(med)), (med) := 0]
   }
+
   dt[, val := NULL] # Remove the val column as it's no longer needed
   fix_duplicates(dt, treat_name) # Fix duplicates in the data
 }
