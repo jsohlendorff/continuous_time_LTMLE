@@ -69,7 +69,7 @@ clean_outcome <- function(df_list,
   dt_outcome <- dt_outcome[dt_index[, .(id, study_start, study_end)], on = "id"]
 
   ## If date does not occur in date, then censored
-  dt_outcome[is.na(date), c("date", "X", "val") := .(study_end, "Censored", NA)]
+  dt_outcome[is.na(date), c("date", "X", "val") := .(study_end, "censored", NA)]
   dt_outcome[, time := as.numeric(difftime(date, study_start, units = "days"))]
   dt_outcome[, c("study_start", "study_end", "date") := NULL]
 
