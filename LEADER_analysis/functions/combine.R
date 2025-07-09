@@ -15,7 +15,7 @@ combine <- function(comed,
   # out <-tar_read(outcome_cleaned)
   # id_regimen <- tar_read(id_regimen_lira)
   adverse_event_types <- unique(adv$X)
-  medication_types <- c(unique(comed$X), unique(reg$X))
+  medication_types <- c(unique(as.character(comed$X)), unique(reg$X))
 
   dt <- rbindlist(list(comed, adv, reg, out), use.names = TRUE)
   setorder(dt, id, time)
