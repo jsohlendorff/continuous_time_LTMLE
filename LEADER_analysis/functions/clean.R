@@ -24,7 +24,7 @@ clean <- function(df,
   
   if (type != "primary_treatment") {
     ## Remove superfluous information
-    df <- df[, remove_superfluous_info(copy(.SD), period = period), by = c("id", "X")]
+    df <- remove_superfluous_info_fast(df, period = period)
     if (type == "comedication") {
       df <- melt(
         df,
