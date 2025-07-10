@@ -1,4 +1,5 @@
 library(testthat)
+setwd("~/phd/continuous_time_LTMLE/simulation_study/")
 
 test_that("test continuous time function (uncensored)", {
   library(data.table)
