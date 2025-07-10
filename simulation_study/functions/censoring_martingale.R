@@ -46,8 +46,8 @@ influence_curve_censoring_martingale <- function(dt,
                                                  tau,
                                                  k,
                                                  tilde_nu,
-                                                 static_intervention,
-                                                 grid_size = NULL) {
+                                                 static_intervention) {
+  dt <- copy(dt)
   assertthat::assert_that(is.data.frame(dt))
   ## Assert that time is sorted
   assertthat::assert_that(all(diff(na.omit(dt$time)) >= 0))
@@ -78,9 +78,6 @@ influence_curve_censoring_martingale <- function(dt,
   ## Cause-specific event times
   times_data <- as.data.table(dt)
   times_data <- times_data[event == cause, "time"]
-  if (!is.null(grid_size)) {
-    times_data <- data.table(time = seq(min(times_data$time), max(times_data$time), length.out = grid_size))
-  }
 
   ## Cartesian product to get all combinations of covariates and times for the computation of mu.
   pooled_data <- covariate_data[, as.list(times_data), by = covariate_data]
@@ -147,9 +144,6 @@ influence_curve_censoring_martingale <- function(dt,
   censoring_times <- dt[time <= tau - time_prev &
     event == "C", "time"]
   censoring_times_original <- copy(censoring_times)
-  # if (!is.null(grid_size)){
-  #   censoring_times <- data.table(time=seq(min(censoring_times), max(censoring_times),length.out=grid_size))
-  # }
 
   ## Cartesian product of censoring_times and covariate_data
   censoring_times <- covariate_data[, as.list(censoring_times), by = covariate_data]

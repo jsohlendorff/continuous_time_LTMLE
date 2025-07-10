@@ -9,7 +9,30 @@ library(targets)
 library(data.table)
 library(tarchetypes)
 library(crew)
-setwd("~/phd/continuous_time_LTMLE/simulation_study")
+library(crew.cluster)
+
+## Try to load locally
+try(
+  setwd("~/phd/continuous_time_LTMLE/simulation_study"),
+  silent = TRUE
+)
+
+## Try to load on server
+try(setwd("/projects/biostat01/people/snf991/phd/continuous_time_LTMLE/simulation_study"),
+    silent = TRUE
+)
+
+## Set up the crew controller
+if (dir.exists("/projects/biostat01/people/snf991/phd/continuous_time_LTMLE/simulation_study")) {
+  controller <- crew_controller_slurm(
+    workers = 100,
+    seconds_idle = 15,
+    options_cluster = crew_options_slurm(partition = "long") # start on markov
+  )
+} else {
+  controller <- crew_controller_local(workers = 8)
+}
+
 tar_option_set(
   packages = c(
     "tarchetypes",
@@ -23,7 +46,7 @@ tar_option_set(
     ## !!!REQUIRES NEW VERSION!!!
     "survminer"
   ),
-  controller = crew_controller_local(workers = 8)
+  controller = controller
 )
 
 tar_source("functions")
@@ -33,10 +56,10 @@ baseline_covariates <- c("age", "A_0", "L_0")
 tau <- 720 ## time horizon (in days)
 
 reps <- 100 ## number of repetitions for each simulation
-batches <- 50 ## number of batches to run in parallel
+batches <- 100 ## number of batches to run in parallel
 
 n_fixed <- 1000 ## number of observations for each simulation
-n_true_value <- 7000000 ## number of observations for the true value estimation
+n_true_value <- 8000000 ## number of observations for the true value estimation
 
 ## Main simulation study; vary coefficients
 ## Here, we vary the effects as in the main document.
@@ -210,7 +233,7 @@ sim_and_true_value <- tar_map(
     ),
     reps = reps,
     batch = batches,
-    cue = tar_cue("never")
+    cue = tar_cue("always")
   )
 )
 
@@ -277,8 +300,7 @@ sim_censored <- tar_map(
       )
     ),
     reps = reps,
-    batch = batches,
-    cue = tar_cue("never")
+    batch = batches
   )
 )
 
@@ -328,8 +350,7 @@ sim_and_true_value_prevalence <- tar_map(
       )
     ),
     reps = reps,
-    batch = batches,
-    cue = tar_cue("never")
+    batch = batches
   )
 )
 
@@ -367,8 +388,7 @@ sim_and_true_value_dropout <- tar_map(
       )
     ),
     reps = reps,
-    batch = batches,
-    cue = tar_cue("never")
+    batch = batches
   )
 )
 
@@ -422,8 +442,7 @@ sim_sample_size <- tar_map(
       )
     ),
     reps = reps,
-    batch = batches,
-    cue = tar_cue("never")
+    batch = batches
   )
 )
 

@@ -24,7 +24,7 @@ discretize_time <- function(data_continuous,
   n <- nrow(data_continuous$baseline_data)
   time_seq <- seq(0, tau, length.out = grid_size)
   grid <- as.data.table(expand.grid(
-    id = 1:n, time = time_seq
+    id = data_continuous$baseline_data$id, time = time_seq
   ))
   tau_discrete <- length(time_seq) - 1
 

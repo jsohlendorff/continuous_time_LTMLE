@@ -131,7 +131,6 @@ learn_h2o <- function(character_formula,
     h2o::h2o.init()
   })
   data_h2o <- as.h2o(data)
-  if (!verbose) sink()
 
   ## AutoML
   aml <- h2o.automl(
@@ -142,9 +141,10 @@ learn_h2o <- function(character_formula,
     distribution = distribution,
     ...
   )
+  if (!verbose) sink()
 
   best_model <- aml@leader
-  print(aml@leaderboard)
+  print(aml@leaderboard, n = 1L)
 
   if (distribution == "bernoulli") {
     ## For binary, we need to convert the predictions to a vector
@@ -164,11 +164,14 @@ learn_h2o <- function(character_formula,
 
 # coph learner for censoring
 learn_coxph <- function(character_formula,
-                        data,
-                        type = "survival") {
+                        data) {
   ## Fit the Cox model
-  fit <- coxph(character_formula, data = data, x = TRUE)
-  list(pred = predict(fit, type = type), fit = fit)
+  fit <- coxph(character_formula, data = data, x = TRUE)  
+  exp_lp <- predict(fit, newdata = data, type = "risk", reference = "zero")
+  baseline_hazard_minus <- as.data.table(basehaz(fit))
+  baseline_hazard_minus$hazard <- c(0, head(baseline_hazard_minus$hazard, -1))
+  surv <- exp(-exp_lp * baseline_hazard_minus$hazard)
+  list(pred = surv, fit = fit)
 }
 
 learn_glm_logistic <- function(character_formula,

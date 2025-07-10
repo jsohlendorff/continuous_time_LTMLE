@@ -66,6 +66,10 @@ get_propensity_scores <- function(last_event_number,
           }
         )
       } else {
+        ## FIXME: make marginal censoring hazard work without cox
+        if (!inherits(fit_cens$fit, "coxph")) {
+          stop("Censoring model must be a Cox proportional hazards model when marginal_censoring_hazard is TRUE.")
+        }
         exp_lp <- predict(fit_cens$fit, newdata = data, type = "risk", reference = "zero")[at_risk_interevent$id]
         baseline_hazard <- as.data.table(basehaz(fit_cens$fit, centered = FALSE))
         sindex_k <- prodlim::sindex(baseline_hazard$time, at_risk_interevent[[paste0("time_", k)]], strict = TRUE) + 1
@@ -338,8 +342,7 @@ debias_ice_ipcw <- function(data,
 
   ## If marginal_censoring_hazard is TRUE, get data for terminal events
   if (marginal_censoring_hazard) {
-    data_censoring <- copy(data$timevarying_data[event %in% c("tauend", "C", "Y", "D")])
-    data_censoring <- merge(data_censoring,
+    data_censoring <- merge(data$timevarying_data[event %in% c("tauend", "C", "Y", "D")],
       data$baseline_data,
       by = "id",
       all.x = TRUE
@@ -568,7 +571,6 @@ debias_ice_ipcw <- function(data,
             time_k = paste0("time_", k)
           )]) > 0
           if (exists_censored_event_k) {
-            # time_grid <- seq(min(at_risk_before_tau[[paste0("time_", k - 1)]]), pmin(tau, max(at_risk_before_tau[[paste0("time_", k)]])), length.out = grid_size)[1:(grid_size - 1)]
             time_grid_min <- min(at_risk_before_tau[event_k == "C", paste0("time_", k),
               env = list(event_k = paste0("event_", k)),
               with = FALSE
@@ -626,9 +628,10 @@ debias_ice_ipcw <- function(data,
           }
           ic_final <- merge(at_risk_before_tau[, c("weight", "pred", "id", "cens_mg")], data[, c("ic_term_part", "id")], by = "id")
           ic_final <- ic_final[, ic_term_part := ic_term_part * (weight - pred + cens_mg)] # weight: Z. pred: Q
+        } else {
+            stop("Grid size must be specified for cens_mg_method = 'multiple_ice'.")
         }
       } else {
-        ## FIXME: sometimes may not contain all causes; in this case need to set hazards to zero for those causes
         causes <- unique(at_risk_interevent[[paste0("event_", k)]])
 
         if (model_hazard != "learn_coxph") {
@@ -675,7 +678,7 @@ debias_ice_ipcw <- function(data,
 
         ## MG calculation
         ## integral_(T(k - 1))^(tau and T(k)) (mu_(k-1)(tau | T(k-1))-mu_(k-1)(u | F(k-1))) 1/(tilde(S)^(c) (u | F(k-1)) S (u- | F(k-1))) (tilde(N)^c (dif u) - tilde(Lambda)_k^c (dif u | F(k-1))
-        martingale_data <- copy(data)
+        martingale_data <- data
         setkeyv(martingale_data, paste0("time_", k))
         non_zero <- martingale_data$ic_term_part != 0
 
@@ -702,7 +705,7 @@ debias_ice_ipcw <- function(data,
         ## Needs to be able to handle the non-Cox case
         ## Maybe faster to calculate them all at once, but then there is the issue with memory ...
         mg_y <- influence_curve_censoring_martingale(
-          dt = copy(martingale_data),
+          dt = martingale_data,
           learn_causes = learn_causes,
           learn_censor = censoring_models[[k]],
           cause = "Y",
@@ -710,12 +713,11 @@ debias_ice_ipcw <- function(data,
           tau = tau,
           k = k,
           tilde_nu = NULL,
-          static_intervention = static_intervention,
-          grid_size = grid_size
+          static_intervention = static_intervention
         )
-        if (k != last_event_number) {
+        if ("A" %in% causes) {
           mg_a <- influence_curve_censoring_martingale(
-            dt = copy(martingale_data),
+            dt = martingale_data,
             learn_causes = learn_causes,
             learn_censor = censoring_models[[k]],
             cause = "A",
@@ -723,12 +725,14 @@ debias_ice_ipcw <- function(data,
             tau = tau,
             k = k,
             tilde_nu = tilde_nu,
-            static_intervention = static_intervention,
-            grid_size = grid_size
+            static_intervention = static_intervention
           )
-
+        } else {
+            mg_a <- NULL
+        }
+        if ("L" %in% causes) {
           mg_l <- influence_curve_censoring_martingale(
-            dt = copy(martingale_data),
+            dt = martingale_data,
             learn_causes = learn_causes,
             learn_censor = censoring_models[[k]],
             cause = "L",
@@ -736,11 +740,10 @@ debias_ice_ipcw <- function(data,
             tau = tau,
             k,
             tilde_nu = tilde_nu,
-            static_intervention = static_intervention,
-            grid_size = grid_size
+            static_intervention = static_intervention
           )
         } else {
-          mg_a <- mg_l <- NULL
+          mg_l <- NULL
         }
 
         if (k > 1) {

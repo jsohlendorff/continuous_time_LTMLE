@@ -21,9 +21,9 @@ naive_cox <- function(data_continuous, tau, baseline_confounders) {
   # ids not in drop_out_data
   ids_not_dropped_out <- data_continuous$timevarying_data[!(id %in% drop_out_data$id), unique(id)]
   ## get C and Y events for these ids
-  outcome_data <- data_continuous$timevarying_data[(event == "C" | event == "Y") & id %in% ids_not_dropped_out, .(id = id, time = time, status = event)]
+  outcome_data <- data_continuous$timevarying_data[(event == "tauend" | event == "Y") & id %in% ids_not_dropped_out, .(id = id, time = time, status = event)]
   ## change C to 0 and Y to 1
-  outcome_data$status <- ifelse(outcome_data$status == "C", 0, 1)
+  outcome_data$status <- ifelse(outcome_data$status == "tauend", 0, 1)
   ## rbind the drop_out_data and outcome_data
   outcome_data <- rbind(drop_out_data, outcome_data, fill = TRUE)
   ## add baseline data

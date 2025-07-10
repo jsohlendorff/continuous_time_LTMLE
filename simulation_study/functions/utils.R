@@ -54,7 +54,7 @@ get_history_of_variables <- function(data,
                                      type,
                                      k_lag,
                                      k) {
-  if (!is.null(k_lag)) {
+  if (!is.null(k_lag) && k > 1) {
     event_points <- seq(from = max(1, k - k_lag), to = k - 1, by = 1)
   } else {
     event_points <- seq_len(k - 1)
