@@ -94,10 +94,10 @@ learn_Q <- function(model_type,
         return(pred)
       }
     } else {
-      formula_w <- as.formula(paste0(
+      formula_w <- paste0(
         outcome_name,
         " ~ ", paste(history_of_variables, collapse = "+")
-      ))
+      )
       predict_fun <- do.call(model_type, list(
         character_formula = formula_w,
         data = data_ice
@@ -110,13 +110,15 @@ learn_Q <- function(model_type,
 ## Example function
 learn_h2o <- function(character_formula,
                       data,
+                      intervened_data = NULL,
                       max_runtime_secs = 30,
                       nfolds = 10,
                       verbose = FALSE,
                       ...) {
   requireNamespace("h2o", quietly = TRUE)
-  outcome_name <- as.character(character_formula[[2]])
-  history_of_variables <- labels(terms(character_formula))
+  formula_object <- as.formula(character_formula)
+  outcome_name <- as.character(formula_object[[2]])
+  history_of_variables <- labels(terms(formula_object))
   data <- data[, c(outcome_name, history_of_variables), with = FALSE]
   ## Check if only 0/1 values in outcome_name
   if (all(data[[outcome_name]] %in% c(0, 1))) {
@@ -139,12 +141,19 @@ learn_h2o <- function(character_formula,
     max_runtime_secs = max_runtime_secs,
     nfolds = nfolds,
     distribution = distribution,
+    sort_metric = "MSE",
     ...
   )
   if (!verbose) sink()
 
   best_model <- aml@leader
-  print(aml@leaderboard, n = 1L)
+  leaderboard <- as.data.table(aml@leaderboard)
+
+  ## Print leader and glm
+  leader <- aml@leaderboard[1, ]
+  lm_models <- leaderboard[grepl("LM", leaderboard$model_id), ]
+  leaderboard <- rbind(leader, lm_models)
+  print(leaderboard)
 
   if (distribution == "bernoulli") {
     ## For binary, we need to convert the predictions to a vector
@@ -159,25 +168,33 @@ learn_h2o <- function(character_formula,
       as.vector(h2o.predict(best_model, newdata = newdata_h2o)$predict)
     }
   }
-  list(pred = predict_fun(data), predict_fun = predict_fun)
+  if (is.null(intervened_data)) {
+    return(list(pred = predict_fun(data), predict_fun = predict_fun))
+  } else {
+    return(predict_fun(intervened_data))
+  }
 }
 
 # coph learner for censoring
 learn_coxph <- function(character_formula,
                         data) {
+  formula_cox <- as.formula(character_formula)
   ## Fit the Cox model
-  fit <- coxph(character_formula, data = data, x = TRUE)  
-  exp_lp <- predict(fit, newdata = data, type = "risk", reference = "zero")
-  baseline_hazard_minus <- as.data.table(basehaz(fit))
+  fit <- coxph(formula_cox, data = data, x = TRUE)
+  baseline_hazard_minus <- as.data.table(basehaz(fit, centered = FALSE))
   baseline_hazard_minus$hazard <- c(0, head(baseline_hazard_minus$hazard, -1))
-  surv <- exp(-exp_lp * baseline_hazard_minus$hazard)
-  list(pred = surv, fit = fit)
+  setnames(baseline_hazard_minus, "time", as.character(formula_cox[[2]][2]))
+  baseline_hazard_minus <- baseline_hazard_minus[data, roll = TRUE, on = as.character(formula_cox[[2]][2])]
+  baseline_hazard_minus[, exp_lp := predict(fit, newdata = .SD, type = "risk", reference = "zero")]
+  baseline_hazard_minus[, surv := exp(-exp_lp * hazard)]
+  list(pred = baseline_hazard_minus$surv, fit = fit)
 }
 
 learn_glm_logistic <- function(character_formula,
                                data) {
+  formula_object <- as.formula(character_formula)
   ## Fit the logistic regression model
-  fit <- glm(character_formula, data = data, family = binomial(link = "logit"))
+  fit <- glm(formula_object, data = data, family = binomial(link = "logit"))
   ## Predict on original data
   list(pred = predict(fit, type = "response"), predict_fun = fit)
 }

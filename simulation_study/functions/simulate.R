@@ -99,6 +99,47 @@ fun_boxplot_censoring <- function(d, by = NULL) {
   list(p, qz, r, w)
 }
 
+fun_boxplot_censoring_non_conservative <- function(d, by = NULL) {
+  if (!is.null(by)) {
+    ## delete values of by that do not have more than one value in d
+    by <- by[sapply(by, function(x) length(unique(d[[x]])) > 1)]
+  }
+  d[, baseline_rate_C := factor(baseline_rate_C)]
+  ## concatenate cens_mg_method and grid_size
+  d[, cens_mg_method_grid_size := paste(cens_mg_method, grid_size, sep = "_")]
+  d[, sd_est := sd(estimate), by = c(by, "model_type", "baseline_rate_C", "cens_mg_method_grid_size")]
+  ## interaction for
+  ## d[, gr := do.call(paste, c(.SD, sep = "_")), .SDcols = by]
+  p <- ggplot2::ggplot(data = d, aes(y = estimate, color = cens_mg_method_grid_size)) +
+    ggplot2::geom_boxplot() +
+    ggplot2::geom_hline(aes(yintercept = value)) +
+    ggplot2::theme_minimal()
+  ## in d add interaction between model_type and baseline_rate_C
+  qz <- ggplot2::ggplot(data = d, aes(y = se, color = cens_mg_method_grid_size)) +
+    ggplot2::geom_boxplot() +
+    ggplot2::theme_minimal()
+  r <- ggplot2::ggplot(data = d, aes(y = ice_ipcw_estimate, color = cens_mg_method_grid_size)) +
+    ggplot2::geom_boxplot() +
+    ggplot2::geom_hline(aes(yintercept = value, color = model_type)) +
+    ggplot2::theme_minimal()
+  w <- ggplot2::ggplot(data = d, aes(y = ipw)) +
+    ggplot2::geom_boxplot() +
+    ggplot2::geom_hline(aes(yintercept = value, color = "red")) +
+    ggplot2::theme_minimal()
+  if (!is.null(by)) {
+    p <- p + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
+    qz <- qz + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
+    ## for q add different geom hlines with sd(estimate) for each compination of variables in by
+    qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est, color = cens_mg_method_grid_size), linetype = "dashed")
+    r <- r + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
+    w <- w + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
+  } else {
+    qz <- qz + ggplot2::geom_hline(aes(yintercept = sd(estimate), color = "red"))
+  }
+  list(p, qz, r, w)
+}
+
+
 ## Simulate and run a function with the simulated data
 simulate_and_run <- function(n,
                              function_name,
@@ -379,7 +420,7 @@ simulate_continuous_time_data <- function(n,
     # print(summary(coxph(Surv(diff_time, event == "C") ~ L + A + age, data = people_atrisk)))
     ## print(people_atrisk[id == 10,data.table::data.table(j = j,entrytime,time)])
     # censor at max_fup
-    people_atrisk[time > max_fup, event := "C"]
+    people_atrisk[time > max_fup, event := "tauend"]
     people_atrisk[time > max_fup, time := max_fup]
     is_terminal <- !(people_atrisk$event %in% c("A", "L"))
     #------------------------------------------------------------------------------
@@ -774,7 +815,10 @@ simulate_simple_continuous_time_data <- function(n,
                                                  visitation_sd = 5,
                                                  discretize_age = FALSE,
                                                  no_competing_events = FALSE,
-                                                 uncensored = FALSE) {
+                                                 uncensored = FALSE,
+                                                 K = 3,
+                                                 limit_event_A = 1,
+                                                 limit_event_L = 1) {
   if (!is.null(static_intervention)) {
     static_intervention_baseline <- static_intervention
   }
@@ -815,121 +859,48 @@ simulate_simple_continuous_time_data <- function(n,
   fup_info <- NULL
   has_terminal <- NULL
   # time loop
-  people_atrisk[, visitation_times := visitation_interval + rnorm(nrow(people_atrisk), 0, visitation_sd)]
 
-  ## j = 1
-  a_time <- people_atrisk$visitation_times
-  l_time <- rexponential_proportional_hazard(
-    n = nrow(people_atrisk),
-    rate = baseline_rate_list$L,
-    eta = effects$beta_l_1$A * people_atrisk$A +
-      effects$beta_l_1$age * people_atrisk$age
-  )
-  if (!uncensored) {
-    c_time <- rexponential_proportional_hazard(
-      n = nrow(people_atrisk),
-      rate = baseline_rate_list$C,
-      eta = effects$beta_c_1$A * people_atrisk$A +
-        effects$beta_c_1$age * people_atrisk$age
-    )
+  j <- 1
+  people_atrisk[, n_A_events := 0]
+  people_atrisk[, n_L_events := 0]
+  while (j <= K && nrow(people_atrisk) > 0) {
+    if (j < K) {
+      if (j == 1) {
+        treatment_event <- rep(TRUE, nrow(people_atrisk))
+      } else {
+        treatment_event <- people_atrisk$event == "A"
+      }
+
+      max_event_reached_A <- people_atrisk$n_A_events >= limit_event_A
+      a_time <- rep(NA, nrow(people_atrisk))
+      a_time[max_event_reached_A] <- Inf
+      a_time[treatment_event & !max_event_reached_A] <- visitation_interval +
+        rnorm(nrow(people_atrisk[treatment_event & !max_event_reached_A]), 0, visitation_sd)
+      a_time[!treatment_event & !max_event_reached_A] <- rexponential_proportional_hazard(
+        n = nrow(people_atrisk[!treatment_event]),
+        rate = baseline_rate_list$A,
+        eta = 0
+      )
+
+      max_event_reached_L <- people_atrisk$n_L_events >= limit_event_L
+      l_time <- rep(NA, nrow(people_atrisk))
+      l_time[max_event_reached_L] <- Inf
+      l_time[!max_event_reached_L] <- rexponential_proportional_hazard(
+        n = nrow(people_atrisk[treatment_event]),
+        rate = baseline_rate_list$L,
+        eta = effects[[paste0("beta_l_", j)]]$A * people_atrisk[treatment_event, A] +
+          effects[[paste0("beta_l_", j)]]$age * people_atrisk[treatment_event, age]
+      )
   } else {
-    c_time <- rep(max_fup + 1, nrow(people_atrisk))
+    a_time <- rep(max_fup + 1, nrow(people_atrisk))
+  l_time <- rep(max_fup + 1, nrow(people_atrisk))
   }
-  y_time <- rexponential_proportional_hazard(
-    n = nrow(people_atrisk),
-    rate = baseline_rate_list$Y,
-    eta = effects$beta_y_1$A * people_atrisk$A +
-      effects$beta_y_1$L * people_atrisk$L +
-      effects$beta_y_1$age * people_atrisk$age
-  )
-  if (!no_competing_events) {
-    d_time <- rexponential_proportional_hazard(
-      n = nrow(people_atrisk),
-      rate = baseline_rate_list$D,
-      eta = effects$beta_d_1$A * people_atrisk$A +
-        effects$beta_d_1$L * people_atrisk$L +
-        effects$beta_d_1$age * people_atrisk$age
-    )
-  } else {
-    d_time <- rep(max_fup + 1, nrow(people_atrisk))
-  }
-
-  ttt <- do.call(
-    "cbind",
-    list(
-      a_time,
-      l_time,
-      c_time,
-      y_time,
-      d_time
-    )
-  )
-  mins <- Rfast::rowMins(ttt, value = FALSE)
-  people_atrisk[, event := factor(mins,
-    levels = 1:5,
-    labels = c("A", "L", "C", "Y", "D")
-  )]
-  people_atrisk[, time := Rfast::rowMins(ttt, value = TRUE) + entrytime + 1] ## make sure that at least one day happens between each event
-  people_atrisk[time > max_fup, event := "tauend"]
-  people_atrisk[time > max_fup, time := max_fup]
-  is_terminal <- !(people_atrisk$event %in% c("A", "L"))
-  #------------------------------------------------------------------------------
-
-  # collect terminal information
-  has_terminal <- rbind(has_terminal, people_atrisk[is_terminal, data.table::data.table(id,
-    time = time,
-    event = event,
-    age,
-    L_0,
-    A_0,
-    A,
-    L
-  )])
-  #------------------------------------------------------------------------------
-  # restrict to people still at risk
-  people_atrisk <- people_atrisk[!is_terminal]
-  # update propensity score
-  if (!is.null(static_intervention)) {
-    people_atrisk[event == "A", new_A := static_intervention]
-  } else {
-    people_atrisk[event == "A", new_A := stats::rbinom(.N, 1, lava::expit(effects$alpha_A_1$intercept +
-      effects$alpha_A_1$L * people_atrisk$L +
-      effects$alpha_A_1$T * people_atrisk$time +
-      effects$alpha_A_1$age * people_atrisk$age))]
-  }
-  people_atrisk[event == "L", L := 1]
-  people_atrisk[event == "A", A := new_A]
-
-  # collect followup information
-  fup_info <- rbind(fup_info, people_atrisk[, names(pop), with = FALSE], fill = TRUE)
-  # -----------------------------------------------------------------------------
-  # update for next epoch
-  people_atrisk[, entrytime := time]
-
-  # j = 2
-  if (nrow(people_atrisk) > 0) {
-    treatment_event <- people_atrisk$event == "A"
-    a_time <- rep(nrow(people_atrisk), nrow(people_atrisk))
-    a_time[treatment_event] <- Inf
-    a_time[!treatment_event] <- rexponential_proportional_hazard(
-      n = nrow(people_atrisk[!treatment_event]),
-      rate = baseline_rate_list$A,
-      eta = 0
-    )
-    l_time <- rep(nrow(people_atrisk), nrow(people_atrisk))
-    l_time[!treatment_event] <- Inf
-    l_time[treatment_event] <- rexponential_proportional_hazard(
-      n = nrow(people_atrisk[treatment_event]),
-      rate = baseline_rate_list$L,
-      eta = effects$beta_l_2$A * people_atrisk[treatment_event, A] +
-        effects$beta_l_2$age * people_atrisk[treatment_event, age]
-    )
     if (!uncensored) {
       c_time <- rexponential_proportional_hazard(
         n = nrow(people_atrisk),
         rate = baseline_rate_list$C,
-        eta = effects$beta_c_2$A * people_atrisk$A +
-          effects$beta_c_2$age * people_atrisk$age
+        eta = effects[[paste0("beta_c_", j)]]$A * people_atrisk$A +
+          effects[[paste0("beta_c_", j)]]$age * people_atrisk$age
       )
     } else {
       c_time <- rep(max_fup + 1, nrow(people_atrisk))
@@ -937,21 +908,22 @@ simulate_simple_continuous_time_data <- function(n,
     y_time <- rexponential_proportional_hazard(
       n = nrow(people_atrisk),
       rate = baseline_rate_list$Y,
-      eta = effects$beta_y_2$A * people_atrisk$A +
-        effects$beta_y_2$L * people_atrisk$L +
-        effects$beta_y_2$age * people_atrisk$age
+      eta = effects[[paste0("beta_y_", j)]]$A * people_atrisk$A +
+        effects[[paste0("beta_y_", j)]]$L * people_atrisk$L +
+        effects[[paste0("beta_y_", j)]]$age * people_atrisk$age
     )
     if (!no_competing_events) {
       d_time <- rexponential_proportional_hazard(
         n = nrow(people_atrisk),
         rate = baseline_rate_list$D,
-        eta = effects$beta_d_2$A * people_atrisk$A +
-          effects$beta_d_2$L * people_atrisk$L +
-          effects$beta_d_2$age * people_atrisk$age
+        eta = effects[[paste0("beta_d_", j)]]$A * people_atrisk$A +
+          effects[[paste0("beta_d_", j)]]$L * people_atrisk$L +
+          effects[[paste0("beta_d_", j)]]$age * people_atrisk$age
       )
     } else {
       d_time <- rep(max_fup + 1, nrow(people_atrisk))
     }
+
     ttt <- do.call(
       "cbind",
       list(
@@ -972,6 +944,7 @@ simulate_simple_continuous_time_data <- function(n,
     people_atrisk[time > max_fup, time := max_fup]
     is_terminal <- !(people_atrisk$event %in% c("A", "L"))
     #------------------------------------------------------------------------------
+
     # collect terminal information
     has_terminal <- rbind(has_terminal, people_atrisk[is_terminal, data.table::data.table(id,
       time = time,
@@ -988,88 +961,27 @@ simulate_simple_continuous_time_data <- function(n,
     # update propensity score
     if (!is.null(static_intervention)) {
       people_atrisk[event == "A", new_A := static_intervention]
+      people_atrisk[event == "A", n_A_events := n_A_events + 1]
     } else {
-      people_atrisk[event == "A", new_A := stats::rbinom(.N, 1, lava::expit(effects$alpha_A_2$intercept +
-        effects$alpha_A_2$L * people_atrisk$L +
-        effects$alpha_A_2$T * people_atrisk$time +
-        effects$alpha_A_2$age * people_atrisk$age))]
+      people_atrisk[event == "A", new_A := stats::rbinom(
+        .N, 1,
+        lava::expit(effects[[paste0("alpha_A_", j)]]$intercept +
+          effects[[paste0("alpha_A_", j)]]$L * people_atrisk$L +
+          effects[[paste0("alpha_A_", j)]]$T * people_atrisk$time +
+          effects[[paste0("alpha_A_", j)]]$age * people_atrisk$age)
+      )]
+      people_atrisk[event == "A", n_A_events := n_A_events + 1]
     }
-    people_atrisk[event == "L", L := 1]
+    people_atrisk[event == "L", L := L + 1] ## Could be updated based on new_A
+    people_atrisk[event == "L", n_L_events := n_L_events + 1]
     people_atrisk[event == "A", A := new_A]
-    # collect followup information
-    fup_info <- rbind(fup_info, people_atrisk[, names(pop), with = FALSE], fill = TRUE)
-    # -----------------------------------------------------------------------------
-    # update for next epoch
-    people_atrisk[, entrytime := time]
-  }
-  # j = 3
-  if (nrow(people_atrisk) > 0) {
-    if (!uncensored) {
-      c_time <- rexponential_proportional_hazard(
-        n = nrow(people_atrisk),
-        rate = baseline_rate_list$C,
-        eta = effects$beta_c_3$A * people_atrisk$A +
-          effects$beta_c_3$age * people_atrisk$age
-      )
-    } else {
-      c_time <- rep(max_fup + 1, nrow(people_atrisk))
-    }
-
-    y_time <- rexponential_proportional_hazard(
-      n = nrow(people_atrisk),
-      rate = baseline_rate_list$Y,
-      eta = effects$beta_y_3$A * people_atrisk$A +
-        effects$beta_y_3$L * people_atrisk$L +
-        effects$beta_y_3$age * people_atrisk$age
-    )
-    if (!no_competing_events) {
-      d_time <- rexponential_proportional_hazard(
-        n = nrow(people_atrisk),
-        rate = baseline_rate_list$D,
-        eta = effects$beta_d_3$A * people_atrisk$A +
-          effects$beta_d_3$L * people_atrisk$L +
-          effects$beta_d_3$age * people_atrisk$age
-      )
-    } else {
-      d_time <- rep(max_fup + 1, nrow(people_atrisk))
-    }
-    ttt <- do.call(
-      "cbind",
-      list(
-        c_time,
-        y_time,
-        d_time
-      )
-    )
-    mins <- Rfast::rowMins(ttt, value = FALSE)
-    people_atrisk[, event := factor(mins,
-      levels = 1:3,
-      labels = c("C", "Y", "D")
-    )]
-    people_atrisk[, time := Rfast::rowMins(ttt, value = TRUE) + entrytime + 1] ## make sure that at least one day happens between each event
-    people_atrisk[time > max_fup, event := "tauend"]
-    people_atrisk[time > max_fup, time := max_fup]
-    is_terminal <- !(people_atrisk$event %in% c("A", "L"))
-    #------------------------------------------------------------------------------
-    # collect terminal information
-    has_terminal <- rbind(has_terminal, people_atrisk[is_terminal, data.table::data.table(id,
-      time = time,
-      event = event,
-      age,
-      L_0,
-      A_0,
-      A,
-      L
-    )])
-    #------------------------------------------------------------------------------
-    # restrict to people still at risk
-    people_atrisk <- people_atrisk[!is_terminal]
 
     # collect followup information
     fup_info <- rbind(fup_info, people_atrisk[, names(pop), with = FALSE], fill = TRUE)
     # -----------------------------------------------------------------------------
     # update for next epoch
     people_atrisk[, entrytime := time]
+    j <- j + 1
   }
   pop <- rbind(has_terminal, fup_info)
   setkey(pop, id, time, event)

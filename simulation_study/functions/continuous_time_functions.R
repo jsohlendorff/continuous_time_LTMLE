@@ -40,14 +40,14 @@ get_propensity_scores <- function(last_event_number,
           k = k
         )
 
-        formula_censoring <- as.formula(paste0(
+        formula_censoring <- paste0(
           "Surv(time_",
           k,
           ", event_",
           k,
           " == \"C\") ~ ",
           paste(history_of_variables_hazard, collapse = "+")
-        ))
+        )
         if (verbose) {
           message("Fitting censoring model for event ", k, " with formula: ", deparse(formula_censoring), "\n")
         }
@@ -70,19 +70,42 @@ get_propensity_scores <- function(last_event_number,
         if (!inherits(fit_cens$fit, "coxph")) {
           stop("Censoring model must be a Cox proportional hazards model when marginal_censoring_hazard is TRUE.")
         }
-        exp_lp <- predict(fit_cens$fit, newdata = data, type = "risk", reference = "zero")[at_risk_interevent$id]
-        baseline_hazard <- as.data.table(basehaz(fit_cens$fit, centered = FALSE))
-        sindex_k <- prodlim::sindex(baseline_hazard$time, at_risk_interevent[[paste0("time_", k)]], strict = TRUE) + 1
-        baseline_hazard_k <- baseline_hazard[sindex_k, "hazard"]$hazard
+        base_hazard <- as.data.table(basehaz(fit_cens$fit, centered = FALSE))
+        ## First find survival probability of not being censored at time T_k- (when the covariates are zero)
+        baseline_hazard_minus <- copy(base_hazard)
+        baseline_hazard_minus$hazard <- c(0, head(baseline_hazard_minus$hazard, -1))
+        baseline_hazard <- copy(base_hazard)
+        setnames(baseline_hazard_minus, c("time", "hazard"), c(paste0("time_", k), "hazard_minus"))
+        setnames(baseline_hazard, "time", paste0("time_", k))
+        baseline_hazard_minus <- baseline_hazard_minus[data[, c("id", paste0("event_", k), paste0("time_", k), baseline_covariates), with = FALSE], roll = TRUE, on = paste0("time_", k)]
+        baseline_hazard_minus[is.na(hazard_minus), hazard_minus := 0]
+        baseline_hazard <- baseline_hazard[data[, c("id", paste0("event_", k), paste0("time_", k), baseline_covariates), with = FALSE], roll = TRUE, on = paste0("time_", k)]
+        baseline_hazard[is.na(hazard), hazard := 0]
+        baseline_hazard_minus <- merge(baseline_hazard, baseline_hazard_minus, by = c("id", baseline_covariates, paste0("event_", k), paste0("time_", k)))
+        ## Split into whether or not, the event time is registered on the data set consisting only of terminal events
+        ## For the Cox model, if t is not an event time, then the survival fucntion G(t- | x) = G(t | x)
+        ## A and L events are NOT event times for the marginal Cox model
+        baseline_hazard_minus[, hazard_minus := hazard_minus * 1 * (event_k %in% c("C", "Y", "D", "tauend")) + hazard * 1 * (event_k %in% c("A", "L")), env = list(event_k = paste0("event_", k))]
+        baseline_hazard_minus[, c(paste0("event_", k), "hazard") := NULL]
+
+        ## Then find survival probability of not being censored at time T_(k-1) (when the covariates are zero)
         if (k > 1) {
-          sindex_k_minus_one <- prodlim::sindex(baseline_hazard$time, at_risk_interevent[[paste0("time_", k - 1)]]) + 1
-          baseline_hazard_k_minus_one <- baseline_hazard[sindex_k_minus_one, "hazard"]$hazard
+          baseline_hazard <- copy(base_hazard)
+          setnames(baseline_hazard, "time", paste0("time_", k - 1))
+          baseline_hazard <- baseline_hazard[data[, c("id", paste0("time_", k - 1), baseline_covariates), with = FALSE], roll = TRUE, on = paste0("time_", k - 1)]
+          baseline_hazard[is.na(hazard), hazard := 0]
         } else {
-          baseline_hazard_k_minus_one <- rep(0, nrow(at_risk_interevent))
+          baseline_hazard <- baseline_hazard_minus[, -c("hazard_minus", paste0("time_", k)), with = FALSE]
+          baseline_hazard[, time_0 := 0]
+          baseline_hazard[, hazard := 0]
         }
+        baseline_hazard <- merge(baseline_hazard, baseline_hazard_minus, by = c("id", baseline_covariates))
+        baseline_hazard[, exp_lp := predict(fit_cens$fit, newdata = .SD, type = "risk", reference = "zero")]
+
+        ## Survival probability of not being censored at time T_k- (when the covariates are zero) given not censored at time T_(k-1)
+        baseline_hazard[, surv := exp(-exp_lp * (hazard_minus - hazard))]
         learn_censoring <- list()
-        learn_censoring$fit <- NULL
-        learn_censoring$pred <- exp(-exp_lp * (baseline_hazard_k - baseline_hazard_k_minus_one))
+        learn_censoring$pred <- baseline_hazard[id %in% at_risk_interevent$id, surv]
       }
       if (k > 1) {
         data[event_k_prev %in% c("A", "L"),
@@ -114,7 +137,7 @@ get_propensity_scores <- function(last_event_number,
         k_lag = k_lag,
         k = k
       )
-      formula_treatment <- as.formula(paste0("A_", k, " ~ ", paste0(history_of_variables_propensity, collapse = "+")))
+      formula_treatment <- paste0("A_", k, " ~ ", paste0(history_of_variables_propensity, collapse = "+"))
       if (verbose) {
         message("Fitting treatment propensity model for event ", k, " with formula: ", deparse(formula_treatment), "\n")
       }
@@ -152,10 +175,10 @@ get_propensity_scores <- function(last_event_number,
     data[, propensity_0 := 1]
   } else {
     ## Baseline propensity model
-    formula_treatment <- as.formula(paste0("A_0 ~ ", paste(
+    formula_treatment <- paste0("A_0 ~ ", paste(
       setdiff(baseline_covariates, "A_0"),
       collapse = "+"
-    )))
+    ))
     ## Fit the baseline treatment propensity model
     ## check whethe any baseline covariates should be deleted
     baseline_covariates <- setdiff(
@@ -389,10 +412,10 @@ debias_ice_ipcw <- function(data,
         length(unique(x)) <= 1
       })
     )))
-    formula_cens <- as.formula(paste0(
+    formula_cens <- paste0(
       "Surv(time, event == \"C\") ~ ",
       paste(baseline_variables_to_use, collapse = "+")
-    ))
+    )
     withCallingHandlers(
       {
         fit_cens <- do.call(model_hazard, list(
@@ -629,7 +652,7 @@ debias_ice_ipcw <- function(data,
           ic_final <- merge(at_risk_before_tau[, c("weight", "pred", "id", "cens_mg")], data[, c("ic_term_part", "id")], by = "id")
           ic_final <- ic_final[, ic_term_part := ic_term_part * (weight - pred + cens_mg)] # weight: Z. pred: Q
         } else {
-            stop("Grid size must be specified for cens_mg_method = 'multiple_ice'.")
+          stop("Grid size must be specified for cens_mg_method = 'multiple_ice'.")
         }
       } else {
         causes <- unique(at_risk_interevent[[paste0("event_", k)]])
@@ -657,7 +680,7 @@ debias_ice_ipcw <- function(data,
 
         learn_causes <- list()
         for (cause in causes) {
-          formula_event <- as.formula(paste0(
+          formula_event <- paste0(
             "Surv(time_",
             k,
             ", event_",
@@ -666,7 +689,7 @@ debias_ice_ipcw <- function(data,
             cause,
             "\") ~ ",
             paste(history_of_variables_hazard, collapse = "+")
-          ))
+          )
           if (verbose) {
             message("Fitting cause-specific hazard model for cause ", cause, " with formula: ", deparse(formula_event), "\n")
           }
@@ -728,7 +751,7 @@ debias_ice_ipcw <- function(data,
             static_intervention = static_intervention
           )
         } else {
-            mg_a <- NULL
+          mg_a <- NULL
         }
         if ("L" %in% causes) {
           mg_l <- influence_curve_censoring_martingale(

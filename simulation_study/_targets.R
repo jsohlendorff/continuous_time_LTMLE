@@ -19,7 +19,7 @@ try(
 
 ## Try to load on server
 try(setwd("/projects/biostat01/people/snf991/phd/continuous_time_LTMLE/simulation_study"),
-    silent = TRUE
+  silent = TRUE
 )
 
 ## Set up the crew controller
@@ -173,7 +173,8 @@ sim_and_true_value <- tar_map(
         effect_age_on_A = effect_age_on_A,
         baseline_rate_Y = baseline_rate_Y
       )
-    }
+    },
+    cue = tar_cue("never")
   ),
   tar_rep(
     results,
@@ -233,7 +234,7 @@ sim_and_true_value <- tar_map(
     ),
     reps = reps,
     batch = batches,
-    cue = tar_cue("always")
+    cue = tar_cue("never")
   )
 )
 
@@ -301,6 +302,82 @@ sim_censored <- tar_map(
     ),
     reps = reps,
     batch = batches
+  )
+)
+
+parameter_vary_censoring_non_conservative <-
+  merge(
+    parameter_vary[c(1:5), ],
+    data.frame(
+      baseline_rate_C = rep(0.0005, 6),
+      model_type = rep("scaled_quasibinomial", 6),
+      conservative = c(rep(FALSE, 4), TRUE, FALSE),
+      grid_size = c(5, 10, 30, 100, 1, 1),
+      cens_mg_method = c(rep("multiple_ice", 4), "none", "integral_estimation"),
+      marginal_censoring_hazard = c(rep(TRUE, 5), FALSE)
+    ),
+    all = TRUE
+  )
+
+sim_censored_non_conservative <- tar_map(
+  values = parameter_vary_censoring_non_conservative,
+  tar_rep(
+    results_censored_non_conservative,
+    ## main simulation; run the debiased ICE-IPCW procedure, LTMLE, and Cox procedures.
+    simulate_and_run_simple(
+      n = n_fixed,
+      function_name = "debias_ice_ipcw",
+      simulate_args = list(
+        uncensored = FALSE,
+        no_competing_events = TRUE,
+        # if conservative=FALSE, it will be biased, see example.R. Therefore set max_fup to a large value
+        effects = vary_effect(
+          effect_A_on_Y,
+          effect_L_on_Y,
+          effect_L_on_A,
+          effect_A_on_L,
+          effect_age_on_Y,
+          effect_age_on_A
+        ),
+        baseline_rate_list = list(
+          A = 0.005,
+          L = 0.001,
+          C = baseline_rate_C,
+          Y = baseline_rate_Y,
+          D = 0.00015
+        )
+      ),
+      add_info = data.table(
+        effect_A_on_Y = effect_A_on_Y,
+        effect_L_on_Y = effect_L_on_Y,
+        effect_L_on_A = effect_L_on_A,
+        effect_A_on_L = effect_A_on_L,
+        effect_age_on_Y = effect_age_on_Y,
+        effect_age_on_A = effect_age_on_A,
+        baseline_rate_Y = baseline_rate_Y,
+        baseline_rate_C = baseline_rate_C,
+        model_type = model_type,
+        conservative = conservative,
+        grid_size = grid_size,
+        cens_mg_method = cens_mg_method,
+        marginal_censoring_hazard = marginal_censoring_hazard
+      ),
+      function_args = list(
+        tau = tau,
+        model_pseudo_outcome = model_type,
+        model_treatment = "learn_glm_logistic",
+        model_hazard = "learn_coxph",
+        time_covariates = time_covariates,
+        baseline_covariates = baseline_covariates,
+        conservative = conservative,
+        grid_size = grid_size,
+        cens_mg_method = cens_mg_method,
+        marginal_censoring_hazard = marginal_censoring_hazard
+      )
+    ),
+    reps = reps,
+    batch = batches / 2, # = 50
+    cue = tar_cue("never")
   )
 )
 
@@ -637,6 +714,31 @@ list(
   tar_target(
     boxplot_results_censored,
     fun_boxplot_censoring(sim_merge_censored, by = c(by_vars, "conservative"))
+  ),
+  sim_censored_non_conservative,
+  ## merge the true values with the debiased results for the censored case (non-conservative)
+  tar_combine(
+    sim_merge_censored_non_conservative,
+    list(sim_censored_non_conservative[["results_censored_non_conservative"]], sim_and_true_value[["true_value"]]),
+    command = combine_results_and_true_values(!!!.x, .id = "method", by = by_vars)
+  ),
+  ## calculate coverage for the censored case (non-conservative)
+  tar_target(
+    results_table_censored_non_conservative,
+    {
+      get_tables(
+        sim_merge_censored_non_conservative,
+        by = c(
+          by_vars, "baseline_rate_C", "model_type", "conservative", "grid_size",
+          "cens_mg_method"
+        )
+      )
+    }
+  ),
+  ## boxplot the debiased results (censored, non-conservative)
+  tar_target(
+    boxplot_results_censored_non_conservative,
+    fun_boxplot_censoring_non_conservative(sim_merge_censored_non_conservative, by = by_vars)
   ),
 
   ## vary dropout
