@@ -877,24 +877,23 @@ simulate_simple_continuous_time_data <- function(n,
       a_time[treatment_event & !max_event_reached_A] <- visitation_interval +
         rnorm(nrow(people_atrisk[treatment_event & !max_event_reached_A]), 0, visitation_sd)
       a_time[!treatment_event & !max_event_reached_A] <- rexponential_proportional_hazard(
-        n = nrow(people_atrisk[!treatment_event]),
+        n = nrow(people_atrisk[!treatment_event & !max_event_reached_A]),
         rate = baseline_rate_list$A,
         eta = 0
       )
 
       max_event_reached_L <- people_atrisk$n_L_events >= limit_event_L
-      l_time <- rep(NA, nrow(people_atrisk))
-      l_time[max_event_reached_L] <- Inf
+      l_time <- rep(Inf, nrow(people_atrisk))
       l_time[!max_event_reached_L] <- rexponential_proportional_hazard(
-        n = nrow(people_atrisk[treatment_event]),
+        n = nrow(people_atrisk[!max_event_reached_L]),
         rate = baseline_rate_list$L,
-        eta = effects[[paste0("beta_l_", j)]]$A * people_atrisk[treatment_event, A] +
-          effects[[paste0("beta_l_", j)]]$age * people_atrisk[treatment_event, age]
+        eta = effects[[paste0("beta_l_", j)]]$A * people_atrisk[!max_event_reached_L, A] +
+          effects[[paste0("beta_l_", j)]]$age * people_atrisk[!max_event_reached_L, age]
       )
-  } else {
-    a_time <- rep(max_fup + 1, nrow(people_atrisk))
-  l_time <- rep(max_fup + 1, nrow(people_atrisk))
-  }
+    } else {
+      a_time <- rep(max_fup + 1, nrow(people_atrisk))
+      l_time <- rep(max_fup + 1, nrow(people_atrisk))
+    }
     if (!uncensored) {
       c_time <- rexponential_proportional_hazard(
         n = nrow(people_atrisk),
