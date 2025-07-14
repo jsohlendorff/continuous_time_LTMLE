@@ -3,9 +3,9 @@
 ## Author: Johan Sebastian Ohlendorff
 ## Created: Jul 11 2025 (15:11)
 ## Version:
-## Last-Updated: Jul 11 2025 (16:13) 
+## Last-Updated: Jul 11 2025 (16:59) 
 ##           By: Johan Sebastian Ohlendorff
-##     Update #: 62
+##     Update #: 90
 #----------------------------------------------------------------------
 ##
 ### Commentary:
@@ -20,7 +20,7 @@ vary_effects_simple <- function(effects = list(
                                     intercept = 0,
                                     age = 0.002,
                                     L = -0.07,
-                                    T = 0
+                                    time = 0
                                   ),
                                   beta_l = list(
                                     A = -0.2,
@@ -64,13 +64,13 @@ simulate_continuous_time_purchase_history_data <- function(n,
                                                                  intercept = 0.3,
                                                                  age = 0.002,
                                                                  L = -0.07,
-                                                                 T = 0
+                                                                 time = 0
                                                                ),
                                                                alpha_A_2 = list(
                                                                  intercept = 0.3,
                                                                  age = 0.002,
                                                                  L = -0.07,
-                                                                 T = 0
+                                                                 time = 0
                                                                ),
                                                                beta_l_1 = list(
                                                                  A = -0.2,
@@ -145,7 +145,8 @@ simulate_continuous_time_purchase_history_data <- function(n,
                                                            K = 12,
                                                            limit_event_A = 1,
                                                            limit_event_L = 1,
-                                                           days_for_medicine = 100) {
+                                                           days_for_medicine = 100,
+                                                           keep_A = FALSE) {
   if (!is.null(static_intervention)) {
     static_intervention_baseline <- static_intervention
   }
@@ -299,9 +300,9 @@ simulate_continuous_time_purchase_history_data <- function(n,
       people_atrisk[event == "A", new_A := stats::rbinom(
         .N, 1,
         lava::expit(effects[[paste0("alpha_A_", j)]]$intercept +
-          effects[[paste0("alpha_A_", j)]]$L * people_atrisk$L +
-          effects[[paste0("alpha_A_", j)]]$T * people_atrisk$time +
-          effects[[paste0("alpha_A_", j)]]$age * people_atrisk$age)
+          effects[[paste0("alpha_A_", j)]]$L * L +
+          effects[[paste0("alpha_A_", j)]]$time * time +
+          effects[[paste0("alpha_A_", j)]]$age * age)
       )]
       people_atrisk[event == "A", n_A_events := n_A_events + 1]
     }
@@ -324,9 +325,52 @@ simulate_continuous_time_purchase_history_data <- function(n,
   ## remove duplicate ids from baseline
   baseline_data <- baseline_data[!duplicated(baseline_data$id)]
   timevarying_data <- pop[, setdiff(names(pop), baseline_vars), with = FALSE]
+  if (!keep_A) {
+      timevarying_data[, A := NULL]
+      timevarying_data <- timevarying_data[event != "A"]
+  }
   list(baseline_data = baseline_data, timevarying_data = timevarying_data)
 }
 
+reconstruct_A_from_purchase_history <- function(df,
+                                                df_baseline,
+                                                med_length = 150,
+                                                time_varying_covariates = "L",
+                                                grace_period = 1) {
+    df[, event_number :=1:.N, by = id]
+    df_0 <- df_baseline[, c("id", "A_0", paste0(time_varying_covariates, "_0")), with = FALSE]
+    df_0[, c("time","event") := list(0, "M")]
+    setnames(df_0, c("A_0", paste0(time_varying_covariates, "_0")), c("A", "L"))
+    df <- rbind(df_0, df, fill = TRUE)
+    
+    setkey(df, id, time)
+    df[time == 0, med_left := med_length]
+    df[time == 0, event_number := 0]
+    df[, time_prev := shift(time, type = "lag"), by = id]
+    df[is.na(time_prev), time_prev := 0]
+    df[event == "M", A:=1]
+    max_number_events <- max(df$event_number)
+    for (e in 1:max_number_events) {
+      df[, med_prev := shift(med_left, type = "lag"), by = id]
+      df_discontinued <- df[event_number == e & med_prev > 0 & time - time_prev > med_prev + grace_period,
+                            .(id, time = med_prev + time_prev + grace_period, event = "A", L, A = 0, med_left = 0)]
+      df <- rbind(df, df_discontinued, fill = TRUE)
+      setkey(df, id, time)
+      df[, time_prev := shift(time, type = "lag"), by = id]
+      df[, med_prev := shift(med_left, type = "lag"), by = id]
+      
+      df[event_number == e, med_left := 1*(event=="M") * med_length + med_prev - (time - time_prev)]
+      df[med_left < 0, med_left := 0]
+    }
+    df[, A := nafill(A, type = "locf"), by = id]
+    df[event=="M", event:="A"]
+    df[, c("time_prev", "med_prev", "event_number", "med_left") := NULL]
+    df <- df[time!=0]
+    list(
+      timevarying_data = df,
+      baseline_data = df_baseline
+    )
+}
 
 ######################################################################
 ### simulate_purchase_history.R ends here

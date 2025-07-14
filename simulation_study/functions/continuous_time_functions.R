@@ -358,9 +358,11 @@ debias_ice_ipcw <- function(data,
       }
     }
   }
+
   data$timevarying_data[, to_delete := event_number > last_event_number &
     event %in% c("A", "L")]
   data$timevarying_data <- data$timevarying_data[to_delete == FALSE]
+  data$timevarying_data <- data$timevarying_data[, event_number := seq_len(.N), by = id]
   last_event_number <- last_event_number + 1
 
   ## If marginal_censoring_hazard is TRUE, get data for terminal events
@@ -376,7 +378,6 @@ debias_ice_ipcw <- function(data,
 
   ## Convert the data from long format to wide format
   data <- widen_continuous_data(data, time_covariates)
-
   data[, ic := 0]
   is_censored <- FALSE
 

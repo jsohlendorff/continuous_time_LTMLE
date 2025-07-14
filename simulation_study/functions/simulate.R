@@ -49,8 +49,8 @@ fun_boxplot <- function(d, by = NULL) {
     ggplot2::geom_boxplot() +
     ggplot2::theme_minimal()
   if (!is.null(by)) {
-    p <- p + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
-    qz <- qz + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
+    p <- p + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), labeller = ggplot2::label_both) #scales = "free_y",
+    qz <- qz + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), labeller = ggplot2::label_both)
     ## for q add different geom hlines with sd(estimate) for each compination of variables in by
     qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est, color = type), linetype = "dashed")
   } else {
@@ -87,12 +87,12 @@ fun_boxplot_censoring <- function(d, by = NULL) {
     ggplot2::geom_hline(aes(yintercept = value, color = "red")) +
     ggplot2::theme_minimal()
   if (!is.null(by)) {
-    p <- p + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
-    qz <- qz + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
+    p <- p + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), labeller = ggplot2::label_both)
+    qz <- qz + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), labeller = ggplot2::label_both)
     ## for q add different geom hlines with sd(estimate) for each compination of variables in by
     qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est, color = model_type), linetype = "dashed")
-    r <- r + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
-    w <- w + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_both)
+    r <- r + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), labeller = ggplot2::label_both)
+    w <- w + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), labeller = ggplot2::label_both)
   } else {
     qz <- qz + ggplot2::geom_hline(aes(yintercept = sd(estimate), color = "red"))
   }
@@ -592,13 +592,13 @@ vary_effect <- function(effect_A_on_Y = -0.15,
       intercept = 0.3,
       age = effect_age_on_A,
       L = effect_L_on_A,
-      T = 0
+      time = 0
     ),
     alpha_A_2 = list(
       intercept = 0.3,
       age = effect_age_on_A,
       L = effect_L_on_A,
-      T = 0
+      time = 0
     ),
     beta_l_1 = list(
       A = effect_A_on_L,
@@ -663,13 +663,13 @@ vary_dropout <- function(a_intercept = 0.3) {
       intercept = a_intercept,
       age = 0.002,
       L = -0.07,
-      T = 0
+      time = 0
     ),
     alpha_A_2 = list(
       intercept = a_intercept,
       age = 0.002,
       L = -0.07,
-      T = 0
+      time = 0
     ),
     beta_l_1 = list(
       A = -0.2,
@@ -738,13 +738,13 @@ simulate_simple_continuous_time_data <- function(n,
                                                        intercept = 0.3,
                                                        age = 0.002,
                                                        L = -0.07,
-                                                       T = 0
+                                                       time = 0
                                                      ),
                                                      alpha_A_2 = list(
                                                        intercept = 0.3,
                                                        age = 0.002,
                                                        L = -0.07,
-                                                       T = 0
+                                                       time = 0
                                                      ),
                                                      beta_l_1 = list(
                                                        A = -0.2,
@@ -965,9 +965,9 @@ simulate_simple_continuous_time_data <- function(n,
       people_atrisk[event == "A", new_A := stats::rbinom(
         .N, 1,
         lava::expit(effects[[paste0("alpha_A_", j)]]$intercept +
-          effects[[paste0("alpha_A_", j)]]$L * people_atrisk$L +
-          effects[[paste0("alpha_A_", j)]]$T * people_atrisk$time +
-          effects[[paste0("alpha_A_", j)]]$age * people_atrisk$age)
+          effects[[paste0("alpha_A_", j)]]$L * L +
+          effects[[paste0("alpha_A_", j)]]$time * time +
+          effects[[paste0("alpha_A_", j)]]$age * age)
       )]
       people_atrisk[event == "A", n_A_events := n_A_events + 1]
     }
