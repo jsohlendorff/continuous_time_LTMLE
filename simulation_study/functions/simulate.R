@@ -49,7 +49,7 @@ fun_boxplot <- function(d, by = NULL) {
     ggplot2::geom_boxplot() +
     ggplot2::theme_minimal()
   if (!is.null(by)) {
-    p <- p + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), labeller = ggplot2::label_both) #scales = "free_y",
+    p <- p + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), labeller = ggplot2::label_both) # scales = "free_y",
     qz <- qz + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))), labeller = ggplot2::label_both)
     ## for q add different geom hlines with sd(estimate) for each compination of variables in by
     qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est, color = type), linetype = "dashed")

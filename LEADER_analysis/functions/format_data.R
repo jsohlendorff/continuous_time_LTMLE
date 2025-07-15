@@ -2,8 +2,10 @@ format_data <- function(df,
                         df_baseline,
                         outcomes = c("all_cause_mortality", "mace", "censored"),
                         treat_name = "lira",
+                        dt_timevar_baseline,
                         event_cutoff = 10,
                         every_event_visitation_time = TRUE,
+                        id_regimen,
                         tau) {
   # df <- tar_read(combined_data_lira)
   # df_baseline <- tar_read(dt_baseline)
@@ -54,7 +56,16 @@ format_data <- function(df,
 
   ## Add treatment variable to baseline data (which is the only variable missing anway)
   df_baseline$A_0 <- 1
-  baseline_data <- df_baseline
+  baseline_data <- df_baseline[id %in% id_regimen, ] # Keep only ids in the regimen
+  baseline_data$id <- as.character(baseline_data$id) # Ensure id is character for merging
+  timevarying_data$id <- as.character(timevarying_data$id) # Ensure id is character for merging
+  timevarying_data <- timevarying_data[id %in% baseline_data$id, ] # Keep only ids available in the baseline data
+  baseline_data <- merge(
+    baseline_data,
+    dt_timevar_baseline[id %in% baseline_data$id, ],
+    by = "id",
+    all.x = TRUE
+  ) # Add time-varying covariates measured at time 0
 
   list(
     timevarying_data = timevarying_data,

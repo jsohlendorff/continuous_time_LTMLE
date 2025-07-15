@@ -1,55 +1,55 @@
 "effect_A_on_Y","effect_L_on_Y","effect_L_on_A","baseline_rate_C","model_type","type","coverage","mse","bias","sd","mean_se"
--0.3,0.5,-0.2,0.0002,"Scaled Quasi-binomial","Debiased ICE-IPCW",0.953,0.000327,-0.00000215,0.0181,0.0183
--0.3,0.5,-0.2,0.0002,"Scaled Quasi-binomial","Inverse Probability Weighting",,0.000327,0.00000554,0.0181,
--0.3,0.5,-0.2,0.0002,"Scaled Quasi-binomial","ICE-IPCW",,0.000326,-0.00000935,0.0181,
--0.3,0.5,-0.2,0.0002,"Tweedie","Debiased ICE-IPCW",0.955,0.00033,0.000406,0.0182,0.0183
--0.3,0.5,-0.2,0.0002,"Tweedie","Inverse Probability Weighting",,0.000329,0.000392,0.0181,
--0.3,0.5,-0.2,0.0002,"Tweedie","ICE-IPCW",,0.000329,0.000517,0.0181,
--0.3,0.5,-0.2,0.0002,"Linear model","Debiased ICE-IPCW",0.949,0.000329,-0.000151,0.0181,0.0183
--0.3,0.5,-0.2,0.0002,"Linear model","Inverse Probability Weighting",,0.000329,-0.000145,0.0181,
--0.3,0.5,-0.2,0.0002,"Linear model","ICE-IPCW",,0.000323,0.00138,0.0179,
--0.3,0.5,-0.2,0.0005,"Scaled Quasi-binomial","Debiased ICE-IPCW",0.947,0.000391,-0.000382,0.0198,0.0198
--0.3,0.5,-0.2,0.0005,"Scaled Quasi-binomial","Inverse Probability Weighting",,0.000391,-0.000374,0.0198,
--0.3,0.5,-0.2,0.0005,"Scaled Quasi-binomial","ICE-IPCW",,0.00039,-0.000373,0.0198,
--0.3,0.5,-0.2,0.0005,"Tweedie","Debiased ICE-IPCW",0.953,0.000381,0.0000656,0.0195,0.0198
--0.3,0.5,-0.2,0.0005,"Tweedie","Inverse Probability Weighting",,0.00038,0.0000876,0.0195,
--0.3,0.5,-0.2,0.0005,"Tweedie","ICE-IPCW",,0.000378,0.000397,0.0194,
--0.3,0.5,-0.2,0.0005,"Linear model","Debiased ICE-IPCW",0.953,0.000373,-0.000149,0.0193,0.0198
--0.3,0.5,-0.2,0.0005,"Linear model","Inverse Probability Weighting",,0.000373,-0.000144,0.0193,
--0.3,0.5,-0.2,0.0005,"Linear model","ICE-IPCW",,0.000365,0.00141,0.0191,
--0.3,0.5,-0.2,0.0008,"Scaled Quasi-binomial","Debiased ICE-IPCW",0.95,0.000443,0.0000784,0.0211,0.0214
--0.3,0.5,-0.2,0.0008,"Scaled Quasi-binomial","Inverse Probability Weighting",,0.000444,0.0000849,0.0211,
--0.3,0.5,-0.2,0.0008,"Scaled Quasi-binomial","ICE-IPCW",,0.000442,0.00015,0.021,
--0.3,0.5,-0.2,0.0008,"Tweedie","Debiased ICE-IPCW",0.952,0.000448,0.000444,0.0212,0.0214
--0.3,0.5,-0.2,0.0008,"Tweedie","Inverse Probability Weighting",,0.000447,0.000418,0.0211,
--0.3,0.5,-0.2,0.0008,"Tweedie","ICE-IPCW",,0.000445,0.000973,0.0211,
--0.3,0.5,-0.2,0.0008,"Linear model","Debiased ICE-IPCW",0.958,0.000421,0.000324,0.0205,0.0214
--0.3,0.5,-0.2,0.0008,"Linear model","Inverse Probability Weighting",,0.000421,0.00033,0.0205,
--0.3,0.5,-0.2,0.0008,"Linear model","ICE-IPCW",,0.000416,0.00191,0.0203,
-0,0,0,0.0002,"Scaled Quasi-binomial","Debiased ICE-IPCW",0.952,0.00031,0.0000124,0.0176,0.018
-0,0,0,0.0002,"Scaled Quasi-binomial","Inverse Probability Weighting",,0.000309,0.0000163,0.0176,
-0,0,0,0.0002,"Scaled Quasi-binomial","ICE-IPCW",,0.00031,0.000024,0.0176,
-0,0,0,0.0002,"Tweedie","Debiased ICE-IPCW",0.954,0.000312,0.000117,0.0177,0.018
-0,0,0,0.0002,"Tweedie","Inverse Probability Weighting",,0.000311,0.000102,0.0176,
-0,0,0,0.0002,"Tweedie","ICE-IPCW",,0.000311,0.000127,0.0176,
-0,0,0,0.0002,"Linear model","Debiased ICE-IPCW",0.945,0.000332,0.0000385,0.0182,0.018
-0,0,0,0.0002,"Linear model","Inverse Probability Weighting",,0.000333,0.0000444,0.0182,
-0,0,0,0.0002,"Linear model","ICE-IPCW",,0.000329,0.00113,0.0181,
-0,0,0,0.0005,"Scaled Quasi-binomial","Debiased ICE-IPCW",0.955,0.000356,0.000281,0.0189,0.0194
-0,0,0,0.0005,"Scaled Quasi-binomial","Inverse Probability Weighting",,0.000356,0.000292,0.0189,
-0,0,0,0.0005,"Scaled Quasi-binomial","ICE-IPCW",,0.000355,0.000315,0.0188,
-0,0,0,0.0005,"Tweedie","Debiased ICE-IPCW",0.954,0.000365,-0.000254,0.0191,0.0194
-0,0,0,0.0005,"Tweedie","Inverse Probability Weighting",,0.000364,-0.000286,0.0191,
-0,0,0,0.0005,"Tweedie","ICE-IPCW",,0.000362,-0.000181,0.019,
-0,0,0,0.0005,"Linear model","Debiased ICE-IPCW",0.955,0.000357,-0.000116,0.0189,0.0194
-0,0,0,0.0005,"Linear model","Inverse Probability Weighting",,0.000357,-0.000123,0.0189,
-0,0,0,0.0005,"Linear model","ICE-IPCW",,0.000354,0.00111,0.0188,
-0,0,0,0.0008,"Scaled Quasi-binomial","Debiased ICE-IPCW",0.957,0.000404,-0.000288,0.0201,0.0209
-0,0,0,0.0008,"Scaled Quasi-binomial","Inverse Probability Weighting",,0.000405,-0.000284,0.0201,
-0,0,0,0.0008,"Scaled Quasi-binomial","ICE-IPCW",,0.000401,-0.000199,0.02,
-0,0,0,0.0008,"Tweedie","Debiased ICE-IPCW",0.956,0.000417,-0.0000176,0.0204,0.0209
-0,0,0,0.0008,"Tweedie","Inverse Probability Weighting",,0.000416,-0.0000408,0.0204,
-0,0,0,0.0008,"Tweedie","ICE-IPCW",,0.000414,0.000157,0.0203,
-0,0,0,0.0008,"Linear model","Debiased ICE-IPCW",0.951,0.00043,-0.000201,0.0207,0.0209
-0,0,0,0.0008,"Linear model","Inverse Probability Weighting",,0.00043,-0.000201,0.0207,
-0,0,0,0.0008,"Linear model","ICE-IPCW",,0.000428,0.00121,0.0207,
+-0.3,0.5,-0.2,0.0002,"Scaled Quasi-binomial","Debiased ICE-IPCW",0.952,0.000331,0.000188,0.0182,0.0184
+-0.3,0.5,-0.2,0.0002,"Scaled Quasi-binomial","Inverse Probability Weighting",,0.000331,0.000197,0.0182,
+-0.3,0.5,-0.2,0.0002,"Scaled Quasi-binomial","ICE-IPCW",,0.00033,0.000171,0.0182,
+-0.3,0.5,-0.2,0.0002,"Tweedie","Debiased ICE-IPCW",0.953,0.00033,0.0000904,0.0182,0.0184
+-0.3,0.5,-0.2,0.0002,"Tweedie","Inverse Probability Weighting",,0.000329,0.0000815,0.0181,
+-0.3,0.5,-0.2,0.0002,"Tweedie","ICE-IPCW",,0.000328,0.000288,0.0181,
+-0.3,0.5,-0.2,0.0002,"Linear model","Debiased ICE-IPCW",0.95,0.000335,-0.000294,0.0183,0.0184
+-0.3,0.5,-0.2,0.0002,"Linear model","Inverse Probability Weighting",,0.000335,-0.000296,0.0183,
+-0.3,0.5,-0.2,0.0002,"Linear model","ICE-IPCW",,0.000327,0.00113,0.018,
+-0.3,0.5,-0.2,0.0005,"Scaled Quasi-binomial","Debiased ICE-IPCW",0.95,0.000388,-0.0000739,0.0197,0.0199
+-0.3,0.5,-0.2,0.0005,"Scaled Quasi-binomial","Inverse Probability Weighting",,0.000388,-0.0000679,0.0197,
+-0.3,0.5,-0.2,0.0005,"Scaled Quasi-binomial","ICE-IPCW",,0.000387,-0.0000568,0.0197,
+-0.3,0.5,-0.2,0.0005,"Tweedie","Debiased ICE-IPCW",0.955,0.000381,0.000187,0.0195,0.0199
+-0.3,0.5,-0.2,0.0005,"Tweedie","Inverse Probability Weighting",,0.00038,0.000192,0.0195,
+-0.3,0.5,-0.2,0.0005,"Tweedie","ICE-IPCW",,0.000377,0.000596,0.0194,
+-0.3,0.5,-0.2,0.0005,"Linear model","Debiased ICE-IPCW",0.951,0.000382,-0.0000409,0.0195,0.0199
+-0.3,0.5,-0.2,0.0005,"Linear model","Inverse Probability Weighting",,0.000382,-0.0000387,0.0195,
+-0.3,0.5,-0.2,0.0005,"Linear model","ICE-IPCW",,0.000375,0.00143,0.0193,
+-0.3,0.5,-0.2,0.0008,"Scaled Quasi-binomial","Debiased ICE-IPCW",0.953,0.000435,-0.0000717,0.0209,0.0215
+-0.3,0.5,-0.2,0.0008,"Scaled Quasi-binomial","Inverse Probability Weighting",,0.000436,-0.0000649,0.0209,
+-0.3,0.5,-0.2,0.0008,"Scaled Quasi-binomial","ICE-IPCW",,0.000434,0.0000358,0.0208,
+-0.3,0.5,-0.2,0.0008,"Tweedie","Debiased ICE-IPCW",0.953,0.000447,0.00000225,0.0212,0.0215
+-0.3,0.5,-0.2,0.0008,"Tweedie","Inverse Probability Weighting",,0.000446,-0.0000101,0.0211,
+-0.3,0.5,-0.2,0.0008,"Tweedie","ICE-IPCW",,0.000441,0.000636,0.021,
+-0.3,0.5,-0.2,0.0008,"Linear model","Debiased ICE-IPCW",0.956,0.000431,0.000211,0.0208,0.0215
+-0.3,0.5,-0.2,0.0008,"Linear model","Inverse Probability Weighting",,0.000431,0.00022,0.0208,
+-0.3,0.5,-0.2,0.0008,"Linear model","ICE-IPCW",,0.000425,0.00176,0.0205,
+0,0,0,0.0002,"Scaled Quasi-binomial","Debiased ICE-IPCW",0.952,0.000316,0.000438,0.0178,0.0179
+0,0,0,0.0002,"Scaled Quasi-binomial","Inverse Probability Weighting",,0.000316,0.000445,0.0178,
+0,0,0,0.0002,"Scaled Quasi-binomial","ICE-IPCW",,0.000316,0.000438,0.0178,
+0,0,0,0.0002,"Tweedie","Debiased ICE-IPCW",0.951,0.000317,0.000434,0.0178,0.018
+0,0,0,0.0002,"Tweedie","Inverse Probability Weighting",,0.000316,0.000425,0.0178,
+0,0,0,0.0002,"Tweedie","ICE-IPCW",,0.000315,0.000464,0.0178,
+0,0,0,0.0002,"Linear model","Debiased ICE-IPCW",0.949,0.000323,0.00048,0.018,0.0179
+0,0,0,0.0002,"Linear model","Inverse Probability Weighting",,0.000323,0.000479,0.018,
+0,0,0,0.0002,"Linear model","ICE-IPCW",,0.000321,0.00154,0.0179,
+0,0,0,0.0005,"Scaled Quasi-binomial","Debiased ICE-IPCW",0.953,0.000357,0.000352,0.0189,0.0193
+0,0,0,0.0005,"Scaled Quasi-binomial","Inverse Probability Weighting",,0.000357,0.000359,0.0189,
+0,0,0,0.0005,"Scaled Quasi-binomial","ICE-IPCW",,0.000356,0.000385,0.0189,
+0,0,0,0.0005,"Tweedie","Debiased ICE-IPCW",0.954,0.000364,0.00027,0.0191,0.0194
+0,0,0,0.0005,"Tweedie","Inverse Probability Weighting",,0.000363,0.000252,0.0191,
+0,0,0,0.0005,"Tweedie","ICE-IPCW",,0.000361,0.000368,0.019,
+0,0,0,0.0005,"Linear model","Debiased ICE-IPCW",0.955,0.00036,0.000512,0.019,0.0194
+0,0,0,0.0005,"Linear model","Inverse Probability Weighting",,0.00036,0.000509,0.019,
+0,0,0,0.0005,"Linear model","ICE-IPCW",,0.000359,0.00173,0.0189,
+0,0,0,0.0008,"Scaled Quasi-binomial","Debiased ICE-IPCW",0.955,0.000413,0.000149,0.0203,0.0209
+0,0,0,0.0008,"Scaled Quasi-binomial","Inverse Probability Weighting",,0.000413,0.000155,0.0203,
+0,0,0,0.0008,"Scaled Quasi-binomial","ICE-IPCW",,0.000411,0.000241,0.0203,
+0,0,0,0.0008,"Tweedie","Debiased ICE-IPCW",0.958,0.000412,0.0000457,0.0203,0.0209
+0,0,0,0.0008,"Tweedie","Inverse Probability Weighting",,0.000411,0.0000306,0.0203,
+0,0,0,0.0008,"Tweedie","ICE-IPCW",,0.000409,0.00025,0.0202,
+0,0,0,0.0008,"Linear model","Debiased ICE-IPCW",0.953,0.000421,0.00021,0.0205,0.0209
+0,0,0,0.0008,"Linear model","Inverse Probability Weighting",,0.000421,0.000212,0.0205,
+0,0,0,0.0008,"Linear model","ICE-IPCW",,0.000421,0.00159,0.0205,

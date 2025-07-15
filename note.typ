@@ -1,4 +1,3 @@
-
 #import "template/definitions.typ": *
 #import "@preview/arkheion:0.1.0": arkheion, arkheion-appendices
 #import "@preview/colorful-boxes:1.4.3": *
@@ -772,16 +771,7 @@ Alternatively, we may assume coarsening at random which will imply @eq:indep (e.
     Further supposee that:
     1. $bb(1) {statuscensored(n-1) != c} tilde(S) (t | historycensored(n-1)) = bb(1) {statuscensored(n-1) != c} tilde(S)^c (t | historycensored(n-1)) S (t | history(n-1))$.
     2. $tilde(S)^c (t | historycensored(n-1)) > eta$ for all $t in (0, tau]$ and $n in {1, dots, K}$ $P$-a.s. for some $eta > 0$.
-    Then, the ICE-IPCW estimator is consistent for the target parameter, i.e.,
-    #math.equation(block: true, numbering: "(1)")[$
-        bb(1) {statuscensored(k-1) != c} Qbar(k-1) &= bb(1) {statuscensored(k-1) != c} mean(P) [(bb(1) {eventcensored(k) < tau, statuscensored(k) = ell})/( tilde(S)^c (eventcensored(k-1) - | historycensored(k-1)) ) Qbar(k)(treatcensored(k-1), covariatecensored(k), eventcensored(k), statuscensored(k), historycensored(k-1)) \
-            &#h(1.5cm) + (bb(1) {eventcensored(k) < tau, statuscensored(k) = a}) /(tilde(S)^c (eventcensored(k-1) - | historycensored(k-1)))  Qbar(k) (1, covariatecensored(k-1), eventcensored(k), statuscensored(k), historycensored(k-1)) \
-            &#h(1.5cm) + (bb(1) {eventcensored(k) <= tau, statuscensored(k) = y}) /(tilde(S)^c (eventcensored(k-1) - | historycensored(k-1))) mid(|) historycensored(k-1)]
-    $] <eq:ipcw>
-    for $k = K, dots, 1$ and
-    $
-        Psi_tau^g (P) = mean(P) [  Qbar(0) (1, covariate(0))].
-    $<eq:ice2>
+    
 ] <thm:ice>
 #proof[
     Under the local independence condition, a version of the compensator of the random measure $N^alpha (dif (t, m, a, l))$ with respect to the filtration $cal(F)^beta_t$,
@@ -841,6 +831,49 @@ Alternatively, we may assume coarsening at random which will imply @eq:indep (e.
     Applying this to the right hand side of @eq:ipcw
     shows that it is equal to @eq:iterative.    
 ]
+
+Note that the theorem can now be used to show the consistency of the ICE-IPCW estimator.
+What we claim is that,
+$
+    &Qbar(k-1) (tau | history(k-1)) = \
+        & mean(P) [(bb(1) {eventcensored(k) < tau, statuscensored(k) = ell})/( tilde(S)^c (eventcensored(k-1) - | historycensored(k-1)) ) Qbar(k)(treatcensored(k-1), covariatecensored(k), eventcensored(k), statuscensored(k), historycensored(k-1)) \
+            &#h(1.5cm) + (bb(1) {eventcensored(k) < tau, statuscensored(k) = a}) /(tilde(S)^c (eventcensored(k-1) - | historycensored(k-1)))  Qbar(k) (1, covariatecensored(k-1), eventcensored(k), statuscensored(k), historycensored(k-1)) \
+            &#h(1.5cm) + (bb(1) {eventcensored(k) <= tau, statuscensored(k) = y}) /(tilde(S)^c (eventcensored(k-1) - | historycensored(k-1))) mid(|) historycensored(k-1)]
+$
+for $k = K, dots, 1$ and
+    $
+        Psi_tau^g (P) = mean(P) [  Qbar(0) (1, covariate(0))].
+    $<eq:ice2>
+We proceed by backwards induction. 
+        
+$
+    & Qbar(k) (tau | historycensored(k)) \
+        &= mean(P) [bb(1) {event(k+1) < tau, status(k+1) = a} Qbar(k+1) (1, covariate(k), eventcensored(k+1), status(k+1), history(k)) \
+            &#h(1.5cm) + bb(1) {event(k+1) < tau, status(k+1) = ell} Qbar(k+1) (treat(k), covariate(k+1), event(k+1), status(k+1), history(k)) \
+            &#h(1.5cm) + bb(1) {event(k+1) <= tau, status(k+1) = y} | history(k) ] \
+        &=^(*) mean(P) [bb(1) {event(k+1) < tau, status(k+1) = a} Qbar(k+1) (1, covariate(k), eventcensored(k+1), status(k+1), history(k)) \
+            &#h(1.5cm) + bb(1) {event(k+1) < tau, status(k+1) = ell} Qbar(k+1) (treat(k), covariate(k+1), event(k+1), status(k+1), history(k)) \
+            &#h(1.5cm) + bb(1) {event(k+1) <= tau, status(k+1) = y} | history(k), cal(C)_k ] \
+        &=mean(P) [bb(1) {event(k+1) < tau, status(k+1) = a} Qbar(k+1) (1, covariate(k), eventcensored(k+1), status(k+1), history(k)) \
+            &#h(1.5cm) + bb(1) {event(k+1) < tau, status(k+1) = ell} Qbar(k+1) (treat(k), covariate(k+1), event(k+1), status(k+1), history(k)) \
+            &#h(1.5cm) + bb(1) {event(k+1) <= tau, status(k+1) = y} | historycensored(k), cal(C)_k ], \
+        &= mean(P) [(bb(1) {eventcensored(k) < tau, statuscensored(k) = ell})/( tilde(S)^c (eventcensored(k-1) - | historycensored(k-1)) ) Qbar(k)(treatcensored(k-1), covariatecensored(k), eventcensored(k), statuscensored(k), historycensored(k-1)) \
+            &#h(1.5cm) + (bb(1) {eventcensored(k) < tau, statuscensored(k) = a}) /(tilde(S)^c (eventcensored(k-1) - | historycensored(k-1)))  Qbar(k) (1, covariatecensored(k-1), eventcensored(k), statuscensored(k), historycensored(k-1)) \
+            &#h(1.5cm) + (bb(1) {eventcensored(k) <= tau, statuscensored(k) = y}) /(tilde(S)^c (eventcensored(k-1) - | historycensored(k-1))) mid(|) historycensored(k-1)]
+$
+where $cal(C)_k = (exists.not k : status(k) = c)$.
+In $(*)$, we use local independence since the corresponding event lies in the sigma-algebra
+$cal(F)_(event(k))^beta$, and so we can use the same mark and conditional event distribution as
+in the first line. In the last line, we apply @eq:densitycens
+since the conditioning set is a part of $cal(F)_(event(k))^beta$.
+
+Then, the ICE-IPCW estimator is consistent for the target parameter, i.e.,
+    #math.equation(block: true, numbering: "(1)")[$
+        bb(1) {statuscensored(k-1) != c} Qbar(k-1) &= bb(1) {statuscensored(k-1) != c} mean(P) [(bb(1) {eventcensored(k) < tau, statuscensored(k) = ell})/( tilde(S)^c (eventcensored(k-1) - | historycensored(k-1)) ) Qbar(k)(treatcensored(k-1), covariatecensored(k), eventcensored(k), statuscensored(k), historycensored(k-1)) \
+            &#h(1.5cm) + (bb(1) {eventcensored(k) < tau, statuscensored(k) = a}) /(tilde(S)^c (eventcensored(k-1) - | historycensored(k-1)))  Qbar(k) (1, covariatecensored(k-1), eventcensored(k), statuscensored(k), historycensored(k-1)) \
+            &#h(1.5cm) + (bb(1) {eventcensored(k) <= tau, statuscensored(k) = y}) /(tilde(S)^c (eventcensored(k-1) - | historycensored(k-1))) mid(|) historycensored(k-1)]
+    $] <eq:ipcw>
+    
 
 Note that @eq:densitycens also ensures that all hazards (other than censoring) and mark probabilities are identifiable from censored data
 if we can show that the censoring survival factorizes.
@@ -1159,9 +1192,18 @@ but for all $i = 1, dots, n$ to estimate the term in the efficient influence fun
 //This simplification leads to slightly conservative standard error estimates.
 
 We have also elected not to estimate @eq:Qbaru using the procedure described in the algorithm in @alg:ipcwice (ICE-IPCW), as it
-may be prohibitively expensive to do so even along a sparse grid of time points.
+may be prohibitively expensive to do so even along a sparse grid of time points,
+for flexible estimators.
 Moreover, the resulting estimators are not guaranteed to be monotone in $u$
 which $Qbar(k) (u | historycensored(k))$ is.
+Applying flexible machine learning estimator may yet be possible if we apply a method that
+can handle multivariate, potentially high-dimensional, outcomes,
+such as neural networks. Note also
+$
+    (Qbar(k) (tau | historycensored(k-1)) - Qbar(k) (u | historycensored(k-1)))/(S (u | historycensored(k-1))) = S^c (u | historycensored(k-1)) mean(P) [Z^a_(k, tau) (tau | historycensored(k-1)) - Z^a_(k,tau) (u | historycensored(k-1)) | eventcensored(k) >= t, historycensored(k-1)],
+$
+which actually means that regression can be applied to estimate every term in the efficient influence function,
+having estimated the cumulative cause-specific hazard functions for the censoring.
 
 Another alternative is to use parametric/semi-parametric models
 for the estimation of the cumulative cause-specific hazard functions
@@ -1445,9 +1487,29 @@ This means that we usually select $t_1=0$ and $t_m <= tau - min_i macron(T)_(k+1
 = Real data application <ref:dataapplication>
 How should the methods be applied to real data and what data can we use?
 
+*NOTE:* It is natural to assume that the
+doctor may take decide the treatment at the same time
+as some of the time-varying covariates are measured. Therefore,
+we can actually redefine $Delta_k = a$ to be an
+event for which a treatment decision is possible
+and for which some of the covariates may change.// Easy to generalize; simply use that the mark distribution P(A_k = m, L_k = l| Delta_k = a, T_k = t, F_(k-1)) = P(L_k = l| Delta_k = a, T_k = t, F_(k-1) P(A_k = m, | L_k = l, Delta_k = a, T_k = t, F_(k-1)
+For instance, we may assume that the doctor makes
+the treatment decisions at HbA1c measurement times.
+
 Should we apply the methods to trial data?
-In that case, the visitation times may no longer be irregular, and we may have to rederive some of the results.
-Another possibility is to simply ignore the fact that the visitation times are regular and apply the methods as they are stated.
+In the LEADER trial, the times at which the dosages change may be quite irregular.
+
+Should we apply the methods to electronic health records data?
+We do not directly observe when the patient is treated, and
+can only monitor them through their history of purchases.
+In the case, we could define the visitation times as purchase dates
+and use information about dosages to calculate the times
+at which they would have no more medicine available.
+One problem with this approach is that a person that is not treated anymore
+is unable to not be treated at the next visitation time.
+For an emulated target trial in Diabetes research, a study on
+the effect of DPP4 may be the easiest, as that type of medication
+only comes in one recommended dosage. 
 
 We also want to compare with other methods. 
 - comparison with LTMLE #citep(<ltmle>).
@@ -1739,18 +1801,71 @@ but is also related to the notion that the treatment times are not predictable (
 ) <fig:simulationdag>
 
 == Comparison with the EIF in @rytgaardContinuoustimeTargetedMinimum2022
+Let us define in the censored setting
+$
+    W^g (t) = product_(k = 1)^(N_t) (bb(1) {treat(k) = 1}) / (pi_k (event(k), history(k-1))) (bb(1) {treat(0) = 1}) / (pi_0 (covariate(0))) product_(k=1)^(N_t) (bb(1) {status(k) != c}) / (product_(u in (event(k-1), event(k))) (1 - cumhazard(k,c,dif u)))
+$
+in alignment with @eq:weightprocess.
+We verify that our efficient influence function is the same as @rytgaardContinuoustimeTargetedMinimum2022
+in the case with continuous compensators. 
+The efficient influence function of @rytgaardContinuoustimeTargetedMinimum2022
+is given in Theorem 1 of @rytgaardContinuoustimeTargetedMinimum2022 in our notation by
+$ 
+    phi_tau^*(P) &= mean(P^(G^*)) [N_y (tau) | cal(F)_0] - Psi_tau (P) \
+        &+ integral_0^tau W^g (t -) (mean(P^(G^*)) [N_y (tau) | L(t), N^ell (t), cal(F)_(t-)] - mean(P^(G^*)) [N_y (tau) | N^ell (t), cal(F)_(t-)]) N^ell (dif t) \
+        &+ integral_0^tau W^g (t -) (mean(P^(G^*)) [N_y (tau) | Delta N^ell (t) = 1, cal(F)_(t-)] - mean(P^(G^*)) [N_y (tau) | Delta N^ell (t) = 0, cal(F)_(t-)]) M^ell (dif t) \
+        &+ integral_0^tau W^g (t -) (mean(P^(G^*)) [N_y (tau) | Delta N^a (t) = 1, cal(F)_(t-)] - mean(P^(G^*)) [N_y (tau) | Delta N^a (t) = 0, cal(F)_(t-)]) M^a (dif t) \
+        &+ integral_0^tau W^g (t -) (1 - mean(P^(G^*)) [N_y (tau) | Delta N^y (t) = 0, cal(F)_(t-)]) M^y (dif t) \
+        &+integral_0^tau W^g (t -) (0 - mean(P^(G^*)) [N_y (tau) | Delta N^d (t) = 0, cal(F)_(t-)]) M^d (dif t).
+$
+We note, for instance, for $x= ell$ that
+$
+    &mean(P^(G^*)) [N_y (tau) | Delta N^x (t) = 1, cal(F)_(t-)] \
+        &=sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)}mean(P^(G^*)) [N_y (tau) | event(k) = t, status(k) = x, history(k-1)] \
+        &= sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} lim_(epsilon -> 0) mean(P^(G^*)) [N_y (tau) | event(k) in (t, t+epsilon), status(k) = x, history(k-1)] \
+        &= sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} lim_(epsilon -> 0) (mean(P^(G^*)) [N_y (tau) bb(1) { event(k) in (t, t+epsilon), status(k) = x} | history(k-1)]) / (mean(P^(G^*)) [bb(1) { event(k) in (t, t+epsilon), status(k) = x} | history(k-1)]) \
+        &= sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} \
+        &qquad lim_(epsilon -> 0) (mean(P^(G^*)) [mean(P^(G^*)) [Qbar(k) (history(k)) | event(k), status(k) = x, history(k-1)] bb(1) {event(k) < tau} bb(1) { event(k) in (t, t+epsilon), status(k) = x} | history(k-1)]) / (lambda^x_k (t | history(k-1))) \
+        &=^(*) sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} (mean(P) [Qbar(k) (history(k-1)) | event(k) =t, status(k) = x, history(k-1)] lambda^x_k (t | history(k-1))) /(lambda^x_k (t | history(k-1))) \
+        &= sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} mean(P) [Qbar(k) (history(k-1)) | event(k) =t, status(k) = x, history(k-1)] \
+$
+where we, in $(*)$, apply dominated convergence.
+Similarly, we may find that
+$
+    mean(P^(G^*)) [N_y (tau) | Delta N^y (t) = 1, cal(F)_(t-)] = 1, \
+    mean(P^(G^*)) [N_y (tau) | Delta N^d (t) = 1, cal(F)_(t-)] = 0, \
+    mean(P^(G^*)) [N_y (tau) | Delta N^a (t) = 1, cal(F)_(t-)] = sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} Qbar(k) (tau | cal(F)_(event(k-1))^1)
+$
+For the first term, we find that
+$
+    &mean(P^(G^*)) [N_y (tau) | L(t), N^ell (t), cal(F)_(t-)] - mean(P^(G^*)) [N_y (tau) | N^ell (t), cal(F)_(t-)] \
+        &= mean(P^(G^*)) [N_y (tau) | L(t), Delta N^ell (t) = 0, cal(F)_(t-)] - mean(P^(G^*)) [N_y (tau) | Delta N^ell (t) = 0, cal(F)_(t-)] \
+        &+mean(P^(G^*)) [N_y (tau) | L(t), Delta N^ell (t) = 1, cal(F)_(t-)] - mean(P^(G^*)) [N_y (tau) | Delta N^ell (t) = 1, cal(F)_(t-)] \
+        &= 0 + sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} (mean(P^(G^*)) [N_y (tau) | L(event(k)), event(k) = t, status(k) = ell, history(k-1)]-mean(P^(G^*)) [N_y (tau) | event(k) = t, status(k) = ell, history(k-1)]) \
+        &= sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} bb(1) (event(k) < tau, status(k) = ell, k < K)( Qbar(k) (covariate(k), treat(k-1), event(k), ell, history(k-1)) \
+            &#h(1.5cm) - mean(P) [Qbar(k) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) = t , status(k) = ell, history(k-1)] )]
+$
+Next, note that
+$
+    &mean(P^(G^*)) [N_y (tau) | Delta N^x (t) = 0, cal(F)_(t-)] \
+        &=sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} mean(P^(G^*)) [N_y (tau) | (event(k) > t or event(k) = t, status(k) != x), history(k-1)] \
+        &=^(**)sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} mean(P^(G^*)) [N_y (tau) | event(k) > t, history(k-1)] \
+        &=sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} (mean(P^(G^*)) [N_y (tau) bb(1) { event(k) > t} |history(k-1)])/(mean(P^(G^*)) [bb(1) { event(k) > t } | history(k-1)]) \
+        &=sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} (Qbar(k) (tau | history(k-1)) - Qbar(k) (t | history(k-1)))/(S (t | history(k-1))),
+$
+where in $(**)$, we use that the event $(event(k) = t, status(k) != x)$ has probability zero.
 Let
 $
     B_(k-1) (u) = (Qbar(k-1)(tau) -Qbar(k-1)(u)) 1/(tilde(S)^c (u) S (u))
 $
-We claim that the efficient influence function can also be written as:
+Combining these facts, we find that the efficient influence function can also be written as:
 $
     phi_tau^*(P) &= sum_(k = 1)^(K) product_(j = 0)^(k - 1) ((densitytrtint(event(j), treat(j), j-1)) / (densitytrt(event(j), j-1)))^(bb(1) (status(j) = a)) (bb(1) (status(k-1) in {ell, a}, event(k-1) <= tau))/(exp(- sum_(1 <= j < k) integral_(event(j-1))^(event(j)) hazard(c, s, j-1) dif s)) [ \
-        &integral_(event(k-1))^tau 1/(S^c (u | history(k-1))) (integral_(cal(A)) Qbar(k) (covariate(k-1), a_k, s, a, history(k)) densitytrtint(s, a_k, k) nu_A (dif a_k)- B_(k-1) (u)) M_k^(a) (d u) \
+        &integral_(event(k-1))^tau 1/(S^c (u | history(k-1))) (Qbar(k) (covariate(k-1), 1, event(k), a, history(k-1))- B_(k-1) (u)) M_k^(a) (d u) \
          &+integral_(event(k-1))^tau 1/(S^c (u | history(k-1))) (mean(P) [Qbar(k) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)] - B_(k-1) (u)) M_k^(ell) (d u) \
          &+integral_(event(k-1))^tau 1/(S^c (u | history(k-1))) (1 - B_(k-1) (u)) M_k^(y) (d u) +integral_(event(k-1))^tau 1/(S^c (u | history(k-1)))(0 - B_(k-1) (u)) M_k^(d) (d u) \
-        &+  1/(S^c (event(k) | history(k-1))) bb(1) (event(k) <= tau, status(k) = ell, k < K)( Qbar(k) (covariate(k), treat(k-1), event(k), ell, history(k-1)) \
-                            &#h(1.5cm) - mean(P) [Qbar(k-1) (covariate(k), treat(k-1), tilde(event(k)), status(k), history(k-1)) | tilde(event(k)) = event(k) , status(k) = ell, history(k-1)] )]\
+        &+  1/(S^c (event(k) | history(k-1))) bb(1) (event(k) < tau, status(k) = ell, k < K)( Qbar(k) (covariate(k), treat(k-1), event(k), ell, history(k-1)) \
+            &#h(1.5cm) - mean(P) [Qbar(k) (covariate(k), treat(k-1), event(k), status(k), history(k-1)) | event(k), status(k) = ell, history(k-1)] )]\
                         &+ integral Qbar(1) (a, covariate(0)) densitytrtint(0, a, 0) nu_A (dif a)- Psi_tau^g (P) 
 $
 

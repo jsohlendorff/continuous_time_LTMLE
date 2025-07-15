@@ -61,6 +61,9 @@ batches <- 100 ## number of batches to run in parallel
 n_fixed <- 1000 ## number of observations for each simulation
 n_true_value <- 8000000 ## number of observations for the true value estimation
 
+cue_true_value <- tar_cue("never") ## do not run the true value calculation again
+cue_simulations <- tar_cue("never") ## do not run the simulations again
+
 ## Main simulation study; vary coefficients
 ## Here, we vary the effects as in the main document.
 parameter_vary <- data.frame(
@@ -174,7 +177,7 @@ sim_and_true_value <- tar_map(
         baseline_rate_Y = baseline_rate_Y
       )
     },
-    cue = tar_cue("never")
+    cue = cue_true_value
   ),
   tar_rep(
     results,
@@ -234,7 +237,7 @@ sim_and_true_value <- tar_map(
     ),
     reps = reps,
     batch = batches,
-    cue = tar_cue("never")
+    cue = cue_simulations
   )
 )
 
@@ -301,7 +304,8 @@ sim_censored <- tar_map(
       )
     ),
     reps = reps,
-    batch = batches
+    batch = batches,
+    cue = cue_simulations
   )
 )
 
@@ -376,29 +380,31 @@ sim_censored_non_conservative <- tar_map(
       )
     ),
     reps = reps,
-    batch = batches / 2, # = 50
-    cue = tar_cue("never")
+    batch = batches / 2
   )
 )
 
 ## vary prevalence
 sim_and_true_value_prevalence <- tar_map(
   values = data.frame(baseline_rate_Y = c(0.00005, 0.0001, 0.0002)),
-  tar_target(true_value_prevalence, {
-    d_int <- simulate_simple_continuous_time_data(
-      n = n_true_value,
-      static_intervention = 1,
-      no_competing_events = TRUE,
-      baseline_rate_list = list(
-        A = 0.005,
-        L = 0.001,
-        C = 0.00005,
-        Y = baseline_rate_Y,
-        D = 0.00015
+  tar_target(true_value_prevalence,
+    {
+      d_int <- simulate_simple_continuous_time_data(
+        n = n_true_value,
+        static_intervention = 1,
+        no_competing_events = TRUE,
+        baseline_rate_list = list(
+          A = 0.005,
+          L = 0.001,
+          C = 0.00005,
+          Y = baseline_rate_Y,
+          D = 0.00015
+        )
       )
-    )
-    data.table(value = calculate_mean(d_int, tau), baseline_rate_Y = baseline_rate_Y)
-  }),
+      data.table(value = calculate_mean(d_int, tau), baseline_rate_Y = baseline_rate_Y)
+    },
+    cue = cue_true_value
+  ),
   tar_rep(
     results_prevalence,
     simulate_and_run_simple(
@@ -427,22 +433,26 @@ sim_and_true_value_prevalence <- tar_map(
       )
     ),
     reps = reps,
-    batch = batches
+    batch = batches,
+    cue = cue_simulations
   )
 )
 
 ## vary dropout
 sim_and_true_value_dropout <- tar_map(
   values = data.frame(a_intercept = c(-2.5, -1.1, -0.5, 0.3, 1.1)),
-  tar_target(true_value_dropout, {
-    d_int <- simulate_simple_continuous_time_data(
-      n = n_true_value,
-      static_intervention = 1,
-      no_competing_events = TRUE,
-      effects = vary_dropout(a_intercept = a_intercept)
-    )
-    data.table(value = calculate_mean(d_int, tau), a_intercept = a_intercept)
-  }),
+  tar_target(true_value_dropout,
+    {
+      d_int <- simulate_simple_continuous_time_data(
+        n = n_true_value,
+        static_intervention = 1,
+        no_competing_events = TRUE,
+        effects = vary_dropout(a_intercept = a_intercept)
+      )
+      data.table(value = calculate_mean(d_int, tau), a_intercept = a_intercept)
+    },
+    cue = cue_true_value
+  ),
   tar_rep(
     results_dropout,
     simulate_and_run_simple(
@@ -465,7 +475,8 @@ sim_and_true_value_dropout <- tar_map(
       )
     ),
     reps = reps,
-    batch = batches
+    batch = batches,
+    cue = cue_simulations
   )
 )
 
@@ -519,7 +530,8 @@ sim_sample_size <- tar_map(
       )
     ),
     reps = reps,
-    batch = batches
+    batch = batches,
+    cue = cue_simulations
   )
 )
 
@@ -722,7 +734,7 @@ list(
     list(sim_censored_non_conservative[["results_censored_non_conservative"]], sim_and_true_value[["true_value"]]),
     command = combine_results_and_true_values(!!!.x, .id = "method", by = by_vars)
   ),
-  ## calculate coverage for the censored case (non-conservative)
+  # ## calculate coverage for the censored case (non-conservative)
   tar_target(
     results_table_censored_non_conservative,
     {
@@ -735,7 +747,7 @@ list(
       )
     }
   ),
-  ## boxplot the debiased results (censored, non-conservative)
+  # ## boxplot the debiased results (censored, non-conservative)
   tar_target(
     boxplot_results_censored_non_conservative,
     fun_boxplot_censoring_non_conservative(sim_merge_censored_non_conservative, by = by_vars)

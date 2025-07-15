@@ -9,25 +9,25 @@
 ## end date). Generally, we may chain together more than two events.
 remove_superfluous_info_fast <- function(dt, period = 7) {
   setorder(dt, id, X, start_time)
-  
+
   # Calculate gap for entire table (in-place)
   dt[, gap := start_time - shift(end_time, fill = as.POSIXct(0)), by = .(id, X)]
-  
+
   # Define chain ID within id+X using cumulative sum where gap > period
-  dt[, chain := cumsum(as.numeric(gap, units = "days") > period), by = .(id, X)]
-  
+  dt[, chain := cumsum(gap > period), by = .(id, X)]
+
   # Aggregate start and end times by chain
   dt[, `:=`(
     start_time = min(start_time),
     end_time = max(end_time)
   ), by = .(id, X, chain)]
-  
+
   # Keep only the last row of each chain
   result <- dt[, .SD[.N], by = .(id, X, chain)]
-  
+
   # Remove temp columns
   result[, `:=`(gap = NULL, chain = NULL)]
-  
+
   return(result)
 }
 
