@@ -36,8 +36,10 @@ if (dir.exists("/projects/biostat01/people/snf991/phd/continuous_time_LTMLE/simu
     ) # start on markov
   )
 } else {
-  controller <- crew_controller_local(workers = 8,
-                                      options_local = crew_options_local(log_directory = "log"))
+  controller <- crew_controller_local(
+    workers = 8,
+    options_local = crew_options_local(log_directory = "log")
+  )
 }
 
 tar_option_set(
@@ -318,7 +320,7 @@ sim_censored <- tar_map(
 
 parameter_vary_censoring_non_conservative <-
   merge(
-    parameter_vary[c(1,3), ],
+    parameter_vary[c(1, 3), ],
     data.frame(
       baseline_rate_C = rep(0.0005, 6),
       model_type = rep("scaled_quasibinomial", 6),
@@ -396,21 +398,23 @@ sim_censored_non_conservative <- tar_map(
 ## vary prevalence
 sim_and_true_value_prevalence <- tar_map(
   values = data.frame(baseline_rate_Y = c(0.00005, 0.0001, 0.0002)),
-  tar_target(true_value_prevalence, {
-    d_int <- simulate_simple_continuous_time_data(
-      n = n_true_value,
-      static_intervention = 1,
-      no_competing_events = TRUE,
-      baseline_rate_list = list(
-        A = 0.005,
-        L = 0.001,
-        C = 0.00005,
-        Y = baseline_rate_Y,
-        D = 0.00015
+  tar_target(true_value_prevalence,
+    {
+      d_int <- simulate_simple_continuous_time_data(
+        n = n_true_value,
+        static_intervention = 1,
+        no_competing_events = TRUE,
+        baseline_rate_list = list(
+          A = 0.005,
+          L = 0.001,
+          C = 0.00005,
+          Y = baseline_rate_Y,
+          D = 0.00015
+        )
       )
-    )
-    data.table(value = calculate_mean(d_int, tau), baseline_rate_Y = baseline_rate_Y)
-  }, cue = cue_true_value
+      data.table(value = calculate_mean(d_int, tau), baseline_rate_Y = baseline_rate_Y)
+    },
+    cue = cue_true_value
   ),
   tar_rep(
     results_prevalence,
@@ -448,15 +452,17 @@ sim_and_true_value_prevalence <- tar_map(
 ## vary dropout
 sim_and_true_value_dropout <- tar_map(
   values = data.frame(a_intercept = c(-2.5, -1.1, -0.5, 0.3, 1.1)),
-  tar_target(true_value_dropout, {
-    d_int <- simulate_simple_continuous_time_data(
-      n = n_true_value,
-      static_intervention = 1,
-      no_competing_events = TRUE,
-      effects = vary_dropout(a_intercept = a_intercept)
-    )
-    data.table(value = calculate_mean(d_int, tau), a_intercept = a_intercept)
-  }, cue = cue_true_value
+  tar_target(true_value_dropout,
+    {
+      d_int <- simulate_simple_continuous_time_data(
+        n = n_true_value,
+        static_intervention = 1,
+        no_competing_events = TRUE,
+        effects = vary_dropout(a_intercept = a_intercept)
+      )
+      data.table(value = calculate_mean(d_int, tau), a_intercept = a_intercept)
+    },
+    cue = cue_true_value
   ),
   tar_rep(
     results_dropout,
@@ -583,7 +589,7 @@ list(
   ),
   ## boxplot the debiased results (no confounding)
   tar_target(
-    boxplot_results_no_confounding,
+    boxplot_no_confounding,
     fun_boxplot(
       sim_merge[effect_L_on_Y == 0 &
         effect_L_on_A == 0 & effect_age_on_Y == 0 & effect_age_on_A == 0],
@@ -592,7 +598,7 @@ list(
   ),
   ## now get as a table
   tar_target(
-    results_table_no_confounding,
+    table_no_confounding,
     get_tables(
       sim_merge[effect_L_on_Y == 0 &
         effect_L_on_A == 0 & effect_age_on_Y == 0 & effect_age_on_A == 0],
@@ -601,19 +607,19 @@ list(
   ),
   ## boxplot the debiased results (strong confounding)
   tar_target(
-    boxplot_results_strong_time_confounding,
+    boxplot_strong_time_confounding,
     fun_boxplot(sim_merge[effect_L_on_Y == 1],
       by = by_vars
     )
   ),
   ## now get as a table
   tar_target(
-    results_table_strong_time_confounding,
+    table_strong_time_confounding,
     get_tables(sim_merge[effect_L_on_Y == 1], by = by_vars)
   ),
   ## boxplot the debiased results (no time confounding, but baseline confounding)
   tar_target(
-    boxplot_results_no_time_confounding,
+    boxplot_no_time_confounding,
     fun_boxplot(
       sim_merge[effect_L_on_Y == 0 &
         effect_L_on_A == 0 & effect_age_on_Y != 0 & effect_age_on_A != 0],
@@ -622,7 +628,7 @@ list(
   ),
   ## now get as a table
   tar_target(
-    results_table_no_time_confounding,
+    table_no_time_confounding,
     get_tables(
       sim_merge[effect_L_on_Y == 0 &
         effect_L_on_A == 0 & effect_age_on_Y != 0 & effect_age_on_A != 0],
@@ -631,7 +637,7 @@ list(
   ),
   ## boxplot the debiased results (vary effect_A_on_Y)
   tar_target(
-    boxplot_results_vary_effect_A_on_Y,
+    boxplot_A_on_Y,
     fun_boxplot(
       sim_merge[effect_L_on_Y == 2 * 0.25 &
         effect_L_on_A == -2 * 0.1 &
@@ -641,7 +647,7 @@ list(
   ),
   ## now get as a table
   tar_target(
-    results_table_vary_effect_A_on_Y,
+    table_A_on_Y,
     get_tables(
       sim_merge[effect_L_on_Y == 2 * 0.25 &
         effect_L_on_A == -2 * 0.1 & effect_A_on_L == -0.2],
@@ -650,7 +656,7 @@ list(
   ),
   ## boxplot the debiased results (vary effect_L_on_Y)
   tar_target(
-    boxplot_results_vary_effect_L_on_Y,
+    boxplot_L_on_Y,
     fun_boxplot(
       sim_merge[effect_A_on_Y == -2 * 0.15 &
         effect_L_on_A == -2 * 0.1 &
@@ -660,7 +666,7 @@ list(
   ),
   ## now get as a table
   tar_target(
-    results_table_vary_effect_L_on_Y,
+    table_L_on_Y,
     get_tables(
       sim_merge[effect_A_on_Y == -2 * 0.15 &
         effect_L_on_A == -2 * 0.1 & effect_A_on_L == -0.2],
@@ -669,7 +675,7 @@ list(
   ),
   ## boxplot the debiased results (vary effect_L_on_A)
   tar_target(
-    boxplot_results_vary_effect_L_on_A,
+    boxplot_L_on_A,
     fun_boxplot(
       sim_merge[effect_A_on_Y == -2 * 0.15 &
         effect_L_on_Y == 2 * 0.25 & effect_A_on_L == -0.2],
@@ -678,7 +684,7 @@ list(
   ),
   ## now get as a table
   tar_target(
-    results_table_vary_effect_L_on_A,
+    table_L_on_A,
     get_tables(
       sim_merge[effect_A_on_Y == -2 * 0.15 &
         effect_L_on_Y == 2 * 0.25 & effect_A_on_L == -0.2],
@@ -687,7 +693,7 @@ list(
   ),
   ## boxplot the debiased results (vary effect_A_on_L)
   tar_target(
-    boxplot_results_vary_effect_A_on_L,
+    boxplot_A_on_L,
     fun_boxplot(
       sim_merge[effect_A_on_Y == -2 * 0.15 &
         effect_L_on_Y == 2 * 0.25 & effect_L_on_A == -2 * 0.1],
@@ -696,7 +702,7 @@ list(
   ),
   ## now get as a table
   tar_target(
-    results_table_vary_effect_A_on_L,
+    table_A_on_L,
     get_tables(
       sim_merge[effect_A_on_Y == -2 * 0.15 &
         effect_L_on_Y == 2 * 0.25 & effect_L_on_A == -2 * 0.1],
@@ -712,10 +718,12 @@ list(
   ),
   ## calculate coverage for the censored case
   tar_target(
-    results_table_censored,
+    table_censored,
     {
+      d<- sim_merge_censored
+      d$ipw <- NA
       tab <- get_tables(
-        sim_merge_censored,
+        d,
         by = c(by_vars, "baseline_rate_C", "model_type", "conservative")
       )
       ## refactor the model_type to nice names
@@ -729,10 +737,9 @@ list(
   ),
   ## boxplot the debiased results (censored)
   tar_target(
-    boxplot_results_censored,
+    boxplot_censored,
     fun_boxplot_censoring(sim_merge_censored, by = c(by_vars, "conservative"))
   ),
-  
   sim_censored_non_conservative,
   ## merge the true values with the debiased results for the censored case (non-conservative)
   tar_combine(
@@ -742,22 +749,21 @@ list(
   ),
   # ## calculate coverage for the censored case (non-conservative)
   tar_target(
-     results_table_censored_non_conservative,
-     {
-       get_tables(
-         sim_merge_censored_non_conservative,
-         by = c(
-           by_vars, "baseline_rate_C", "model_type", "conservative", "grid_size",
-           "cens_mg_method"
-         )
-       )
-     }
-   ),
+    table_censored_non_conservative,
+    get_tables(
+      sim_merge_censored_non_conservative,
+      by = c(
+        by_vars, "baseline_rate_C", "model_type", "conservative", "grid_size",
+        "cens_mg_method"
+      )
+    )
+
+  ),
   # ## boxplot the debiased results (censored, non-conservative)
-   tar_target(
-     boxplot_results_censored_non_conservative,
-     fun_boxplot_censoring_non_conservative(sim_merge_censored_non_conservative, by = by_vars)
-   ),
+  tar_target(
+    boxplot_censored_non_conservative,
+    fun_boxplot_censoring_non_conservative(sim_merge_censored_non_conservative, by = by_vars)
+  ),
 
   ## vary dropout
   sim_and_true_value_dropout,
@@ -767,12 +773,12 @@ list(
     command = combine_results_and_true_values(!!!.x, .id = "method", by = "a_intercept")
   ),
   tar_target(
-    results_table_dropout,
+    table_dropout,
     get_tables(sim_merge_dropout, by = "a_intercept")
   ),
   tar_target(
-    boxplot_results_dropout,
-    fun_boxplot(sim_merge_dropout, by = "a_intercept")
+    boxplot_dropout,
+    fun_boxplot(sim_merge_dropout, by = "a_intercept", single_type_se = TRUE)
   ),
 
   ## vary sample size
@@ -784,12 +790,12 @@ list(
     command = combine_results_and_true_values(!!!.x, .id = "method", by = by_vars)
   ),
   tar_target(
-    results_table_sample_size,
+    table_sample_size,
     get_tables(sim_merge_sample_size, by = "n")
   ),
   tar_target(
-    boxplot_results_sample_size,
-    fun_boxplot(sim_merge_sample_size, by = "n")
+    boxplot_sample_size,
+    fun_boxplot(sim_merge_sample_size, by = "n", sample_size=TRUE, single_type_se =TRUE)
   )
 )
 # ######################################################################

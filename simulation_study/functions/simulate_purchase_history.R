@@ -273,7 +273,7 @@ simulate_continuous_time_purchase_history_data <- function(n,
       labels = c("A", "L", "C", "Y", "D", "M")
     )]
     people_atrisk[, interevent_time := Rfast::rowMins(ttt, value = TRUE)]
-    people_atrisk[, time := entrytime + interevent_time]
+    people_atrisk[, time := ceiling(entrytime + interevent_time)]
     people_atrisk[time > max_fup, event := "tauend"]
     people_atrisk[time > max_fup, time := max_fup]
     is_terminal <- !(people_atrisk$event %in% c("A", "L", "M"))
@@ -334,35 +334,39 @@ simulate_continuous_time_purchase_history_data <- function(n,
 
 reconstruct_A_from_purchase_history <- function(data,
                                                 med_length = 150,
-                                                time_varying_covariates = "L",
-                                                grace_period = 1) {
+                                                time_varying_covariates = "L") {
+  
+  ## Get data and baseline data
   df <- data$timevarying_data
   df_baseline <- data$baseline_data
   df[, event_number := 1:.N, by = id]
+  
+  ## Add baseline data as time 0 in the time-varying data
   df_0 <- df_baseline[, c("id", "A_0", paste0(time_varying_covariates, "_0")), with = FALSE]
   df_0[, c("time", "event") := list(0, "M")]
   setnames(df_0, c("A_0", paste0(time_varying_covariates, "_0")), c("A", "L"))
   df <- rbind(df_0, df, fill = TRUE)
 
   setkey(df, id, time)
-  df[time == 0, med_left := med_length]
-  df[time == 0, event_number := 0]
+  df[time == 0, c("med_left", "event_number") := list(med_length, 0)] ## calculated medication left
   df[, time_prev := shift(time, type = "lag"), by = id]
   df[is.na(time_prev), time_prev := 0]
-  df[event == "M", A := 1]
+  df[event == "M", A := 1] ## Always treat if purchase happens
   max_number_events <- max(df$event_number)
+  
+  
   for (e in 1:max_number_events) {
     df[, med_prev := shift(med_left, type = "lag"), by = id]
     df_discontinued <- df[
-      event_number == e & med_prev > 0 & time - time_prev > med_prev + grace_period,
-      .(id, time = med_prev + time_prev + grace_period, event = "A", L, A = 0, med_left = 0)
-    ]
+      event_number == e & med_prev > 0 & time - time_prev > med_prev,
+      .(id, time = med_prev + time_prev, event = "A", L, A = 0, med_left = 0)
+    ] ## Discontinued treatment if not enough medicine left
     df <- rbind(df, df_discontinued, fill = TRUE)
     setkey(df, id, time)
     df[, time_prev := shift(time, type = "lag"), by = id]
     df[, med_prev := shift(med_left, type = "lag"), by = id]
 
-    df[event_number == e, med_left := 1 * (event == "M") * med_length + med_prev - (time - time_prev)]
+    df[event_number == e, med_left := 1 * (event == "M") * med_length + med_prev - (time - time_prev)] ## Add medicine left
     df[med_left < 0, med_left := 0]
   }
   df[, A := nafill(A, type = "locf"), by = id]

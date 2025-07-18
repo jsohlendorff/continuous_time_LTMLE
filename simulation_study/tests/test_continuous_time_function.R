@@ -188,4 +188,3 @@ test_that("test continuous time function (censored; non_conservative; multiple i
 
   expect_true(all.equal(result, correct_result, tolerance = 1e-8))
 })
-
