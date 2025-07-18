@@ -25,12 +25,19 @@ try(setwd("/projects/biostat01/people/snf991/phd/continuous_time_LTMLE/simulatio
 ## Set up the crew controller
 if (dir.exists("/projects/biostat01/people/snf991/phd/continuous_time_LTMLE/simulation_study")) {
   controller <- crew_controller_slurm(
-    workers = 100,
+    workers = 64,
     seconds_idle = 15,
-    options_cluster = crew_options_slurm(partition = "long") # start on markov
+    options_cluster = crew_options_slurm(
+      partition = "long",
+      cpus_per_task = 2,
+      log_output = "crew_log_%A.txt",
+      log_error = "crew_log_%A.txt",
+      verbose = TRUE
+    ) # start on markov
   )
 } else {
-  controller <- crew_controller_local(workers = 8)
+  controller <- crew_controller_local(workers = 8,
+                                      options_local = crew_options_local(log_directory = "log"))
 }
 
 tar_option_set(
@@ -311,7 +318,7 @@ sim_censored <- tar_map(
 
 parameter_vary_censoring_non_conservative <-
   merge(
-    parameter_vary[c(1:5), ],
+    parameter_vary[c(1,3), ],
     data.frame(
       baseline_rate_C = rep(0.0005, 6),
       model_type = rep("scaled_quasibinomial", 6),
@@ -376,34 +383,34 @@ sim_censored_non_conservative <- tar_map(
         conservative = conservative,
         grid_size = grid_size,
         cens_mg_method = cens_mg_method,
-        marginal_censoring_hazard = marginal_censoring_hazard
+        marginal_censoring_hazard = marginal_censoring_hazard,
+        verbose = FALSE
       )
     ),
     reps = reps,
-    batch = batches / 2
+    batch = batches / 2,
+    cue = tar_cue("never")
   )
 )
 
 ## vary prevalence
 sim_and_true_value_prevalence <- tar_map(
   values = data.frame(baseline_rate_Y = c(0.00005, 0.0001, 0.0002)),
-  tar_target(true_value_prevalence,
-    {
-      d_int <- simulate_simple_continuous_time_data(
-        n = n_true_value,
-        static_intervention = 1,
-        no_competing_events = TRUE,
-        baseline_rate_list = list(
-          A = 0.005,
-          L = 0.001,
-          C = 0.00005,
-          Y = baseline_rate_Y,
-          D = 0.00015
-        )
+  tar_target(true_value_prevalence, {
+    d_int <- simulate_simple_continuous_time_data(
+      n = n_true_value,
+      static_intervention = 1,
+      no_competing_events = TRUE,
+      baseline_rate_list = list(
+        A = 0.005,
+        L = 0.001,
+        C = 0.00005,
+        Y = baseline_rate_Y,
+        D = 0.00015
       )
-      data.table(value = calculate_mean(d_int, tau), baseline_rate_Y = baseline_rate_Y)
-    },
-    cue = cue_true_value
+    )
+    data.table(value = calculate_mean(d_int, tau), baseline_rate_Y = baseline_rate_Y)
+  }, cue = cue_true_value
   ),
   tar_rep(
     results_prevalence,
@@ -441,17 +448,15 @@ sim_and_true_value_prevalence <- tar_map(
 ## vary dropout
 sim_and_true_value_dropout <- tar_map(
   values = data.frame(a_intercept = c(-2.5, -1.1, -0.5, 0.3, 1.1)),
-  tar_target(true_value_dropout,
-    {
-      d_int <- simulate_simple_continuous_time_data(
-        n = n_true_value,
-        static_intervention = 1,
-        no_competing_events = TRUE,
-        effects = vary_dropout(a_intercept = a_intercept)
-      )
-      data.table(value = calculate_mean(d_int, tau), a_intercept = a_intercept)
-    },
-    cue = cue_true_value
+  tar_target(true_value_dropout, {
+    d_int <- simulate_simple_continuous_time_data(
+      n = n_true_value,
+      static_intervention = 1,
+      no_competing_events = TRUE,
+      effects = vary_dropout(a_intercept = a_intercept)
+    )
+    data.table(value = calculate_mean(d_int, tau), a_intercept = a_intercept)
+  }, cue = cue_true_value
   ),
   tar_rep(
     results_dropout,
@@ -727,6 +732,7 @@ list(
     boxplot_results_censored,
     fun_boxplot_censoring(sim_merge_censored, by = c(by_vars, "conservative"))
   ),
+  
   sim_censored_non_conservative,
   ## merge the true values with the debiased results for the censored case (non-conservative)
   tar_combine(
@@ -736,22 +742,22 @@ list(
   ),
   # ## calculate coverage for the censored case (non-conservative)
   tar_target(
-    results_table_censored_non_conservative,
-    {
-      get_tables(
-        sim_merge_censored_non_conservative,
-        by = c(
-          by_vars, "baseline_rate_C", "model_type", "conservative", "grid_size",
-          "cens_mg_method"
-        )
-      )
-    }
-  ),
+     results_table_censored_non_conservative,
+     {
+       get_tables(
+         sim_merge_censored_non_conservative,
+         by = c(
+           by_vars, "baseline_rate_C", "model_type", "conservative", "grid_size",
+           "cens_mg_method"
+         )
+       )
+     }
+   ),
   # ## boxplot the debiased results (censored, non-conservative)
-  tar_target(
-    boxplot_results_censored_non_conservative,
-    fun_boxplot_censoring_non_conservative(sim_merge_censored_non_conservative, by = by_vars)
-  ),
+   tar_target(
+     boxplot_results_censored_non_conservative,
+     fun_boxplot_censoring_non_conservative(sim_merge_censored_non_conservative, by = by_vars)
+   ),
 
   ## vary dropout
   sim_and_true_value_dropout,

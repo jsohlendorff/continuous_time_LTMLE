@@ -27,17 +27,19 @@ test_that("test continuous time function (uncensored)", {
     model_hazard = NULL,
     time_covariates = c("A", "L"),
     baseline_covariates = c("age", "A_0", "L_0"),
-    conservative = TRUE
+    conservative = TRUE,
+    verbose = FALSE
   )
 
+  # library(datapasta)
   # dpasta(result)
   correct_result <- data.table::data.table(
-    estimate = c(0.282879367059898),
-    se = c(0.0165030593798599),
-    lower = c(0.250533370675372),
-    upper = c(0.315225363444423),
-    ice_ipcw_estimate = c(0.283136739459747),
-    ipw = c(0.282891318637565)
+    estimate = c(0.282948697909507),
+    se = c(0.0165150186058971),
+    lower = c(0.250579261441949),
+    upper = c(0.315318134377065),
+    ice_ipcw_estimate = c(0.283170820624823),
+    ipw = c(0.282975855447292)
   )
 
   expect_true(all.equal(result, correct_result, tolerance = 1e-8))
@@ -72,17 +74,18 @@ test_that("test continuous time function (censored; conservative)", {
     model_hazard = "learn_coxph",
     time_covariates = c("A", "L"),
     baseline_covariates = c("age", "A_0", "L_0"),
-    conservative = TRUE
+    conservative = TRUE,
+    verbose = FALSE
   )
 
   # dpasta(result)
   correct_result <- data.table::data.table(
-    estimate = c(0.270207060696791),
-    se = c(0.0167484125450864),
-    lower = c(0.237380172108422),
-    upper = c(0.303033949285161),
-    ice_ipcw_estimate = c(0.271233544849467),
-    ipw = c(0.269052824651837)
+    estimate = c(0.270426500711251),
+    se = c(0.0167728967294177),
+    lower = c(0.237551623121592),
+    upper = c(0.30330137830091),
+    ice_ipcw_estimate = c(0.271534334306832),
+    ipw = c(0.269324346522728)
   )
 
   expect_true(all.equal(result, correct_result, tolerance = 1e-8))
@@ -119,18 +122,19 @@ test_that("test continuous time function (censored; non_conservative; integral e
       time_covariates = c("A", "L"),
       baseline_covariates = c("age", "A_0", "L_0"),
       conservative = FALSE,
-      cens_mg_method = "integral_estimation"
+      cens_mg_method = "integral_estimation",
+      verbose = FALSE
     )
   )
 
   # dpasta(result)
   correct_result <- data.table::data.table(
-    estimate = c(0.270190540557949),
-    se = c(0.0167273976736989),
-    lower = c(0.2374048411175),
-    upper = c(0.302976239998399),
-    ice_ipcw_estimate = c(0.271233544849467),
-    ipw = c(0.269052824651837)
+    estimate = c(0.270411324729319),
+    se = c(0.016751664644551),
+    lower = c(0.237578062025999),
+    upper = c(0.303244587432638),
+    ice_ipcw_estimate = c(0.271534334306832),
+    ipw = c(0.269324346522728)
   )
 
   expect_true(all.equal(result, correct_result, tolerance = 1e-8))
@@ -168,18 +172,20 @@ test_that("test continuous time function (censored; non_conservative; multiple i
     conservative = FALSE,
     cens_mg_method = "multiple_ice",
     grid_size = 10,
-    marginal_censoring_hazard = TRUE
+    marginal_censoring_hazard = TRUE,
+    verbose = FALSE
   )
 
   # dpasta(result)
   correct_result <- data.table::data.table(
-    estimate = c(0.27019644764351),
-    se = c(0.016718861342758),
-    lower = c(0.237427479411705),
-    upper = c(0.302965415875316),
-    ice_ipcw_estimate = c(0.271134516911432),
-    ipw = c(0.269039533478734)
+    estimate = c(0.270420430514127),
+    se = c(0.016742100405679),
+    lower = c(0.237605913718996),
+    upper = c(0.303234947309258),
+    ice_ipcw_estimate = c(0.271432569749947),
+    ipw = c(0.269301905071955)
   )
 
   expect_true(all.equal(result, correct_result, tolerance = 1e-8))
 })
+

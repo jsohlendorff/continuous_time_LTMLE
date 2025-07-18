@@ -332,11 +332,12 @@ simulate_continuous_time_purchase_history_data <- function(n,
   list(baseline_data = baseline_data, timevarying_data = timevarying_data)
 }
 
-reconstruct_A_from_purchase_history <- function(df,
-                                                df_baseline,
+reconstruct_A_from_purchase_history <- function(data,
                                                 med_length = 150,
                                                 time_varying_covariates = "L",
                                                 grace_period = 1) {
+  df <- data$timevarying_data
+  df_baseline <- data$baseline_data
   df[, event_number := 1:.N, by = id]
   df_0 <- df_baseline[, c("id", "A_0", paste0(time_varying_covariates, "_0")), with = FALSE]
   df_0[, c("time", "event") := list(0, "M")]

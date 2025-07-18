@@ -99,30 +99,50 @@ microbenchmark(
                 conservative = FALSE)
     , times = 1)
 
-# compare with rtmle
-## FIXME: timevar_data does not work; A and L should be monotone over time; L should count the number of events up until the different times.
-## Should also be easier to input baseline values of time-varying covariates which are not initially zero.
-## This is implemented in the `discretize_time` function.
-x <- rtmle_init(intervals = 7,name_id = "id",name_outcome = "Y",name_competing = "Dead",
-                name_censoring = "Censored",censored_label = "censored",censored_levels = c("uncensored","censored"))
-x <- add_long_data(x,
-                   outcome_data=data_continuous$timevarying_data[event == "Y",.(id = id,date = time)],
-                   censored_data=data_continuous$timevarying_data[event == "C",.(id = id,date = time)],
-                   competing_data=data_continuous$timevarying_data[event == "D",.(id = id,date = time)],
-                   timevar_data=list("A" = data_continuous$timevarying_data[event == "A" & A == 1,.(id = id,date = time)],
-                                     "L1" = data_continuous$timevarying_data[event == "L" & L1 == 1,.(id = id,date = time)],
-                                     "L2" = data_continuous$timevarying_data[event == "L" & L2 == 1,.(id = id,date = time)]))
-x <- add_baseline_data(x,data=data_continuous$baseline_data[,.(id,sex,age)])
-x <- long_to_wide(x,intervals = seq(0,tau,length.out = 8),start_followup_date = 0)
-x <- protocol(x,name = "Always_A",
-              intervention = data.frame("A" = factor("1",levels = c("0","1"))))
-x <- prepare_data(x)
-x <- target(x,name = "Outcome_risk",
-            estimator = "tmle",
-            protocols = c("Always_A"))
-x <- model_formula(x)
-x <- run_rtmle(x,learner = "learn_glmnet",time_horizon = 7)
-summary(x)
+## Simulated purchase history data
+## True value
+set.seed(1234)
+data_continuous_intervention <- simulate_continuous_time_purchase_history_data(n = n_true_value,
+                                                                     no_competing_events = TRUE,
+                                                                     effects = vary_effects_simple(),
+                                                                     static_intervention = 1,
+                                                                     days_for_medicine = 200 ## How many days can the patient take the medicine?
+                                                                     )
+calculate_mean(data_continuous_intervention, tau = tau)
+
+# Simulate purchase history data 
+set.seed(1234)
+data_continuous <- simulate_continuous_time_purchase_history_data(n = n,
+                                                        no_competing_events = TRUE,
+                                                        effects = vary_effects_simple(),
+                                                        uncensored = TRUE,
+                                                        days_for_medicine = 200,  ## How many days can the patient take the medicine?
+                                                        keep_A = TRUE)
+
+## Full access to treatment
+data_continuous_A <- data_continuous
+data_continuous_A$timevarying_data <- data_continuous_A$timevarying_data[event!="M"]
+debias_ice_ipcw(data = copy(data_continuous_A),
+                tau = tau,
+                model_pseudo_outcome = "quasibinomial",
+                model_treatment = "learn_glm_logistic",
+                model_hazard = NULL,
+                time_covariates = c("A", "L"),
+                baseline_covariates = c("age", "A_0", "L_0"),
+                conservative = TRUE)
+
+## Reconstruct A from purchase history
+data_continuous_M <- reconstruct_A_from_purchase_history(data_continuous,
+                                                         med_length=200,
+                                                         grace_period = 7)
+debias_ice_ipcw(data = copy(data_continuous_M),
+                tau = tau,
+                model_pseudo_outcome = "quasibinomial",
+                model_treatment = "learn_glm_logistic",
+                model_hazard = NULL,
+                time_covariates = c("A", "L"),
+                baseline_covariates = c("age", "A_0", "L_0"),
+                conservative = TRUE)
 
 ######################################################################
 ### example.R ends here
