@@ -712,19 +712,18 @@ applied to the target parameter $Psi_tau^(g, K^*) (P)$.
 
 We consider a simulation study to evaluate the performance of our ICE-IPCW estimator
 and its debiased version. Overall, the purpose of the simulation study is to
-establish that our estimator attains valid confidence intervals
-in the uncensored setting with varying degrees of confounding
-and in the censored setting -- due to the computational difficulties
-with the censoring martingale term -- to establish
-that our estimator is asymptotically unbiased
-and obtain conservative confidence intervals.
+establish that our estimating procedure provides valid inference with varying degrees of confounding.
+In the censored setting, we do consider the estimation
+of the censoring martingale due to the computational difficulties
+with the censoring martingale term and
+leave this as a future research topic.
 The second overall objective is to compare
 with existing methods in causal inference, such as
 discrete time methods (@ltmle) and a naive
 Cox model which treats deviation as censoring,
-not addressing time-varying confounding 
-and moreover to try to address which nuisance parameter models
-for iterative regressions appear to be best suited.
+not addressing time-varying confounding.
+In the censored setting, we also address the choice of nuisance parameter models
+for the iterative regressions.
 
 *Simulation scenario:*
 We simulate a cohort of patients who initiate treatment at time $t = 0$, denoted by $A(0) = 1$
@@ -733,13 +732,9 @@ All individuals are followed for up to $tauend = 900 "days"$ or until death.
 During follow-up, patients may experience (at most) one stroke, stop treatment (irreversibly), and die,
 that is $N^x (t) <= 1$ for $x = a, ell, y$.
 The primary outcome is the _risk of death within $tau = 720$ days_.
-We simulate baseline data as follows, 
-$
-    &"age" tilde "Unif"(40,90), \
-        &L = 0, \
-        & treat(0) = 1,
-$
-The model that we simulate from is: // a multiplicative intensity model:
+We simulate baseline data as $"age" tilde "Unif"(40,90)$,
+$L (0) =0$, and $A(0) = 1$.
+To simulate the time-varying data, we generate data according to the following intensities
 $
     Lambda^(alpha) (dif (t, x, a, ell)) &= bb(1) {t <= T^e and tauend} (delta_(y) (x) lambda^y exp(beta^y_"age" "age" + beta_A^y A(t-) + beta^y_L L(t -)) \
     &quad + bb(1) {N^ell (t -) = 0} delta_(ell) (x) delta_(1) (ell) lambda^ell exp(beta^ell_"age" "age" + beta_A^ell A(t-)) \
@@ -764,27 +759,35 @@ is multiplicative, depending on age, and reflects the fact
 that a patient, who has had a stroke, is expected to visit the doctor
 within the near future.
 
-In the first uncensored setting,
+In the uncensored setting,
 we vary the treatment effect on the outcome
 corresponding to $beta^y_A >0$, $beta^y_A = 0$, and $beta^y_A < 0$
 and the effect of stroke on the outcome $beta^y_L > 0$, $beta^y_L = 0$, and $beta^y_L < 0$.
 We also vary the effect of a stroke on the treatment propensity $alpha_(L)$
 and the effect of treatment on stroke $beta_(A)^ell > 0$, $beta_(A)^ell = 0$, and $beta_(A)^ell < 0$.
-Furthermore,
+Furthermore, when applying LTMLE,
 we discretize time into 8 intervals (@sec:discretizing-time).
-We consider both the debiased ICE estimator and the simple ICE estimator;
-the difference between them being that we add the efficient influence function
-to the first, which allows us to obtain doubly robust inference.
-Finally, we also compare with a continuous-time inverse probability weighting
-estimator which cannot be misspecified if one knows the true data generating mechanism.
+We consider both the debiased ICE estimator and the ICE estimator
+without debiasing.
+For modeling of the nuisance parameters,
+we select a logistic regression model for the treatment propensity
+$pi_k (t, history(k-1))$
+and a generalized linear model (GLM) with the option `family = quasibinomial()`
+for the conditional counterfactual probabilities $Qbar(k)$.
+For the LTMLE procedure, we use an undersmoothed LASSO (@lasso) estimator.
+Additionally, we vary sample size in the uncensored setting ($n in {100, 2000, 500, 1000}$).
+Otherwise, $n=1000$.
 
-Additionally, we vary sample size $n in {100, 2000, 500, 1000}$.
-In all other cases, we fix $n=1000$.
-
-We consider three overall scenarios:
-- *No time-varying confounding but baseline confounding*.
-- *Time-varying confounding*
-- *Strong confounding*.
+For the censored setting, we consider a simulation involving _completely_ independent censoring.
+Concretely, the censoring variable is simply generated as $C tilde "Exp"(lambda_c)$
+and vary $lambda_c in {0.0002, 0.0005, 0.0008}$.
+We consider only two parameter settings for the censoring martingale
+as outlined in Figure @table:simulation-parameters-censoring.
+Finally, three types of models are considered for the estimation of the counterfactual probabilities $Qbar(k)$:
+1. A linear model, which is a simple linear regression of the pseudo-outcomes $hat(Z)_k^a$ on the treatment and history variables.
+2. A scaled quasibinomial GLM, which is a generalized linear model with the `quasibinomial` as a family argument, where the outcomes are scaled down to $[0, 1]$ by dividing with the largest value of $hat(Z)^a_k$ in the sample.
+   Afterwards, the predictions are scaled back up to the original scale by multiplying with the largest value of $hat(Z)^a_k$ in the sample.
+3. A tweedie GLM, which is a generalized linear model with the `tweedie` family, where the pseudo-outcomes $hat(Z)_k^a$ may appear marginally as a mixture of a continuous random variable and a point mass at 0.
 
 #set table(
   stroke: (x, y) => if y == 0 {
@@ -830,55 +833,6 @@ We consider three overall scenarios:
         Simulation parameters for the strong confounding simulation study. Each value is varied, holding the others fixed.
     ]) <table:simulation-parameters-strong>
 
-== Discretizing time <sec:discretizing-time>
-We briefly illustrate how to discretize the time horizon into $K$ intervals,
-with time horizon $tau$, representing the usual longitudinal setting. 
-Let $t_k = k times tau / K$ for $k = 1, dots, K$.
-
-Put
-$
-    Y_k &= N^y (t_k), \
-    L_k &= L (t_k), \
-    A_k &= A (t_k).
-$
-Our data set then consists of
-$
-    O = ("age", covariate(0), treat(0), Y_1, L_1, A_1, dots, Y_(K-1), L_(K-1), A_(K-1), Y_K)
-$
-
-== Nuisance parameter modeling
-
-To apply our debiased ICE estimator in the uncensored situation, we need to estimate
-two types of nuisance parameters:
-1. The treatment propensity $pi_k (t, history(k-1))$ for each $k$.
-2. The conditional counterfactual probabilities $Qbar(k)$ for each $k$.
-
-For the treatment propensities, we consider correctly specified models
-using logistic regression.
-
-For modeling the conditional counterfactual probabilities $Qbar(k)$,
-we a generalized linear model (GLM) with the option `family = quasibinomial()`,
-using no interactions in the history.
-
-For the LTMLE procedure, we use an undersmoothed LASSO @lasso estimator.
-
-== Censoring
-We consider a simulation involving _completely_ independent censoring.
-Concretely, the censoring variable is simply generated as $C tilde "Exp"(lambda_c)$.
-The processes under considerations are then observed up to this censoring time.
-We vary $lambda_c in {0.0002, 0.0005, 0.0008}$.
-The overall purpose is to determine:
-3. Is valid inference possible in the case of censoring?
-2. What model should be used to estimate the conditional counterfactual probabilities $Qbar(k)$?
-
-Here, we consider a linear model, 
-   the scaled quasibinomial `glm` (this means that we divide with the largest value of $hat(Z)^k_a$
-   in the sample so that it is scaled down to $[0, 1]$; afterwards the predictions are rescaled with the largest value), a tweedie `glm` (the pseudo-outcomes $Z_k^a$ may appear
-   marginally as a mixture of a continuous random variable and a point mass at 0)
- as estimators of the conditional counterfactual probabilities $Qbar(k)$.
-
-We consider only two parameter settings for the censoring martingale
-as outlined in @table:simulation-parameters-censoring.
 
 #figure(
     table(
@@ -900,32 +854,47 @@ In the tables, we report the mean squared error (MSE),
 mean bias, standard deviation of the estimates, and the mean of the estimated standard error,
 as well as coverage of 95% confidence intervals.
 We also present boxplots of the results, showing
-bias (Figure @fig:boxplot_results_no_time_confounding, @fig:boxplot_results_strong_time_confounding, and @fig:boxplot_results_censored),
+bias (Figure @fig:boxplot_results_no_time_confounding, @fig:boxplot_results_strong_time_confounding, @fig:boxplot_results_censored, and @fig:boxplot_censored_ice_ipcw),
 as well as standard errors (Figure @fig:se_boxplot_results_no_time_confounding, @fig:se_boxplot_results_strong_time_confounding, and @fig:boxplot_results_censored),
 depending on the parameters. Additional results, such as those involving sample size, can be found in the Appendix.
 
-We see that the debiased ICE-IPCW estimator works well in all cases considered 
-   with respect to bias, coverage and standard errors. Moreover, it is unbiased in cases with
-   substantial time-varying confounding and performs better than 
-both the naive Cox model and the LTMLE estimator.
-Interestingly enough, in the case with time-varying
-confounding, LTMLE estimates are biased, but the mean squared errors
-are about the same as for the debiased ICE-IPCW estimator,
-but LTMLE generally has smaller standard errors, suggesting
-a bias variance trade-off between analyses in continuous-time and
-discrete-time methods.
-The fact standard errors appear a little less biased
-could be due to misspecification of the nuisance parameters $Qbar(k)$.
+Across all scenarios considered in the uncensored setting (Table @table:no-time-confounding and @table:strong-time-confounding
+and Figure @fig:boxplot_results_no_time_confounding, @fig:se_boxplot_results_no_time_confounding, @fig:boxplot_results_strong_time_confounding, and @fig:se_boxplot_results_strong_time_confounding),
+it appears that the debiased ICE-IPCW estimator has good performance with respect to bias, coverage, and standard errors.
+The debiased ICE-IPCW estimator is unbiased even in settings with substantial time-varying confounding and
+consistently matches or outperforms both the naive Cox method and the LTMLE estimator.
 
-In the censored case, we see that the debiased ICE-IPCW estimator
-appears unbiased in nearly all cases considered
-and for all choices of $lambda^c$
+Interestingly, when strong time-varying 
+confounding is present, LTMLE estimates are biased, but the mean squared errors
+are about the same as for the debiased ICE-IPCW estimator.
+However, its mean squared error is comparable to that of the debiased ICE-IPCW estimator,
+likely owing to the fact that it has generally smaller standard errors.
+This reflects a bias–variance trade-off between continuous-time and discrete-time approaches.
+The standard errors obtained from
+the debiased procedure also appear slightly more biased
+than the standard errors obtained from the LTMLE procedure,
+but this difference may be negligible.
+Note that with our choice of nuisance parameter model
+for the iterative regressions that probably is misspecified, we do not encounter
+bias in the estimates, but may encounter bias in the standard errors,
+as estimation of the standard errors is not doubly robust.
+
+In the presence of right-censoring (Figure @fig:boxplot_results_censored, @fig:se_boxplot_results_censored, and @fig:boxplot_censored_ice_ipcw),
+we see that the debiased ICE-IPCW estimator
+remains unbiased across all simulation scenarios
 and all choices of nuisance parameter models.
-Furthermore, standard errors appear to be (slightly) conservative. Standard errors for
-   the tweedie model appear to be slightly higher than for the linear model
-or the scaled quasibinomial model, but are otherwise comparable. 
-//3. The linear model appears to give the most unstable estimates. 
-//   This can be seen in the boxplots for the (simple) ICE-IPCW estimator (@fig:boxplot_censored_ice_ipcw).
+Moreover, standard errors are (slightly) conservative
+as is to be expected.
+
+With regards to the selection of nuisance parameter models
+for the pseudo-outcomes, we find that the linear model provides the most biased estimates for the non-debiased ICE-IPCW estimator
+(Figure @fig:boxplot_censored_ice_ipcw), though the differences are not substantial.
+In Figure @fig:boxplot_results_censored, we see that for the debiased ICE-IPCW estimator,
+there is no substantial difference between the linear, scaled quasibinomial, and tweedie models.
+Also note that the Tweedie model produces slightly larger standard errors
+for the debiased ICE-IPCW estimator
+than the linear or scaled quasibinomial models.
+However, the differences are otherwise minor.
 
 #let table_no_time_confounding = csv("simulation_study/tables/results_table_no_time_confounding.csv")
 #let _ = table_no_time_confounding.remove(0)
@@ -1012,6 +981,16 @@ table(
                         Boxplots of the standard errors for the case with censoring.
                 The red line indicates the empirical standard error of the estimates for each estimator.
                 ]) <fig:se_boxplot_results_censored>
+
+
+#figure(
+    image("simulation_study/plots/ice_ipcw_boxplot_results_censored.svg"),
+        caption: [
+            Boxplots of the results for the case with censoring.
+            Different degrees of censoring are considered as well different model types for the pseudo-outcomes.
+            Here, the (not debiased) ICE-IPCW estimator is shown.
+        ],
+) <fig:boxplot_censored_ice_ipcw>
 
 = Application to Danish Registry Data <section:dataapplication>
 To illustrate the applicability of our methods,
@@ -1997,13 +1976,18 @@ We find the following decomposition,
         ],
 )
 
-=== Censored case
+=== Discretizing time <sec:discretizing-time>
+We briefly illustrate how to discretize the time horizon into $K$ intervals,
+with time horizon $tau$, representing the usual longitudinal setting. 
+Let $t_k = k times tau / K$ for $k = 1, dots, K$.
 
-#figure(
-    image("simulation_study/plots/ice_ipcw_boxplot_results_censored.svg"),
-        caption: [
-            Boxplots of the results for the case with censoring.
-            Different degrees of censoring are considered as well different model types for the pseudo-outcomes.
-            Here, the (not debiased) ICE-IPCW estimator is shown.
-        ],
-) <fig:boxplot_censored_ice_ipcw>
+Put
+$
+    Y_k &= N^y (t_k), \
+    L_k &= L (t_k), \
+    A_k &= A (t_k).
+$
+Our data set then consists of
+$
+    O = ("age", covariate(0), treat(0), Y_1, L_1, A_1, dots, Y_(K-1), L_(K-1), A_(K-1), Y_K)
+$
