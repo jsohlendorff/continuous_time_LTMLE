@@ -1602,16 +1602,28 @@ also allows us to handle the case where the censoring distribution depends on ti
 // is also asymptotically linear with efficient influence function $phi_tau^*(P) (K_tau)$
 // where $K_tau$ is the last event point such that $P(kappa_i (tau) = K_tau) > 0$.
 
-// Sketch: We want to use $K = K_n = max_i kappa_i (tau)$.
+// Sketch: We want to use $K_n = max_i kappa_i (tau)$.
 // If we can do asymptotically and efficient inference for $K_n$, then we can also do it for a limiting $K_n <= K$.
 // Assume that the estimator is asymptotically linear with efficient influence function $phi_tau^*(P) (K_n)$.
-// Then by Assumption 1, there exists a $K_lim$ which is the last point such that $P(K_n = K_lim) > 0$.
+// Then by Assumption 1, there exists a $K_lim$ which is the last point such that $P(kappa (tau)K = K_lim) > 0$.<
 // Then, $K_n$ converges to $K_lim$ (by independence), and moreover, under standard regularity conditions such as strict positivity,
 // $
 //     (bb(P)_n-P) ( phi_tau^*(P) (K_n) - phi_tau^*(P) (K))
 // $ is $o_P(n^(-1/2))$, so if have asymptotic linearity in terms of $phi_tau^*(P) (K_n)$, then we automatically have it
 // for the original estimator for $phi_tau^*(P) (K_lim)$.
-// Proof: $P(K_"lim" - K_n > epsilon) = P(K_"lim" - epsilon > K_n) =  P(K_"lim" - epsilon > K_i (tau))^n -> 0 $.
+// Proof: $P(K_"lim" - K_n > epsilon) = P(K_"lim" - epsilon > K_n) =  P(K_"lim" - epsilon > kappa (tau))^n -> 0 $.
+// Now, we see that, with epsilon = 0.5, that P(K_lim != K_n) -> 0.
+// Let now K_n^* be the last such that at least 40 people are at risk K^*_n = max_(v : sum_i (kappa_i (tau)  > v) > 50)  kappa_i (tau)
+//. Need to shown K^*_n-K_n = o_P (1). On the event: every k has at least 50 people at risk, if we can show that this probability tends to 1, we are probably done.
+//. For all v sum_(i=1) 1*(kappa_i (tau)  => v)  > 50 has probability tending to 1.
+// The two are different only if for all v = 1,dots, K_lim, sum_(i=1) 1*(kappa_i (tau) >= v) <= 50.
+// However, the series sum_(i=1) 1*(kappa_i (tau) >= v) is almost surely divergent.
+//  sum_(i=1)^n 1*(kappa_i (tau) >= v) is monotone-increasing in n. 
+// that is almost surely, its limit is either oo or some limit < oo.
+// Using eg Kolmogorov's three series theorem, and since sum_i P(kappa_i (tau) >= v) = n P (Kappa (tau) >= v) -> oo.
+// Or just use Binomial. Now apply Hubbard et al. Using this, we initially have
+//  (bb(P)_n-P) ( phi_tau^*(hat(P)) (K^*_n) - phi_tau^*(P) (K^*_n)). By the argument that we just say, this can be replaced by
+//  (bb(P)_n-P) ( phi_tau^*(hat(P)) (K^*_n) - phi_tau^*(P) (K)). Likewise, Psi_tau,K_n^* (P) can be replaced by Psi_tau,K (P) by dominated congerence say.  
 // Then note that the truncated parameter converges to the non-truncated one by dominated convergence. 
 
 A potential other issue with the estimation of the nuisance parameters are that the history is high dimensional.

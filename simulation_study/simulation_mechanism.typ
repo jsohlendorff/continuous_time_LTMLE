@@ -6,7 +6,7 @@
 #set math.equation(numbering: "(1)")
 #show table.cell.where(y: 0): strong
 #set table(
-  stroke: (x, y) => if y == 0 {
+  stroke: (x, y) => if (y==0) {
     (bottom: 0.7pt + black)
   },
   align: (x, y) => (
@@ -620,117 +620,173 @@ Overall conclusions for the censored case:
    the tweedie model appear to be slightly higher than for the linear model
    or the scaled quasibinomial model.
 3. The linear model appears to give the most unstable estimates. 
-   This can be seen in the boxplots for the (simple) ICE-IPCW estimator (@fig:boxplot_results_censored_ice_ipcw).
+   This can be seen in the boxplots for the (simple) ICE-IPCW estimator (@fig:boxplot_censored_ice_ipcw).
 
 == Tables
 
 === Uncensored
 
 ==== No confounding
-#let results_table_no_confounding = csv("tables/results_table_no_confounding.csv")
-#let _ = results_table_no_confounding.remove(0)
+#let table_no_confounding = csv("tables/table_no_confounding.csv")
+#let _ = table_no_confounding.remove(0)
 
 #table(
-    columns: results_table_no_confounding.at(0).len(),
+    columns: table_no_confounding.at(0).len(),
+    table.vline(x: 1),
     //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
     [$beta^y_A$], [*Estimator*], [*Coverage*],
     [*MSE*], [*Bias*], [*sd(Est)*], [*Mean($hat("SE")$)*],
-  ..results_table_no_confounding.flatten(),
+    ..table_no_confounding.slice(0, 5).flatten(),
+    table.hline(),
+    ..table_no_confounding.slice(5, 10).flatten(),
+    table.hline(),
+    ..table_no_confounding.slice(10, 15).flatten(),
 )
 
 ==== No time-varying confounding
-#let results_table_no_time_confounding = csv("tables/results_table_no_time_confounding.csv")
-#let _ = results_table_no_time_confounding.remove(0)
+#let table_no_time_confounding = csv("tables/table_no_time_confounding.csv")
+#let _ = table_no_time_confounding.remove(0)
 
 #table(
-        columns: results_table_no_time_confounding.at(0).len(),
+    columns: table_no_time_confounding.at(0).len(),
+    table.vline(x: 1),
         //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
         [$beta^y_A$], [*Estimator*], [*Coverage*],
     [*MSE*], [*Bias*], [*sd(Est)*], [*Mean($hat("SE")$)*],
-          ..results_table_no_time_confounding.flatten(),
+    ..table_no_time_confounding.slice(0, 5).flatten(),
+    table.hline(),
+    ..table_no_time_confounding.slice(5, 10).flatten(),
+    table.hline(),
+        ..table_no_time_confounding.slice(10, 15).flatten(),
         )
 
 ==== Strong time-varying confounding
-#let results_table_strong_time_confounding = csv("tables/results_table_strong_time_confounding.csv")
-#let _ = results_table_strong_time_confounding.remove(0)
+#let table_strong_time_confounding = csv("tables/table_strong_time_confounding.csv")
+#let _ = table_strong_time_confounding.remove(0)
 
 #table(
-        columns: results_table_strong_time_confounding.at(0).len(),
+    columns: table_strong_time_confounding.at(0).len(),
+        table.vline(x: 1),
         //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
-        [$beta^y_A$], [$alpha_L$], [*Estimator*], [*Coverage*],
-    [*MSE*], [*Bias*], [*sd(Est)*], [*Mean($hat("SE")$)*],
-          ..results_table_strong_time_confounding.flatten(),
-)
+     [$beta^y_A$], [$alpha_L$], [*Estimator*], [*Coverage*],
+     [*MSE*], [*Bias*], [*sd(Est)*], [*Mean($hat("SE")$)*],
+    ..table_strong_time_confounding.slice(0, 5).flatten(),
+    table.hline(),
+    ..table_strong_time_confounding.slice(5, 10).flatten(),)
 
 ==== Varying effects (A on Y, L on Y, A on L, L on A)
-#let results_table_vary_effect_A_on_Y = csv("tables/results_table_vary_effect_A_on_Y.csv")
-#let _ = results_table_vary_effect_A_on_Y.remove(0)
+#let table_A_on_Y = csv("tables/table_A_on_Y.csv")
+#let _ = table_A_on_Y.remove(0)
 
 #table(
-        columns: results_table_vary_effect_A_on_Y.at(0).len(),
+    columns: table_A_on_Y.at(0).len(),
+        table.vline(x: 1),
         //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
         [$beta^y_A$], [*Estimator*], [*Coverage*],
     [*MSE*], [*Bias*], [*sd(Est)*], [*Mean($hat("SE")$)*],
-          ..results_table_vary_effect_A_on_Y.flatten(),
+    ..table_A_on_Y.slice(0, 5).flatten(),
+    table.hline(),
+    ..table_A_on_Y.slice(5, 10).flatten(),
+        table.hline(),
+    ..table_A_on_Y.slice(10, 15).flatten(),
 )
 
-#let results_table_vary_effect_L_on_Y = csv("tables/results_table_vary_effect_L_on_Y.csv")
-#let _ = results_table_vary_effect_L_on_Y.remove(0)
+#let table_L_on_Y = csv("tables/table_L_on_Y.csv")
+#let _ = table_L_on_Y.remove(0)
 
 #table(
-        columns: results_table_vary_effect_L_on_Y.at(0).len(),
+    columns: table_L_on_Y.at(0).len(),
+        table.vline(x: 1),
         //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
         [$beta^y_L$], [*Estimator*], [*Coverage*],
     [*MSE*], [*Bias*], [*sd(Est)*], [*Mean($hat("SE")$)*],
-          ..results_table_vary_effect_L_on_Y.flatten(),
+    ..table_L_on_Y.slice(0, 5).flatten(),
+    table.hline(),
+        ..table_L_on_Y.slice(5, 10).flatten(),
+    table.hline(),
+    ..table_L_on_Y.slice(10, 15).flatten(),
 )
 
-#let results_table_vary_effect_A_on_L = csv("tables/results_table_vary_effect_A_on_L.csv")
-#let _ = results_table_vary_effect_A_on_L.remove(0)
+#let table_A_on_L = csv("tables/table_A_on_L.csv")
+#let _ = table_A_on_L.remove(0)
 
 #table(
-        columns: results_table_vary_effect_A_on_L.at(0).len(),
+    columns: table_A_on_L.at(0).len(),
+        table.vline(x: 1),
         //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
         [$beta^L_A$], [*Estimator*], [*Coverage*],
     [*MSE*], [*Bias*], [*sd(Est)*], [*Mean($hat("SE")$)*],
-          ..results_table_vary_effect_A_on_L.flatten(),
+    ..table_A_on_L.slice(0, 5).flatten(),
+    table.hline(),
+    ..table_A_on_L.slice(5, 10).flatten(),
+    table.hline(),
+        ..table_A_on_L.slice(10, 15).flatten(),
 )
 
-#let results_table_vary_effect_L_on_A = csv("tables/results_table_vary_effect_L_on_A.csv")
-#let _ = results_table_vary_effect_L_on_A.remove(0)
+#let table_L_on_A = csv("tables/table_L_on_A.csv")
+#let _ = table_L_on_A.remove(0)
 
 #table(
-        columns: results_table_vary_effect_L_on_A.at(0).len(),
+    columns: table_L_on_A.at(0).len(),
+    table.vline(x: 1),
+        fill: (_, y) => if (calc.rem(y, 5) == 1) { gray.lighten(90%) },
         //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
         [$alpha_L$], [*Estimator*], [*Coverage*],
     [*MSE*], [*Bias*], [*sd(Est)*], [*Mean($hat("SE")$)*],
-          ..results_table_vary_effect_L_on_A.flatten(),
+    ..table_L_on_A.slice(0, 5).flatten(),
+    table.hline(),
+    ..table_L_on_A.slice(5, 10).flatten(),
+    table.hline(),
+        ..table_L_on_A.slice(10, 15).flatten(),
+    
 )
 
 ==== Sample size
 
-#let results_table_sample_size = csv("tables/results_table_sample_size.csv")
-#let _ = results_table_sample_size.remove(0)
+#let table_sample_size = csv("tables/table_sample_size.csv")
+#let _ = table_sample_size.remove(0)
 
 #table(
-        columns: results_table_sample_size.at(0).len(),
+    columns: table_sample_size.at(0).len(),
+    table.vline(x: 1),
+    fill: (_, y) => if (calc.rem(y, 3) == 1) { gray.lighten(90%) },
+
         //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
         [$n$], [*Estimator*], [*Coverage*],
     [*MSE*], [*Bias*], [*sd(Est)*], [*Mean($hat("SE")$)*],
-          ..results_table_sample_size.flatten(),
+    ..table_sample_size.slice(0, 3).flatten(),
+    table.hline(),
+    ..table_sample_size.slice(3, 6).flatten(),
+        table.hline(),
+    ..table_sample_size.slice(6, 9).flatten(),
+    table.hline(),
+        ..table_sample_size.slice(9, 12).flatten(),
+    
 )
 
 === Censored
 
-#let results_table_censored = csv("tables/results_table_censored.csv")
-#let _ = results_table_censored.remove(0)
+#let table_censored = csv("tables/table_censored.csv")
+#let _ = table_censored.remove(0)
 
 #table(
-        columns: results_table_censored.at(0).len(),
-        //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
+    columns: table_censored.at(0).len(),
+    table.vline(x: 1),
+      fill: (_, y) => if calc.odd(y) { gray.lighten(90%) },
+    //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
     [$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$lambda_c$], [*Model type*], [*Estimator*], [*Coverage*],
     [*MSE*], [*Bias*], [*sd(Est)*], [*Mean($hat("SE")$)*],
-          ..results_table_censored.flatten(),
+    ..table_censored.slice(0, 6).flatten(),
+    table.hline(),
+    ..table_censored.slice(6, 12).flatten(),
+    table.hline(),
+    ..table_censored.slice(12, 18).flatten(),
+    table.hline(),
+    ..table_censored.slice(18, 24).flatten(),
+    table.hline(),
+    ..table_censored.slice(24, 30).flatten(),
+    table.hline(),
+    ..table_censored.slice(30, 36).flatten(),
 )
 
 == Boxplots
@@ -739,7 +795,7 @@ Overall conclusions for the censored case:
 
 ==== No confounding
 #figure(
-    image("plots/boxplot_results_no_confounding.svg"),
+    image("plots/boxplot_no_confounding.svg"),
         caption: [
                 Boxplots of the results for the case without time confounding.
                 The lines indicates the true value of the parameter.
@@ -747,7 +803,7 @@ Overall conclusions for the censored case:
 )
 
 #figure(
-    image("plots/se_boxplot_results_no_confounding.svg"),
+    image("plots/se_boxplot_no_confounding.svg"),
         caption: [
                 Boxplots of the standard errors for the case without time confounding.
             The red line indicates the empirical standard error of the estimates for each estimator.
@@ -756,7 +812,7 @@ Overall conclusions for the censored case:
 
 ==== No time-varying confounding
 #figure(
-    image("plots/boxplot_results_no_time_confounding.svg"),
+    image("plots/boxplot_no_time_confounding.svg"),
         caption: [
                 Boxplots of the results for the case without time confounding.
                 The lines indicates the true value of the parameter.
@@ -764,7 +820,7 @@ Overall conclusions for the censored case:
 )
 
 #figure(
-    image("plots/se_boxplot_results_no_time_confounding.svg"),
+    image("plots/se_boxplot_no_time_confounding.svg"),
         caption: [
                 Boxplots of the standard errors for the case without time confounding.
             The red line indicates the empirical standard error of the estimates for each estimator.
@@ -773,7 +829,7 @@ Overall conclusions for the censored case:
 
 ==== Strong time-varying confounding
 #figure(
-    image("plots/boxplot_results_strong_time_confounding.svg"),
+    image("plots/boxplot_strong_time_confounding.svg"),
         caption: [
                 Boxplots of the results for the case with strong time confounding.
                 The lines indicates the true value of the parameter.
@@ -781,7 +837,7 @@ Overall conclusions for the censored case:
 )
 
 #figure(
-    image("plots/se_boxplot_results_strong_time_confounding.svg"),
+    image("plots/se_boxplot_strong_time_confounding.svg"),
         caption: [
                 Boxplots of the standard errors for the case with strong time confounding.
             The red line indicates the empirical standard error of the estimates for each estimator.
@@ -790,7 +846,7 @@ Overall conclusions for the censored case:
 
 ==== Varying effects (A on Y, L on Y, A on L, L on A)
 #figure(
-    image("plots/boxplot_results_vary_effect_A_on_Y.svg"),
+    image("plots/boxplot_A_on_Y.svg"),
         caption: [
                 Boxplots of the results for the case with varying effect of $A$ on $Y$.
                 The lines indicates the true value of the parameter.
@@ -798,7 +854,7 @@ Overall conclusions for the censored case:
 )
 
 #figure(
-    image("plots/se_boxplot_results_vary_effect_A_on_Y.svg"),
+    image("plots/se_boxplot_A_on_Y.svg"),
         caption: [
                 Boxplots of the standard errors for the case with varying effect of $A$ on $Y$.
             The red line indicates the empirical standard error of the estimates for each estimator.
@@ -806,7 +862,7 @@ Overall conclusions for the censored case:
 )
 
 #figure(
-    image("plots/boxplot_results_vary_effect_L_on_Y.svg"),
+    image("plots/boxplot_L_on_Y.svg"),
         caption: [
                 Boxplots of the results for the case with varying effect of $L$ on $Y$.
                 The lines indicates the true value of the parameter.
@@ -814,7 +870,7 @@ Overall conclusions for the censored case:
 )
 
 #figure(
-    image("plots/se_boxplot_results_vary_effect_L_on_Y.svg"),
+    image("plots/se_boxplot_L_on_Y.svg"),
         caption: [
                 Boxplots of the standard errors for the case with varying effect of $L$ on $Y$.
             The red line indicates the empirical standard error of the estimates for each estimator.
@@ -822,7 +878,7 @@ Overall conclusions for the censored case:
 )
 
 #figure(
-    image("plots/boxplot_results_vary_effect_A_on_L.svg"),
+    image("plots/boxplot_A_on_L.svg"),
         caption: [
                 Boxplots of the results for the case with varying effect of $A$ on $L$.
                 The lines indicates the true value of the parameter.
@@ -830,7 +886,7 @@ Overall conclusions for the censored case:
 )
 
 #figure(
-    image("plots/se_boxplot_results_vary_effect_A_on_L.svg"),
+    image("plots/se_boxplot_A_on_L.svg"),
         caption: [
                 Boxplots of the standard errors for the case with varying effect of $A$ on $L$.
             The red line indicates the empirical standard error of the estimates for each estimator.
@@ -838,7 +894,7 @@ Overall conclusions for the censored case:
 )
 
 #figure(
-    image("plots/boxplot_results_vary_effect_L_on_A.svg"),
+    image("plots/boxplot_L_on_A.svg"),
         caption: [
                 Boxplots of the results for the case with varying effect of $L$ on $A$.
                 The lines indicates the true value of the parameter.
@@ -846,7 +902,7 @@ Overall conclusions for the censored case:
 )
 
 #figure(
-    image("plots/se_boxplot_results_vary_effect_L_on_A.svg"),
+    image("plots/se_boxplot_L_on_A.svg"),
         caption: [
                 Boxplots of the standard errors for the case with varying effect of $L$ on $A$.
             The red line indicates the empirical standard error of the estimates for each estimator.
@@ -856,7 +912,7 @@ Overall conclusions for the censored case:
 ==== Sample size
 
 #figure(
-    image("plots/boxplot_results_sample_size.svg"),
+    image("plots/boxplot_sample_size.svg"),
         caption: [
                 Boxplots of the results for the case with varying sample size.
                 The lines indicates the true value of the parameter.
@@ -864,7 +920,7 @@ Overall conclusions for the censored case:
 )
 
 #figure(
-    image("plots/se_boxplot_results_sample_size.svg"),
+    image("plots/se_boxplot_sample_size.svg"),
         caption: [
                 Boxplots of the standard errors for the case with varying sample size.
             The red line indicates the empirical standard error of the estimates for each estimator.
@@ -874,7 +930,7 @@ Overall conclusions for the censored case:
 === Censored
 
 #figure(
-    image("plots/boxplot_results_censored.svg"),
+    image("plots/boxplot_censored.svg"),
         caption: [
                 Boxplots of the results for the case with censoring.
             Different degrees of censoring are considered as well different model types for the pseudo-outcomes.
@@ -883,20 +939,20 @@ Overall conclusions for the censored case:
 )
 
 #figure(
-        image("plots/se_boxplot_results_censored.svg"),
+        image("plots/se_boxplot_censored.svg"),
                 caption: [
                         Boxplots of the standard errors for the case with censoring.
                 The red line indicates the empirical standard error of the estimates for each estimator.
                 ])
 
 #figure(
-    image("plots/boxplot_results_censored_ice_ipcw.svg"),
+    image("plots/ice_ipcw_boxplot_censored.svg"),
         caption: [
             Boxplots of the results for the case with censoring.
             Different degrees of censoring are considered as well different model types for the pseudo-outcomes.
             Here, the (not debiased) ICE-IPCW estimator is shown.
         ],
-) <fig:boxplot_results_censored_ice_ipcw>
+) <fig:boxplot_censored_ice_ipcw>
 
 = Extensions of simulation procedure <sec:extensions>
 In this section, we briefly outline some extensions of the

@@ -11,8 +11,6 @@
   issn = {0090-5364, 2168-8966},
   doi = {10.1214/21-AOS2114},
   urldate = {2024-01-16},
-  abstract = {This paper generalizes the targeted minimum loss-based estimation (TMLE) framework to allow for estimating the effects of time-varying interventions in settings where both interventions, covariates, and outcome can happen at subject-specific time-points on an arbitrarily fine time-scale. TMLE is a general template for constructing asymptotically linear substitution estimators for smooth low-dimensional parameters in infinite-dimensional models. Existing longitudinal TMLE methods are developed for data where observations are made on a discrete time-grid. We consider a continuous-time counting process model where intensity measures track the monitoring of subjects, and focus on a low-dimensional target parameter defined as the intervention-specific mean outcome at the end of follow-up. To construct our TMLE algorithm for the given statistical estimation problem, we derive an expression for the efficient influence curve and represent the target parameter as a functional of intensities and conditional expectations. The high-dimensional nuisance parameters of our model are estimated and updated in an iterative manner according to separate targeting steps for the involved intensities and conditional expectations. The resulting estimator solves the efficient influence curve equation. We state a general efficiency theorem and describe a highly adaptive lasso estimator for nuisance parameters that allows us to establish asymptotic linearity and efficiency of our estimator under minimal conditions on the underlying statistical model.},
-  keywords = {62G05,Causal inference,continuous-time interventions,efficient estimation,Semiparametric model,Targeted minimum loss-based estimation (TMLE),time-varying confounding},
   file = {/home/johan/Zotero/storage/M8NHB426/Rytgaard et al. - 2022 - Continuous-time targeted minimum loss-based estima.pdf}
 }
 
@@ -81,7 +79,6 @@
   primaryclass = {cs, stat},
   publisher = {arXiv},
   urldate = {2024-07-04},
-  abstract = {We propose Deep Longitudinal Targeted Minimum Loss-based Estimation (Deep LTMLE), a novel approach to estimate the counterfactual mean of outcome under dynamic treatment policies in longitudinal problem settings. Our approach utilizes a transformer architecture with heterogeneous type embedding trained using temporal-difference learning. After obtaining an initial estimate using the transformer, following the targeted minimum loss-based likelihood estimation (TMLE) framework, we statistically corrected for the bias commonly associated with machine learning algorithms. Furthermore, our method also facilitates statistical inference by enabling the provision of 95\% confidence intervals grounded in asymptotic statistical theory. Simulation results demonstrate our method's superior performance over existing approaches, particularly in complex, long time-horizon scenarios. It remains effective in small-sample, short-duration contexts, matching the performance of asymptotically efficient estimators. To demonstrate our method in practice, we applied our method to estimate counterfactual mean outcomes for standard versus intensive blood pressure management strategies in a real-world cardiovascular epidemiology cohort study.},
   archiveprefix = {arXiv},
   langid = {english},
   keywords = {Computer Science - Artificial Intelligence,Computer Science - Machine Learning,Statistics - Applications,Statistics - Machine Learning,Statistics - Methodology},
@@ -95,7 +92,6 @@
   month = may,
   journal = {arXiv.org},
   urldate = {2024-10-03},
-  abstract = {Machine learning regression methods allow estimation of functions without unrealistic parametric assumptions. Although they can perform exceptionally in prediction error, most lack theoretical convergence rates necessary for semi-parametric efficient estimation (e.g. TMLE, AIPW) of parameters like average treatment effects. The Highly Adaptive Lasso (HAL) is the only regression method proven to converge quickly enough for a meaningfully large class of functions, independent of the dimensionality of the predictors. Unfortunately, HAL is not computationally scalable. In this paper we build upon the theory of HAL to construct the Selectively Adaptive Lasso (SAL), a new algorithm which retains HAL's dimension-free, nonparametric convergence rate but which also scales computationally to massive datasets. To accomplish this, we prove some general theoretical results pertaining to empirical loss minimization in nested Donsker classes. Our resulting algorithm is a form of gradient tree boosting with an adaptive learning rate, which makes it fast and trivial to implement with off-the-shelf software. Finally, we show that our algorithm retains the performance of standard gradient boosting on a diverse group of real-world datasets. SAL makes semi-parametric efficient estimators practically possible and theoretically justifiable in many big data settings.},
   howpublished = {https://arxiv.org/abs/2205.10697v1},
   langid = {english},
   file = {/home/johan/Zotero/storage/CY39YPCL/Schuler and van der Laan - 2022 - The Selectively Adaptive Lasso.pdf}
@@ -224,7 +220,6 @@ abstract = {In observational cohort mortality studies with prolonged periods of 
   issn = {1557-4679},
   doi = {10.1515/1557-4679.1370},
   urldate = {2024-01-02},
-  abstract = {We consider estimation of the effect of a multiple time point intervention on an outcome of interest, where the intervention nodes are subject to time-dependent confounding by intermediate covariates.In previous work van der Laan (2010) and Stitelman and van der Laan (2011a) developed and implemented a closed form targeted maximum likelihood estimator (TMLE) relying on the log-likelihood loss function, and demonstrated important gains relative to inverse probability of treatment weighted estimators and estimating equation based estimators. This TMLE relies on an initial estimator of the entire probability distribution of the longitudinal data structure. To enhance the finite sample performance of the TMLE of the target parameter it is of interest to select the smallest possible relevant part of the data generating distribution, which is estimated and updated by TMLE. Inspired by this goal, we develop a new closed form TMLE of an intervention specific mean outcome based on general longitudinal data structures. The target parameter is represented as an iterative sequence of conditional expectations of the outcome of interest. This collection of conditional means represents the relevant part, which is estimated and updated using the general TMLE algorithm. We also develop this new TMLE for other causal parameters, such as parameters defined by working marginal structural models. The theoretical properties of the TMLE are also practically demonstrated with a small scale simulation study.The proposed TMLE is building upon a previously proposed estimator Bang and Robins (2005) by integrating some of its key and innovative ideas into the TMLE framework.},
   copyright = {De Gruyter expressly reserves the right to use all content for commercial text and data mining within the meaning of Section 44b of the German Copyright Act.},
   langid = {english},
   keywords = {Asymptotic linearity of an estimator,causal effect,confounding,efficient influence curve,G-computation formula,influence curve,longitudinal data,loss function,marginal structural working model,nonparametric structural equation model,positivity assumption,randomization assumption,semiparametric statistical model,targeted maximum likelihood estimation,targeted minimum loss based estimation,TMLE,treatment regimen},
@@ -608,3 +603,79 @@ lastchecked = {2025-05-22}
       primaryClass={stat.ML},
       url={https://arxiv.org/abs/2205.10697}, 
 }
+
+@article{kant2025irregular,
+  title={Irregular measurement times in estimating time-varying treatment effects: Categorizing biases and comparing adjustment methods},
+  author={Kant, Wouter MR and Krijthe, Jesse H},
+  journal={arXiv preprint arXiv:2501.11449},
+  year={2025}
+}
+
+@article{sun2023role,
+  title={The role of discretization scales in causal inference with continuous-time treatment},
+  author={Sun, Jinghao and Crawford, Forrest W},
+  journal={arXiv preprint arXiv:2306.08840},
+  year={2023}
+}
+
+@article{adams2020impact,
+  title={The impact of time series length and discretization on longitudinal causal estimation methods},
+  author={Adams, Roy and Saria, Suchi and Rosenblum, Michael},
+  journal={arXiv preprint arXiv:2011.15099},
+  year={2020}
+}
+
+@article{sofrygin2019targeted,
+  title={Targeted learning with daily EHR data},
+  author={Sofrygin, Oleg and Zhu, Zheng and Schmittdiel, Julie A and Adams, Alyce S and Grant, Richard W and {van der Laan}, Mark J and Neugebauer, Romain},
+  journal={Statistics in medicine},
+  volume={38},
+  number={16},
+  pages={3073--3090},
+  year={2019},
+  publisher={Wiley Online Library}
+}
+
+@book{tsiatis2006semiparametric,
+  title={Semiparametric theory and missing data},
+  author={Tsiatis, Anastasios A},
+  year={2006},
+  publisher={Springer}
+}
+
+@article{ogata1981lewis,
+  title={On Lewis' simulation method for point processes},
+  author={Ogata, Yosihiko},
+  journal={IEEE transactions on information theory},
+  volume={27},
+  number={1},
+  pages={23--31},
+  year={1981},
+  publisher={IEEE}
+}
+
+@article{lasso,
+ ISSN = 00359246,
+ URL = {http://www.jstor.org/stable/2346178},
+ abstract = {We propose a new method for estimation in linear models. The `lasso' minimizes the residual sum of squares subject to the sum of the absolute value of the coefficients being less than a constant. Because of the nature of this constraint it tends to produce some coefficients that are exactly 0 and hence gives interpretable models. Our simulation studies suggest that the lasso enjoys some of the favourable properties of both subset selection and ridge regression. It produces interpretable models like subset selection and exhibits the stability of ridge regression. There is also an interesting relationship with recent work in adaptive function estimation by Donoho and Johnstone. The lasso idea is quite general and can be applied in a variety of statistical models: extensions to generalized regression models and tree-based models are briefly described.},
+ author = {Robert Tibshirani},
+ journal = {Journal of the Royal Statistical Society. Series B (Methodological)},
+ number = 1,
+ pages = {267--288},
+ publisher = {[Royal Statistical Society, Oxford University Press]},
+ title = {Regression Shrinkage and Selection via the Lasso},
+ urldate = {2025-07-03},
+ volume = 58,
+ year = 1996
+}
+
+@misc{ohlendorff2025cheapsubsamplingbootstrapconfidence,
+      title={Cheap Subsampling bootstrap confidence intervals for fast and robust inference}, 
+      author={Johan Sebastian Ohlendorff and Anders Munch and Kathrine Kold Sørensen and Thomas Alexander Gerds},
+      year={2025},
+      eprint={2501.10289},
+      archivePrefix={arXiv},
+      primaryClass={stat.ME},
+      url={https://arxiv.org/abs/2501.10289}, 
+}
+

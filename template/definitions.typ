@@ -27,11 +27,27 @@
   }
 }
 
+#let eventcensoredi(ind) = {
+  if ind == [0] or ind == 0 [
+      $macron(T)_(0,i)$
+  ] else {
+      $macron(T)_((#ind),i)$
+  }
+}
+
 #let statuscensored(ind) = {
   if ind == [0] or ind == 0 [
       $macron(Delta)_0$
   ] else {
       $macron(Delta)_((#ind))$
+  }
+}
+
+#let statuscensoredi(ind) = {
+  if ind == [0] or ind == 0 [
+      $macron(Delta)_(0,i)$
+  ] else {
+      $macron(Delta)_((#ind),i)$
   }
 }
 
@@ -43,6 +59,14 @@
   }
 }
 
+#let treatcensoredi(ind) = {
+  if ind == [0] or ind == 0 [
+      $macron(A)_(0,i)$
+  ] else {
+      $macron(A)_((#ind),i)$
+  }
+}
+
 #let covariatecensored(ind) = {
   if ind == [0] or ind == 0 [
       $L_0$
@@ -51,11 +75,27 @@
   }
 }
 
+#let covariatecensoredi(ind) = {
+  if ind == [0] or ind == 0 [
+      $L_(0,i)$
+  ] else {
+      $L_((#ind),i)$
+  }
+}
+
 #let historycensored(ind) = {
   if ind == [0] or ind == 0 [
     $cal(F)_0$
   ] else [
       $cal(F)^tilde(beta)_(eventcensored(#ind))$
+  ]
+}
+
+#let historycensoredi(ind) = {
+  if ind == [0] or ind == 0 [
+    $cal(F)_(0,i)$
+  ] else [
+      $cal(F)^tilde(beta)_((#ind),i)$
   ]
 }
 
@@ -122,9 +162,9 @@
     }
 }
 
-#let densitytrt(time, which) = $pi_(#which) (#time, history(#which - 1))$
+#let densitytrt(time, which) = $pi_(#which) (#time, covariate(#which), history(#which - 1))$
 #let densitytrtprev(time, arg, which) = $pi_(#which -1) (#time, history(#which - 2))$
-#let densitytrtint(time,arg, which) = $pi_(#which)^* (#time, history(#which - 1))$
+#let densitytrtint(time, arg, which) = $pi_(#which)^* (#time, #arg, history(#which - 1))$
 #let densitycov(time, arg, which) = $mu_(#which) (#time, #arg, history(#which - 1))$
 
 #let tauend = $tau_("end")$
