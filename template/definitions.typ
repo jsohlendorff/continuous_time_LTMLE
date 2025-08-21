@@ -163,9 +163,9 @@
 }
 
 #let densitytrt(time, which) = $pi_(#which) (#time, covariate(#which), history(#which - 1))$
-#let densitytrtprev(time, arg, which) = $pi_(#which -1) (#time, history(#which - 2))$
-#let densitytrtint(time, arg, which) = $pi_(#which)^* (#time, #arg, history(#which - 1))$
+#let densitytrtcensored(time, which) = $pi_(#which) (#time, covariatecensored(#which), historycensored(#which - 1))$
 #let densitycov(time, arg, which) = $mu_(#which) (#time, #arg, history(#which - 1))$
+#let densitycovcensored(time, arg, which) = $mu_(#which) (#time, #arg, historycensored(#which - 1))$
 
 #let tauend = $tau_("end")$
 
