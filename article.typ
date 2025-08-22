@@ -67,11 +67,11 @@ However, many real-world datasets — such as health registries — are collecte
 These datasets often include detailed, timestamped information on events and biomarkers, such as drug purchases, hospital visits, and laboratory results.
 Analyzing data in its native continuous-time form avoids the need for discretization.
 This is well known for inducing bias 
-due to the introduction of time-varying confounding that is unaccounted for (@ryalen2019additive @discretization2020guerra @kant2025irregular @sun2023role @adams2020impact @sofrygin2019targeted).
+due to the introduction of time-varying confounding that is not taken into consideration (@ryalen2019additive @discretization2020guerra @kant2025irregular @sun2023role @adams2020impact @sofrygin2019targeted).
 
 In this paper, we consider a longitudinal continuous-time framework similar to that of @rytgaardContinuoustimeTargetedMinimum2022
 and @roysland2011martingale.
-Like @rytgaardContinuoustimeTargetedMinimum2022, we identify the parameter of interest nonparametrically and focus on estimation and inference through the efficient influence function, yielding nonparametrically locally efficient estimators via a one-step procedure
+Like @rytgaardContinuoustimeTargetedMinimum2022, we define the parameter of interest nonparametrically and focus on estimation and inference through the efficient influence function, yielding nonparametrically locally efficient estimators via a one-step procedure
 (@vaart1998 @tsiatis2006semiparametric @bickel1993efficient).
 
 To this end, we propose an inverse probability of censoring iterative conditional expectation (ICE-IPCW) estimator, which, like the iterative regression of @rytgaardContinuoustimeTargetedMinimum2022,
@@ -83,7 +83,7 @@ A key innovation in our method is that these updates are performed by indexing b
 This then allows us to apply simple regression techniques
 for the nuisance parameters. 
 Moreover, our estimator addresses challenges associated with the high dimensionality of the target parameter by employing inverse probability of censoring weighting (IPCW).
-The distinction between event-based and time-based updating is illustrated in @fig:timegridrytgaard and @fig:eventgrid.
+The distinction between event-based and time-based updating is illustrated in Figure @fig:timegridrytgaard and @fig:eventgrid.
 To the best of our knowledge, no general estimation procedure has yet been proposed for the components involved in the efficient influence function.
 Another advantage of using iterative regressions is that the resulting estimator will be
 less sensitive to/near practical positivity violations.
@@ -95,7 +95,7 @@ estimators become increasingly biased and inefficient as the number of time poin
 whereas iterative regression methods appear to be less sensitive to this issue (@adams2020impact).
 Yet, many existing methods for estimating causal effects in continuous time
 apply inverse probability of treatment weighting (IPW)
-to identify the target parameter (see e.g., @roeysland2024 @roysland2011martingale).
+to estimate the target parameter (e.g., @roeysland2024 @roysland2011martingale).
 
 Continuous-time methods for causal inference in event history analysis have also been explored by @roysland2011martingale and @lok2008.
 @roysland2011martingale developed identification criteria using a formal martingale framework based on local independence graphs,
@@ -197,13 +197,13 @@ This will be critical for dealing with right-censoring.
 We observe $O= (event(K), status(K), treat(K-1), covariate(K-1), event(K-1), status(K-1), dots, treat(0), covariate(0)) ~ P in cal(M)$ where
 $cal(M)$ is the statistical model, i.e., a set of probability measures
 and obtain a sample $O = (O_1, dots, O_n)$ of size $n$.
-For a single individual, we might observe $treat(0) = 0$ and $covariate(0) = 2$,
- $treat(1) = 1$, $covariate(1) = 2$, $event(1) = 0.5$, and $status(1) = a$,
-$treat(2) = 1$, $covariate(2) = 2$, $event(2) = 1.5$, and $status(2) = y$,
-and $event(3) = oo$, $status(3) = Ø$, so $K(t) = 2$ for that individual.
-Another person might have $status(1) = d$ and so $K(t) = 0$ for that individual.
-For the confused reader, we refer to @fig:longitudinaldatalong,
-which gives the long format of a hypothetical longitudinal dataset
+// For a single individual, we might observe $treat(0) = 0$ and $covariate(0) = 2$,
+//  $treat(1) = 1$, $covariate(1) = 2$, $event(1) = 0.5$, and $status(1) = a$,
+// $treat(2) = 1$, $covariate(2) = 2$, $event(2) = 1.5$, and $status(2) = y$,
+// and $event(3) = oo$, $status(3) = Ø$, so $K(t) = 2$ for that individual.
+// Another person might have $status(1) = d$ and so $K(t) = 0$ for that individual.
+As a concrete example, we refer to Figure @fig:longitudinaldatalong,
+which provides the long format of a hypothetical longitudinal dataset
 with time-varying covariates and treatment registered at irregular time points,
 and its conversion to wide format in @fig:longitudinaldatawide.
 
@@ -262,7 +262,7 @@ and its conversion to wide format in @fig:longitudinaldatawide.
         [3], [3], [1], [4], [1], [2], [$ell$], [4], [0], [2.1], [$a$], [$5$], [$y$],
     ),
     caption: [
-        The same example as in @fig:longitudinaldatalong, but presented in a wide format.
+        The same example as in Table @fig:longitudinaldatalong, but presented in a wide format.
     ])<fig:longitudinaldatawide>
 
 We will also work within the so-called canonical setting for technical reasons (@last1995marked, Section 2.2).
@@ -323,16 +323,18 @@ $ <eq:identification>
 where $N^y (t) = sum_(k=1)^K bb(1) {event(k) <= t, status(k) =y}$.
 In our application, $pi_k^*$ may be chosen arbitrarily,
 so that, in principle, _stochastic_, _dynamic_, and _static_ treatment regimes
-can be considered.
-However, for simplicity of presentation, we use the static observation plan $pi^*_0 (covariate(0)) = 1$ and $pi^*_k (event(k), history(k-1)) = 1$ for all $k = 1, dots, K-1$,
+can be considered. 
+However, for simplicity of presentation, we use the static observation plan $pi^*_k = 1$ for all $k = 0, dots, K-1$,
 and the methods we present can easily be extended to more complex treatment regimes
 and contrasts.
-Note that alternatively, we can interpret
-the target parameter $Psi_tau^(g, K) (P)$ as
+@rytgaardContinuoustimeTargetedMinimum2022 specify $pi_t^* (1 | cal(F)_(t-)) = 1$;
+however, we note these are the same since $pi_t^* (1 | cal(F)_(t-)) = sum_(k=1)^(K-1) bb(1) {event(k-1) < t <= event(k)} pi^*_k (t, covariate(k), history(k-1))$.
+
+Note that alternatively,
+if we do not want to limit ourselves to $K$ events, we can interpret
+the target parameter $Psi_tau^(g) (P)$ as
 the counterfactual cumulative incidence function of the event of interest $y$ at time $tau$,
 when the intervention enforces treatment as part of the $K-1$ first events.
-Henceforth, we will assume that @eq:identification
-causally identifies the estimand of interest.
 
 // Consider the general sequence of events ${(event(k), status(k), treat(k), covariate(k))}_k$
 // which is now allowed to include more than $K$ events in total.
@@ -353,7 +355,7 @@ causally identifies the estimand of interest.
 // we see that $Phi_tau^(g, K) (P) = Psi_tau^(g, K) (P)$.
 
 We now present a simple iterated representation of the data target parameter $Psi_tau^g (P)$ in the case with no censoring.
-We discuss more thoroughly the implications for inference of this representation, the algorithm for estimation and examples in @section:censoring
+We discuss more thoroughly the implications for inference of this representation, the algorithm for estimation and examples in Section @section:censoring
 where we also deal with right-censoring.
 
 #theorem[
@@ -424,23 +426,23 @@ $alpha$. Let $N^c$ be the censoring process
 given by $N^c (t) = bb(1) {C <= t}$.
 
 We will introduce the notation necessary to
-discuss the algorithm for the the ICE-IPCW estimator in @alg:ipcwice
+discuss the algorithm for the the ICE-IPCW estimator in Section @alg:ipcwice
 and later discuss the assumptions necessary for consistency of the ICE-IPCW estimator
-in @section:conditions.
+in Section @section:conditions.
 In the remainder of the paper,
 we will assume that $C != event(k)$ for all $k$ with probability 1.
 As before, we let $(event(k), status(k), treat(k), covariate(k))$ be
 the event times and marks for the $N^alpha$ process. 
 
-Let $(eventcensored(k), statuscensored(k), treatcensored(k), covariatecensored(k))$ for $k=1, dots, K$ be the observed data given by 
+We can now let $(eventcensored(k), statuscensored(k), treatcensored(k), covariatecensored(k))$ for $k=1, dots, K$ be the observed data given by 
 $
-    eventcensored(k) &= C and event(k) \
+    eventcensored(k) &= cases(event(k) "if" C > event(k), C "if" C <= event(k) "and" event(k-1) > C, oo "otherwise") \
     statuscensored(k) &= cases(status(k) "if" C > event(k), "c" "if" C <= event(k) "and" statuscensored(k-1) != c, Ø "otherwise") \
     treatcensored(k) &= cases(treat(k)"if" C > event(k), Ø "otherwise") \
     covariatecensored(k) &= cases(covariate(k) "if" C > event(k), Ø "otherwise")
 $ <eq:observedata>
 for $k = 1, dots, K$,
-and let $historycensored(k)$ heuristically be defined by
+and let $historycensored(k)$, for now, heuristically be defined by
 $
     historycensored(k) = sigma(eventcensored(k), statuscensored(k), treatcensored(k), covariatecensored(k), dots, eventcensored(1), statuscensored(1), treatcensored(1), covariatecensored(1), treat(0), covariate(0)),
 $ <eq:ftkcens>
@@ -448,11 +450,10 @@ defining the observed history up to and including the $k$'th event.
 Thus $O=(eventcensored(1), statuscensored(1), treatcensored(1), covariatecensored(1), dots, eventcensored(K), statuscensored(K), treatcensored(K), covariatecensored(K))$ is the observed data
 and a sample consists of $O = (O_1, dots, O_n)$ for $n$ independent and identically distributed observations
 with $O_i tilde P$.
-We will formally show @eq:ftkcens later.
+//We will formally show @eq:ftkcens later.
 
 Define $cumhazardcensored(k, c, dif t)$ as the cause-specific cumulative hazard measure of the $k$'th event and that the event was a censoring event at time $t$ given the observed history $historycensored(k-1)$
-and define the corresponding censoring survival functions $tilde(S)^c (t | historycensored(k-1)) = prodint(s, event(k-1), t) (1 - cumhazardcensored(k, c, dif s))$
-and $S (t | history(k-1)) = product_(s in (0, t]) (1 - sum_(x=a,ell,y,d) Lambda_k^x (dif s | history(k-1)))$,
+and define the corresponding censoring survival functions $tilde(S)^c (t | historycensored(k-1)) = prodint(s, event(k-1), t) (1 - cumhazardcensored(k, c, dif s))$,
 where $product_(s in (0, t])$ is the product integral over the interval $(0, t]$ (@gill1990survey).
 //This determines the probability of being observed at time $t$ given the observed history
 //up to $historycensored(k-1)$.
@@ -462,28 +463,27 @@ where $product_(s in (0, t])$ is the product integral over the interval $(0, t]$
 In this section, we present an algorithm for the ICE-IPCW estimator and consider its use in a simple data example.
 Ideally, the model for iterative regressions should be chosen flexibly, since even with full knowledge of the data-generating mechanism, the true functional form of the regression model
 cannot typically be derived in closed form.
-Also, the model should also be chosen such that the predictions are $[0,1]$-valued.
-Histories are high-dimensional and should probably be reduced to some low-dimensional representation
-if many events occur in the sample.
+We recommend that the model should also be chosen such that the predictions are $[0,1]$-valued.
+//Histories are high-dimensional and should probably be reduced to some low-dimensional representation
+//if many events occur in the sample.
 
 //(note that this approach is valid as a consequence of @thm:ice is that $cumhazard(k, x, dif t)$ for $x = a, ell, d, y$ are identified via the observed data).
 
-Recall that @thm:parameter states that the
-target parameter may be identified via iterative regressions.
+Let $O_i = (eventcensoredi(K), statuscensoredi(K), treatcensoredi(K-1), covariatecensoredi(K-1), eventcensoredi(K-1), statuscensoredi(K-1), dots, treatcensoredi(0), covariatecensoredi(0))$ be the observed data for the $i$'th individual.
 We suppose that we are given an estimator
 of the censoring compensator $hat(Lambda)^c$.
 In particular, for $Qbar(k), k = 0, dots, K-1$,
-we start the algorithm at $k = K- 1$ by calculating $hat(S)_k^c (eventcensoredi(k)- | treatcensoredi(k-1), H_(k-1,i))
+we start the algorithm at $k = K- 1$ by calculating $hat(S)^c (eventcensoredi(k)- | treatcensoredi(k-1), H_(k-1,i))
 = product_(s in (eventcensoredi(k-1), eventcensoredi(k)-)) (1 - hat(Lambda)_i^c (s))$.
-Given an estimator of $Qbar(k+1)$ denoted by $hat(nu)_((k+1), tau)$, we then calculate the pseudo-outcome $hat(Z)^a_(k,i)$ as follows
-- If $statuscensoredi(k) = y$, we calculate $hat(Z)^a_(k,i) =1 /(hat(S)_k^c (eventcensoredi(k)- | treatcensoredi(k-1), H_(k-1,i))) bb(1) {eventcensoredi(k) <= tau}$.
+Given an estimator of $Qbar(k+1)$ denoted by $hat(nu)_((k+1), tau)$, we then estimate the pseudo-outcome $hat(Z)^a_(k,tau,i)$ as follows
+- If $statuscensoredi(k) = y$, we calculate $hat(Z)^a_(k,tau,i) =1 /(hat(S)^c (eventcensoredi(k)- | treatcensoredi(k-1), H_(k-1,i))) bb(1) {eventcensoredi(k) <= tau}$.
 - If $statuscensoredi(k) = a$, evaluate $hat(nu)_((k+1), tau) (1, H_(k,i))$ and calculate $hat(Z)^a_(k,i) = 1/ (hat(S)_k^c (eventcensoredi(k)- | treatcensoredi(k-1), H_(k-1,i))) bb(1) {eventcensoredi(k) < tau} hat(nu)_((k+1), tau) (1, macron(H)_(k,i))$.
 - If $statuscensoredi(k) = ell$, evaluate $hat(nu)_((k+1), tau) (treatcensoredi(k-1), H_(k,i))$,
   and calculate $hat(Z)^a_(k,i) = 1/(hat(S)_k^c (eventcensoredi(k)- | treatcensoredi(k-1), H_(k-1,i))) bb(1) {eventcensoredi(k) < tau} hat(nu)_((k+1), tau) (treatcensoredi(k-1), macron(H)_(k,i)).$
 Then regress $hat(Z)^a_(k,i)$ on $(treatcensoredi(k-1), H_(k-1,i))$
 for the observations with with $eventcensoredi(k-1) < tau$ and $statuscensoredi(k-1) in {a, ell}$
 to obtain a prediction function $hat(nu)_k$.
-Finally, we compute $hat(Psi)_n = 1/n sum_(i=1)^n hat(nu)_(0) (1, L_i (0))$.
+At $k=0$, we compute $hat(Psi)_n = 1/n sum_(i=1)^n hat(nu)_(0) (1, L_i (0))$.
 
 We mention how one may obtain an estimator of the censoring
 compensator, but this is a wider topic that we will not concern ourselves with here.
@@ -497,7 +497,7 @@ that is for $i$ with $macron(Delta)_(k-1,i) in {a, ell}$ if $k > 1$ and otherwis
 This gives an estimator of the cause-specific cumulative hazard function $hat(Lambda)_k^c$.
 This then gives an estimator of the compensator as follows
 $
-    hat(Lambda)_i^c (t) = sum_(k=1)^K bb(1) {eventcensoredi(k-1) < t <= eventcensoredi(k)} hat(Lambda)_k^c (t - eventcensoredi(k-1) | treatcensoredi(k-1), macron(H)_((k-1),i))
+    hat(Lambda)_i^c (t) = sum_(k=1)^K bb(1) {eventcensoredi(k-1) < t <= eventcensoredi(k)} hat(Lambda)_k^c (t - eventcensoredi(k-1) | treatcensoredi(k-1), macron(H)_((k-1),i)).
 $
 
 // In the first step, the modeler wish to alter the history from an intuitive point of view, so that, in
@@ -521,8 +521,7 @@ $
 
 == Consistency of the ICE-IPCW Estimator <section:conditions>
 
-Now let $N^c (t) = bb(1) {C <= t}$ the counting process for the censoring process and
-let $T^e$ further denote the (uncensored) terminal event time given by
+Now let $T^e$ further denote the (uncensored) terminal event time given by
 $
     T^e = inf_(t>0) {N^y (t) + N^d (t) = 1}.
 $
@@ -547,14 +546,14 @@ Then, we observe the trajectories of the process given by $t mapsto N^beta (t an
 and the observed filtration is given by 
 $cal(F)_t^tilde(beta) = sigma(beta(s and C and T^e) | s <= t)$.
 The observed data is then given by @eq:observedata.
-Importantly, we have in fact
-$
-    historycensored(k) = sigma(eventcensored(k), statuscensored(k), treatcensored(k), covariatecensored(k), dots, eventcensored(1), statuscensored(1), treatcensored(1), covariatecensored(1), treat(0), covariate(0)).
-$
+//Importantly, we have in fact
+//$
+//    historycensored(k) = sigma(eventcensored(k), statuscensored(k), treatcensored(k), covariatecensored(k), dots, eventcensored(1), statuscensored(1), treatcensored(1), covariatecensored(1), treat(0), covariate(0)).
+//$
 Abusing notation a bit, we see that for observed histories, we
 have $history(k) = historycensored(k)$ if $statuscensored(k) != c$.
-Note that here we also have not shown that $history(k) = sigma( event(k), status(k), treat(k), covariate(k), dots, event(1), status(1), treat(1), covariate(1), treat(0), covariate(0))$.
-However, our results up to this point only rely on conditioning on the variables representing the history up to and including the $k$'th event.
+//Note that here we also have not shown that $history(k) = sigma( event(k), status(k), treat(k), covariate(k), dots, event(1), status(1), treat(1), covariate(1), treat(0), covariate(0))$.
+//However, our results up to this point only rely on conditioning on the variables representing the history up to and including the $k$'th event.
 // Also note that the stopping time sigma algebra for alpha can remain the same; we did not use that it was a stopping time sigma algebra in the previous sections; only
 // the fact that it is a sigma algebra generated by the observations up to the $k$'th event. 
 
@@ -574,7 +573,8 @@ A simple, sufficient condition for this to hold is e.g., that $C perp history(K)
 Alternatively, we may assume coarsening at random which will imply @eq:indep (e.g., @gill1997coarsening).
 Note that if compensator of the (observed) censoring
 process is absolutely continuous with respect to the Lebesgue measure,
-then 1 of @thm:ice is satisfied.
+then 1. of @thm:ice is satisfied. 1. is mostly a technicality that is generally
+satisfied and not of interest. 
 
 //@thm:ice
 //This is essentially the weakest condition such that the observed data martingales
@@ -585,7 +585,7 @@ then 1 of @thm:ice is satisfied.
     also the compensator with respect to the filtration $cal(F)_t$.
     If
     1. $Delta tilde(Lambda)_(k)^c (t | historycensored(k-1)) + sum_x Delta cumhazard(k, x, t) = 1 quad P-"a.s."=> Delta tilde(Lambda)_(k+1)^c (t | history(k-1)) = 1 quad P-"a.s." or sum_x Delta cumhazard(k, x, t) = 1 quad P-"a.s."$.
-    2. $tilde(S)^c (t | historycensored(n-1)) > eta$ for all $t in (0, tau]$ and $n in {1, dots, K}$ $P$-a.s. for some $eta > 0$.
+    2. $tilde(S)^c (t | historycensored(k-1)) > eta$ for all $t in (0, tau]$ and $k in {1, dots, K}$ $P$-a.s. for some $eta > 0$.
     Let
     $
         macron(Z)^a_(k, tau) (u) =
@@ -628,6 +628,15 @@ $
 $
 Under certain regularity conditions, this estimator is asymptotically linear at $P$ with influence function $phi_tau^* (dot; P)$.
 These conditions are not considered in the present paper.
+Note that we need to provide estimates of all nuisance parameters appearing in the efficient influence function.
+We have provided ways to estimate all the nuisance parameters appearing in the efficient influence function
+except $pi_k$. These may either be estimated by a regression procedure
+based directly on regressing $treatcensored(k)$ on $covariatecensored(k), statuscensored(k), eventcensored(k), historycensored(k)$
+or alternatively be estimated by estimating the compensators of the counting processors $N^(a 0)$ and
+$N^(a 1)$, counting the number of times that the doctor has prescribed treatment $0$ and $1$ respectively
+as $Lambda^(a 0) (t | cal(F)_(t-))$ and $Lambda^(a 1) (t | cal(F)_(t-))$, and then by using the relationship
+$pi_t (1 | cal(F)_(t-)) = (Lambda^(a 1) (t | cal(F)_(t-))) / (Lambda^(a 1) (t | cal(F)_(t-)) + Lambda^(a 0) (t | cal(F)_(t-)))$. We only consider the first of these options.
+The latter choice, however, makes traditional intensity modeling methods applicable.
 
 We derive the efficient influence function using the iterative representation given
 in @eq:ipcw, working under the conclusions of @thm:ice, by finding the Gateaux derivative of the target parameter.
@@ -641,7 +650,8 @@ with the most notable difference being the presence of the martingale term $tild
 A key feature of our approach is that the efficient influence function is expressed in terms of the martingale for the censoring process.
 This representation is often computationally simpler, as it avoids the need to estimate multiple martingale terms, unlike the approach of @rytgaardContinuoustimeTargetedMinimum2022.
 For a detailed comparison, we refer the reader to the appendix, where we show that our efficient influence function
-simplifies to the same as the one derived by @rytgaardContinuoustimeTargetedMinimum2022 in the setting with no competing events.
+simplifies to the same as the one derived by @rytgaardContinuoustimeTargetedMinimum2022
+when the compensators are absolutely continuous with respect to the Lebesgue measure. 
 
 Of separate interest is @thm:adaptive which shows that
 we can adaptively select $K$ based on the observed data.
@@ -657,6 +667,8 @@ It holds that $Psi_tau^(g, K^*) (P) = Psi_tau^g (P)$ if $K^* = K_"lim"$.
 Noting that we can pool the last $K_"lim" - K^*$ events into
 a single terminal event, the theory discussed thus far can also be
 applied to the target parameter $Psi_tau^(g, K^*) (P)$.
+In practice, this means that we can essentially ignore the last $K_"lim" - K^*$ events
+in the estimation as it does not matter asymptotically inference wise.
 
 #theorem("Efficient influence function")[
     Let for each $P in cal(M)$, $tilde(Lambda)^c_k (t | historycensored(k-1); P)$ be the corresponding
@@ -672,8 +684,8 @@ applied to the target parameter $Psi_tau^(g, K^*) (P)$.
             & +  Qbar(0) (tau) - Psi_tau^g (P),
     $<eq:eif>]
     where $tilde(M)^c (t) = tilde(N)^c (t) - tilde(Lambda)^c (t)$. Here $tilde(N)^c (t) = bb(1) {C <= t, T^e > t} = sum_(k=1)^K bb(1) {eventcensored(k) <= t, statuscensored(k) = c}$ is the censoring counting process,
-    and $tilde(Lambda)^c (t) = sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} tilde(Lambda)_k^c (t | historycensored(k-1))$ is the cumulative censoring hazard process
-    given in @section:censoring.
+    $tilde(Lambda)^c (t) = sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} tilde(Lambda)_k^c (t | historycensored(k-1))$ is the cumulative censoring hazard process
+    given in @section:censoring, and $S (t | history(k-1)) = product_(s in (0, t]) (1 - sum_(x=a,ell,y,d) Lambda_k^x (dif s | history(k-1)))$.
 ] <thm:eif>
 
 #proof[
@@ -997,7 +1009,7 @@ appear very similar to the ones provided by our debiased ICE estimator
 across all time horizons.
 Noting the results for the ICE-IPCW estimator (without debiasing),
 we see that the ICE-IPCW estimator provides
-about the same confidence interval with Cheap Subsampling.
+almost the same confidence interval as Cheap Subsampling.
 // It is well known (@sofrygin2019targeted) in the discrete-time case that inverse probability weighting (IPW) methods
 // are known perform poorly in the presence of many time points.
 // Since the number of events is analogous in continuous time is analogous to the number of time points in discrete time,
@@ -1021,7 +1033,7 @@ for both the censoring intensity and the propensity scores.
 There exist only a few methods for estimating the cumulative intensity $Lambda^x$ directly (see @liguoriModelingEventsInteractions2023 for neural network-based methods and
 @weissForestBasedPointProcess2013 for a forest-based method).
 Other choices include flexible parametric models/highly adaptive LASSO
-using piecewise constant intensity models where the likelihood is based on Poisson regression.
+using piecewise constant intensity models where the likelihood is based on Poisson regression (e.g., @piecewiseconstant).
 In principle, machine learning methods can also be applied
 to what we have just discussed (Section @alg:ipcwice)
 but the effective sample size will be small if we do not pool across time.
@@ -1034,9 +1046,9 @@ Future work should address this issue.
 We could have also opted to use a TMLE (@laanTargetedMaximumLikelihood2006) instead
 of using a one-step estimator.
 This will likely lead to more robust inference
-due to instabilities resulting from large inverse probability of treatment weights
-A potential other issue with the estimation of the nuisance parameters are that the history is high dimensional
-and that the covariates in the history are highly correlated.
+due to instabilities resulting from large inverse probability of treatment weights.
+Another potential issue with the estimation of the nuisance parameters is that the history is high dimensional
+and that the covariates in the history are highly correlated, since many covariates may not change between events.
 This may yield issues with regression-based methods. If we adopt a TMLE approach, we may be able to use collaborative TMLE (@van2010collaborative)
 to deal with the high dimensionality of the history.
 Another alternative method for inference is to use temporal difference learning to avoid iterative estimation of $Qbar(k)$ altogether (@shirakawaLongitudinalTargetedMinimum2024)
