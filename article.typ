@@ -596,7 +596,7 @@ satisfied and not of interest.
     $
     Then with $h_k = (a_k, l_k, t_k, d_k, dots, a_0, l_0)$,
     $
-        Qbar(k) (u, a_k, h_k) = bb(1) {d_(1) in {a, ell}, dots, d_(k) in {a, ell}} mean(P) [macron(Z)^a_(k+1, tau) (u) | treatcensored(k) = a_k, macron(H)_(k) = h_k],
+        bb(1) {d_(1) in {a, ell}, dots, d_(k) in {a, ell}} Qbar(k) (u, a_k, h_k) = mean(P) [macron(Z)^a_(k+1, tau) (u) | treatcensored(k) = a_k, macron(H)_(k) = h_k],
     $ <eq:ipcw>
     and hence $Psi_tau^g (P)$ is identifiable from the observed data, where i.e., $macron(H)_k = (covariatecensored(k), treatcensored(k-1), eventcensored(k-1), statuscensored(k-1), dots, treat(0), covariate(0))$ is the history up to and including the $k$'th event.
 ] <thm:ice>
@@ -770,7 +770,7 @@ and the effect of stroke on the outcome $beta^y_L > 0$, $beta^y_L = 0$, and $bet
 We also vary the effect of a stroke on the treatment propensity $alpha_(L)$
 and the effect of treatment on stroke $beta_(A)^ell > 0$, $beta_(A)^ell = 0$, and $beta_(A)^ell < 0$.
 Furthermore, when applying LTMLE,
-we discretize time into 8 intervals (@sec:discretizing-time).
+we discretize time into 8 intervals.
 We consider both the debiased ICE estimator and the ICE estimator
 without debiasing.
 For modeling of the nuisance parameters,
@@ -1041,12 +1041,27 @@ Another issue that if we apply a very flexible model
 for the censoring distribution,
 we will, in theory, need to debias the ICE-IPCW estimator
 with the censoring martingale.
-Future work should address this issue.
+However that term is computationally
+intensive to estimate.
 
 We could have also opted to use a TMLE (@laanTargetedMaximumLikelihood2006) instead
+or a combination of the two
 of using a one-step estimator.
-This will likely lead to more robust inference
-due to instabilities resulting from large inverse probability of treatment weights.
+For instance, one update could be performed, updating $Qbar(k)$
+by solving the an estimation equation corresponding to the empirical mean of the term
+of the efficient influence function that is not the censoring martingale.
+Then, afterwards (if the data is not censored), the semi-TMLE estimates could be debiased
+with the censoring martingale term by adding the empirical mean of the censoring martingale term
+to the estimate.
+This ensures that the efficient score equation
+is solved in one iteration only, while still providing stability
+resulting from not using large inverse probability of treatment weights.
+Another
+solution is to use an iterative TMLE procedure, where we update $Qbar(k)$ as described,
+but undersmooth the estimation of the censoring distribution.
+In this case, we can avoid estimating the censoring martingale term altogether,
+yielding conservative but valid inference when the censoring distribution is flexibly estimated.
+
 Another potential issue with the estimation of the nuisance parameters is that the history is high dimensional
 and that the covariates in the history are highly correlated, since many covariates may not change between events.
 This may yield issues with regression-based methods. If we adopt a TMLE approach, we may be able to use collaborative TMLE (@van2010collaborative)
@@ -1971,18 +1986,18 @@ We find the following decomposition,
         ],
 )
 
-== Discretizing time <sec:discretizing-time>
-We briefly illustrate how to discretize the time horizon into $K$ intervals,
-with time horizon $tau$, representing the usual longitudinal setting. 
-Let $t_k = k times tau / K$ for $k = 1, dots, K$.
+// == Discretizing time <sec:discretizing-time>
+// We briefly illustrate how to discretize the time horizon into $K$ intervals,
+// with time horizon $tau$, representing the usual longitudinal setting. 
+// Let $t_k = k times tau / K$ for $k = 1, dots, K$.
 
-Put
-$
-    Y_k &= N^y (t_k), \
-    L_k &= L (t_k), \
-    A_k &= A (t_k).
-$
-Our data set then consists of
-$
-    O = ("age", covariate(0), treat(0), Y_1, L_1, A_1, dots, Y_(K-1), L_(K-1), A_(K-1), Y_K)
-$
+// Put
+// $
+//     Y_k &= N^y (t_k), \
+//     L_k &= L (t_k), \
+//     A_k &= A (t_k).
+// $
+// Our data set then consists of
+// $
+//     O = ("age", covariate(0), treat(0), Y_1, L_1, A_1, dots, Y_(K-1), L_(K-1), A_(K-1), Y_K)
+// $
