@@ -44,13 +44,10 @@ target_names_tables <- tar_manifest() |>
 for (name in target_names_tables$name) {
   message("Saving table for: ", name)
   df <- tar_read_raw(name)
-  for (col in intersect(names(df),c("n","effect_A_on_L","effect_A_on_Y", "effect_L_on_Y", "effect_L_on_A", "baseline_rate_C"))) {
-    if ("model_type" %in% names(df)) {
-      df[!(type=="ICE-IPCW (Debiased)" & model_type == "Scaled Quasi-binmoial"), col] <- NA
-    } else {
-      df[!(type=="ICE-IPCW (Debiased)"), col] <- NA
-    }
+  if ("model_type" %in% colnames(df)) {
+     df[model_type == "Scaled Quasi-binomial", model_type := "Scaled quasibinomial"]
   }
+  df[type == "ICE-IPCW (Debiased)", type := "ICE-IPCW (deb.)"]
   df <- df |>
     mutate(across(where(is.numeric), ~ signif(., 3)))
   file_name <- paste0("tables/", name, ".csv")

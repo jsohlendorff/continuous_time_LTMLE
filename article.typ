@@ -392,7 +392,7 @@ where we also deal with right-censoring.
 ]<thm:parameter>
 
 #proof[
-    The proof is given in the Appendix.
+    The proof is given in the Appendix (Section @section:proofjointdensity).
 ] 
 
 The representation in @thm:parameter has a natural interpretation:
@@ -431,8 +431,6 @@ and later discuss the assumptions necessary for consistency of the ICE-IPCW esti
 in Section @section:conditions.
 In the remainder of the paper,
 we will assume that $C != event(k)$ for all $k$ with probability 1.
-As before, we let $(event(k), status(k), treat(k), covariate(k))$ be
-the event times and marks for the $N^alpha$ process. 
 
 We can now let $(eventcensored(k), statuscensored(k), treatcensored(k), covariatecensored(k))$ for $k=1, dots, K$ be the observed data given by 
 $
@@ -602,7 +600,7 @@ satisfied and not of interest.
 ] <thm:ice>
 
 #proof[
-    Proof is given in the Appendix.
+    Proof is given in the Appendix (Section @section:proofice).
 ]
 
 = Efficient inference <section:eif>
@@ -651,7 +649,7 @@ A key feature of our approach is that the efficient influence function is expres
 This representation is often computationally simpler, as it avoids the need to estimate multiple martingale terms, unlike the approach of @rytgaardContinuoustimeTargetedMinimum2022.
 For a detailed comparison, we refer the reader to the appendix, where we show that our efficient influence function
 simplifies to the same as the one derived by @rytgaardContinuoustimeTargetedMinimum2022
-when the compensators are absolutely continuous with respect to the Lebesgue measure. 
+(Section @section:compareif) when the compensators are absolutely continuous with respect to the Lebesgue measure. 
 
 Of separate interest is @thm:adaptive which shows that
 we can adaptively select $K$ based on the observed data.
@@ -689,7 +687,7 @@ in the estimation as it does not matter asymptotically inference wise.
 ] <thm:eif>
 
 #proof[
-        The proof is given in the Appendix.
+    The proof is given in the Appendix (Section @section:proofeif).
         ]
 
 #theorem("Adaptive selection of K")[
@@ -709,7 +707,7 @@ in the estimation as it does not matter asymptotically inference wise.
     $
 ] <thm:adaptive>
 #proof[
-    The proof is given in the Appendix.
+    The proof is given in the Appendix (Section @section:proofadaptive).
 ]
 
 = Simulation study <section:simulation>
@@ -833,7 +831,7 @@ as well as coverage of 95% confidence intervals.
 We also present boxplots of the results, showing
 bias (Figure @fig:boxplot_no_time_confounding, @fig:boxplot_strong_time_confounding, @fig:boxplot_censored, and @fig:boxplot_censored_ice_ipcw),
 as well as standard errors (Figure @fig:se_boxplot_no_time_confounding, @fig:se_boxplot_strong_time_confounding, and @fig:boxplot_censored),
-depending on the parameters. Additional results, such as those involving sample size, can be found in the Appendix.
+depending on the parameters. Additional results, such as those involving sample size, can be found in the appendix (Section @section:additionalsimresults).
 
 Across all scenarios considered in the uncensored setting (Table @table:no-time-confounding and @table:strong-time-confounding
 and Figure @fig:boxplot_no_time_confounding, @fig:se_boxplot_no_time_confounding, @fig:boxplot_strong_time_confounding, and @fig:se_boxplot_strong_time_confounding),
@@ -1175,7 +1173,7 @@ by appropriately extending it to the continuous-time setting.
 
 = Appendix
 
-== Proof of Theorem 1 @thm:jointdensity
+== Proof of Theorem 1 @thm:jointdensity <section:proofjointdensity>
 Let $W_(k, j) = (W^g (event(j))) / (W^g (event(k)))$ for $k < j$ (defining $0/0 = 0$).
     //For brevity of notation, we do not write $bb(1) {event(k-1) < oo and status(k-1) in {a, ell})$.
     We show that 
@@ -1329,7 +1327,7 @@ Furthermore, let $status(k) = j$ if $Delta N_j (event(k)) != 0$ and let $bb(F)_k
     // or an application of Theorem 8.1.2 of @last1995marked. It also follows from iterative applications of 2. 
 ]
 
-== Proof of @thm:ice
+== Proof of @thm:ice <section:proofice>
 Note that the theorem can now be used to show the consistency of the ICE-IPCW estimator.
 We proceed by backwards induction.
 We apply the lemmas stated below (@lemma:iceone) and (@lemma:survivalfactorgeneral).
@@ -1528,7 +1526,7 @@ $
     from which the result follows. //(*NOTE*: We already the seen implication of the first part to the second part since $Delta gamma (u) + Delta zeta (u) <= 1$; otherwise the survival function given in @thm:ice would not be well-defined.)
 ]
 
-== Comparison with the EIF in @rytgaardContinuoustimeTargetedMinimum2022
+== Comparison with the EIF in @rytgaardContinuoustimeTargetedMinimum2022 <section:compareif>
 Let us define in the censored setting
 $
     W^g (t) = product_(k = 1)^(tilde(N)_t) (bb(1) {treatcensored(k) = 1}) / (pi_k (eventcensored(k), historycensored(k-1))) (bb(1) {treat(0) = 1}) / (pi_0 (covariate(0))) product_(k=1)^(N_t) (bb(1) {status(k) != c}) / (product_(u in (eventcensored(k-1), eventcensored(k))) (1 - cumhazardcensored(k,c,dif u)))
@@ -1651,7 +1649,7 @@ $
 $
 This now shows that @eq:rytgaard55 is equal to @eq:eif.
 
-== Proof of @thm:eif
+== Proof of @thm:eif <section:proofeif>
 
     We let $Qbar(k) (u, a_k, h_k; P)$ denote the right-hand side of @eq:ipcw,
     with $P$ being explicit in the notation and likewise define the notation with $macron(Z)^a_(k, tau) (u; P)$.
@@ -1733,7 +1731,7 @@ This now shows that @eq:rytgaard55 is equal to @eq:eif.
 to obtain the result.
     
 
-== Proof of @thm:adaptive
+== Proof of @thm:adaptive <section:proofadaptive>
 
 We find the following decomposition,
     $
@@ -1792,7 +1790,7 @@ We find the following decomposition,
     $
     has probability tending to zero as $n -> oo$ as desired.
 
-== Additional simulation results
+== Additional simulation results <section:additionalsimresults>
 
 === Uncensored case
 
@@ -1800,8 +1798,10 @@ We find the following decomposition,
 #let table_A_on_Y = csv("simulation_study/tables/table_A_on_Y.csv")
 #let _ = table_A_on_Y.remove(0)
 
-#table(
+#figure(
+table(
     columns: table_A_on_Y.at(0).len(),
+    fill: (_, y) => if ((calc.rem(y, 4) == 0 and y > 0) or (calc.rem(y, 4) == 1)) { gray.lighten(90%) },
         table.vline(x: 1),
         //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
         [$beta^y_A$], [*Estimator*], [*Coverage*],
@@ -1811,13 +1811,17 @@ We find the following decomposition,
     ..table_A_on_Y.slice(4, 8).flatten(),
         table.hline(),
     ..table_A_on_Y.slice(8, 12).flatten(),
+),
+    caption: [Results for the case with time confounding (vary $beta^y_A$).]
 )
 
 #let table_L_on_Y = csv("simulation_study/tables/table_L_on_Y.csv")
 #let _ = table_L_on_Y.remove(0)
 
-#table(
+#figure(
+table(
     columns: table_L_on_Y.at(0).len(),
+    fill: (_, y) => if ((calc.rem(y, 4) == 0 and y > 0) or (calc.rem(y, 4) == 1)) { gray.lighten(90%) },
         table.vline(x: 1),
         //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
         [$beta^y_L$], [*Estimator*], [*Coverage*],
@@ -1827,13 +1831,17 @@ We find the following decomposition,
     ..table_A_on_Y.slice(4, 8).flatten(),
         table.hline(),
     ..table_A_on_Y.slice(8, 12).flatten(),
+),
+    caption: [Results for the case with time confounding (vary $beta^y_L$)]
 )
 
 #let table_A_on_L = csv("simulation_study/tables/table_A_on_L.csv")
 #let _ = table_A_on_L.remove(0)
 
-#table(
+#figure(
+table(
     columns: table_A_on_L.at(0).len(),
+    fill: (_, y) => if ((calc.rem(y, 4) == 0 and y > 0) or (calc.rem(y, 4) == 1)) { gray.lighten(90%) },
         table.vline(x: 1),
         //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
         [$beta^L_A$], [*Estimator*], [*Coverage*],
@@ -1843,13 +1851,17 @@ We find the following decomposition,
     ..table_A_on_Y.slice(4, 8).flatten(),
         table.hline(),
     ..table_A_on_Y.slice(8, 12).flatten(),
+),
+    caption: [Results for the case with time confounding (vary $beta^L_A$)]
 )
 
 #let table_L_on_A = csv("simulation_study/tables/table_L_on_A.csv")
 #let _ = table_L_on_A.remove(0)
 
-#table(
+#figure(
+table(
     columns: table_L_on_A.at(0).len(),
+    fill: (_, y) => if ((calc.rem(y, 4) == 0 and y > 0) or (calc.rem(y, 4) == 1)) { gray.lighten(90%) },
     table.vline(x: 1),
         //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
         [$alpha_L$], [*Estimator*], [*Coverage*],
@@ -1860,6 +1872,8 @@ We find the following decomposition,
         table.hline(),
     ..table_A_on_Y.slice(8, 12).flatten(),
     
+),
+    caption: [Results for the case with time confounding (vary $beta^L_A$)]
 )
 
 ==== Sample size
@@ -1867,8 +1881,10 @@ We find the following decomposition,
 #let table_sample_size = csv("simulation_study/tables/table_sample_size.csv")
 #let _ = table_sample_size.remove(0)
 
-#table(
+#figure(
+table(
     columns: table_sample_size.at(0).len(),
+    fill: (_, y) => if ( y > 0) { gray.lighten(90%) },
     table.vline(x: 1),
         //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
         [$n$], [*Estimator*], [*Coverage*],
@@ -1881,32 +1897,50 @@ We find the following decomposition,
     table.hline(),
         ..table_sample_size.slice(6, 8).flatten(),
     
+),
+    caption: [Results for varying sample size ($n in {100,200,500,1000}$)]
 )
 
 === Censored
 
 #let table_censored = csv("simulation_study/tables/table_censored.csv")
 #let _ = table_censored.remove(0)
+//#let table_censored = table_censored.map(x => 
 
-#table(
-    columns: (5%, 5%, 5%, 8%, auto, auto, auto, auto, auto, auto, auto),
-    table.vline(x: 4),
-      fill: (_, y) => if calc.odd(y) { gray.lighten(90%) },
+// #table(
+//     columns: (5%, 5%, 5%, 8%, auto, auto, auto, auto, auto, auto, auto),
+//     table.vline(x: 4),
+//       fill: (_, y) => if calc.odd(y) { gray.lighten(90%) },
+//     //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
+//     [$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$lambda_c$], [*Model Out.*], [*Estimator*], [*Cov.*],
+//     [*MSE*], [*Bias*], [*sd($hat(Psi)_n$)*], [*Mean($hat("SE")$)*],
+//     ..table_censored.slice(0, 6).flatten(),
+//     table.hline(),
+//     ..table_censored.slice(6, 12).flatten(),
+//     table.hline(),
+//     ..table_censored.slice(12, 18).flatten(),
+//     table.hline(),
+//     ..table_censored.slice(18, 24).flatten(),
+//     table.hline(),
+//     ..table_censored.slice(24, 30).flatten(),
+//     table.hline(),
+//     ..table_censored.slice(30, 36).flatten(),
+// )
+
+#for i in (0, 1, 2, 3, 4, 5) [
+    #figure(
+table(
+    columns: (24%, 21%,auto,auto,auto,auto,auto),
     //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
-    [$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$lambda_c$], [*Model Out.*], [*Estimator*], [*Cov.*],
+    [*ICE model*], [*Estimator*], [*Cov.*],
     [*MSE*], [*Bias*], [*sd($hat(Psi)_n$)*], [*Mean($hat("SE")$)*],
-    ..table_censored.slice(0, 6).flatten(),
-    table.hline(),
-    ..table_censored.slice(6, 12).flatten(),
-    table.hline(),
-    ..table_censored.slice(12, 18).flatten(),
-    table.hline(),
-    ..table_censored.slice(18, 24).flatten(),
-    table.hline(),
-    ..table_censored.slice(24, 30).flatten(),
-    table.hline(),
-    ..table_censored.slice(30, 36).flatten(),
+    ..table_censored.slice(6*i, 6*(i+1)).map(x => x.slice(4,11)).flatten(),
+),
+    caption: [The table shows the results for the censored case for
+        $(beta^y_A,beta^y_L,alpha_L,lambda_c)=(#table_censored.at(6*i).slice(0,4).intersperse(", ").map(x => [#x]).join())$.]
 )
+]
+
 
 == Additional boxplots
 
@@ -1988,13 +2022,13 @@ We find the following decomposition,
         ],
 )
 
-// #figure(
-//     image("simulation_study/plots/se_boxplot_sample_size.svg"),
-//         caption: [
-//                 Boxplots of the standard errors for the case with varying sample size.
-//             The red line indicates the empirical standard error of the estimates for each estimator.
-//         ],
-// )
+#figure(
+    image("simulation_study/plots/se_boxplot_sample_size.svg"),
+        caption: [
+                Boxplots of the standard errors for the case with varying sample size.
+            The black line indicates the empirical standard error of the estimates for each estimator.
+        ],
+)
 
 // == Discretizing time <sec:discretizing-time>
 // We briefly illustrate how to discretize the time horizon into $K$ intervals,

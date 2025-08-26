@@ -1,37 +1,37 @@
 "effect_A_on_Y","effect_L_on_Y","effect_L_on_A","baseline_rate_C","model_type","type","coverage","mse","bias","sd","mean_se"
-,,,,"Scaled Quasi-binomial","ICE-IPCW (Debiased)",0.952,0.000331,0.000188,0.0182,0.0184
-,,,,"Scaled Quasi-binomial","ICE-IPCW",,0.00033,0.000171,0.0182,
-,,,,"Tweedie","ICE-IPCW (Debiased)",0.953,0.00033,0.0000904,0.0182,0.0184
+-0.3,0.5,-0.2,0.0002,"Scaled quasibinomial","ICE-IPCW (deb.)",0.952,0.000331,0.000188,0.0182,0.0184
+,,,,"Scaled quasibinomial","ICE-IPCW",,0.00033,0.000171,0.0182,
+,,,,"Tweedie","ICE-IPCW (deb.)",0.953,0.00033,0.0000904,0.0182,0.0184
 ,,,,"Tweedie","ICE-IPCW",,0.000328,0.000288,0.0181,
-,,,,"Linear model","ICE-IPCW (Debiased)",0.95,0.000335,-0.000294,0.0183,0.0184
+,,,,"Linear model","ICE-IPCW (deb.)",0.95,0.000335,-0.000294,0.0183,0.0184
 ,,,,"Linear model","ICE-IPCW",,0.000327,0.00113,0.018,
-,,,,"Scaled Quasi-binomial","ICE-IPCW (Debiased)",0.95,0.000388,-0.0000739,0.0197,0.0199
-,,,,"Scaled Quasi-binomial","ICE-IPCW",,0.000387,-0.0000568,0.0197,
-,,,,"Tweedie","ICE-IPCW (Debiased)",0.955,0.000381,0.000187,0.0195,0.0199
+-0.3,0.5,-0.2,0.0005,"Scaled quasibinomial","ICE-IPCW (deb.)",0.95,0.000388,-0.0000739,0.0197,0.0199
+,,,,"Scaled quasibinomial","ICE-IPCW",,0.000387,-0.0000568,0.0197,
+,,,,"Tweedie","ICE-IPCW (deb.)",0.955,0.000381,0.000187,0.0195,0.0199
 ,,,,"Tweedie","ICE-IPCW",,0.000377,0.000596,0.0194,
-,,,,"Linear model","ICE-IPCW (Debiased)",0.951,0.000382,-0.0000409,0.0195,0.0199
+,,,,"Linear model","ICE-IPCW (deb.)",0.951,0.000382,-0.0000409,0.0195,0.0199
 ,,,,"Linear model","ICE-IPCW",,0.000375,0.00143,0.0193,
-,,,,"Scaled Quasi-binomial","ICE-IPCW (Debiased)",0.953,0.000435,-0.0000717,0.0209,0.0215
-,,,,"Scaled Quasi-binomial","ICE-IPCW",,0.000434,0.0000358,0.0208,
-,,,,"Tweedie","ICE-IPCW (Debiased)",0.953,0.000447,0.00000225,0.0212,0.0215
+-0.3,0.5,-0.2,0.0008,"Scaled quasibinomial","ICE-IPCW (deb.)",0.953,0.000435,-0.0000717,0.0209,0.0215
+,,,,"Scaled quasibinomial","ICE-IPCW",,0.000434,0.0000358,0.0208,
+,,,,"Tweedie","ICE-IPCW (deb.)",0.953,0.000447,0.00000225,0.0212,0.0215
 ,,,,"Tweedie","ICE-IPCW",,0.000441,0.000636,0.021,
-,,,,"Linear model","ICE-IPCW (Debiased)",0.956,0.000431,0.000211,0.0208,0.0215
+,,,,"Linear model","ICE-IPCW (deb.)",0.956,0.000431,0.000211,0.0208,0.0215
 ,,,,"Linear model","ICE-IPCW",,0.000425,0.00176,0.0205,
-,,,,"Scaled Quasi-binomial","ICE-IPCW (Debiased)",0.952,0.000316,0.000438,0.0178,0.0179
-,,,,"Scaled Quasi-binomial","ICE-IPCW",,0.000316,0.000438,0.0178,
-,,,,"Tweedie","ICE-IPCW (Debiased)",0.951,0.000317,0.000434,0.0178,0.018
+0,0,0,0.0002,"Scaled quasibinomial","ICE-IPCW (deb.)",0.952,0.000316,0.000438,0.0178,0.0179
+,,,,"Scaled quasibinomial","ICE-IPCW",,0.000316,0.000438,0.0178,
+,,,,"Tweedie","ICE-IPCW (deb.)",0.951,0.000317,0.000434,0.0178,0.018
 ,,,,"Tweedie","ICE-IPCW",,0.000315,0.000464,0.0178,
-,,,,"Linear model","ICE-IPCW (Debiased)",0.949,0.000323,0.00048,0.018,0.0179
+,,,,"Linear model","ICE-IPCW (deb.)",0.949,0.000323,0.00048,0.018,0.0179
 ,,,,"Linear model","ICE-IPCW",,0.000321,0.00154,0.0179,
-,,,,"Scaled Quasi-binomial","ICE-IPCW (Debiased)",0.953,0.000357,0.000352,0.0189,0.0193
-,,,,"Scaled Quasi-binomial","ICE-IPCW",,0.000356,0.000385,0.0189,
-,,,,"Tweedie","ICE-IPCW (Debiased)",0.954,0.000364,0.00027,0.0191,0.0194
+0,0,0,0.0005,"Scaled quasibinomial","ICE-IPCW (deb.)",0.953,0.000357,0.000352,0.0189,0.0193
+,,,,"Scaled quasibinomial","ICE-IPCW",,0.000356,0.000385,0.0189,
+,,,,"Tweedie","ICE-IPCW (deb.)",0.954,0.000364,0.00027,0.0191,0.0194
 ,,,,"Tweedie","ICE-IPCW",,0.000361,0.000368,0.019,
-,,,,"Linear model","ICE-IPCW (Debiased)",0.955,0.00036,0.000512,0.019,0.0194
+,,,,"Linear model","ICE-IPCW (deb.)",0.955,0.00036,0.000512,0.019,0.0194
 ,,,,"Linear model","ICE-IPCW",,0.000359,0.00173,0.0189,
-,,,,"Scaled Quasi-binomial","ICE-IPCW (Debiased)",0.955,0.000413,0.000149,0.0203,0.0209
-,,,,"Scaled Quasi-binomial","ICE-IPCW",,0.000411,0.000241,0.0203,
-,,,,"Tweedie","ICE-IPCW (Debiased)",0.958,0.000412,0.0000457,0.0203,0.0209
+0,0,0,0.0008,"Scaled quasibinomial","ICE-IPCW (deb.)",0.955,0.000413,0.000149,0.0203,0.0209
+,,,,"Scaled quasibinomial","ICE-IPCW",,0.000411,0.000241,0.0203,
+,,,,"Tweedie","ICE-IPCW (deb.)",0.958,0.000412,0.0000457,0.0203,0.0209
 ,,,,"Tweedie","ICE-IPCW",,0.000409,0.00025,0.0202,
-,,,,"Linear model","ICE-IPCW (Debiased)",0.953,0.000421,0.00021,0.0205,0.0209
+,,,,"Linear model","ICE-IPCW (deb.)",0.953,0.000421,0.00021,0.0205,0.0209
 ,,,,"Linear model","ICE-IPCW",,0.000421,0.00159,0.0205,

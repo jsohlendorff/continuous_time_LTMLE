@@ -78,7 +78,6 @@ test_that("test continuous time function (censored; conservative)", {
     verbose = FALSE
   )
 
-  # dpasta(result)
   correct_result <- data.table::data.table(
     estimate = c(0.270426500711251),
     se = c(0.0167728967294177),
@@ -188,3 +187,102 @@ test_that("test continuous time function (censored; non_conservative; multiple i
 
   expect_true(all.equal(result, correct_result, tolerance = 1e-8))
 })
+
+test_that("error when time-varying covariates contain NAs", {
+  library(data.table)
+  library(targets)
+
+  try(setwd("~/phd/continuous_time_LTMLE/simulation_study//"),
+    silent = TRUE
+  )
+  tar_source("functions")
+
+  set.seed(34)
+  # Simulate continuous time data with continuous and irregular event times
+  data_continuous <- simulate_simple_continuous_time_data(
+    n = 1000,
+    no_competing_events = TRUE,
+    uncensored = TRUE
+  )
+  data_continuous$timevarying_data[event == "tauend", L := NA]
+  expect_error(
+    debias_ice_ipcw(
+      data = copy(data_continuous),
+      tau = 720,
+      model_pseudo_outcome = "quasibinomial",
+      model_treatment = "learn_glm_logistic",
+      model_hazard = NULL,
+      time_covariates = c("A", "L"),
+      baseline_covariates = c("age", "A_0", "L_0"),
+      conservative = TRUE,
+      verbose = FALSE
+    ),
+    "Time-varying covariates must not contain NULL or NA values."
+  )
+})
+
+test_that("error when time-varying covariates contain ties", {
+  library(data.table)
+  library(targets)
+
+  try(setwd("~/phd/continuous_time_LTMLE/simulation_study//"),
+    silent = TRUE
+  )
+  tar_source("functions")
+
+  set.seed(34)
+  # Simulate continuous time data with continuous and irregular event times
+  data_continuous <- simulate_simple_continuous_time_data(
+    n = 1000,
+    no_competing_events = TRUE,
+    uncensored = TRUE
+  )
+  data_continuous$timevarying_data[id == "2", time := 5]
+  expect_error(
+    debias_ice_ipcw(
+      data = copy(data_continuous),
+      tau = 720,
+      model_pseudo_outcome = "quasibinomial",
+      model_treatment = "learn_glm_logistic",
+      model_hazard = NULL,
+      time_covariates = c("A", "L"),
+      baseline_covariates = c("age", "A_0", "L_0"),
+      conservative = TRUE,
+      verbose = FALSE
+    ),
+    "There are ties in event times for some ids. Please ensure that each id has unique event times"
+  )
+})
+
+test_that("semiTMLE option", {
+  library(data.table)
+  library(targets)
+
+  try(setwd("~/phd/continuous_time_LTMLE/simulation_study//"),
+    silent = TRUE
+  )
+  tar_source("functions")
+
+  set.seed(34)
+  # Simulate continuous time data with continuous and irregular event times
+  data_continuous <- simulate_simple_continuous_time_data(
+    n = 1000,
+    no_competing_events = TRUE,
+    uncensored = TRUE
+  )
+  
+  expect_no_error(debias_ice_ipcw(
+    data = copy(data_continuous),
+    tau = 720,
+    model_pseudo_outcome = "scaled_quasibinomial",
+    model_treatment = "learn_glm_logistic",
+    model_hazard = "learn_coxph",
+    time_covariates = c("A", "L"),
+    baseline_covariates = c("age", "A_0", "L_0"),
+    conservative = TRUE,
+    verbose = FALSE,
+    semi_tmle = TRUE
+  ))
+})
+
+
