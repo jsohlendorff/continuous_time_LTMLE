@@ -183,6 +183,7 @@
 #let dagnode = node.with(width: 1.1cm, height: 1.1cm)
 
 #let Qbar(k) = $macron(Q)^g_(#k, tau)$
+#let Qbarhat(k) = $hat(macron(Q))^g_(#k, tau)$
 #let QbarL(k) = $macron(Q)^(g,-L)_(#k, tau)$
 #let mean(k) = $bb(E)_#k$
 
