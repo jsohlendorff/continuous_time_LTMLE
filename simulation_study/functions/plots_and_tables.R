@@ -14,7 +14,12 @@ math_names <- data.frame(
 )
 
 ## Function to create a boxplot of the estimates and standard errors
-fun_boxplot <- function(d, by = NULL, sample_size = FALSE, single_type_se=FALSE) {
+fun_boxplot <- function(d, by = NULL, sample_size = FALSE, single_type_se=FALSE,
+                        ln_width = 1,
+                        cbbPalette = c("#000000", "#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7", "#F0E442")) {
+  d$type <- factor(d$type)
+  levels(d$type)[levels(d$type) == "Debiased ICE-IPCW"] <- "ICE-IPCW (Debiased)"
+  levels(d$type)[levels(d$type) == "LTMLE (grid size = 8)"] <- "LTMLE"
   if (sample_size){
     scales <- "free_y"
   } else {
@@ -29,7 +34,7 @@ fun_boxplot <- function(d, by = NULL, sample_size = FALSE, single_type_se=FALSE)
     melt(
       d,
       id.vars = c(by, "value"),
-      measure.vars = c("ipw", "ice_ipcw_estimate"),
+      measure.vars =  "ice_ipcw_estimate", #c("ipw", "ice_ipcw_estimate"),
       variable.name = "type",
       value.name = "estimate"
     )
@@ -38,8 +43,8 @@ fun_boxplot <- function(d, by = NULL, sample_size = FALSE, single_type_se=FALSE)
   ## rename levels of type from ipw, ice_ipcw_estimate to Inverse Probability Weighting, ICE-IPCW
   ipw_ice_results$type <- factor(
     ipw_ice_results$type,
-    levels = c("ipw", "ice_ipcw_estimate"),
-    labels = c("Inverse Probability Weighting", "ICE-IPCW")
+    levels =  "ice_ipcw_estimate", #c("ipw", "ice_ipcw_estimate"),
+    labels = "ICE-IPCW" #c("Inverse Probability Weighting", )
   )
   cols_to_remove <- grepl("method|tar|ice_ipcw_estimate|ipw", names(d))
   d <- d[, !cols_to_remove, with = FALSE]
@@ -56,10 +61,10 @@ fun_boxplot <- function(d, by = NULL, sample_size = FALSE, single_type_se=FALSE)
 
   p <- ggplot2::ggplot(data = d, aes(y = estimate, color = type)) +
     ggplot2::geom_boxplot() +
-    ggplot2::geom_hline(aes(yintercept = value)) +
+    ggplot2::geom_hline(aes(yintercept = value), linewidth = ln_width) +
     ggplot2::theme_minimal(base_size = 13) +
     ylab("Estimates") +
-    scale_color_discrete(name = "Estimator") +
+    scale_color_manual(name = "Estimator", values = cbbPalette) +
     theme(
       axis.title.x = element_blank(),
       axis.text.x = element_blank(),
@@ -68,9 +73,9 @@ fun_boxplot <- function(d, by = NULL, sample_size = FALSE, single_type_se=FALSE)
   d_se <- copy(d)
   d_se <- d_se[!type %in% c("ICE-IPCW", "Inverse Probability Weighting", "Naive Cox")]
   if (!single_type_se) {
-    qz <- ggplot2::ggplot(data = d_se, aes(y = se, color = type)) + scale_color_discrete(name = "Estimator")
+    qz <- ggplot2::ggplot(data = d_se, aes(y = se, color = type)) + scale_color_manual(name = "Estimator", values = cbbPalette)
   } else {
-    qz <- ggplot2::ggplot(data = d_se, aes(y = se))
+    qz <- ggplot2::ggplot(data = d_se, aes(y = se)) 
   }
   qz <- qz +
     ggplot2::geom_boxplot() +
@@ -83,7 +88,7 @@ fun_boxplot <- function(d, by = NULL, sample_size = FALSE, single_type_se=FALSE)
     )
   p <- p + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))),
                                labeller = ggplot2::label_parsed,
-                               nrow = 1)
+                               nrow = 1) + scale_y_continuous(labels = scales::percent)
   
   qz <- qz + ggplot2::facet_wrap(as.formula(paste("~", paste(by, collapse = "+"))),
                                  labeller = ggplot2::label_parsed,
@@ -91,15 +96,17 @@ fun_boxplot <- function(d, by = NULL, sample_size = FALSE, single_type_se=FALSE)
                                  scales = scales) + 
     ggplot2::geom_hline(aes(yintercept = sd_est), linetype = "dashed")
   if (!single_type_se) {
-    qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est, color = type), linetype = "dashed")
+    qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est, color = type), linetype = "dashed", linewidth = ln_width)
   } else {
-    qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est), linetype = "dashed")
+    qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est), linetype = "dashed", linewidth = ln_width)
   }
   list(p, qz)
 }
 
 ## Function to create a boxplot of the estimates and standard errors
-fun_boxplot_censoring <- function(d, by = NULL) {
+fun_boxplot_censoring <- function(d, by = NULL,
+                                  ln_width = 1,
+                                  cbbPalette = c("#000000", "#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7", "#F0E442")) {
   if (!is.null(by)) {
     ## delete values of by that do not have more than one value in d
     by <- by[sapply(by, function(x) length(unique(d[[x]])) > 1)]
@@ -118,10 +125,10 @@ fun_boxplot_censoring <- function(d, by = NULL) {
   }
   p <- ggplot2::ggplot(data = d, aes(y = estimate, color = model_type)) +
     ggplot2::geom_boxplot() +
-    ggplot2::geom_hline(aes(yintercept = value)) +
+    ggplot2::geom_hline(aes(yintercept = value), linewidth = ln_width) +
     ggplot2::theme_minimal(base_size = 13) + 
     ylab("Estimates") + 
-    scale_color_discrete(name = "Model type (ICE)") + 
+    scale_color_manual(name = "Model type (ICE)", values = cbbPalette) +
     theme(
       axis.title.x = element_blank(),
       axis.text.x = element_blank(),
@@ -131,7 +138,7 @@ fun_boxplot_censoring <- function(d, by = NULL) {
     ggplot2::geom_boxplot() +
     ggplot2::theme_minimal(base_size = 13) + 
     ylab("Standard Errors") + 
-    scale_color_discrete(name = "Model type (ICE)") + 
+    scale_color_manual(name = "Model type (ICE)", values = cbbPalette) +
     theme(
       axis.title.x = element_blank(),
       axis.text.x = element_blank(),
@@ -139,10 +146,10 @@ fun_boxplot_censoring <- function(d, by = NULL) {
     )
   r <- ggplot2::ggplot(data = d, aes(y = ice_ipcw_estimate, color = model_type)) +
     ggplot2::geom_boxplot() +
-    ggplot2::geom_hline(aes(yintercept = value, color = model_type)) +
+    ggplot2::geom_hline(aes(yintercept = value, color = model_type), linewidth = ln_width) +
     ggplot2::theme_minimal(base_size = 13) + 
     ylab("ICE-IPCW Estimates") + 
-    scale_color_discrete(name = "Model type (ICE)") + 
+    scale_color_manual(name = "Model type (ICE)", values = cbbPalette) +
     theme(
       axis.title.x = element_blank(),
       axis.text.x = element_blank(),
@@ -152,11 +159,13 @@ fun_boxplot_censoring <- function(d, by = NULL) {
     p <- p + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), labeller = ggplot2::label_parsed)
     qz <- qz + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), labeller = ggplot2::label_parsed)
     ## for q add different geom hlines with sd(estimate) for each compination of variables in by
-    qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est, color = model_type), linetype = "dashed")
+    qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est, color = model_type), linetype = "dashed", linewidth = ln_width)
     r <- r + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), labeller = ggplot2::label_parsed)
   } else {
-    qz <- qz + ggplot2::geom_hline(aes(yintercept = sd(estimate), color = "red"))
+    qz <- qz + ggplot2::geom_hline(aes(yintercept = sd(estimate), color = "red", linewidth = ln_width))
   }
+  p <- p + scale_y_continuous(labels = scales::percent)
+  r <- r + scale_y_continuous(labels = scales::percent)
   list(p, qz, r)
 }
 
@@ -187,25 +196,30 @@ fun_boxplot_censoring_non_conservative <- function(d, by = NULL) {
     ggplot2::geom_boxplot() +
     ggplot2::geom_hline(aes(yintercept = value, color = model_type)) +
     ggplot2::theme_minimal()
-  w <- ggplot2::ggplot(data = d, aes(y = ipw)) +
-    ggplot2::geom_boxplot() +
-    ggplot2::geom_hline(aes(yintercept = value, color = "red")) +
-    ggplot2::theme_minimal()
+  ## w <- ggplot2::ggplot(data = d, aes(y = ipw)) +
+  ##   ggplot2::geom_boxplot() +
+  ##   ggplot2::geom_hline(aes(yintercept = value, color = "red")) +
+  ##   ggplot2::theme_minimal()
   if (!is.null(by)) {
     p <- p + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_parsed)
     qz <- qz + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_parsed)
     ## for q add different geom hlines with sd(estimate) for each compination of variables in by
     qz <- qz + ggplot2::geom_hline(aes(yintercept = sd_est, color = cens_mg_method_grid_size), linetype = "dashed")
     r <- r + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_parsed)
-    w <- w + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_parsed)
+    #w <- w + ggplot2::facet_grid(as.formula(paste("baseline_rate_C~", paste(by, collapse = "+"))), scales = "free_y", labeller = ggplot2::label_parsed)
   } else {
     qz <- qz + ggplot2::geom_hline(aes(yintercept = sd(estimate), color = "red"))
   }
-  list(p, qz, r, w)
+  p <- p + scale_y_continuous(labels = scales::percent)
+  r <- r + scale_y_continuous(labels = scales::percent)
+  list(p, qz, r)
 }
 
 ## Calculate info for tables, i.e., coverage, mean squared error, bias, standard errors
 get_tables <- function(results, by = NULL, remove_duplicate_parameters = TRUE) {
+  results$type <- factor(results$type)
+  levels(results$type)[levels(results$type) == "Debiased ICE-IPCW"] <- "ICE-IPCW (Debiased)"
+  levels(results$type)[levels(results$type) == "LTMLE (grid size = 8)"] <- "LTMLE"
   if (!is.null(by)) {
     ## delete values of by that do not have more than one value in d
     by <- by[sapply(by, function(x) length(unique(results[[x]])) > 1)]
@@ -215,7 +229,7 @@ get_tables <- function(results, by = NULL, remove_duplicate_parameters = TRUE) {
     melt(
       results,
       id.vars = c(by, "value"),
-      measure.vars = c("ipw", "ice_ipcw_estimate"),
+      measure.vars = "ice_ipcw_estimate", #c("ipw", "ice_ipcw_estimate"),
       variable.name = "type",
       value.name = "estimate"
     )
@@ -243,9 +257,9 @@ get_tables <- function(results, by = NULL, remove_duplicate_parameters = TRUE) {
     by <- setdiff(by, "model_type")
     for (b in by) {
       if ("model_type" %in% names(results)) {
-        results[type != "Debiased ICE-IPCW" | model_type != "scaled_quasibinomial", (b) := NA]
+        results[type != "ICE-IPCW (Debiased)" | model_type != "scaled_quasibinomial", (b) := NA]
       } else {
-        results[type != "Debiased ICE-IPCW", (b) := NA]
+        results[type != "ICE-IPCW (Debiased)", (b) := NA]
       }
     }
   }

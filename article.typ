@@ -19,8 +19,8 @@
             the absolute risk that an outcome event occurs before a given time
             horizon $tau$ under prespecified treatment regimens. Most of the
             existing estimators based on observational data require a projection
-            onto a discretized time scale @Rose2011. We consider a recently developed continuous-time approach to
-            causal inference in this setting @rytgaardContinuoustimeTargetedMinimum2022, 
+        onto a discretized time scale (@Rose2011). We consider a recently developed continuous-time approach to
+        causal inference in this setting (@rytgaardContinuoustimeTargetedMinimum2022), 
             which theoretically allows preservation of the precise event timing on a
             subject level. Working on a continuous-time scale may improve the
             predictive accuracy and reduce the loss of information. However,
@@ -831,12 +831,12 @@ In the tables, we report the mean squared error (MSE),
 mean bias, standard deviation of the estimates, and the mean of the estimated standard error,
 as well as coverage of 95% confidence intervals.
 We also present boxplots of the results, showing
-bias (Figure @fig:boxplot_results_no_time_confounding, @fig:boxplot_results_strong_time_confounding, @fig:boxplot_results_censored, and @fig:boxplot_censored_ice_ipcw),
-as well as standard errors (Figure @fig:se_boxplot_results_no_time_confounding, @fig:se_boxplot_results_strong_time_confounding, and @fig:boxplot_results_censored),
+bias (Figure @fig:boxplot_no_time_confounding, @fig:boxplot_strong_time_confounding, @fig:boxplot_censored, and @fig:boxplot_censored_ice_ipcw),
+as well as standard errors (Figure @fig:se_boxplot_no_time_confounding, @fig:se_boxplot_strong_time_confounding, and @fig:boxplot_censored),
 depending on the parameters. Additional results, such as those involving sample size, can be found in the Appendix.
 
 Across all scenarios considered in the uncensored setting (Table @table:no-time-confounding and @table:strong-time-confounding
-and Figure @fig:boxplot_results_no_time_confounding, @fig:se_boxplot_results_no_time_confounding, @fig:boxplot_results_strong_time_confounding, and @fig:se_boxplot_results_strong_time_confounding),
+and Figure @fig:boxplot_no_time_confounding, @fig:se_boxplot_no_time_confounding, @fig:boxplot_strong_time_confounding, and @fig:se_boxplot_strong_time_confounding),
 it appears that the debiased ICE-IPCW estimator has good performance with respect to bias, coverage, and standard errors.
 The debiased ICE-IPCW estimator is unbiased even in settings with substantial time-varying confounding and
 consistently matches or outperforms both the naive Cox method and the LTMLE estimator.
@@ -856,7 +856,7 @@ for the iterative regressions that probably is misspecified, we do not encounter
 bias in the estimates, but may encounter bias in the standard errors,
 as estimation of the standard errors is not doubly robust.
 
-In the presence of right-censoring (Figure @fig:boxplot_results_censored, @fig:se_boxplot_results_censored, and @fig:boxplot_censored_ice_ipcw),
+In the presence of right-censoring (Figure @fig:boxplot_censored, @fig:se_boxplot_censored, and @fig:boxplot_censored_ice_ipcw),
 we see that the debiased ICE-IPCW estimator
 remains unbiased across all simulation scenarios
 and all choices of nuisance parameter models.
@@ -866,14 +866,14 @@ as is to be expected.
 With regards to the selection of nuisance parameter models
 for the pseudo-outcomes, we find that the linear model provides the most biased estimates for the non-debiased ICE-IPCW estimator
 (Figure @fig:boxplot_censored_ice_ipcw), though the differences are not substantial.
-In Figure @fig:boxplot_results_censored, we see that for the debiased ICE-IPCW estimator,
+In Figure @fig:boxplot_censored, we see that for the debiased ICE-IPCW estimator,
 there is no substantial difference between the linear, scaled quasibinomial, and tweedie models.
 Also note that the Tweedie model produces slightly larger standard errors
 for the debiased ICE-IPCW estimator
 than the linear or scaled quasibinomial models.
 However, the differences are otherwise minor.
 
-#let table_no_time_confounding = csv("simulation_study/tables/results_table_no_time_confounding.csv")
+#let table_no_time_confounding = csv("simulation_study/tables/table_no_time_confounding.csv")
 #let _ = table_no_time_confounding.remove(0)
 
 #figure(
@@ -893,7 +893,7 @@ table(
         Results for the case without time confounding.
     ]) <table:no-time-confounding>
 
-#let table_strong_time_confounding = csv("simulation_study/tables/results_table_strong_time_confounding.csv")
+#let table_strong_time_confounding = csv("simulation_study/tables/table_strong_time_confounding.csv")
 #let _ = table_strong_time_confounding.remove(0)
 
 #figure(
@@ -912,56 +912,56 @@ table(
         ]) <table:strong-time-confounding>
 
 #figure(
-    image("simulation_study/plots/boxplot_results_no_time_confounding.svg"),
+    image("simulation_study/plots/boxplot_no_time_confounding.svg"),
         caption: [
                 Boxplots of the results for the case without time confounding.
                 The lines indicates the true value of the parameter.
         ],
-) <fig:boxplot_results_no_time_confounding>
+) <fig:boxplot_no_time_confounding>
 
 #figure(
-    image("simulation_study/plots/se_boxplot_results_no_time_confounding.svg"),
+    image("simulation_study/plots/se_boxplot_no_time_confounding.svg"),
         caption: [
                 Boxplots of the standard errors for the case without time confounding.
             The red line indicates the empirical standard error of the estimates for each estimator.
         ],
-) <fig:se_boxplot_results_no_time_confounding>
+) <fig:se_boxplot_no_time_confounding>
 
 #figure(
-    image("simulation_study/plots/boxplot_results_strong_time_confounding.svg"),
+    image("simulation_study/plots/boxplot_strong_time_confounding.svg"),
         caption: [
                 Boxplots of the results for the case with strong time confounding.
                 The lines indicates the true value of the parameter.
         ],
-) <fig:boxplot_results_strong_time_confounding>
+) <fig:boxplot_strong_time_confounding>
 
 #figure(
-    image("simulation_study/plots/se_boxplot_results_strong_time_confounding.svg"),
+    image("simulation_study/plots/se_boxplot_strong_time_confounding.svg"),
         caption: [
                 Boxplots of the standard errors for the case with strong time confounding.
             The red line indicates the empirical standard error of the estimates for each estimator.
         ],
-) <fig:se_boxplot_results_strong_time_confounding>
+) <fig:se_boxplot_strong_time_confounding>
 
 #figure(
-    image("simulation_study/plots/boxplot_results_censored.svg"),
+    image("simulation_study/plots/boxplot_censored.svg"),
         caption: [
                 Boxplots of the results for the case with censoring.
             Different degrees of censoring are considered as well different model types for the pseudo-outcomes.
             Only the debiased ICE-IPCW estimator is shown.
         ],
-) <fig:boxplot_results_censored>
+) <fig:boxplot_censored>
 
 #figure(
-        image("simulation_study/plots/se_boxplot_results_censored.svg"),
+        image("simulation_study/plots/se_boxplot_censored.svg"),
                 caption: [
                         Boxplots of the standard errors for the case with censoring.
                 The red line indicates the empirical standard error of the estimates for each estimator.
-                ]) <fig:se_boxplot_results_censored>
+                ]) <fig:se_boxplot_censored>
 
 
 #figure(
-    image("simulation_study/plots/ice_ipcw_boxplot_results_censored.svg"),
+    image("simulation_study/plots/ice_ipcw_boxplot_censored.svg"),
         caption: [
             Boxplots of the results for the case with censoring.
             Different degrees of censoring are considered as well different model types for the pseudo-outcomes.
@@ -977,6 +977,7 @@ redeemed a prescription for either DPP4 inhibitors or SGLT2 inhibitors between 2
 
 At baseline (time zero), patients were required to have redeemed such a prescription and
 to have an HbA1c measurement recorded prior to their first prescription redemption.
+Additionally, certain exclusion criteria were applied (@emulateempareg).
 Within our framework, we defined:
 - $N^y$ be the counting process for the event of death.
 - $N^c$ the counting process for the event of censoring (e.g., end of study period or emigration).
@@ -999,7 +1000,7 @@ Censoring was modeled a Cox proportional hazards model using only baseline covar
 As in the simulation study, we omitted the censoring martingale term,
 yielding conservative confidence intervals.
 
-Detailed figures are provided in ? and ??.
+Detailed figures are provided in Figure @fig:riskplot_empa.
 For comparison, we also applied the Cheap Subsampling confidence interval (@ohlendorff2025cheapsubsamplingbootstrapconfidence)
 to see how robust the confidence intervals provided by our procedure are.
 The method was considered since bootstrapping the data is computationally expensive.
@@ -1018,6 +1019,15 @@ almost the same confidence interval as Cheap Subsampling.
 // that practical positivity violations lead to anti conservative confidence intervals.
 // Future work should consider robust inference methods
 // with many event points, as this is likely to occur in practice.
+
+#figure(
+    image("plots/plot_empa.svg"),
+        caption: [
+            The causal risk of death (upper plot) and risk difference (lower plot) under treatment with SGLT2 inhibitors compared to DPP4 inhibitors
+            shown as a function of time since initiation of treatment
+            and 95% confidence intervals based on the efficient influence function and Cheap Subsampling confidence intervals ($B = 30, m = 12750$).
+        ],
+) <fig:riskplot_empa>
 
 = Discussion
 
@@ -1787,7 +1797,7 @@ We find the following decomposition,
 === Uncensored case
 
 ==== Varying effects (A on Y, L on Y, A on L, L on A)
-#let table_A_on_Y = csv("simulation_study/tables/results_table_vary_effect_A_on_Y.csv")
+#let table_A_on_Y = csv("simulation_study/tables/table_A_on_Y.csv")
 #let _ = table_A_on_Y.remove(0)
 
 #table(
@@ -1803,7 +1813,7 @@ We find the following decomposition,
     ..table_A_on_Y.slice(8, 12).flatten(),
 )
 
-#let table_L_on_Y = csv("simulation_study/tables/results_table_vary_effect_L_on_Y.csv")
+#let table_L_on_Y = csv("simulation_study/tables/table_L_on_Y.csv")
 #let _ = table_L_on_Y.remove(0)
 
 #table(
@@ -1819,7 +1829,7 @@ We find the following decomposition,
     ..table_A_on_Y.slice(8, 12).flatten(),
 )
 
-#let table_A_on_L = csv("simulation_study/tables/results_table_vary_effect_A_on_L.csv")
+#let table_A_on_L = csv("simulation_study/tables/table_A_on_L.csv")
 #let _ = table_A_on_L.remove(0)
 
 #table(
@@ -1835,7 +1845,7 @@ We find the following decomposition,
     ..table_A_on_Y.slice(8, 12).flatten(),
 )
 
-#let table_L_on_A = csv("simulation_study/tables/results_table_vary_effect_L_on_A.csv")
+#let table_L_on_A = csv("simulation_study/tables/table_L_on_A.csv")
 #let _ = table_L_on_A.remove(0)
 
 #table(
@@ -1854,7 +1864,7 @@ We find the following decomposition,
 
 ==== Sample size
 
-#let table_sample_size = csv("simulation_study/tables/results_table_sample_size.csv")
+#let table_sample_size = csv("simulation_study/tables/table_sample_size.csv")
 #let _ = table_sample_size.remove(0)
 
 #table(
@@ -1904,7 +1914,7 @@ We find the following decomposition,
 
 ==== Varying effects (A on Y, L on Y, A on L, L on A)
 #figure(
-    image("simulation_study/plots/boxplot_results_vary_effect_A_on_Y.svg"),
+    image("simulation_study/plots/boxplot_A_on_Y.svg"),
         caption: [
                 Boxplots of the results for the case with varying effect of $A$ on $Y$.
                 The lines indicates the true value of the parameter.
@@ -1912,7 +1922,7 @@ We find the following decomposition,
 )
 
 #figure(
-    image("simulation_study/plots/se_boxplot_results_vary_effect_A_on_Y.svg"),
+    image("simulation_study/plots/se_boxplot_A_on_Y.svg"),
         caption: [
                 Boxplots of the standard errors for the case with varying effect of $A$ on $Y$.
             The red line indicates the empirical standard error of the estimates for each estimator.
@@ -1920,7 +1930,7 @@ We find the following decomposition,
 )
 
 #figure(
-    image("simulation_study/plots/boxplot_results_vary_effect_L_on_Y.svg"),
+    image("simulation_study/plots/boxplot_L_on_Y.svg"),
         caption: [
                 Boxplots of the results for the case with varying effect of $L$ on $Y$.
                 The lines indicates the true value of the parameter.
@@ -1928,7 +1938,7 @@ We find the following decomposition,
 )
 
 #figure(
-    image("simulation_study/plots/se_boxplot_results_vary_effect_L_on_Y.svg"),
+    image("simulation_study/plots/se_boxplot_L_on_Y.svg"),
         caption: [
                 Boxplots of the standard errors for the case with varying effect of $L$ on $Y$.
             The red line indicates the empirical standard error of the estimates for each estimator.
@@ -1936,7 +1946,7 @@ We find the following decomposition,
 )
 
 #figure(
-    image("simulation_study/plots/boxplot_results_vary_effect_A_on_L.svg"),
+    image("simulation_study/plots/boxplot_A_on_L.svg"),
         caption: [
                 Boxplots of the results for the case with varying effect of $A$ on $L$.
                 The lines indicates the true value of the parameter.
@@ -1944,7 +1954,7 @@ We find the following decomposition,
 )
 
 #figure(
-    image("simulation_study/plots/se_boxplot_results_vary_effect_A_on_L.svg"),
+    image("simulation_study/plots/se_boxplot_A_on_L.svg"),
         caption: [
                 Boxplots of the standard errors for the case with varying effect of $A$ on $L$.
             The red line indicates the empirical standard error of the estimates for each estimator.
@@ -1952,7 +1962,7 @@ We find the following decomposition,
 )
 
 #figure(
-    image("simulation_study/plots/boxplot_results_vary_effect_L_on_A.svg"),
+    image("simulation_study/plots/boxplot_L_on_A.svg"),
         caption: [
                 Boxplots of the results for the case with varying effect of $L$ on $A$.
                 The lines indicates the true value of the parameter.
@@ -1960,7 +1970,7 @@ We find the following decomposition,
 )
 
 #figure(
-    image("simulation_study/plots/se_boxplot_results_vary_effect_L_on_A.svg"),
+    image("simulation_study/plots/se_boxplot_L_on_A.svg"),
         caption: [
                 Boxplots of the standard errors for the case with varying effect of $L$ on $A$.
             The red line indicates the empirical standard error of the estimates for each estimator.
@@ -1971,20 +1981,20 @@ We find the following decomposition,
 ==== Sample size
 
 #figure(
-    image("simulation_study/plots/boxplot_results_sample_size.svg"),
+    image("simulation_study/plots/boxplot_sample_size.svg"),
         caption: [
                 Boxplots of the results for the case with varying sample size.
                 The lines indicates the true value of the parameter.
         ],
 )
 
-#figure(
-    image("simulation_study/plots/se_boxplot_results_sample_size.svg"),
-        caption: [
-                Boxplots of the standard errors for the case with varying sample size.
-            The red line indicates the empirical standard error of the estimates for each estimator.
-        ],
-)
+// #figure(
+//     image("simulation_study/plots/se_boxplot_sample_size.svg"),
+//         caption: [
+//                 Boxplots of the standard errors for the case with varying sample size.
+//             The red line indicates the empirical standard error of the estimates for each estimator.
+//         ],
+// )
 
 // == Discretizing time <sec:discretizing-time>
 // We briefly illustrate how to discretize the time horizon into $K$ intervals,
