@@ -174,7 +174,7 @@ p2 <- ggplot(
         facet_wrap(~estimator) +
       labs(
         x = "Time horizon (days)",
-        y = "Risk difference (SGLT2 vs DPP4)",
+        y = "Risk of death",
         linetype= "CI Method",
         color = "Treatment"
       ) +
