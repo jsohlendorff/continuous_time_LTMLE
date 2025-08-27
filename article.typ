@@ -1,6 +1,5 @@
 #import "template/definitions.typ": *
 #import "@preview/colorful-boxes:1.4.3": *
-//#import "@preview/elsearticle:1.0.0": *
 #import "@preview/arkheion:0.1.0": arkheion, arkheion-appendices
 
 #set cite(form: "prose")
@@ -37,7 +36,6 @@
 )
 
 //#set page(margin: (left: 10mm, right: 10mm, top: 25mm, bottom: 30mm))
-#show math.equation: set text(9pt)
 //#set math.equation(numbering: "(1)")
 
 #show math.equation: it => {
@@ -60,6 +58,9 @@
 #set math.equation(numbering: n => {
   numbering("(1.1)", counter(heading).get().first(), n)
 })
+
+#set text(size: 10pt)
+#show math.equation: set text(9pt)
 
 = Introduction
 Randomized controlled trials (RCTs) are widely regarded as the gold standard for estimating the causal effects of treatments on clinical outcomes.
@@ -376,7 +377,8 @@ where we also deal with right-censoring.
     Let $Qbar(K): (a_k, h_k) mapsto 0$ and recursively define for $k = K-1, dots, 1$,
     $
         Z^a_(k+1, tau) (u) &= bb(1) {event(k+1) <= u, event(k+1) < tau, status(k+1) = ell) Qbar(k+1) (tau, treat(k), H_(k+1)) \
-            &qquad+ bb(1) {event(k+1) <= u, event(k+1) < tau, status(k+1) = a) Qbar(k+1) (tau, 1, H_(k+1)) + bb(1) {event(k+1) <= u, status(k+1) = y), 
+            &qquad+ bb(1) {event(k+1) <= u, event(k+1) < tau, status(k+1) = a) Qbar(k+1) (tau, 1, H_(k+1)) \
+            &qquad + bb(1) {event(k+1) <= u, status(k+1) = y), 
     $ 
     and
     $
@@ -400,8 +402,6 @@ where we also deal with right-censoring.
     //         &qquad (mean(P) [Qbar(k) (treat(k-1), covariate(k), event(k), status(k), history(k-1)) | event(k) =s , status(k) = ell, history(k-1)] ) cumhazard(k, ell, dif s) \
     //         P_(k-1, y) (t | history(k-1)) &= integral_((event(k-1),t]) S_k (s- | history(k-1)) cumhazard(k, y, dif s), quad t <= tau.
     // $
-
-    
 ]<thm:parameter>
 
 #proof[
@@ -487,9 +487,15 @@ we start the algorithm at $k = K- 1$ by calculating $hat(S)^c (eventcensoredi(k)
 = product_(s in (eventcensoredi(k-1), eventcensoredi(k)-)) (1 - hat(Lambda)_i^c (s))$.
 Given an estimator of $Qbar(k+1)$ denoted by $Qbarhat(k+1)$, we then estimate the pseudo-outcome $hat(Z)^a_(k,tau,i)$ as follows
 - If $statuscensoredi(k) = y$, we calculate $hat(Z)^a_(k,tau,i) =1 /(hat(S)^c (eventcensoredi(k)- | treatcensoredi(k-1), H_(k-1,i))) bb(1) {eventcensoredi(k) <= tau}$.
-- If $statuscensoredi(k) = a$, evaluate $Qbarhat(k+1) (1, H_(k,i))$ and calculate $hat(Z)^a_(k,i) = 1/ (hat(S)_k^c (eventcensoredi(k)- | treatcensoredi(k-1), H_(k-1,i))) bb(1) {eventcensoredi(k) < tau} Qbarhat(k+1) (1, macron(H)_(k,i))$.
+- If $statuscensoredi(k) = a$, evaluate $Qbarhat(k+1) (1, H_(k,i))$ and calculate
+  $
+      hat(Z)^a_(k,i) = 1/ (hat(S)_k^c (eventcensoredi(k)- | treatcensoredi(k-1), H_(k-1,i))) bb(1) {eventcensoredi(k) < tau} Qbarhat(k+1) (1, macron(H)_(k,i)).
+  $
 - If $statuscensoredi(k) = ell$, evaluate $Qbarhat(k+1) (treatcensoredi(k-1), H_(k,i))$,
-  and calculate $hat(Z)^a_(k,i) = 1/(hat(S)_k^c (eventcensoredi(k)- | treatcensoredi(k-1), H_(k-1,i))) bb(1) {eventcensoredi(k) < tau} Qbarhat(k+1) (treatcensoredi(k-1), macron(H)_(k,i)).$
+  and calculate
+  $
+      hat(Z)^a_(k,i) = 1/(hat(S)_k^c (eventcensoredi(k)- | treatcensoredi(k-1), H_(k-1,i))) bb(1) {eventcensoredi(k) < tau} Qbarhat(k+1) (treatcensoredi(k-1), macron(H)_(k,i)).
+  $
 Then regress $hat(Z)^a_(k,i)$ on $(treatcensoredi(k-1), H_(k-1,i))$
 for the observations with with $eventcensoredi(k-1) < tau$ and $statuscensoredi(k-1) in {a, ell}$
 to obtain a prediction function $Qbarhat(k)$.
@@ -1019,7 +1025,7 @@ Censoring was modeled a Cox proportional hazards model using only baseline covar
 As in the simulation study, we omitted the censoring martingale term,
 yielding conservative confidence intervals.
 
-Detailed figures are provided in @fig:riskplot_empa.
+A figure of the results is provided in @fig:riskplot_empa.
 For comparison, we also applied the Cheap Subsampling confidence interval (@ohlendorff2025cheapsubsamplingbootstrapconfidence)
 to see how robust the confidence intervals provided by our procedure are.
 The method was considered since bootstrapping the data is computationally expensive.
@@ -1077,7 +1083,8 @@ using piecewise constant intensity models where the likelihood is based on Poiss
 // However, that term is computationally
 // intensive to estimate.
 
-We could have also opted to use a TMLE (@laanTargetedMaximumLikelihood2006) instead.
+We could have also opted to use the TMLE framework (@laanTargetedMaximumLikelihood2006) in lieu 
+of a one-step estimator.
 //or a combination of the two
 // of using a one-step estimator.
 // For instance, one update could be performed, updating $Qbar(k)$
@@ -1202,67 +1209,74 @@ however, we can no longer apply just _any_ machine learning method.
 #set math.equation(numbering: n => {
   numbering("(A.1)", counter(heading).get().first(), n)
 })
+
 =
 
 == Proof of @thm:parameter <section:proofjointdensity>
-Let $W_(k, j) = (W^g (event(j))) / (W^g (event(k)))$ for $k < j$ (defining $0/0 = 0$).
+    Let $W_(k, j) = (W^g (event(j))) / (W^g (event(k)))$ for $k < j$ (defining $0/0 = 0$).
     //For brevity of notation, we do not write $bb(1) {event(k-1) < oo and status(k-1) in {a, ell})$.
     We show that 
     $
-        Qbar(k) (treat(k), H_k) = mean(P) [sum_(j=k+1)^K W_(k,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k), H_k]
-    $
+        Qbar(k) (tau, treat(k), H_k) = mean(P) [sum_(j=k+1)^K W_(k,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k), H_k]
+    $ <eq:iterativeProof>
     for $k = 0, dots, K - 1$ by backwards induction: // satisfies the desired property of @eq:iterative.
 
     _Base case_: The case $k = K-1$ is trivial $(W_(K-1,K) bb(1) {event(K) <= tau, status(K) = y} = bb(1) {event(K) <= tau, status(K) = y})$.
     
-    _Inductive step_: Assume that the claim holds for $k+1$.
-    We find
-    $
-        &mean(P) [sum_(j=k+1)^K W_(k,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k), H_k] \
-            &=^(a) mean(P) (bb(1) {event(k+1) <= tau, status(k+1) = y} W_(k,k+1) \
-                &#h(0.5cm)+ bb(1) {event(k+1) < tau, status(k+1) in {a, ell}} \
-                &#h(1cm) times mean(P) [W_(k,k+1) mean(P) [sum_(j=k+2)^K W_(k+1,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k+1), H_(k+1)]  | event(k+1), status(k+1), treat(k), H_k] | treat(k), H_k) \
-            &= mean(P) (bb(1) {event(k+1) <= tau, status(k+1) = y} W_(k,k+1) \
-                &#h(0.5cm)+ bb(1) {event(k+1) < tau, status(k+1) = a} \
-                &#h(1cm) times mean(P) [W_(k,k+1) mean(P) [sum_(j=k+2)^K W_(k+1,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k+1), H_(k+1)]  | event(k+1), status(k+1), treat(k), H_k] \
-                &#h(0.5cm)+ bb(1) {event(k+1) < tau, status(k+1) = ell} \
-                &#h(1cm) times mean(P) [W_(k,k+1) mean(P) [sum_(j=k+2)^K W_(k+1,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k+1), H_(k+1)]  | event(k+1), status(k+1), treat(k), H_k)
-                mid(|) treat(k), H_k] \
-            &= mean(P) (bb(1) {event(k+1) <= tau, status(k+1) = y} \
-                &#h(0.5cm) + bb(1) {event(k+1) < tau, status(k+1) = a} \
+_Inductive step_: Assume that the claim holds for $k+1$.
+Now, we first note that
+$
+    & bb(1) {event(k+1) < tau, status(k+1) in {a, ell}} \
+        &quad times mean(P) [W_(k,k+1) mean(P) [sum_(j=k+2)^K W_(k+1,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k+1), H_(k+1)]  | event(k+1), status(k+1), treat(k), H_k] \
+        &= bb(1) {event(k+1) < tau, status(k+1) = a} \
                 &#h(1cm) times mean(P) [W_(k,k+1) mean(P) [sum_(j=k+2)^K W_(k+1,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k+1), H_(k+1)]  | event(k+1), status(k+1), treat(k), H_k] \
                 &#h(0.5cm) + bb(1) {event(k+1) < tau, status(k+1) = ell} \
-                &#h(1cm) times mean(P) [mean(P) [sum_(j=k+2)^K W_(k+1,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k+1), H_(k+1)]  | event(k+1), status(k+1), treat(k), H_k]
-                mid(|) treat(k), H_k) \
-            &=^(b) mean(P) (bb(1) {event(k+1) <= tau, status(k+1) = y} \
-                &#h(0.5cm)+ bb(1) {event(k+1) < tau, status(k+1) = a} \
-                &#h(1cm) times mean(P) [W_(k,k+1) Qbar(k+1) (treat(k+1), H_(k+1)) | event(k+1), status(k+1), treat(k), H_k] \
-                &#h(0.5cm)+ bb(1) {event(k+1) < tau, status(k+1) = ell} \
-                &#h(1cm) times mean(P) [Qbar(k+1) (treat(k), H_(k+1)) | event(k+1), status(k+1), treat(k), H_k] | treat(k), H_k) \
+        &#h(1cm) times mean(P) [W_(k,k+1) mean(P) [sum_(j=k+2)^K W_(k+1,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k+1), H_(k+1)]  | event(k+1), status(k+1), treat(k), H_k] \
+    &= bb(1) {event(k+1) < tau, status(k+1) = a} \
+                &#h(1cm) times mean(P) [W_(k,k+1) mean(P) [sum_(j=k+2)^K W_(k+1,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k+1), H_(k+1)]  | event(k+1), status(k+1), treat(k), H_k] \
+                &#h(0.5cm) + bb(1) {event(k+1) < tau, status(k+1) = ell} \
+        &#h(1cm) times mean(P) [mean(P) [sum_(j=k+2)^K W_(k+1,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k+1), H_(k+1)]  | event(k+1), status(k+1), treat(k), H_k] \
+        &=^((a)) bb(1) {event(k+1) < tau, status(k+1) = a} \
+                &#h(1cm) times mean(P) [W_(k,k+1) Qbar(k+1) (tau, treat(k+1), H_(k+1)) | event(k+1), status(k+1), treat(k), H_k] \
+                &quad + bb(1) {event(k+1) < tau, status(k+1) = ell} \
+        &#h(1cm) times mean(P) [Qbar(k+1) (tau, treat(k), H_(k+1)) | event(k+1), status(k+1), treat(k), H_k] 
+$ <eq:proofThm1>
+In (a), we use the induction hypothesis. Using @eq:proofThm1 then gives, 
+    $
+        &mean(P) [sum_(j=k+1)^K W_(k,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k), H_k] \
+            &=^((b)) mean(P) (bb(1) {event(k+1) <= tau, status(k+1) = y} W_(k,k+1) \
+                &#h(0.5cm)+ bb(1) {event(k+1) < tau, status(k+1) in {a, ell}} \
+                &#h(1cm) times mean(P) [W_(k,k+1) mean(P) [sum_(j=k+2)^K W_(k+1,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k+1), H_(k+1)]  | event(k+1), status(k+1), treat(k), H_k] | treat(k), H_k) \
             &= mean(P) (bb(1) {event(k+1) <= tau, status(k+1) = y} \
                 &#h(0.5cm)+ bb(1) {event(k+1) < tau, status(k+1) = a} \
-                &#h(1cm) times mean(P) [W_(k,k+1) Qbar(k+1) (treat(k+1), covariate(k), event(k), status(k), treat(k), H_k) | event(k+1), status(k+1), treat(k), H_k] \
+                &#h(1cm) times mean(P) [W_(k,k+1) Qbar(k+1) (tau, treat(k+1), H_(k+1)) | event(k+1), status(k+1), treat(k), H_k] \
                 &#h(0.5cm)+ bb(1) {event(k+1) < tau, status(k+1) = ell} \
-                &#h(1cm) times Qbar(k+1) (treat(k), covariate(k+1), event(k), status(k), treat(k), H_k) | treat(k), H_k).
-    $
-    Repeatedly throughout, we use the law of iterated expectations.
-    In a, we use that
+                &#h(1cm) times mean(P) [Qbar(k+1) (tau, treat(k), H_(k+1)) | event(k+1), status(k+1), treat(k), H_k] | treat(k), H_k) \
+            &= mean(P) (bb(1) {event(k+1) <= tau, status(k+1) = y} \
+                &#h(0.5cm)+ bb(1) {event(k+1) < tau, status(k+1) = a} \
+                &#h(1cm) times mean(P) [W_(k,k+1) Qbar(k+1) (tau, treat(k+1), H_(k+1)) | covariate(k+1), event(k+1), status(k+1), treat(k), H_k] \
+                &#h(0.5cm)+ bb(1) {event(k+1) < tau, status(k+1) = ell} \
+                &#h(1cm) times Qbar(k+1) (tau, treat(k), H_(k+1)) | treat(k), H_k).
+    $ <eq:stepInduction>
+    Throughout, we use the law of iterated expectations.
+    In (b), we use that
     $
         (event(k) <= tau, status(k) = y) subset.eq (event(j) < tau, status(j) in {a, ell})
     $
     for all $j = 1, dots, k-1$ and $k = 1, dots, K$.
-    In b, we use the induction hypothesis.
     
-    The desired statement about $Qbar(k)$ @eq:iterative now follows from the fact that
+    The desired statement (@eq:iterativeProof) now follows from the fact that
     $
-        &mean(P) [W_(k-1,k) Qbar(k) (treat(k), H_k) | event(k), status(k) = a, history(k-1)] \
-            &= mean(P) [(bb(1) {treat(k) = 1})/(densitytrt(event(k), k)) Qbar(k) (1, H_k) | event(k), status(k) = a, history(k-1)] \
-            &= mean(P) [(mean(P) [bb(1) {treat(k) = 1} | event(k), status(k) =a, history(k-1)])/(densitytrt(event(k), k))  Qbar(k) (1, H_k) | event(k), status(k) = a, history(k-1)] \
-            &= mean(P) [Qbar(k) (1, H_k) | event(k), status(k) = a, history(k-1)] \
-            &= Qbar(k) (1,H_k)
+        &mean(P) [W_(k, k+1) Qbar(k+1) (tau, treat(k+1), H_(k+1)) | covariate(k+1), event(k+1), status(k+1) = a, treat(k), H_k] \
+            &= mean(P) [(bb(1) {treat(k+1) = 1})/(densitytrtnext(event(k+1), k)) Qbar(k+1) (tau, 1, H_(k+1)) | covariate(k+1), event(k+1), status(k+1) = a, treat(k), H_k] \
+            &= mean(P) [(mean(P) [bb(1) {treat(k+1) = 1} | event(k+1), covariate(k+1), status(k+1) =a, treat(k), H_k])/(densitytrtnext(event(k+1), k)) \
+                &qquad times Qbar(k+1) (tau, 1, H_(k+1)) | covariate(k+1), event(k+1), status(k+1) = a, treat(k), H_k] \
+            &= mean(P) [Qbar(k+1) (tau, 1, H_(k+1)) | covariate(k+1), event(k+1), status(k+1) = a, treat(k), H_k] \
+            &= Qbar(k+1) (tau, 1,H_(k+1)),
     $ <eq:stepTheorem1>
+    and @eq:stepInduction.
 
-    A similar calculation shows that $Psi_tau^g (P) = mean(P) [Qbar(0) (1, covariate(0))]$
+    A similar calculation to @eq:stepTheorem1 shows that $Psi_tau^g (P) = mean(P) [Qbar(0) (tau, 1, covariate(0))]$
     and so @eq:baselineQ follows.
     
     // We now show the second statement.
