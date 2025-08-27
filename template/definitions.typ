@@ -2,7 +2,6 @@
 #import "@preview/ctheorems:1.1.3": *
 #import "@preview/cetz:0.3.4"
 #import "@preview/algo:0.3.6": algo, i, d, comment, code
-//#import "@preview/cheq:0.2.2": checklist //uncomment to use checklist
 
 #let qquad = h(1.5cm)
 //#show: checklist
