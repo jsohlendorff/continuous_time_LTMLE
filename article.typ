@@ -119,10 +119,10 @@ emulating a diabetes trial.
 
 #figure(timegrid(new_method: false), caption:  [The figure illustrates the sequential regression approach
     given in @rytgaardContinuoustimeTargetedMinimum2022 for two observations:
-    Let $t_1 < dots < t_m$ be all the event times in the sample.
+    Let $t_1 < dots < t_m$ denotes the event times in the sample.
     Let $P^(G^*)$ denote the interventional probability measure.
     Then, given $mean(P^(G^*))[Y | cal(F)_(t_(r))]$,
-    we regress back to $mean(P^(G^*))[Y | cal(F)_(t_(r-1))]$ (through multiple regressions).
+    we regress back to $mean(P^(G^*))[Y | cal(F)_(t_(r-1))]$. // (through multiple regressions).
 ],) <fig:timegridrytgaard>
 
 #figure(timegrid(new_method: true), caption: [The figure illustrates the sequential regression approach
@@ -130,7 +130,7 @@ emulating a diabetes trial.
     Let $P^(G^*)$ denote the interventional probability measure.
     That is, given $mean(P^(G^*))[Y | history(k)]$,
     we regress back to $mean(P^(G^*))[Y | history(k-1)]$.
-    In the figure, $k=3$. The key difference is that we employ the stopping time $sigma$-algebra $history(k)$ here
+    The key difference is that we employ $history(k)$ here
     instead of the filtration $cal(F)_(t_(r))$ which turns out to have a simpler representation.
 ],) <fig:eventgrid>
 
@@ -226,9 +226,9 @@ and its conversion to wide format in @fig:longitudinaldatawide.
     ),
     caption: [
         An example of a longitudinal dataset from electronic health records or a clinical trial with $tauend = 15$
-        with $K=2$ for $n=3$ (3 observations). Here, the time-varying covariates only have dimension 1.
+        with $K=2$ for $n=3$. 
         Events are registered at irregular/subject-specific time points
-        and are presented in a long format. //Technically, though, events at baseline are not to be considered events, but we include them here for completeness.
+        and are presented in a long format. 
     ]
 ) <fig:longitudinaldatalong>
 
@@ -248,7 +248,7 @@ and its conversion to wide format in @fig:longitudinaldatawide.
         [3], [3], [1], [4], [1], [2], [$ell$], [4], [0], [2.1], [$a$], [$5$], [$y$],
     ),
     caption: [
-        The same example as in @fig:longitudinaldatalong, but presented in a wide format.
+        The same example as in @fig:longitudinaldatalong, but presented in a wide data format.
     ])<fig:longitudinaldatawide>
 
 //We will also work within the so-called canonical setting for technical reasons (@last1995marked, Section 2.2).
@@ -507,7 +507,6 @@ Then, we observe the trajectories of the process given by $t mapsto N^beta (t an
 and the observed filtration is given by 
 $cal(F)_t^tilde(beta) = sigma(beta(s and C and T^e) | s <= t)$.
 The observed data is then given by @eq:observedata.
-
 Abusing notation a bit, we see that for observed histories, we
 have $history(k) = historycensored(k)$ if $statuscensored(k) != c$.
 
@@ -597,7 +596,7 @@ This representation is computationally simpler, as it avoids the need to estimat
 For a detailed comparison, we refer the reader to the appendix, where we show that our efficient influence function
 simplifies to the same as the one derived by @rytgaardContinuoustimeTargetedMinimum2022
 (@section:compareif) when the compensators are absolutely continuous with respect to the Lebesgue measure
-and the assumption that $Delta L (t) = 0$ whenever $Delta N^a (t) = 1$.
+and under the assumption that $Delta L (t) = 0$ whenever $Delta N^a (t) = 1$.
 
 Of separate interest is @thm:adaptive which shows that
 we can adaptively select $K$ based on the observed data.
@@ -715,7 +714,7 @@ and the effect of stroke on the outcome $beta^y_L > 0$, $beta^y_L = 0$, and $bet
 We also vary the effect of a stroke on the treatment propensity $alpha_(L)$
 and the effect of treatment on stroke $beta_(A)^ell > 0$, $beta_(A)^ell = 0$, and $beta_(A)^ell < 0$.
 Furthermore, when applying LTMLE,
-we discretize time into 8 intervals.
+we discretize time into 8 intervals (see e.g., @sec:discretizing-time).
 We consider both the debiased ICE estimator and the ICE estimator
 without debiasing.
 For modeling of the nuisance parameters,
@@ -760,10 +759,10 @@ Three types of models are considered for the estimation of the counterfactual pr
         [*Values \ (censoring)*], [0.3], [0.02], [-0.6, 0.6], [0.025], [0.015], [-0.8, 0.8], [-0.2], [1], [0.0001], [0.001], [0], [0.005]
     ),
     caption: [
-        Simulation parameters for the simulation study. Each value is varied, holding the others fixed.
-        The values with bold font correspond to the values used
-        when fixed. The cases with no effect of time-varying confounders
-        are marked with an underline.
+        Simulation parameters for the simulation studies.
+        Each value is varied while holding the others fixed.
+        Bold values indicate fixed reference values,
+        and underlined values denote the scenarios without time-varying confounding.
     ]) <table:simulation-parameters>
 
 == Results
@@ -788,21 +787,22 @@ confounding is present, LTMLE estimates are biased, but the mean squared errors
 are about the same as for the debiased ICE-IPCW estimator,
 likely owing to the fact that LTMLE has generally smaller standard errors.
 This reflects a bias–variance trade-off between continuous-time and discrete-time approaches.
-The standard errors obtained from
-the debiased procedure also appear slightly more biased
-than the standard errors obtained from the LTMLE procedure,
-but this difference may be negligible.
-Note that the choice of nuisance parameter model
-for the iterative regressions is misspecified, so
-we may encounter bias in the standard errors but do
-not see substantial bias in the estimates as the
-method is doubly robust.
+// The standard errors obtained from
+// the debiased procedure also appear slightly le biased
+// than the standard errors obtained from the LTMLE procedure,
+// but this difference may be negligible.
+// Note that the choice of nuisance parameter model
+// for the iterative regressions is misspecified, so
+// we may encounter bias in the standard errors but do
+// not see substantial bias in the estimates as the
+// method is doubly robust.
 
 In the presence of right-censoring (@fig:boxplot_censored, @fig:se_boxplot_censored, and @fig:boxplot_censored_ice_ipcw),
 we see that the debiased ICE-IPCW estimator
 remains unbiased across all simulation scenarios
 and all choices of nuisance parameter models.
-Moreover, standard errors are (slightly) conservative
+Moreover, standard errors are (slightly) conservative with the trend that
+standard errors become more biased as the degree of censoring increases
 as is to be expected.
 
 When looking at the selection of nuisance parameter models
@@ -815,99 +815,119 @@ for the debiased ICE-IPCW estimator
 than the linear or scaled quasibinomial models.
 However, the differences are otherwise minor.
 
-#let table_no_time_confounding = csv("simulation_study/tables/table_no_time_confounding.csv")
-#let _ = table_no_time_confounding.remove(0)
+#let tab = csv("simulation_study/tables/table_no_time_confounding.csv")
+#let _ = tab.remove(0)
 
 #figure(
 table(
-    columns: table_no_time_confounding.at(0).len(),
+    columns: tab.at(0).len(),
     table.vline(x: 1),
     fill: (_, y) => if ((calc.rem(y, 4) == 0 and y > 0) or (calc.rem(y, 4) == 1)) { gray.lighten(90%) },
-        [$beta^y_A$], [*Estimator*], [*Coverage*],
+    [$beta^y_A$], [*Estimator*], [*Coverage*],
     [*MSE*], [*Bias*], [*sd($hat(Psi)_n$)*], [*Mean($hat("SE")$)*],
-    ..table_no_time_confounding.slice(0, 4).flatten(),
+    ..tab.slice(0, 4).flatten(),
     table.hline(),
-    ..table_no_time_confounding.slice(4, 8).flatten(),
+    ..tab.slice(4, 8).flatten(),
     table.hline(),
-        ..table_no_time_confounding.slice(8, 12).flatten(),
+    ..tab.slice(8, 12).flatten(),
 ),
     caption: [
-        Results for the case without time confounding.
-    ]) <table:no-time-confounding>
+        Results for the case without time-varying confounding.
+        The coverage, the mean squared error (MSE), average bias,
+        standard deviation of the estimates, mean of the estimated standard error
+        and the estimator applied are provided. 
+    ]
+) <table:no-time-confounding>
 
-#let table_strong_time_confounding = csv("simulation_study/tables/table_strong_time_confounding.csv")
-#let _ = table_strong_time_confounding.remove(0)
+#let tab = csv("simulation_study/tables/table_strong_time_confounding.csv")
+#let _ = tab.remove(0)
 
 #figure(
 table(
-    columns: table_strong_time_confounding.at(0).len(),
+    columns: tab.at(0).len(),
     table.vline(x: 2),
-        fill: (_, y) => if ((calc.rem(y, 4) == 0 and y > 0) or (calc.rem(y, 4) == 1)) { gray.lighten(90%) },
-        //[$beta^y_A$], [$beta^y_L$], [$alpha_L$], [$beta^L_A$], [$beta^Y_"age"$], [$alpha_"age"$], [$lambda^y$], [*Est.*], [*Cov.*],
-     [$beta^y_A$], [$alpha_L$], [*Estimator*], [*Coverage*],
-     [*MSE*], [*Bias*], [*sd($hat(Psi)_n$)*], [*Mean($hat("SE")$)*],
-    ..table_strong_time_confounding.slice(0, 4).flatten(),
+    fill: (_, y) => if ((calc.rem(y, 4) == 0 and y > 0) or (calc.rem(y, 4) == 1)) { gray.lighten(90%) },
+    [$beta^y_A$], [$alpha_L$], [*Estimator*], [*Coverage*],
+    [*MSE*], [*Bias*], [*sd($hat(Psi)_n$)*], [*Mean($hat("SE")$)*],
+    ..tab.slice(0, 4).flatten(),
     table.hline(),
-    ..table_strong_time_confounding.slice(4, 8).flatten(),),
-        caption: [
-                Results for the case with strong time confounding.
-        ]) <table:strong-time-confounding>
+    ..tab.slice(4, 8).flatten(),
+),
+    caption: [
+        Results for the case with strong time-varying confounding.
+        The coverage, the mean squared error (MSE), average bias,
+        standard deviation of the estimates, mean of the estimated standard error
+        and the estimator applied are provided. 
+    ]
+) <table:strong-time-confounding>
 
 #figure(
     image("simulation_study/plots/boxplot_no_time_confounding.svg"),
         caption: [
-                Boxplots of the results for the case without time confounding.
-                The lines indicates the true value of the parameter.
+            Boxplots of the estimates for the case without time-varying confounding
+            for each estimator in each parameter setting for
+            the cases without time confounding.
+            The lines indicates the true value of the target parameter $Psi_tau^g (P)$.
         ],
 ) <fig:boxplot_no_time_confounding>
 
 #figure(
     image("simulation_study/plots/se_boxplot_no_time_confounding.svg"),
-        caption: [
-                Boxplots of the standard errors for the case without time confounding.
-            The red line indicates the empirical standard error of the estimates for each estimator.
-        ],
+    caption: [
+            Boxplots of the standard errors for the case without time-varying confounding
+            for each estimator (LTMLE and debiased ICE-IPCW) in each parameter setting for
+            the cases without time-varying confounding.
+            The lines indicates the empirical standard error of the estimates for each estimator.
+    ],
 ) <fig:se_boxplot_no_time_confounding>
 
 #figure(
     image("simulation_study/plots/boxplot_strong_time_confounding.svg"),
-        caption: [
-                Boxplots of the results for the case with strong time confounding.
-                The lines indicates the true value of the parameter.
-        ],
+    caption: [
+        Boxplots of the estimates for the case with strong time-varying confounding
+        for each estimator in each parameter setting for
+        the cases with strong time-varying confounding.
+        The lines indicates the true value of the target parameter $Psi_tau^g (P)$.
+    ],
 ) <fig:boxplot_strong_time_confounding>
 
 #figure(
     image("simulation_study/plots/se_boxplot_strong_time_confounding.svg"),
-        caption: [
-                Boxplots of the standard errors for the case with strong time confounding.
-            The red line indicates the empirical standard error of the estimates for each estimator.
-        ],
+    caption: [
+        Boxplots of the standard errors for the case with strong time-varying confounding
+        for each estimator (LTMLE and debiased ICE-IPCW) in each parameter setting for
+        the cases with strong time-varying confounding.
+        The lines indicates the empirical standard error of the estimates for each estimator.
+    ],
 ) <fig:se_boxplot_strong_time_confounding>
 
 #figure(
     image("simulation_study/plots/boxplot_censored.svg"),
-        caption: [
-                Boxplots of the results for the case with censoring.
-            Different degrees of censoring are considered as well different model types for the pseudo-outcomes.
-            Only the debiased ICE-IPCW estimator is shown.
-        ],
+    caption: [
+        Boxplots of the estimates for the case with censoring
+        for different pseudo-outcome models (linear, scaled quasibinomial, and tweedie)
+        with varying degrees of censoring for the debiased ICE-IPCW estimator.
+        The lines indicates the true value of the target parameter $Psi_tau^g (P)$.
+     ],
 ) <fig:boxplot_censored>
 
 #figure(
-        image("simulation_study/plots/se_boxplot_censored.svg"),
-                caption: [
-                        Boxplots of the standard errors for the case with censoring.
-                The red line indicates the empirical standard error of the estimates for each estimator.
-                ]) <fig:se_boxplot_censored>
+    image("simulation_study/plots/se_boxplot_censored.svg"),
+    caption: [
+        Boxplots of the standard errors for the case with censoring
+        for different pseudo-outcome models (linear, scaled quasibinomial, and tweedie)
+        with varying degrees of censoring for the debiased ICE-IPCW estimator.
+        The lines indicates the empirical standard error of the estimates.
+    ]) <fig:se_boxplot_censored>
 
 
 #figure(
     image("simulation_study/plots/ice_ipcw_boxplot_censored.svg"),
         caption: [
-            Boxplots of the results for the case with censoring.
-            Different degrees of censoring are considered as well different model types for the pseudo-outcomes.
-            Here, the (not debiased) ICE-IPCW estimator is shown.
+            Boxplots of the estimates for the case with censoring
+            for different pseudo-outcome models (linear, scaled quasibinomial, and tweedie)
+            with varying degrees of censoring for the (not debiased) ICE-IPCW estimator.
+            The lines indicates the true value of the target parameter $Psi_tau^g (P)$.
         ],
 ) <fig:boxplot_censored_ice_ipcw>
 
@@ -942,7 +962,7 @@ Within our framework, we defined:
 For the nuisance parameter estimation, we used a logistic regression model
 for the treatment propensity
 the `scaled_quasibinomial` option for the conditional counterfactual probabilities $Qbar(k)$.
-Censoring was modeled a Cox proportional hazards model using only baseline covariates.
+Censoring was modeled with a Cox proportional hazards model using only baseline covariates.
 As in the simulation study, we omitted the censoring martingale term,
 yielding conservative confidence intervals.
 
@@ -961,7 +981,7 @@ to the ones of the debiased ICE-IPCW estimator.
 #figure(
     image("plots/plot_empa.svg"),
         caption: [
-            The causal risk of death (upper plot) and risk difference (lower plot) under treatment with SGLT2 inhibitors compared to DPP4 inhibitors
+            The causal risk of death (upper plot) and risk difference (lower plot) under sustained treatment with SGLT2 inhibitors compared to DPP4 inhibitors
             shown as a function of time since initiation of treatment
             and 95% confidence intervals based on the efficient influence function and Cheap Subsampling confidence intervals ($B = 30, m = 12,750$).
         ],
@@ -974,16 +994,13 @@ in continuous-time settings with competing events and censoring.
 We have shown that the ICE-IPCW estimator is consistent for the target parameter,
 and provided inference for the target parameter using the efficient influence function.
 However, we have not addressed the issue of model misspecification,
-which is likely to occur in practice.
-Two main issues arise from this:
-One is that we have not proposed flexible intensity estimation
+which is likely to occur in practice as we have not proposed flexible intensity estimators
 for both the censoring intensity and the propensity scores.
-The literature on this is fairly limited (especially so in the presence of right-censoring),
-and are mostly based on neural networks (@liguoriModelingEventsInteractions2023 for an overview).
+The literature on flexible intensity estimation is somewhat sparse, 
+but there are some options based on neural networks (see @liguoriModelingEventsInteractions2023 for an overview)
+and forest based methods (@weissForestBasedPointProcess2013).
 Other choices include flexible parametric models/highly adaptive LASSO
 using piecewise constant intensity models where the likelihood is based on Poisson regression (e.g., @piecewiseconstant).
-//There exist only a few methods for estimating the cumulative intensity $Lambda^x$ directly (see @liguoriModelingEventsInteractions2023 for neural network-based methods and
-//@weissForestBasedPointProcess2013 for a forest-based method).
 
 We could have also opted to use the TMLE framework (@laanTargetedMaximumLikelihood2006) in lieu 
 of a one-step estimator. Here, we can use an iterative TMLE procedure
@@ -1002,10 +1019,11 @@ This will then yield conservative but valid inference when the censoring distrib
 // is solved in one iteration only, while still providing stability
 // resulting from not using large inverse probability of treatment weights.
 
-Another potential issue with the estimation of the nuisance parameters is that the history is high dimensional
-and that the covariates in the history are highly correlated, since many covariates may not change between events.
+Another potential issue with the estimation of the nuisance parameters is the high dimensionality of the history
+and the variables in the history are highly correlated.
+//and that the covariates in the history are highly correlated, since many covariates may not change between events.
 This may yield issues with regression-based methods. If we adopt a TMLE approach, we may be able to use collaborative TMLE (@van2010collaborative)
-to deal with the high dimensionality of the history.
+to deal with these issues. 
 
 //Another alternative method for inference within the TMLE framework is to use temporal difference learning to avoid iterative estimation of $Qbar(k)$ altogether (@shirakawaLongitudinalTargetedMinimum2024)
 //by appropriately extending it to the continuous-time setting;
@@ -1123,7 +1141,7 @@ Furthermore, let $status(k) = j$ if $Delta N_j (event(k)) != 0$ and let $bb(F)_k
     
     (ii). There exist stochastic kernels $Lambda_(k, i)$ from $bb(F)_(k-1)$ to $RR$ and $zeta_(k,i)$ from $RR_+ times bb(F)_(k-1)$ to $RR_+$ such that the compensator for $N$ is given by,
     $
-        Lambda (dif (t, m, x)) = sum_(k : event(k) < oo) bb(1) {event(k-1) < t <= event(k)} sum_(i=1)^d delta_i (d m) zeta_(k,i) (d x, t, history(k-1)) Lambda_(k,i) (d t, history(k-1)) product_(l != j) delta_((X_l (event(k-1)))) (d x_l) 
+        Lambda (dif (t, m, x)) = sum_(k : event(k) < oo) bb(1) {event(k-1) < t <= event(k)} sum_(i=1)^d delta_i (dif m) zeta_(k,i) (dif x, t, history(k-1)) Lambda_(k,i) (dif t, history(k-1)) product_(l != i) delta_((X_l (event(k-1)))) (dif x_l) 
     $
     Here $Lambda_(k, i)$ is the cause-specific hazard measure for $k$'th event of the $i$'th type,
     and $zeta_(k,i)$ is the conditional distribution of $X_i (event(k))$ given $history(k-1)$, $event(k)$ and $status(k) = i$.
@@ -1637,7 +1655,10 @@ as $n -> oo$, so that 1 holds. A similar conclusion holds for 2, so the proof is
             table.hline(),
             ..table_vary.slice(8, 12).flatten(),
         ),
-        caption: [Results for the case with time confounding (vary #name_parameter).]
+        caption: [Results for the case with varying time-varying confounding (vary #name_parameter).
+        The coverage, the mean squared error (MSE), average bias,
+        standard deviation of the estimates, mean of the estimated standard error
+            and the estimator applied are provided. ]
     )
 ]
 
@@ -1662,7 +1683,10 @@ table(
     ..table_sample_size.slice(6, 8).flatten(),
     
 ),
-    caption: [Results for varying sample size ($n in {100,200,500,1000}$)]
+    caption: [Results for varying sample size ($n in {100,200,500,1000}$).
+        The coverage, the mean squared error (MSE), average bias,
+        standard deviation of the estimates, mean of the estimated standard error
+        and the estimator applied are provided.]
 )
 
 === Censoring
@@ -1679,7 +1703,10 @@ table(
             ..table_censored.slice(6*row_counter, 6*(row_counter+1)).map(x => x.slice(4,11)).flatten(),
         ),
         caption: [The table shows the results for the censored case for
-            $(beta^y_A,beta^y_L,alpha_L,lambda_c)=(#table_censored.at(6*row_counter).slice(0,4).intersperse(", ").map(x => [#x]).join())$.]
+            $(beta^y_A,beta^y_L,alpha_L,lambda_c)=(#table_censored.at(6*row_counter).slice(0,4).intersperse(", ").map(x => [#x]).join())$.
+            The coverage, the mean squared error (MSE), average bias,
+            standard deviation of the estimates, mean of the estimated standard error, the estimator (debiased ICE-IPCW and ICE-IPCW),
+            and the pseudo-outcome model are provided],
     )
 ]
 
@@ -1698,16 +1725,20 @@ table(
     #figure(
         image("simulation_study/plots/boxplot_" + x + "_on_" + y + ".svg"),
         caption: [
-            Boxplots of the results for the case with varying effect of #eval(x, mode: "math") on #eval(y, mode: "math").
-            The lines indicates the true value of the parameter.
+            Boxplots of the estimates 
+            for each estimator in each parameter setting for
+            the cases with varying effects of #eval(x, mode: "math") on #eval(y, mode: "math").
+            The lines indicates the true value of the target parameter $Psi_tau^g (P)$.            
         ],
     )
 
     #figure(
         image("simulation_study/plots/se_boxplot_" + x + "_on_" + y + ".svg"),
         caption: [
-            Boxplots of the standard errors for the case with varying effect of #eval(x, mode: "math") on #eval(y, mode: "math").
-            The line indicates the empirical standard error of the estimates for each estimator.
+            Boxplots of the standard errors 
+            for each estimator (LTMLE and debiased ICE-IPCW) in each parameter setting
+            for the cases with varying effects of #eval(x, mode: "math") on #eval(y, mode: "math").
+            The lines indicates the empirical standard error of the estimates for each estimator.
         ],
     )
 ]
@@ -1717,31 +1748,32 @@ table(
 #figure(
     image("simulation_study/plots/boxplot_sample_size.svg"),
     caption: [
-        Boxplots of the results for the case with varying sample size.
-        The lines indicates the true value of the parameter.
+        Boxplots of the estimates 
+        for each estimator with varying sample size ($n in {100,200,500,1000}$).
+        The line indicates the true value of the target parameter $Psi_tau^g (P)$.            
     ],
 )
 
 #figure(
     image("simulation_study/plots/se_boxplot_sample_size.svg"),
     caption: [
-        Boxplots of the standard errors for the case with varying sample size.
-        The black line indicates the empirical standard error of the estimates for each estimator.
+        Boxplots of the standard errors with varying sample size ($n in {100,200,500,1000}$)
+        for the debiased ICE-IPCW estimator
+        The line indicates the empirical standard error of the estimates.
     ],
 )
 
-// == Discretizing time <sec:discretizing-time>
-// We briefly illustrate how to discretize the time horizon into $K$ intervals,
-// with time horizon $tau$, representing the usual longitudinal setting. 
-// Let $t_k = k times tau / K$ for $k = 1, dots, K$.
-
-// Put
-// $
-//     Y_k &= N^y (t_k), \
-//     L_k &= L (t_k), \
-//     A_k &= A (t_k).
-// $
-// Our data set then consists of
-// $
-//     O = ("age", covariate(0), treat(0), Y_1, L_1, A_1, dots, Y_(K-1), L_(K-1), A_(K-1), Y_K)
-// $
+== Discretizing time <sec:discretizing-time>
+We briefly illustrate how to discretize the data into discrete-time data
+consisting of $K$ time points with a target parameter that is the interventional absolute risk of a specified event
+within time horizon $tau$, representing the usual longitudinal setting.
+To do so, suppose that we have observed the processes $(L(t))_(t>=0)$, $(A(t))_(t>=0)$, and $(N^y (t))_(t>=0)$
+at the time points $t_k = k times tau / K$ for $k = 0, dots, K$. Then, we put
+$
+    Y_k &= N^y (t_k), \
+    L_k &= L (t_k), \
+    A_k &= A (t_k).
+$
+Our data set then consists of $(L_0, A_0, Y_1, L_1, A_1, dots, Y_(K-1), L_(K-1), A_(K-1), Y_K)$,
+which may then be applied with a discrete-time longitudinal causal inference estimator such
+as LTMLE (@ltmle).
