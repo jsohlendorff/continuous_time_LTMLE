@@ -105,7 +105,7 @@ fun_boxplot <- function(d, by = NULL, sample_size = FALSE, single_type_se=FALSE,
 
 ## Function to create a boxplot of the estimates and standard errors
 fun_boxplot_censoring <- function(d, by = NULL,
-                                  ln_width = 1,
+                                  ln_width = 0.8,
                                   cbbPalette = c("#000000", "#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7", "#F0E442")) {
   if (!is.null(by)) {
     ## delete values of by that do not have more than one value in d
@@ -146,7 +146,7 @@ fun_boxplot_censoring <- function(d, by = NULL,
     )
   r <- ggplot2::ggplot(data = d, aes(y = ice_ipcw_estimate, color = model_type)) +
     ggplot2::geom_boxplot() +
-    ggplot2::geom_hline(aes(yintercept = value, color = model_type), linewidth = ln_width) +
+    ggplot2::geom_hline(aes(yintercept = value), linewidth = ln_width) +
     ggplot2::theme_minimal(base_size = 13) + 
     ylab("ICE-IPCW Estimates") + 
     scale_color_manual(name = "Model type (ICE)", values = cbbPalette) +
