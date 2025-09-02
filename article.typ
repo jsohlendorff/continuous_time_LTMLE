@@ -527,6 +527,8 @@ We posit specific conditions in @thm:iceipcw similar to those that may be found 
 or local independence conditions (@roeysland2024; Definition 4).
 A simple, sufficient condition for this to hold is e.g., that $C perp history(K)$.
 Note that 1. is a slight strengthening of the orthogonal martingale condition.
+Note that this condition can be relaxed by applying the generalized Trotter formula #citep(<Gill1994>),
+but is not further considered here. 
 For example if the compensator of the (observed) censoring
 process is absolutely continuous with respect to the Lebesgue measure,
 then 1. of @thm:iceipcw is satisfied.
