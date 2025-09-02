@@ -1,5 +1,6 @@
 #import "template/definitions.typ": *
 #import "@preview/colorful-boxes:1.4.3": *
+#import "@preview/ctheorems:1.1.3": *
 #import "@preview/arkheion:0.1.0": arkheion, arkheion-appendices
 
 #set cite(form: "prose")
@@ -164,6 +165,8 @@ For technical reasons and ease of notation, we shall assume that the number of j
 for the processes $L$ and $A$ satisfies $N^a (tauend)+ N^ell (tauend) <= K - 1$ $P$-a.s. for some $K >= 1$.
 Let further $(N^y (t))_(t>=0)$ and the competing event $(N^d (t))_(t>=0)$
 denote the counting processes for the event of interest and the competing event, respectively.
+It is reasonable to also assume that $Delta N^y Delta N^x equiv 0$ for $x in {a, ell, d}$ and $Delta N^d Delta N^x equiv 0$ for $x in {a, ell, y}$;
+therefore $(N^y, N^d, N^a, N^ell)$ is a multivariate counting process in the sense of @andersenStatisticalModelsBased1993.
 
 Thus, we have observations from a jump process $alpha(t) = (N^a (t), A (t), N^ell (t), L(t), N^y (t), N^d (t))$,
 and the natural filtration $(cal(F)_t)_(t>=0)$ is given by $cal(F)_t = sigma (alpha(s) | s <= t) or cal(F)_0$.
@@ -265,6 +268,8 @@ but also to ensure that $history(k) = sigma(event(k), status(k), treat(k-1), cov
 and $cal(F)_0 = sigma(treat(0), covariate(0))$, where
 $history(k)$ stopping time $sigma$-algebra $history(k)$ -- representing the information up to and including the $k$'th event -- associated with
 stopping time $event(k)$.
+//In this article,
+//we do not consider the completed probability space.
 We will interpret $history(k)$ as a random variable instead of a $sigma$-algebra, whenever it is convenient to do so and also make the implicit assumption that whenever we condition on $history(k)$,
 we only consider the cases where $event(k) < oo$ and $status(k) in {a, ell}$.
 
@@ -299,13 +304,18 @@ where $N_t = sum_k bb(1) {event(k) <= t}$ is random variable denoting the number
 If we define the measure $P^(G^*)$ by the density, 
 $
     (dif P^(G^*))/(dif P) (omega) = W^g (tauend, omega), quad omega in Omega,
-$
+$ <eq:likelihoodratio>
 representing the interventional world in which the doctor assigns treatments according to the probability measure $pi^*_k (event(k), history(k-1))$ for $k = 0, dots, K-1$,
 then our target parameter is given by the mean interventional cumulative incidence function at time $tau$,
 $
     Psi_tau^(g) (P) = mean(P^(G^*)) [N^y (tau)] =  mean(P) [N^y (tau) W^g (tau)],
 $ 
 where $N^y (t) = sum_(k=1)^K bb(1) {event(k) <= t, status(k) =y}$.
+In order for @eq:likelihoodratio to define
+a likelihood ratio, we need to further assume that $angle.l M^a, M^x angle.r equiv 0$, $x= in {ell, y, d}$
+where $angle.l dot, dot angle.r$ denotes the quadratic covariation process (@andersenStatisticalModelsBased1993)
+such that $M^x (t) = N^x (t) - Lambda^x (t)$ is a $P$-$cal(F)_t$ martingale for $x in {a, ell, y, d}$.
+
 In our application, $pi_k^*$ may be chosen arbitrarily,
 so that, in principle, _stochastic_, _dynamic_, and _static_ treatment regimes
 can be considered. 
@@ -410,7 +420,8 @@ discuss the algorithm for the the ICE-IPCW estimator in @alg:iceipcw
 and later discuss the assumptions necessary for consistency of the ICE-IPCW estimator
 in @section:consistency.
 In the remainder of the paper,
-we will assume that $C != event(k)$ for all $k$ with probability 1.
+we will assume that $C != event(k)$ for all $k$ with probability 1 or
+alternatively $Delta N^c Delta N^x equiv 0$ for $x in {a, ell, y, d}$.
 
 We can now let $(eventcensored(k), statuscensored(k), treatcensored(k), covariatecensored(k))$ for $k=1, dots, K$ be the observed data given by 
 $
@@ -501,7 +512,8 @@ Now let $T^e$ further denote the (uncensored) terminal event time given by
 $
     T^e = inf_(t>0) {N^y (t) + N^d (t) = 1}.
 $
-and let $beta(t) = (alpha(t), N^c (t))$ be the fully observable multivariate jump process in $[0, tauend]$.
+and let $beta(t) = (alpha(t), N^c (t))$ be the fully observable multivariate jump process in $[0, tauend]$
+(note that we put $T^e = oo$ if $T^e > tauend$).
 We assume now that we are working in the canonical setting with $beta$ and not $alpha$.
 
 Then, we observe the trajectories of the process given by $t mapsto N^beta (t and C and T^e)$
@@ -514,8 +526,8 @@ have $history(k) = historycensored(k)$ if $statuscensored(k) != c$.
 We posit specific conditions in @thm:iceipcw similar to those that may be found the literature based on independent censoring (@andersenStatisticalModelsBased1993; Definition III.2.1)
 or local independence conditions (@roeysland2024; Definition 4).
 A simple, sufficient condition for this to hold is e.g., that $C perp history(K)$.
-
-Note that if compensator of the (observed) censoring
+Note that 1. is a slight strengthening of the orthogonal martingale condition.
+For example if the compensator of the (observed) censoring
 process is absolutely continuous with respect to the Lebesgue measure,
 then 1. of @thm:iceipcw is satisfied.
 Our second condition in @thm:iceipcw is a positivity condition,
@@ -525,10 +537,11 @@ ensuring that the conditional expectations are well-defined.
 
 #theorem[
     Assume that the compensator $Lambda^alpha$ of $N^alpha$ with respect to the filtration $cal(F)^beta_t$ is
-    also the compensator with respect to the filtration $cal(F)_t$.
+    also the compensator with respect to the filtration $cal(F)_t$..
     If
-    1. $Delta tilde(Lambda)_(k)^c (t | historycensored(k-1)) + sum_x Delta cumhazard(k, x, t) = 1 quad P-"a.s."=> Delta tilde(Lambda)_(k+1)^c (t | history(k-1)) = 1 quad P-"a.s." or sum_x Delta cumhazard(k, x, t) = 1 quad P-"a.s."$.
+    1. $Delta tilde(Lambda)_(k)^c (dot, historycensored(k-1)) Delta cumhazard(k, x, dot) equiv 0$ for $x in {a, ell, y, d}$ and $k in {1, dots, K}$.
     2. $tilde(S)^c (t | historycensored(k-1)) > eta$ for all $t in (0, tau]$ and $k in {1, dots, K}$ $P$-a.s. for some $eta > 0$.
+    
     Let
     $
         macron(Z)^a_(k, tau) (u) =
@@ -617,10 +630,10 @@ In practice, this means that we can essentially ignore the last $K_"lim" - K^*$ 
 however, the latter will come at the cost of some finite sample size bias.
 
 #theorem("Efficient influence function")[
-    Let for each $P in cal(M)$, $tilde(Lambda)^c_k (t | historycensored(k-1); P)$ be the corresponding
+    Let for each $P in cal(M)$, $tilde(Lambda)^c_k (t, historycensored(k-1); P)$ be the corresponding
     cause-specific cumulative hazard function for the observed censoring
     for the $k$'th event. Suppose that there is a universal constant $C^* > 0$
-    such that $tilde(Lambda)^c_k (tauend | historycensored(k-1); P) <= C^*$ for all $k = 1, dots, K$ and
+    such that $tilde(Lambda)^c_k (tauend, historycensored(k-1); P) <= C^*$ for all $k = 1, dots, K$ and
     every $P in cal(M)$.
     The Gateaux derivative is then given by
     #text(size: 7.5pt)[$
@@ -630,7 +643,7 @@ however, the latter will come at the cost of some finite sample size bias.
             & +  Qbar(0) (tau) - Psi_tau^g (P),
     $<eq:eif>]
     where $tilde(M)^c (t) = tilde(N)^c (t) - tilde(Lambda)^c (t)$. Here $tilde(N)^c (t) = bb(1) {C <= t, T^e > t} = sum_(k=1)^K bb(1) {eventcensored(k) <= t, statuscensored(k) = c}$ is the censoring counting process,
-    $tilde(Lambda)^c (t) = sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} tilde(Lambda)_k^c (t | historycensored(k-1))$ is the censoring compensator and $S (t | history(k-1)) = product_(s in (0, t]) (1 - sum_(x=a,ell,y,d) Lambda_k^x (dif s | history(k-1)))$.
+    $tilde(Lambda)^c (t) = sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} tilde(Lambda)_k^c (t, historycensored(k-1))$ is the censoring compensator and $S (t | history(k-1)) = product_(s in (0, t]) (1 - sum_(x=a,ell,y,d) Lambda_k^x (dif s, history(k-1)))$.
 ] <thm:eif>
 
 #proof[The proof is given in the Appendix (@section:proofeif).]
@@ -1290,83 +1303,89 @@ We apply @lemma:iceone and @lemma:survivalfactorgeneral in $(*)$ and so the theo
 
 #lemma[
     Assume independent censoring as in @thm:iceipcw.
+    Assume also $angle.l tilde(M)^c, tilde(M)^x angle.r = 0$ for $x=a,ell,y,d$ where $tilde(M)^c = tilde(N)^c - tilde(Lambda)^c$ and $tilde(M)^x = tilde(N)^x - Lambda^x$ are the martingales of the observed counting processes with respect to the filtration $cal(F)^tilde(beta)_t$.
     Then the left limit of the survival function factorizes on $(0, tau]$, i.e.,
     $
         &bb(1) {statuscensored(k-1)!=c, eventcensored(k-1) < t} tilde(S) (t-| historycensored(k-1)) \
             &= bb(1) {statuscensored(k-1)!=c, eventcensored(k-1) < t}product_(s in (0, t)) (1 - sum_(x=a,ell,y,d) cumhazard(k, x, dif s)) product_(s in (0, t)) (1 - tilde(Lambda)_k^c (dif t, historycensored(k-1)))
     $ 
-    if for all $t in (0, tau)$,
+    if
     $
-        &Delta tilde(Lambda)_(k)^c (t, historycensored(k-1)) + sum_x Delta cumhazard(k, x, t) = 1 quad P-"a.s." \
-            &qquad => Delta tilde(Lambda)_(k+1)^c (t, history(k-1)) = 1 quad P-"a.s." or sum_x Delta cumhazard(k, x, t) = 1 quad P-"a.s."
-    $ <eq:artificialAssumption>
+        Delta tilde(Lambda)_k^c (dot, historycensored(k-1)) Delta cumhazard(k, x, dot) equiv 0,
+    $ <eq:nonsimultaneous>
+    for $x=a,ell,y,d$.
 ] <lemma:survivalfactorgeneral>
 
 #proof[
-    Let $tilde(M)^x = tilde(N)^x - tilde(Lambda)^x$ (using independent censoring assumption) for $x=a,ell,d,y$ be the
-    martingales of the observed counting processes with respect to the filtration $cal(F)^tilde(beta)_t$,
-    and $tilde(M)^c = tilde(N)^c - tilde(Lambda)^c$ be the martingale of the observed censoring process with respect to the filtration $cal(F)^tilde(beta)_t$.
-    Consider the quadratic covariation process $angle.l dot, dot angle.r$ (@andersenStatisticalModelsBased1993).
-    Since censoring cannot occur at the same time as any of the other events (by our assumptions),
-    we have that 
-    //which by the no simultaneous jump condition of the observed censoring process and the observed other processes 
-    $
-        0=angle.l tilde(M)^c,sum_x tilde(M)^x angle.r_t = integral_0^t Delta tilde(Lambda)_c (s) sum_(x=a,ell,y,d) tilde(Lambda)_x (dif s),
-    $ <eq:covariationProof>
-    by p. 69 of @andersenStatisticalModelsBased1993 and (2.4.2) of @andersenStatisticalModelsBased1993.
-    Here $tilde(Lambda)_c$ and $Lambda_x$ are the compensators of the censoring process and the rest of the counting processes, respectively.
-    The latter, up to _indistinguishability_, by independent censoring is,
-    $
-        tilde(Lambda)_x (dif t) &= sum_(k=1)^K bb(1) {event(k-1) and C < t <= event(k) and C} cumhazard(k, x, dif t), \
-        tilde(Lambda)_c (dif t) &= sum_(k=1)^K bb(1) {event(k-1) and C < t <= event(k) and C} tilde(Lambda)_c (dif t, historycensored(k-1)).
-    $ <eq:compensatorProofLemma2>
-    Using @eq:covariationProof and @eq:compensatorProofLemma2, we have
-    $
-        0 &= sum_(k=1)^K bb(1) {event(k-1) and C< t <= event(k) and C} (integral_((event(k-1) and C, t]) Delta cumhazardcensored(k, c, s) (sum_(x=a,ell,y,d) cumhazard(k, x, dif s)) \
-           &qquad + sum_(j=1)^(k-1) integral_((event(j-1) and C, event(j) and C]) Delta tilde(Lambda)^c_j (s, historycensored(j-1)) (sum_(x=a,ell,y,d) cumhazard(k, x, dif s))),
-    $
-    so that $bb(1) {event(k-1) and C < t <= event(k) and C} integral_((event(k-1) and C, t]) Delta cumhazardcensored(k, c, s) (sum_(x=a,ell,y,d) cumhazard(k, x, dif s)) = 0$.
-    //since each term is non-negative.
-    Taking the (conditional) expectations on both sides given $historycensored(k-1)$ and using that $Delta cumhazardcensored(k, c, s) != 0$ for only a countable number of $s$'s, we have
-    $
-        bb(1) {event(k-1) and C < t} tilde(S) (t-| historycensored(k-1)) sum_(eventcensored(k) < s <= t) Delta cumhazardcensored(k, c, s) (sum_(x=a,ell,y,d) Delta cumhazard(k, x, s)) &= 0.
-    $ <eq:condProof>
-    //This means that the continuous part of the Lebesgue-Steltjes integral is zero, and thus the integral is evaluated to the sum in @eq:condProof.
-    It follows that for every $t$ with $tilde(S) (t|, cal(F)^tilde(beta)_(macron(T)_k)) > 0$ and $event(k-1) and C < t$, we have
-    $
-        sum_(eventcensored(k) < s <= t) Delta cumhazardcensored(k, c, s) (sum_(x=a,ell,y,d) Delta cumhazard(k, x, s)) &= 0.
-    $
+    // Let $tilde(M)^x = tilde(N)^x - Lambda^x$ (using independent censoring assumption) for $x=a,ell,d,y$ be the
+    // martingales of the observed counting processes with respect to the filtration $cal(F)^tilde(beta)_t$,
+    // and $tilde(M)^c = tilde(N)^c - tilde(Lambda)^c$ be the martingale of the observed censoring process with respect to the filtration $cal(F)^tilde(beta)_t$.
+    // Consider the quadratic covariation process $angle.l dot, dot angle.r$ (@andersenStatisticalModelsBased1993).
+    // By (2.4.2) of @andersenStatisticalModelsBased1993, we have
+    // //which by the no simultaneous jump condition of the observed censoring process and the observed other processes 
+    // $
+    //     0=angle.l tilde(M)^c,sum_x tilde(M)^x angle.r_t = integral_0^t Delta tilde(Lambda)_c (s) sum_(x=a,ell,y,d) Lambda^x (dif s).
+    // $ <eq:covariationProof>
+    // Here $tilde(Lambda)^x$ and $Lambda^x$ are the compensators of the censoring process and the rest of the counting processes, respectively.
+    // The latter, up to _indistinguishability_, by independent censoring is,
+    // $
+    //     tilde(Lambda)_x (dif t) &= sum_(k=1)^K bb(1) {event(k-1) and C < t <= event(k) and C} cumhazard(k, x, dif t), \
+    //     tilde(Lambda)_c (dif t) &= sum_(k=1)^K bb(1) {event(k-1) and C < t <= event(k) and C} tilde(Lambda)_c (dif t, historycensored(k-1)).
+    // $ <eq:compensatorProofLemma2>
+    // Using @eq:covariationProof and @eq:compensatorProofLemma2, we have
+    // $
+    //     0 &= sum_(k=1)^K bb(1) {event(k-1) and C< t <= event(k) and C} (integral_((event(k-1) and C, t]) Delta cumhazardcensored(k, c, s) (sum_(x=a,ell,y,d) cumhazard(k, x, dif s)) \
+    //        &qquad + sum_(j=1)^(k-1) integral_((event(j-1) and C, event(j) and C]) Delta tilde(Lambda)^c_j (s, historycensored(j-1)) (sum_(x=a,ell,y,d) cumhazard(k, x, dif s))),
+    // $
+    // so that $bb(1) {event(k-1) and C < t <= event(k) and C} integral_((event(k-1) and C, t]) Delta cumhazardcensored(k, c, s) (sum_(x=a,ell,y,d) cumhazard(k, x, dif s)) = 0$.
+    // //since each term is non-negative.
+    // Taking the (conditional) expectations on both sides given $historycensored(k-1)$ and using that $Delta cumhazardcensored(k, c, s) != 0$ for only a countable number of $s$'s, we have
+    // $
+    //     bb(1) {event(k-1) and C < t} tilde(S) (t-| historycensored(k-1)) sum_(eventcensored(k) < s <= t) Delta cumhazardcensored(k, c, s) (sum_(x=a,ell,y,d) Delta cumhazard(k, x, s)) &= 0.
+    // $ <eq:condProof>
+    // //This means that the continuous part of the Lebesgue-Steltjes integral is zero, and thus the integral is evaluated to the sum in @eq:condProof.
+    // It follows that for every $t$ with $tilde(S) (t|, cal(F)^tilde(beta)_(macron(T)_k)) > 0$ and $event(k-1) and C < t$, we have
+    // $
+    //     sum_(eventcensored(k) < s <= t) Delta cumhazardcensored(k, c, s) (sum_(x=a,ell,y,d) Delta cumhazard(k, x, s)) &= 0.
+    // $
     //This entails that $Delta tilde(Lambda)_(k+1)^c (t, historycensored(k-1))$ and $sum_x Delta cumhazard(k+1, x, t)$ cannot be both non-zero at the same time.
-    To keep notation for the rest of the proof brief, let $gamma (v) = Delta tilde(Lambda)_(k)^c (v |historycensored(k-1))$ and $zeta (v) = sum_x Delta cumhazard(k, x, v)$
+    To keep notation for the proof brief, let $gamma (v) = Delta tilde(Lambda)_(k)^c (v |historycensored(k-1))$ and $zeta (v) = sum_x Delta cumhazard(k, x, v)$
     and $s = macron(T)_(k-1)$.
 
     Recall that $tilde(S) (t | historycensored(k-1)) = product_(v in (s, t]) (1 - (sum_(x=a,ell,y,d) cumhazard(k, x, dif v) + tilde(Lambda)_k^c (dif v, historycensored(k-1))))$.
-    Then, we have shown that for $event(k-1) and C < t$
-    $
-        & bb(1) {product_(v in (s, t)) (1 - dif (zeta+gamma) (v) ) > 0} product_(v in (s, t)) (1 - dif (zeta+gamma) (v)) \
-            &= bb(1) {product_(v in (s, t)) (1 - dif (zeta+gamma) (v)) > 0} product_(v in (s, t)) (1 - dif zeta (v)) product_(v in (s, t]) (1 - dif gamma (v))
-    $ <eq:condProof2>
-    by splitting the product integral into the continuous and discrete parts,
     $
         product_(v in (s, t)) (1 - dif (zeta+gamma) (v)) &= exp(-beta^c) exp( -gamma^c) product_(v in (s, t) \ gamma(v) != gamma(v-) or zeta(v) != zeta(v-))  (1 - Delta ( zeta+gamma)) \
             &=^((*)) exp(-beta^c) exp( -gamma^c) product_(v in (s, t) \ gamma(v) != gamma(v-)) (1- Delta gamma) product_(v in (s, t) \ zeta(v) != zeta(v-)) (1 - Delta zeta) \
             &= product_(v in (s, t)) (1 - dif zeta (v) ) product_(v in (s, t)) (1 - dif gamma (v)),
     $
-    where we apply @eq:condProof under the assumption that $product_(v in (s, t)) (1 - dif (zeta+gamma) (v))>0$. 
-    So we just need to show that $product_(v in (s, t)) (1 - dif (zeta+gamma) (v)) = 0$ if and only if $ product_(v in (s, t)) (1 - dif zeta (v)) = 0$ or $product_(v in (s, t)) (1 - dif gamma (v)) = 0$.
-    Splitting the product integral into the continuous and discrete parts as before, we have
-    $
-        product_(v in (s, t)) (1 - dif (zeta+gamma) (v)) = 0 <=> exists u in (s, t) "s.t." Delta gamma (u) + Delta zeta (u) = 1 \
-        product_(v in (s, t)) (1 - dif gamma (v)) product_(v in (s, t)) (1-zeta (v)) = 0 <=> exists u in (s, t) "s.t." Delta gamma (u) = 1 or exists u in (s, t) "s.t." Delta zeta (u) = 1 \
-    $
-    from which the result follows by applying @eq:artificialAssumption and @eq:condProof2, since this shows that
-    $
-        &bb(1) {product_(v in (s, t)) (1 - dif (zeta+gamma) (v)) > 0} product_(v in (s, t)) (1 - dif zeta (v)) product_(v in (s, t]) (1 - dif gamma (v)) \
-        &=bb(1) {product_(v in (s, t)) (1 - dif zeta (v)) > 0 or product_(v in (s, t)) (1 - dif gamma (v)) > 0} product_(v in (s, t)) (1 - dif zeta (v)) product_(v in (s, t]) (1 - dif gamma (v)) \
-            &=product_(v in (s, t)) (1 - dif zeta (v)) product_(v in (s, t]) (1 - dif gamma (v)),
-    $
-    for $event(k-1) and C < t$
-    . //(*NOTE*: We already the seen implication of the first part to the second part since $Delta gamma (u) + Delta zeta (u) <= 1$; otherwise the survival function given in @thm:iceipcw would not be well-defined.)
+    where we apply @eq:nonsimultaneous in $(*)$.
+    // Then, we have that for $event(k-1) and C < t$
+    // $
+    //     & bb(1) {product_(v in (s, t)) (1 - dif (zeta+gamma) (v) ) > 0} product_(v in (s, t)) (1 - dif (zeta+gamma) (v)) \
+    //         &= bb(1) {product_(v in (s, t)) (1 - dif (zeta+gamma) (v)) > 0} product_(v in (s, t)) (1 - dif zeta (v)) product_(v in (s, t]) (1 - dif gamma (v))
+    // $ <eq:condProof2>
+    // by splitting the product integral into the continuous and discrete parts,
+    // $
+    //     product_(v in (s, t)) (1 - dif (zeta+gamma) (v)) &= exp(-beta^c) exp( -gamma^c) product_(v in (s, t) \ gamma(v) != gamma(v-) or zeta(v) != zeta(v-))  (1 - Delta ( zeta+gamma)) \
+    //         &=^((*)) exp(-beta^c) exp( -gamma^c) product_(v in (s, t) \ gamma(v) != gamma(v-)) (1- Delta gamma) product_(v in (s, t) \ zeta(v) != zeta(v-)) (1 - Delta zeta) \
+    //         &= product_(v in (s, t)) (1 - dif zeta (v) ) product_(v in (s, t)) (1 - dif gamma (v)),
+    // $
+    // where we apply @eq:nonsimultaneous 
+    // under the assumption that $product_(v in (s, t)) (1 - dif (zeta+gamma) (v))>0$. 
+    // So we just need to show that $product_(v in (s, t)) (1 - dif (zeta+gamma) (v)) = 0$ if and only if $ product_(v in (s, t)) (1 - dif zeta (v)) = 0$ or $product_(v in (s, t)) (1 - dif gamma (v)) = 0$.
+    // Splitting the product integral into the continuous and discrete parts as before, we have
+    // $
+    //     product_(v in (s, t)) (1 - dif (zeta+gamma) (v)) = 0 <=> exists u in (s, t) "s.t." Delta gamma (u) + Delta zeta (u) = 1 \
+    //     product_(v in (s, t)) (1 - dif gamma (v)) product_(v in (s, t)) (1-zeta (v)) = 0 <=> exists u in (s, t) "s.t." Delta gamma (u) = 1 or exists u in (s, t) "s.t." Delta zeta (u) = 1 \
+    // $
+    // from which the result follows by applying ? and @eq:condProof2, since this shows that
+    // $
+    //     &bb(1) {product_(v in (s, t)) (1 - dif (zeta+gamma) (v)) > 0} product_(v in (s, t)) (1 - dif zeta (v)) product_(v in (s, t]) (1 - dif gamma (v)) \
+    //     &=bb(1) {product_(v in (s, t)) (1 - dif zeta (v)) > 0 or product_(v in (s, t)) (1 - dif gamma (v)) > 0} product_(v in (s, t)) (1 - dif zeta (v)) product_(v in (s, t]) (1 - dif gamma (v)) \
+    //         &=product_(v in (s, t)) (1 - dif zeta (v)) product_(v in (s, t]) (1 - dif gamma (v)),
+    // $
+    // for $event(k-1) and C < t$.
+    //(*NOTE*: We already the seen implication of the first part to the second part since $Delta gamma (u) + Delta zeta (u) <= 1$; otherwise the survival function given in @thm:iceipcw would not be well-defined.)
 ]
 
 =
