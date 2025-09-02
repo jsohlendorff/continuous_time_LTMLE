@@ -312,7 +312,7 @@ $
 $ 
 where $N^y (t) = sum_(k=1)^K bb(1) {event(k) <= t, status(k) =y}$.
 In order for @eq:likelihoodratio to define
-a likelihood ratio, we need to further assume that $angle.l M^a, M^x angle.r equiv 0$, $x= in {ell, y, d}$
+a likelihood ratio, we need to further assume that $angle.l M^a, M^x angle.r equiv 0$, $x in {ell, y, d}$
 where $angle.l dot, dot angle.r$ denotes the quadratic covariation process (@andersenStatisticalModelsBased1993)
 such that $M^x (t) = N^x (t) - Lambda^x (t)$ is a $P$-$cal(F)_t$ martingale for $x in {a, ell, y, d}$.
 
@@ -527,7 +527,7 @@ We posit specific conditions in @thm:iceipcw similar to those that may be found 
 or local independence conditions (@roeysland2024; Definition 4).
 A simple, sufficient condition for this to hold is e.g., that $C perp history(K)$.
 Note that 1. is a slight strengthening of the orthogonal martingale condition.
-Note that this condition can be relaxed by applying the generalized Trotter formula #citep(<Gill1994>),
+Note that this condition can be relaxed by applying the generalized Trotter formula (@gill1994),
 but is not further considered here. 
 For example if the compensator of the (observed) censoring
 process is absolutely continuous with respect to the Lebesgue measure,

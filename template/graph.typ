@@ -64,18 +64,17 @@
             // Deal with the marks/events
             let event_list = ()
             for t in range(0, time_values.len()) {
-                event_list.push((name: "v" + str(t), value: time_values.at(t), mformat: $T_( #(t+1) )$))
+                event_list.push((name: "v" + str(t), value: time_values.at(t), mformat: $T_(( #(t+1) ))$))
             }
             for v in event_list {
                 line((v.value + cord_start.first(), -2*inc+cord_start.last()), (v.value+cord_start.first(),2*inc+cord_start.last()), name: v.name)
-        
-                if new_method {content(v.name + ".start", [#text(size: 12pt)[#v.mformat]], anchor: anchor)}
+                if new_method {content(v.name + ".end", [#text(size: 12pt)[#v.mformat]], anchor: anchor)}
             }
         }
         let eventfun(x, where: "start", anchor: "north",start_y: 0)={
             let event_list = ()
             for t in range(0, x.len()) {
-                event_list.push((name: "v" + str(t), value: x.at(t), mformat: $T_( #(t+1) )$))
+                event_list.push((name: "v" + str(t), value: x.at(t), mformat: $T_(( #(t+1) ))$))
             }
             for v in event_list {
                 line((v.value, -1.5+start_y), (v.value, 1.5+start_y), stroke: blue,name: v.name)
@@ -105,8 +104,8 @@
                     (pause,)
             }
             
-            group({time_grid((0,-1),(10,-1), grid1, anchor: "north-east")})
-            group({time_grid((0,1),(10,1), grid2, anchor: "north-east")})
+            group({time_grid((0,-1),(10,-1), grid1, anchor: "south")})
+            group({time_grid((0,1),(10,1), grid2, anchor: "south")})
         }
     })
 }

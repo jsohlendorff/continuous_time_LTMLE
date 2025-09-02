@@ -9,9 +9,9 @@
 #show: show-theorion
 #set cite(form: "prose")
 #show: university-theme.with(
-    aspect-ratio: "16-9",
+  aspect-ratio: "16-9",
    config-common(new-section-slide-fn: none),
-  // config-common(handout: true),
+  //config-common(handout: true),
   config-common(frozen-counters: (theorem-counter,)),  // freeze theorem counter for animation
   config-info(
     title: [Sequential Regressions for Efficient Continuous-Time Causal Inference],
@@ -23,7 +23,6 @@
 #set text(size: 18pt)
 //#set math.equation(numbering: "(1)")
 #let indep = $perp #h(-1em) perp$ // Independence relation
-#set heading(numbering: numbly("{1}.", default: "1.1"))
 
 #title-slide()
 
@@ -35,7 +34,10 @@
 #pause
 - Work on continuous-time longitudinal causal inference using
     - Targeted learning (e.g., TMLE @rytgaardContinuoustimeTargetedMinimum2022 or one-step estimation).
-    - Efficiency theory.
+#pause
+- Working on a continuous-time scale is motivated by:
+    - Real-world data often recorded in continuous time (e.g., electronic health records).
+    - Avoiding bias due to discretization (@ryalen2019additive @discretization2020guerra @kant2025irregular @sun2023role @adams2020impact @sofrygin2019targeted)
 
 = Notation and setup
 - We observe a càdlàg, jump process for the treatment $(A(t))_(t in [0, tau_"end"]) in {0, 1}$ and a covariate process $(L(t))_(t in [0, tau_"end"])$,
@@ -47,9 +49,10 @@
 - Assume that $Delta A (t) != 0$ only if $Delta N^a (t) != 0$ and $Delta L (t) != 0$ only if $Delta N^ell (t) != 0$ or $Delta N^a (t) != 0$.
   #pause It then seems reasonable to assume that $Delta N^a Delta N^ell equiv 0$
   and that, in fact, every counting process does not jump at the same time as any other counting process.
+  In addition, all considered counting processes have orthogonal martingales.
 #pause
 - The doctor may decide treatment based at times at which $Delta N^a (t) != 0$.
-  The intervention in which we are interested attempts to specify what this decision should be (or the probability of being treated),
+  The intervention in which we are interested specifies what this decision should be (or the probability of being treated),
   but does not naturally intervene on when the doctor decides to do so.
 #pause
 - Each individual has at most $K$ events in $[0, tau_"end"]$, i.e.,
@@ -71,38 +74,38 @@ $
 - $cal(F)^(beta)_t$ is the natural filtration for the processes including censoring.
 #pause
 - $cal(F)^(tilde(beta))_t$ is the observed filtration, i.e., the natural filtration stopped by death and censoring.
- 
-= Target parameter (without censoring)
-- Data format:
-$
-      O = (event(K), status(K), treat(K-1), covariate(K-1), event(K-1), status(K-1), dots, treat(0), covariate(0))
-$
 #pause
+- Data format (uncensored)
+$
+    (event(K), status(K), treat(K-1), covariate(K-1), event(K-1), status(K-1), dots, treat(0), covariate(0))
+$
+- Data format (censored)
+$
+    (eventcensored(K), statuscensored(K), treatcensored(K-1), covariatecensored(K-1), eventcensored(K-1), statuscensored(K-1), dots, treat(0), covariatecensored(0))
+$
+
+= Target parameter (without censoring)
 - Let $N_t^a (dot)$ denote the random measure associated with $N^a$ and $A (dot)$,
 $
       N_t^a (A) = sum_(k: status(k) = a) delta_((event(k), treat(k))) (A).
 $
   
 #pause
-- Interested on "intervening" on the compensator of $N^a (dot)$.
-  Generally, this can be written as
-  $Lambda^a_t (A) = pi_t (A) Lambda^a (t)$.
-#pause
-- The intervention defines a probability measure $P^(G^*)$, where
-  $N^a (dot)$ has compensator $pi_t^* (A) Lambda^a (t)$
-  for specified $pi_t^* (A)$.
+- Interested on "intervening" on the compensator of $N^a (dot)$, $Lambda^a_t (A) = pi_t (A) Lambda^a (t)$,
+  replacing the treatment mechanism $pi_t ({x}) = P (A (t) = x | cal(F)_(t-))$ with a specified treatment mechanism $pi_t^* (A)$.
+  We denote by $P^(G^*)$ the probability measure in which the $P^(G^*)$-$cal(F)_t$ compensator of $N^a (dot)$ is $pi_t^* (A) Lambda^a (t)$.
 #pause
 - Focus on the case $pi_t^* ({x}) equiv bb(1) {x = 1}$.
-
-== Target parameter (continued)
-
+#pause
 - We are then interested (are we?) in
 $
       Psi_tau (P) = bb(E)_(P) [(d P^(G^*)) / (d P) (tau) N^y (tau)] = bb(E)_(P^(G^*))[N^y (tau)]
 $
 // Hotly contested topic
-#pause
-- With $W^g (t) = (d P^(G^*)) / (d P) (t)$, @rytgaardContinuoustimeTargetedMinimum2022 claims that the following is the EIF:
+
+= Efficient influence function (@rytgaardContinuoustimeTargetedMinimum2022)
+
+- With $W^g (t) = (dif P^(G^*)) / (dif P) (t)$, @rytgaardContinuoustimeTargetedMinimum2022 claims that the following is the EIF:
 $ 
     phi_tau^*(P) &= mean(P^(G^*)) [N_y (tau) | cal(F)_0] - Psi_tau (P) \
         &+ integral_0^tau W^g (t -) (mean(P^(G^*)) [N_y (tau) | L(t), N^ell (t), cal(F)_(t-)] - mean(P^(G^*)) [N_y (tau) | N^ell (t), cal(F)_(t-)]) tilde(N)^ell (dif t) \
@@ -110,11 +113,12 @@ $
         &+ integral_0^tau W^g (t -) (mean(P^(G^*)) [N_y (tau) | Delta N^a (t) = 1, cal(F)_(t-)] - mean(P^(G^*)) [N_y (tau) | Delta N^a (t) = 0, cal(F)_(t-)]) tilde(M)^a (dif t) \
         &+ integral_0^tau W^g (t -) (1 - mean(P^(G^*)) [N_y (tau) | Delta N^y (t) = 0, cal(F)_(t-)]) tilde(M)^y (dif t).
 $
-
-== Sequential regressions
-- Here $tilde(M)^x (t) = tilde(N)^x (t) - Lambda^x (t)$ is the martingale for $tilde(N)^x (t) = N^x (t and C)$.
-- The above EIF suggests an estimation procedure based on sequential regressions.
 #pause
+- Here $tilde(M)^x (t) = tilde(N)^x (t) - Lambda^x (t)$ is the martingale for $tilde(N)^x (t) = N^x (t and C)$.
+
+== Efficient influence function (continued)
+//- The above EIF suggests an estimation procedure based on sequential regressions.
+
 - It is unclear how to estimate $mean(P^(G^*)) [N_y (tau) | Delta N^x (t), cal(F)_(t-)]$.
 #pause
 - Sequential regression not clear how to implement.
@@ -128,31 +132,9 @@ $
 
 == Illustration
 
-#timegrid(new_method: false, slides: true)
+#timegrid(new_method: false)
 #pause
 #timegrid(new_method: true)
-
-= Results (without censoring)
-#theorem[
-    #set align(left)
-    Let $H_k = (covariate(k), event(k), status(k), treat(k-1), covariate(k-1), event(k-1), status(k-1), dots, treat(0), covariate(0))$ be the history up to and including the $k$'th event,
-    but excluding the $k$'th treatment values for $k > 0$. For $k = 0$, let $H_0 = covariate(0)$.
-    Let $Qbar(K): (a_k, h_k) mapsto 0$ and recursively define for $k = K-1, dots, 1$,
-    $
-        Z^a_(k+1, tau) (u) &= bb(1) {event(k+1) <= u, event(k+1) < tau, status(k+1) = ell) Qbar(k+1) (tau, treat(k), H_(k+1)) \
-            &qquad+ bb(1) {event(k+1) <= u, event(k+1) < tau, status(k+1) = a) Qbar(k+1) (tau, 1, H_(k+1)) \
-            &qquad + bb(1) {event(k+1) <= u, status(k+1) = y), 
-    $ 
-    and
-    $
-        Qbar(k): (u, a_k, h_k) mapsto mean(P) [Z^a_(k+1, tau) (u) | treat(k) = a_k, H_k = h_k], 
-    $ <eq:ice>
-    for $u <= tau$.
-    Then,
-    $
-        Psi_tau^g (P) = mean(P) [Qbar(0) (tau, 1, covariate(0))].
-    $ <eq:ice-end>
-]
 
 = Independent censoring conditions
 Let
@@ -169,31 +151,31 @@ $
 - $tilde(Lambda)_(k)^c (t | historycensored(k-1))$ denotes the hazard measure of $(eventcensored(k), bb(1) {statuscensored(k) = c})$ given $historycensored(k-1)$
   and $cumhazard(k, x, t)$ denotes the hazard measure of $(event(k), bb(1) {status(k) = x})$ given $history(k-1)$ for $x in {a, ell, y, d}$.
 
-= Independent censoring conditions
-    Assume that the compensator $Lambda^alpha$ of $N^alpha$ with respect to the filtration $cal(F)^beta_t$ is
-    also the compensator with respect to the filtration $cal(F)_t$.
+== 
+#theorem[
+Assume that the compensator $Lambda^alpha$ of $N^alpha$ with respect to the filtration $cal(F)^beta_t$ is
+also the compensator with respect to the filtration $cal(F)_t$.
+Let $Qbar(K): (a_k, h_k) mapsto 0$.
 #pause
 If
-    1. $Delta tilde(Lambda)_(k)^c (t | historycensored(k-1)) + sum_x Delta cumhazard(k, x, t) = 1 quad P-"a.s."=> Delta tilde(Lambda)_(k+1)^c (t | history(k-1)) = 1 quad P-"a.s." or sum_x Delta cumhazard(k, x, t) = 1 quad P-"a.s."$.
+    1. $Delta tilde(Lambda)_(k)^c (dot, historycensored(k-1)) Delta cumhazard(k, x, dot) equiv 0$ for $x in {a, ell, y, d}$ and $k in {1, dots, K}$.
     2. $tilde(S)^c (t | historycensored(k-1)) > eta$ for all $t in (0, tau]$ and $k in {1, dots, K}$ $P$-a.s. for some $eta > 0$.
 #pause 
-    Then with $h_k = (a_k, l_k, t_k, d_k, dots, a_0, l_0)$,
+    With $h_k = (a_k, l_k, t_k, d_k, dots, a_0, l_0)$,
     $
-        bb(1) {d_(1) in {a, ell}, dots, d_(k) in {a, ell}} Qbar(k) (u, a_k, h_k) = mean(P) [macron(Z)^a_(k+1, tau) (u) | treatcensored(k) = a_k, macron(H)_(k) = h_k].
+        Qbar(k): (u, a_k, h_k) mapsto mean(P) [macron(Z)^a_(k+1, tau) (u) | treatcensored(k) = a_k, macron(H)_(k) = h_k],
     $ <eq:iceipcw>
-    Hence $Psi_tau^g (P)$ is identifiable from the observed data.
+    for $u <= tau$, it holds that 
+    $
+        Psi_tau^g (P) = mean(P) [Qbar(0) (tau, 1, covariate(0))].
+    $ <eq:ice-end>
+]
 
 == Rewriting the efficient influence function 
 
-- $tilde(M)^c (t) = tilde(N)^c (t) - tilde(Lambda)^c (t)$. Here $tilde(N)^c (t) = bb(1) {C <= t, T^e > t} = sum_(k=1)^K bb(1) {eventcensored(k) <= t, statuscensored(k) = c}$ is the censoring counting process.
-#pause
-- $S (t | history(k-1)) = product_(s in (0, t]) (1 - sum_(x=a,ell,y,d) Lambda_k^x (dif s | history(k-1)))$.
-#pause
-- Suppose that there is a universal constant $C^* > 0$
-  such that $tilde(Lambda)^c_k (tauend | historycensored(k-1); P) <= C^*$ for all $k = 1, dots, K$ and
-  every $P in cal(M)$.
-== Rewriting the efficient influence function
-    The Gateaux derivative is then given by
+Let $tilde(M)^c (t) = tilde(N)^c (t) - tilde(Lambda)^c (t)$
+and $S (t | history(k-1)) = product_(s in (0, t]) (1 - sum_(x=a,ell,y,d) Lambda_k^x (dif s | history(k-1)))$.
+Under suitable regularity conditions, the efficient influence function can be written as 
     $
         phi_tau^* (P) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1)))   \
             & times bb(1) {statuscensored(k-1) in {ell, a}, eventcensored(k-1) < tau} ((macron(Z)^a_(k,tau) (tau)- Qbar(k-1) (tau)) \
@@ -202,23 +184,24 @@ If
     $
 
 
-== Practical considerations
+= Practical considerations/perspectives
 - We consider a one-step estimator based on the EIF.
 #pause
 - Simulation studies demonstrate favorable performance of the proposed procedure -- lower bias than discrete-time procedures
   and good coverage of confidence intervals.
 - However, variance estimation is challenging due to the censoring martingale term.
-
-== Perspectives
-- Estimating the martingale term
+#pause
+- Estimating the censoring martingale term
     - Undersmoothing of the estimation of the censoring compensator to avoid estimation altogether.
     - Using a machine learning methods that can handle multivariate outcomes.
 #pause
+- For simplicity, empirical process conditions and remainder term conditions are not considered in this work (work in progress).
+#pause
 - Using a TMLE approach instead of one-step approach $=>$ better because we want estimates in $[0, 1]$.
 #pause
-- Identifiability, i.e., does the target parameter have a causal interpretation? 
+- Does the target parameter have a causal interpretation? (Identifiability)
 #pause
-- Similar ideas for other target parameters, e.g., recurrent events, restricted mean survival time, etc.
+- Other target parameters (e.g., recurrent events, restricted mean survival time, etc.).
 
 = Appendix 
 #bibliography("references/ref.bib",style: "apa")
