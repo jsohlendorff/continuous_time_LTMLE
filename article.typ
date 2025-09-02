@@ -966,7 +966,7 @@ Within our framework, we defined:
 - $N^a$ the counting process counting drug purchases.
 - $N^ell$ the counting process for the measurement dates
   at which the HbA1c was measured.
-- $L(t)$ denote the (latest) HbA1c measurement at time $t$ and with the baseline HbA1c measurement at time zero (age and sex).
+- $L(t)$ denote the (latest) HbA1c measurement at time $t$ and with the baseline HbA1c measurement at time zero (age, sex, education level, income and duration of diabetes at baseline).
 - For each treatment regime (say SGLT2), we defined $A (0) = 1$ if 
   the patient redeemed a prescription for SGLT2 inhibitors first.
   For $t>0$, we defined $A (t) = 1$ if the patient has not purchased DPP4 inhibitors
