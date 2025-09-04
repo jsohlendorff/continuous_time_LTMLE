@@ -178,14 +178,14 @@ if $event(k) = oo$ or $status(k-1) in {y, d,c }$ for the empty mark.
 
 We let $treat(k)$ ($covariate(k)$) be the treatment (covariate values) at the $k$'th event. //, i.e., $treat(k) = treat(k-1)$ if $status(k) = ell$.
 If $event(k-1) = oo$, $status(k-1) in {y, d, c}$, or $status(k) in {y, d, c}$, we let $treat(k) = Ø$ and $covariate(k) = Ø$.
-To the process $(alpha(t))_(t>=0)$, we associate the corresponding random measure $N^alpha$ on $(RR_+ times ({a, ell, y, d, c} times {0,1} times cal(L)))$ by
+To the process $(alpha(t))_(t>=0)$, we associate the corresponding random measure $N$ on $(RR_+ times ({a, ell, y, d, c} times {0,1} times cal(L)))$ by
 
 $
-    N^alpha (dif (t, x, a, ell)) = sum_(k: event(k) < oo) delta_((event(k), status(k), treat(k), covariate(k))) (dif (t, x, a, ell)),
+    N (dif (t, x, a, ell)) = sum_(k: event(k) < oo) delta_((event(k), status(k), treat(k), covariate(k))) (dif (t, x, a, ell)),
 $
 where $delta_x$ denotes the Dirac measure on $(RR_+ times ({a, ell, y, d, c} times {0,1} times cal(L)))$.
-It follows that the filtration $(cal(F)_t)_(t>=0)$ is the natural filtration of the random measure $N^alpha$ (e.g., Theorem 2.5.10 of @last1995marked).
-Thus, the random measure $N^alpha$ carries the same information as the stochastic process $(alpha(t))_(t>=0)$.
+It follows that the filtration $(cal(F)_t)_(t>=0)$ is the natural filtration of the random measure $N$ (e.g., Theorem 2.5.10 of @last1995marked).
+Thus, the random measure $N$ carries the same information as the stochastic process $(alpha(t))_(t>=0)$.
 This will be critical for dealing with right-censoring.
 
 We observe $O= (event(K), status(K), treat(K-1), covariate(K-1), event(K-1), status(K-1), dots, treat(0), covariate(0)) ~ P in cal(M)$ where
@@ -512,13 +512,13 @@ Now let $T^e$ further denote the (uncensored) terminal event time given by
 $
     T^e = inf_(t>0) {N^y (t) + N^d (t) = 1}.
 $
-and let $beta(t) = (alpha(t), N^c (t))$ be the fully observable multivariate jump process in $[0, tauend]$
+and let $beta = (alpha, N^c)$ be the fully observable multivariate jump process in $[0, tauend]$
 (note that we put $T^e = oo$ if $T^e > tauend$).
-We assume now that we are working in the canonical setting with $beta$ and not $alpha$.
+Its natural filtration is denoted $cal(F)^"full"_t = sigma(beta(s) | s <= t) or cal(F)_0$.
 
-Then, we observe the trajectories of the process given by $t mapsto N^beta (t and C and T^e)$
+Thus, we observe the trajectories of the process given by $[0, tauend] in.rev t mapsto beta (t and C and T^e)$
 and the observed filtration is given by 
-$cal(F)_t^tilde(beta) = sigma(beta(s and C and T^e) | s <= t)$.
+$macron(cal(F))_t = sigma(beta(s and C and T^e) | s <= t) or cal(F)_0$.
 //The observed data is then given by @eq:observedata.
 Abusing notation a bit, we see that for observed histories, we
 have $history(k) = historycensored(k)$ if $statuscensored(k) != c$.
@@ -538,7 +538,7 @@ ensuring that the conditional expectations are well-defined.
 //satisfied and not of interest. 
 
 #theorem[
-    Assume that the compensator $Lambda^alpha$ of $N^alpha$ with respect to the filtration $cal(F)^beta_t$ is
+    Assume that the compensator $Lambda$ of $N$ with respect to the filtration $cal(F)^"full"_t$ is
     also the compensator with respect to the filtration $cal(F)_t$..
     If
     1. $Delta tilde(Lambda)_(k)^c (dot, historycensored(k-1)) Delta cumhazard(k, x, dot) equiv 0$ for $x in {a, ell, y, d}$ and $k in {1, dots, K}$.
@@ -1222,7 +1222,7 @@ $
 We apply @lemma:iceone and @lemma:survivalfactorgeneral in $(*)$ and so the theorem is complete. 
 
 #lemma[
-    Assume that the compensator $Lambda^alpha$ of $N^alpha$ with respect to the filtration $cal(F)^beta_t$ is
+    Assume that the compensator $Lambda$ of $N$ with respect to the filtration $cal(F)^"full"_t$ is
     also the compensator with respect to the filtration $cal(F)_t$. Let
     $densitycovl(t, dot, k)$ is the probability measure for the covariate value given $status(k) = ell, event(k) = t$, and $history(k-1)$
     and $densitycova(t, dot, k)$ is the probability measure for the covariate value given $status(k) = a, event(k) = t$, and $history(k-1)$.
@@ -1246,9 +1246,9 @@ We apply @lemma:iceone and @lemma:survivalfactorgeneral in $(*)$ and so the theo
     $
 ] <lemma:iceone>
 #proof[
-    A version of the compensator of the random measure $N^alpha$ with respect to the filtration $(cal(F)^alpha_t)_(t >= 0)$ can be given by Theorem 4.2.2 (ii) of @last1995marked,
+    A version of the compensator of the random measure $N$ with respect to the filtration $(cal(F)_t)_(t >= 0)$ can be given by Theorem 4.2.2 (ii) of @last1995marked,
     $
-        Lambda^alpha (dif (t, m, a, l)) &= K'((L(0), A(0)), N^alpha, t, dif (m, a, l)) V' ((A(0),L(0)), N^alpha, dif t)
+        Lambda (dif (t, m, a, l)) &= K'((L(0), A(0)), N, t, dif (m, a, l)) V' ((A(0),L(0)), N, dif t)
     $ 
     for some kernel $K'$ from ${0, 1} times cal(L) times N_bold(X) times RR_+$ to $bold(X)$
     and some predictable kernel $V'$ from ${0, 1} times cal(L) times N_bold(X) times RR_+$ to $RR_+ times bold(X)$.
@@ -1256,14 +1256,14 @@ We apply @lemma:iceone and @lemma:survivalfactorgeneral in $(*)$ and so the theo
     Here $N_bold(X)$ denotes the canonical point process space with mark space $bold(X)$ (@last1995marked).
     In this case, $bold(X) = cal(A) times cal(L) times {a, ell, d, y, c}$, where
     $cal(A) = {0, 1}$ and $cal(L) subset.eq RR^d$.
-    Under the local independence condition, this is also the compensator for $N^alpha$ with respect to the filtration $(cal(F)^beta_t)_(t >= 0)$.
+    Under the local independence condition, this is also the compensator for $N^alpha$ with respect to the filtration $(cal(F)^"full"_t)_(t >= 0)$.
         
-    Similarly, we find a compensator of the process $N^c$ with respect to the filtration $(cal(F)^beta_t)_(t>=0)$ given by
+    Similarly, we find a compensator of the process $N^c$ with respect to the filtration $(cal(F)^"full"_t)_(t>=0)$ given by
     $
         Lambda^c (dif (t, m, a, l)) &=  delta_((c, Ø, Ø)) (dif (m, a, l)) V'' ((A(0),L(0)), N^beta, dif t) 
     $
     for some kernel $V''$ from ${0, 1} times cal(L) times N_bold(X) times RR_+$ to $RR_+ times bold(X)$.
-    We now find the _canonical_ compensator of $N^beta (dif (t, m, a, l)) = bb(1) {m in {a, ell, d, y}} N^alpha (dif (t, m, a, l)) + delta_((c, Ø, Ø)) (m, a, l)) N^c (dif t)$,
+    We now find the _canonical_ compensator of $N^beta (dif (t, m, a, l)) = bb(1) {m in {a, ell, d, y}} N (dif (t, m, a, l)) + delta_((c, Ø, Ø)) (m, a, l)) N^c (dif t)$,
     given by
     $
         rho ((l_0, a_0), phi^beta, dif (t, m, a, l)) &= bb(1) {m in {a, ell, d, y}} K'((l_(0), a_(0)), phi^alpha, t, dif (m, a, l)) V' ((a_(0),l_(0)), phi^alpha, dif t) \
@@ -1273,7 +1273,7 @@ We apply @lemma:iceone and @lemma:survivalfactorgeneral in $(*)$ and so the theo
     //so it is by definition the canonical compensator.
     By construction,
     $
-        &V'' ((treat(0), covariate(0)), (N^(beta))^(event(k-1)), dif t) = tilde(Lambda)_k^c (dif t, cal(F)^beta_event(k-1)), \ \
+        &V'' ((treat(0), covariate(0)), (N^(beta))^(event(k-1)), dif t) = tilde(Lambda)_k^c (dif t, cal(F)^"full"_event(k-1)), \ \
             &K'((l_(0), a_(0)), (N^(beta))^(event(k-1)), t, dif (m, a, l)) V' ((a_(0),l_(0)), (N^(beta))^(event(k-1)), dif t) = \
             &sum_(x=a,ell,d,y) psi_(k,x) (t, d(a,l), history(k-1)) Lambda_k^x (dif t, history(k-1)),
     $ <eq:compensatorpart>
@@ -1285,14 +1285,14 @@ We apply @lemma:iceone and @lemma:survivalfactorgeneral in $(*)$ and so the theo
     A(T_((k))^*), L(T_((k))^*)$ denote the event times and marks of the random measure $N^beta$.
     Note that $T^*_((k+1)) = eventcensored(k+1)$ whenever $event(k) < C$.
     Let $T_(S,1)$ denote the first event time of $N^beta$ after $T_(S,0):=S$,
-    where $S$ is a stopping time with respect to the filtration $(cal(F)^beta_t)_(t >= 0)$.
+    where $S$ is a stopping time with respect to the filtration $(cal(F)^"full"_t)_(t >= 0)$.
     With $S:= T^e and C and event(k)$, we
     have $T_(S, 0) := S = T^e and C and event(k)$. It also holds that
     $T_(S, 0) = eventcensored(k)$ whenever $statuscensored(k-1) in.not {y,d,c}$.
     Using Theorem 4.3.8 of @last1995marked, it therefore holds that
     $
-        &bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} P( (macron(T)_(k+1), macron(Delta)_(k+1), A(macron(T)_(k+1)), L(macron(T)_(k+1))) in dif (t, m, a,l) | cal(F)^(tilde(beta))_(eventcensored(k)))\
-        &=bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} P( (T_(S,1)^*, Delta_(S,1)^*, A(T_(S,1)^*), L(T_(S,1)^*)) in dif (t, m, a,l) | cal(F)^(tilde(beta))_(eventcensored(k)))\
+        &bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} P( (macron(T)_(k+1), macron(Delta)_(k+1), A(macron(T)_(k+1)), L(macron(T)_(k+1))) in dif (t, m, a,l) | historycensored(k-1)) \
+            &=bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} P( (T_(S,1)^*, Delta_(S,1)^*, A(T_(S,1)^*), L(T_(S,1)^*)) in dif (t, m, a,l) | historycensored(k-1)) \
             &=^((*)) bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} P( (T_(S,1)^*, Delta_(S,1)^*, A(T_(S,1)^*), L(T_(S,1)^*)) in dif (t, m, a,l) | cal(F)^(beta)_(T_(S,0))) \
             &=^("Thm. 4.3.8") bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} bb(1) {T_(S,0) < t} \
             &quad times product_(s in (T_(S,0), t)) (1 - rho ((L(0),A(0)), (N^(beta))^(T_(S,0)), dif s, {a,y,l,d,y} times {0,1} times cal(L))) rho ((L(0),A(0)), (N^(beta))^(T_(S,0)), dif (t, m, a, l)) \

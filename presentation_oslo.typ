@@ -16,7 +16,8 @@
   config-info(
     title: [Sequential Regressions for Efficient Continuous-Time Causal Inference],
     author: [Johan Sebastian Ohlendorff],
-    date: datetime.today(),
+    institution: [University of Copenhagen],  
+    //date: datetime.today(),
   ),
 )
 
@@ -80,11 +81,11 @@ $
 $
 #meanwhile
 
-- $cal(F)_t$: natural filtration for the processes without the censoring.
+- $cal(F)_t$: natural filtration for the processes without censoring
 #pause
-- $cal(F)^("full")_t$: natural filtration for the processes including censoring.
+- $cal(F)^("full")_t$: natural filtration for the processes including censoring
 #pause
-- $macron(cal(F))_t$: observed (natural) filtration.
+- $macron(cal(F))_t$: observed (natural) filtration
 #pause
 - Data format (uncensored)
 $
@@ -173,7 +174,7 @@ $
 - Define recursively, for $k = K, dots, 0$,
 $
         macron(Z)^a_(k, tau) (u) =
-        1/(tilde(S)^c (eventcensored(k) - | treatcensored(k-1), macron(H)_(k-1))) &(bb(1) {eventcensored(k) <= u,eventcensored(k) < tau, statuscensored(k) = a}
+        colblue(1/(tilde(S)^c (eventcensored(k) - | treatcensored(k-1), macron(H)_(k-1)))) &(bb(1) {eventcensored(k) <= u,eventcensored(k) < tau, statuscensored(k) = a}
         Qbar(k) (1, macron(H)_k) \
             &quad+ bb(1) {eventcensored(k) <= u, eventcensored(k) < tau, statuscensored(k) = ell} Qbar(k) (treatcensored(k), macron(H)_k) \
             &quad+ bb(1) {eventcensored(k) <= u, statuscensored(k) = y}),
@@ -233,7 +234,7 @@ If
   - Empirical process & remainder term conditions not yet addressed (ongoing work)  
   - Consider TMLE instead of one-step $=>$ ensures estimates in $[0,1]$
   - Apply flexible, data-adaptive estimators for nuisance parameters
-  - Clarify causal interpretation of target parameter (identifiability)  
+  - #text(fill: red, [Clarify causal interpretation of target parameter (identifiability)])
 //  - Explore alternative parameters of interest (e.g., recurrent events, restricted mean survival time)  
 
 = Appendix 

@@ -75,7 +75,7 @@
   if ind == [0] or ind == 0 [
     $cal(F)_0$
   ] else [
-      $cal(F)^tilde(beta)_(eventcensored(#ind))$
+      $macron(cal(F))_(eventcensored(#ind))$
   ]
 }
 
