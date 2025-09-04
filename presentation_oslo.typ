@@ -70,44 +70,6 @@
 - *Bounded events*
   - Each individual has at most $K$ events in $[0, tau_"end"]$
 
-// - _Càdlàg, jump processes:_
-//   - Treatment: $A(t) in {0,1}$.
-//   - Covariates: $L(t) in RR^d$, observed on $[0, tau_"end"]$.
-
-// - **Counting processes**  
-//   - \( N_x, \; x \in \{a, \ell, y, c\} \) (treatment, covariate, death, censoring)  
-//   - Observed until censoring time \( C \)  
-//   - Terminal event time: \( T_e \)
-
-// - **Assumptions**
-//   - Jumps in \( A(t) \) / \( L(t) \) only when corresponding \( N_a \) / \( N_\ell \) jump  
-//   - No simultaneous jumps (orthogonal martingales)
-
-// - **Treatment decisions**
-//   - Doctor chooses treatment at jump times of \( N_a \)  
-//   - Intervention specifies decision, not timing
-
-// - **Bounded events**
-//   - Each individual has at most \( K \) events in \([0, \tau_{\text{end}}]\)
-
-// - We observe a càdlàg, jump process for the treatment $(A(t))_(t in [0, tau_"end"]) in {0, 1}$ and a covariate process $(L(t))_(t in [0, tau_"end"])$,
-//   such that $L (t)$ almost surely takes values some finite subset of $bb(R)^d$.
-// #pause
-// - Assume that we are observe the counting processes $N^x$, $x=a,ell,y$ (treatment, covariate, death, censoring)
-//   up to a right-censoring time $C$ which is distinct from all event times with probability 1. Terminal event time is denoted by $T^e$.
-// #pause
-// - Assume that $Delta A (t) != 0$ only if $Delta N^a (t) != 0$ and $Delta L (t) != 0$ only if $Delta N^ell (t) != 0$ or $Delta N^a (t) != 0$.
-//   #pause It then seems reasonable to assume that $Delta N^a Delta N^ell equiv 0$
-//   and that, in fact, every counting process does not jump at the same time as any other counting process.
-//   In addition, all considered counting processes have orthogonal martingales.
-// #pause
-// - The doctor may decide treatment based at times at which $Delta N^a (t) != 0$.
-//   The intervention in which we are interested specifies what this decision should be (or the probability of being treated),
-//   but does not naturally intervene on when the doctor decides to do so.
-// #pause
-// - Each individual has at most $K$ events in $[0, tau_"end"]$, i.e.,
-//   $sum_(x=a,y,c,ell) N^x (tau_"end") <= K$ almost surely.
-
 = Filtrations
 $
     cal(F)_t &= sigma((A (s),L (s),N^a (s),N^ell (s),N^y (s)): s <= t) or sigma((A (0),L (0))) \
@@ -153,24 +115,6 @@ $
 - *Target parameter*
   - $Psi_tau (P) = bb(E)_(P) [(dif P^(G^*)) / (dif P) (tau) N^y (tau)] = bb(E)_(P^(G^*))[N^y (tau)], tau < tau_"end"$
 
-// - Let $N_t^(a *)$ denote the random measure associated with $N^a$ and $A$,
-// $
-//     N_t^(a *) = sum_(k: status(k) = a) delta_((event(k), treat(k))).
-// $
-  
-// #pause
-// - Interested on "intervening" on the compensator of $N^(a *)$, $Lambda^(a *)_t (dot)= pi_t (dot) Lambda^a (t)$,
-//   replacing the treatment mechanism $pi_t ({x}) = P (A (t) = x | cal(F)_(t-))$ with a specified treatment mechanism $pi_t^* (A)$.
-//   We denote by $P^(G^*)$ the probability measure in which the $P^(G^*)$-$cal(F)_t$ compensator of $N^a (dot)$ is $pi_t^* (A) Lambda^a (t)$.
-// #pause
-// - Focus on the case $pi_t^* ({x}) equiv bb(1) {x = 1}$.
-// #pause
-// - We are then interested (are we?) in
-// $
-//       Psi_tau (P) = bb(E)_(P) [(d P^(G^*)) / (d P) (tau) N^y (tau)] = bb(E)_(P^(G^*))[N^y (tau)]
-// $
-// // Hotly contested topic
-
 = Efficient influence function (@rytgaardContinuoustimeTargetedMinimum2022)
 - *Efficient influence function (EIF)* for $Psi_tau (P)$ in the nonparametric model is given by
   (@rytgaardContinuoustimeTargetedMinimum2022)
@@ -186,6 +130,7 @@ $
 == Efficient influence function (continued)
 //- The above EIF suggests an estimation procedure based on sequential regressions.
 - To work within the targeted learning framework, we need the efficient influence function.  
+#pause
 - @rytgaardContinuoustimeTargetedMinimum2022 propose sequential regressions for estimating terms in $phi_tau^* (P)$.
 #pause
 - Implementation is unclear and may require thousands of iterations (iterate through all unique event times in the sample).  
@@ -196,19 +141,6 @@ $
   - Censored versions:  
     $historycensored(k) = sigma(treatcensored(j), covariatecensored(j), eventcensored(j), statuscensored(j): j <= k) or sigma((A(0), L(0)))$
 
-// - To apply targeted learning, we would need to be able to compute the efficient influence function.
-// - @rytgaardContinuoustimeTargetedMinimum2022 provide a sequential regression procedure for the
-//   estimation of these terms (e.g. $mean(P^(G^*)) [N_y (tau) | Delta N^x (t), cal(F)_(t-)]$).
-// #pause
-// - However, it is unclear how to implement this procedure in practice,
-//   and further the procedure maay requires 1000s of iterative steps.
-// //  - Assume that $n=1000$; if all registrations in the sample are unique and each person has 10 events on average, then we need to fit 10,000 regressions.
-// //- Hard to work with $cal(F)_(t-)$. 
-// #pause
-// - My idea: Can we work with $history(k) = sigma(treat(j), covariate(j), event(j), status(j): j <= k) or sigma((A(0), L(0)))$ instead
-//   and more generally 
-//   and regress back on that information instead of $cal(F)_(t-)$?
-
 = Illustration of sequential regressions
 #align(center)[
     @rytgaardContinuoustimeTargetedMinimum2022:
@@ -218,22 +150,22 @@ $
     #timegrid2(new_method: true)
 ]
 
-= Consistency of ICE-IPCW procedure under right-censoring
+= Consistency of ICE-IPCW (right-censoring)
 - *Propensity score*:
-  - $densitytrt(t, k)$: $P(treat(k) = 1 | covariate(k), event(k) = t, status(k) = a, history(k-1))$.
+  - $densitytrt(t, k)$: $P(treat(k) = 1 | covariate(k), event(k) = t, status(k) = a, history(k-1))$
 - *Hazard measures*:
-  - $tilde(Lambda)_(k)^c (t | historycensored(k-1))$: hazard measure for $(eventcensored(k), bb(1) {statuscensored(k) = c})$ given $historycensored(k-1)$.
-  - $cumhazard(k, x, t)$: hazard measure of $(event(k), bb(1) {status(k) = x})$ given $history(k-1)$ for $x in {a, ell, y, d}$.
+  - $tilde(Lambda)_(k)^c (t | historycensored(k-1))$: hazard measure for $(eventcensored(k), bb(1) {statuscensored(k) = c})$ given $historycensored(k-1)$
+  - $cumhazard(k, x, t)$: hazard measure of $(event(k), bb(1) {status(k) = x})$ given $history(k-1)$ for $x in {a, ell, y}$
 #pause
-- $product$: product integral (@gill1990survey).
+- $product$: product integral (@gill1990survey)
 #pause
 - *Survival functions*:
-  - $tilde(S)^c (t | historycensored(k-1)) = product_(s in (eventcensored(k-1), t]) (1 - d tilde(Lambda)_(k)^c (s | historycensored(k-1)))$.
-  - $S (t | history(k-1)) = product_(s in (event(k-1), t]) (1 - sum_(x=a,ell,y,d) d Lambda_k^x (s | history(k-1)))$.
+  - $tilde(S)^c (t | historycensored(k-1)) = product_(s in (eventcensored(k-1), t]) (1 - d tilde(Lambda)_(k)^c (s | historycensored(k-1)))$
+  - $S (t | history(k-1)) = product_(s in (event(k-1), t]) (1 - sum_(x=a,ell,y,d) d Lambda_k^x (s | history(k-1)))$
 #pause
 - *Random measure*:
-  - $N = sum_k delta_((event(k), status(k), treat(k), covariate(k)))$.
-  - Turns out that natural filtration of $N$ is $cal(F)^"full"_t$.
+  - $N = sum_k delta_((event(k), status(k), treat(k), covariate(k)))$
+  - Turns out that natural filtration of $N$ is $cal(F)^"full"_t$ (Chapter 2.5 of @last1995marked)
     
 == Independent censoring conditions 
 - Let $Qbar(K): (a_k, h_k) mapsto 0$
@@ -244,20 +176,20 @@ $
         1/(tilde(S)^c (eventcensored(k) - | treatcensored(k-1), macron(H)_(k-1))) &(bb(1) {eventcensored(k) <= u,eventcensored(k) < tau, statuscensored(k) = a}
         Qbar(k) (1, macron(H)_k) \
             &quad+ bb(1) {eventcensored(k) <= u, eventcensored(k) < tau, statuscensored(k) = ell} Qbar(k) (treatcensored(k), macron(H)_k) \
-            &quad+ bb(1) {eventcensored(k) <= u, statuscensored(k) = y}).
+            &quad+ bb(1) {eventcensored(k) <= u, statuscensored(k) = y}),
 $
 and
 $
-   Qbar(k): (u, a_k, h_k) mapsto mean(P) [macron(Z)^a_(k+1, tau) (u) | treatcensored(k) = a_k, macron(H)_(k) = h_k],
+   Qbar(k): (u, a_k, h_k) mapsto mean(P) [macron(Z)^a_(k+1, tau) (u) | treatcensored(k) = a_k, macron(H)_(k) = h_k], quad u <= tau
 $
-where $h_k = (a_k, l_k, t_k, d_k, dots, a_0, l_0)$ for $u <= tau$.
+where $h_k = (a_k, l_k, t_k, d_k, dots, a_0, l_0)$.
 
 == ICE-IPCW procedure: Consistency
 #theorem[
     Assume that the $P$-$cal(F)^"full"_t$ compensator $Lambda$ of $N$ is also the $P$-$cal(F)_t$ compensator of $N$.
 #pause
 If
-    1. $Delta tilde(Lambda)_(k)^c (dot, historycensored(k-1)) Delta cumhazard(k, x, dot) equiv 0$ for $x in {a, ell, y, d}$ and $k in {1, dots, K}$.
+    1. $Delta tilde(Lambda)_(k)^c (dot, historycensored(k-1)) Delta cumhazard(k, x, dot) equiv 0$ for $x in {a, ell, y}$ and $k in {1, dots, K}$.
     2. $tilde(S)^c (t | historycensored(k-1)) > eta$ for all $t in (0, tau]$ and $k in {1, dots, K}$ $P$-a.s. for some $eta > 0$.
 #pause 
     It holds that 
@@ -297,32 +229,12 @@ If
     - Undersmooth estimation of censoring compensator
     - Machine learning (e.g., neural networks) methods for multivariate outcomes (to $Qbar(k) (u)$)
 #pause
-- *Simplifications*  
+- *Next steps*
   - Empirical process & remainder term conditions not yet addressed (ongoing work)  
-#pause
-- *Next steps*  
   - Consider TMLE instead of one-step $=>$ ensures estimates in $[0,1]$
   - Apply flexible, data-adaptive estimators for nuisance parameters
-//  - Clarify causal interpretation of target parameter (identifiability)  
+  - Clarify causal interpretation of target parameter (identifiability)  
 //  - Explore alternative parameters of interest (e.g., recurrent events, restricted mean survival time)  
-
-// - We consider a one-step estimator based on the EIF.
-// #pause
-// - Simulation studies demonstrate favorable performance of the proposed procedure -- lower bias than discrete-time procedures
-//   and good coverage of confidence intervals.
-// - However, variance estimation is challenging due to the censoring martingale term.
-// #pause
-// - Estimating the censoring martingale term
-//     - Undersmoothing of the estimation of the censoring compensator to avoid estimation altogether.
-//     - Using a machine learning methods that can handle multivariate outcomes.
-// #pause
-// - For simplicity, empirical process conditions and remainder term conditions are not considered in this work (work in progress).
-// #pause
-// - Using a TMLE approach instead of one-step approach $=>$ better because we want estimates in $[0, 1]$.
-// #pause
-// - Does the target parameter have a causal interpretation? (Identifiability)
-// #pause
-// - Other target parameters (e.g., recurrent events, restricted mean survival time, etc.).
 
 = Appendix 
 #bibliography("references/ref.bib",style: "apa")
