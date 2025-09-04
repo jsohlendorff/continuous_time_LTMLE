@@ -23,7 +23,8 @@
 #set text(size: 18pt)
 //#set math.equation(numbering: "(1)")
 #let indep = $perp #h(-1em) perp$ // Independence relation
-//#let colred(x) = text(fill: red, $#x$)
+#let colred(x) = text(fill: red, $#x$)
+#let colblue(x) = text(fill: blue, $#x$)
 #set heading(numbering: "1.")
 
 #title-slide()
@@ -109,11 +110,11 @@
 
 = Filtrations
 $
-    cal(F)_t &= sigma(A (s),L (s),N^a (s),N^ell (s),N^y (s)): s <= t) \
+    cal(F)_t &= sigma((A (s),L (s),N^a (s),N^ell (s),N^y (s)): s <= t) or sigma((A (0),L (0))) \
     #pause
-    cal(F)^("full")_t &= sigma((A (s),L (s),N^a (s),N^ell (s),N^y (s), N^c (s)): s <= t) \
+    cal(F)^("full")_t &= sigma((A (s),L (s),N^a (s),N^ell (s),N^y (s), N^c (s)): s <= t) or sigma((A (0),L (0))) \
     #pause
-    macron(cal(F))_t &= sigma((A (s and C),L (s and C),N^a (s and C),N^ell (s and C), N^y (s and C), N^c (s and T^e)): s <= t)
+    macron(cal(F))_t &= sigma((A (s and C),L (s and C),N^a (s and C),N^ell (s and C), N^y (s and C), N^c (s and T^e)): s <= t) or sigma((A (0),L (0)))
 $
 #meanwhile
 
@@ -134,10 +135,10 @@ $
 
 = Target parameter (no censoring)
 - *Random measure*
-  $N_t^(a *)$: random measure linked to $N_a$ and $A$ given by
-  $
+  $N_t^(a *)$: random measure associated to $N_a$ and $A$ given by
+$
       N_t^(a *) = sum_(k: status(k) = a) delta_((event(k), treat(k)))
-  $
+$
 #pause
 - *Intervention*
   - Modify compensator: $Lambda^(a *)_t (dot)= pi_t (dot) Lambda^a (t)$
@@ -210,11 +211,11 @@ $
 
 = Illustration of sequential regressions
 #align(center)[
-@rytgaardContinuoustimeTargetedMinimum2022:
-#timegrid2(new_method: false)
-ICE-IPCW (@sequentialRegressionOhlendorff):
-#pause
-#timegrid2(new_method: true)
+    @rytgaardContinuoustimeTargetedMinimum2022:
+    #timegrid2(new_method: false)
+    #pause
+    ICE-IPCW (@sequentialRegressionOhlendorff):
+    #timegrid2(new_method: true)
 ]
 
 = Consistency of ICE-IPCW procedure under right-censoring
@@ -229,6 +230,11 @@ ICE-IPCW (@sequentialRegressionOhlendorff):
 - *Survival functions*:
   - $tilde(S)^c (t | historycensored(k-1)) = product_(s in (eventcensored(k-1), t]) (1 - d tilde(Lambda)_(k)^c (s | historycensored(k-1)))$.
   - $S (t | history(k-1)) = product_(s in (event(k-1), t]) (1 - sum_(x=a,ell,y,d) d Lambda_k^x (s | history(k-1)))$.
+#pause
+- *Random measure*:
+  - $N = sum_k delta_((event(k), status(k), treat(k), covariate(k)))$.
+  - Turns out that natural filtration of $N$ is $cal(F)^"full"_t$.
+    
 == Independent censoring conditions 
 - Let $Qbar(K): (a_k, h_k) mapsto 0$
 #pause
@@ -248,8 +254,7 @@ where $h_k = (a_k, l_k, t_k, d_k, dots, a_0, l_0)$ for $u <= tau$.
 
 == ICE-IPCW procedure: Consistency
 #theorem[
-Assume that the compensator $Lambda^alpha$ of $N^alpha$ with respect to the filtration $cal(F)^beta_t$ is
-also the compensator with respect to the filtration $cal(F)_t$.
+    Assume that the $P$-$cal(F)^"full"_t$ compensator $Lambda$ of $N$ is also the $P$-$cal(F)_t$ compensator of $N$.
 #pause
 If
     1. $Delta tilde(Lambda)_(k)^c (dot, historycensored(k-1)) Delta cumhazard(k, x, dot) equiv 0$ for $x in {a, ell, y, d}$ and $k in {1, dots, K}$.
@@ -269,9 +274,9 @@ If
 
 #theorem[Under suitable regularity conditions, $phi_tau^* (P)$ can be rewritten as
     $
-        phi_tau^* (P) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1)))   \
+        phi_tau^* (P) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) colblue(1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1))))   \
             & times bb(1) {statuscensored(k-1) in {ell, a}, eventcensored(k-1) < tau} ((macron(Z)^a_(k,tau) (tau)- Qbar(k-1) (tau)) \
-                &quad + integral_(eventcensored(k - 1))^(tau and eventcensored(k)) (Qbar(k-1) (tau)-Qbar(k-1) (u)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u- | historycensored(k-1))) tilde(M)^c (dif u))\
+                &quad colblue(+ integral_(eventcensored(k - 1))^(tau and eventcensored(k)) (Qbar(k-1) (tau)-Qbar(k-1) (u)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u- | historycensored(k-1))) tilde(M)^c (dif u)))\
             & +  Qbar(0) (tau) - Psi_tau^g (P).
     $
 ]
