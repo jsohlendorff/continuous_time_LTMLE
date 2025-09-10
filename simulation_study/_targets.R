@@ -22,6 +22,9 @@ try(setwd("/projects/biostat01/people/snf991/phd/continuous_time_LTMLE/simulatio
   silent = TRUE
 )
 
+## Run without crew (locally)
+without_crew <- FALSE
+
 ## Set up the crew controller
 if (dir.exists("/projects/biostat01/people/snf991/phd/continuous_time_LTMLE/simulation_study")) {
   controller <- crew_controller_slurm(
@@ -35,9 +38,11 @@ if (dir.exists("/projects/biostat01/people/snf991/phd/continuous_time_LTMLE/simu
       verbose = TRUE
     ) # start on markov
   )
-} else {
+} else if (!without_crew) {
   controller <- crew_controller_local(workers = 8,
                                       options_local = crew_options_local(log_directory = "log"))
+} else {
+  controller <- NULL
 }
 
 tar_option_set(
@@ -68,8 +73,10 @@ batches <- 100 ## number of batches to run in parallel
 n_fixed <- 1000 ## number of observations for each simulation
 n_true_value <- 8000000 ## number of observations for the true value estimation
 
-cue_true_value <- tar_cue("never") ## do not run the true value calculation again
+cue_true_value <- tar_cue("never") ## always ## do not run the true value calculation again
 cue_simulations <- tar_cue("never") ## do not run the simulations again
+
+censoring_martingale_simulations <- FALSE
 
 ## Main simulation study; vary coefficients
 ## Here, we vary the effects as in the main document.
@@ -393,6 +400,31 @@ sim_censored_non_conservative <- tar_map(
   )
 )
 
+list_non_conservative <- list(
+  sim_censored_non_conservative,
+  tar_combine(
+    sim_merge_censored_non_conservative,
+    list(sim_censored_non_conservative[["results_censored_non_conservative"]], sim_and_true_value[["true_value"]]),
+    command = combine_results_and_true_values(!!!.x, .id = "method", by = by_vars)
+  ),
+  tar_target(
+    table_censored_non_conservative,
+    {
+      get_tables(
+        sim_merge_censored_non_conservative,
+        by = c(
+          by_vars, "baseline_rate_C", "model_type", "conservative", "grid_size",
+          "cens_mg_method"
+        )
+      )
+    }
+  ),
+  tar_target(
+    boxplot_censored_non_conservative,
+    fun_boxplot_censoring_non_conservative(sim_merge_censored_non_conservative, by = by_vars)
+  )
+)
+
 ## vary prevalence
 sim_and_true_value_prevalence <- tar_map(
   values = data.frame(baseline_rate_Y = c(0.00005, 0.0001, 0.0002)),
@@ -541,7 +573,7 @@ sim_sample_size <- tar_map(
 )
 
 # ######################################################################
-list(
+list_targets <- list(
   ## drop out plot (varying intercept; see how well method performs under practical positivity violation conditions)
   tar_target(
     dropout_plot_vary,
@@ -733,32 +765,6 @@ list(
     fun_boxplot_censoring(sim_merge_censored, by = c(by_vars, "conservative"))
   ),
   
-  sim_censored_non_conservative,
-  ## merge the true values with the debiased results for the censored case (non-conservative)
-  tar_combine(
-    sim_merge_censored_non_conservative,
-    list(sim_censored_non_conservative[["results_censored_non_conservative"]], sim_and_true_value[["true_value"]]),
-    command = combine_results_and_true_values(!!!.x, .id = "method", by = by_vars)
-  ),
-  # ## calculate coverage for the censored case (non-conservative)
-  tar_target(
-     table_censored_non_conservative,
-     {
-       get_tables(
-         sim_merge_censored_non_conservative,
-         by = c(
-           by_vars, "baseline_rate_C", "model_type", "conservative", "grid_size",
-           "cens_mg_method"
-         )
-       )
-     }
-   ),
-  # ## boxplot the debiased results (censored, non-conservative)
-   tar_target(
-     boxplot_censored_non_conservative,
-     fun_boxplot_censoring_non_conservative(sim_merge_censored_non_conservative, by = by_vars)
-   ),
-
   ## vary dropout
   sim_and_true_value_dropout,
   tar_combine(
@@ -792,4 +798,10 @@ list(
     fun_boxplot(sim_merge_sample_size, by = "n", single_type_se = TRUE, sample_size = TRUE)
   )
 )
+
+if (censoring_martingale_simulations) {
+  c(list_targets, list_non_conservative)
+} else {
+  list_targets
+}
 # ######################################################################

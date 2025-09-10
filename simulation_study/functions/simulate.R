@@ -385,7 +385,6 @@ simulate_simple_continuous_time_data <- function(n,
                                                  ),
                                                  max_fup = 900,
                                                  visitation_interval = 360,
-                                                 visitation_sd = 5,
                                                  discretize_age = FALSE,
                                                  no_competing_events = FALSE,
                                                  uncensored = FALSE,
@@ -447,13 +446,15 @@ simulate_simple_continuous_time_data <- function(n,
       max_event_reached_A <- people_atrisk$n_A_events >= limit_event_A
       a_time <- rep(NA, nrow(people_atrisk))
       a_time[max_event_reached_A] <- Inf
-      a_time[treatment_event & !max_event_reached_A] <- visitation_interval +
-        rnorm(nrow(people_atrisk[treatment_event & !max_event_reached_A]), 0, visitation_sd)
-      a_time[!treatment_event & !max_event_reached_A] <- rexponential_proportional_hazard(
-        n = nrow(people_atrisk[!treatment_event & !max_event_reached_A]),
-        rate = baseline_rate_list$A,
-        eta = 0
-      )
+      a_time[treatment_event & !max_event_reached_A] <- visitation_interval 
+      # Not compatible with positivity:
+      # rnorm(nrow(people_atrisk[treatment_event & !max_event_reached_A]), 0, visitation_sd) 
+      # a_time[!treatment_event & !max_event_reached_A] <- rexponential_proportional_hazard(
+      #   n = nrow(people_atrisk[!treatment_event & !max_event_reached_A]),
+      #   rate = baseline_rate_list$A,
+      #   eta = 0
+      # )
+      a_time[!treatment_event & !max_event_reached_A] <- 3 
 
       max_event_reached_L <- people_atrisk$n_L_events >= limit_event_L
       l_time <- rep(Inf, nrow(people_atrisk))

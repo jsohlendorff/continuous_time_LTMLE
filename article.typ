@@ -699,13 +699,10 @@ To simulate the time-varying data, we generate data according to the following i
 $
     Lambda^(alpha) (dif (t, x, a, ell)) &= bb(1) {t <= T^e and tauend} (delta_(y) (x) lambda^y exp(beta^y_"age" "age" + beta_A^y A(t-) + beta^y_L L(t -)) \
     &quad + bb(1) {N^ell (t -) = 0} delta_(ell) (x) delta_(1) (ell) lambda^ell exp(beta^ell_"age" "age" + beta_A^ell A(t-)) \
-        &quad + bb(1) {N^a (t -) = 0} delta_(a) (x) ((1-bb(1) {N^ell (t -) = 0}) gamma_0 exp(gamma_"age" "age") + bb(1) {N^ell (t -) = 0} h_z (t; 360) ) \
+        &quad + bb(1) {N^a (t -) = 0} delta_(a) (x) (bb(1) {N^ell (t -) = 1} delta_((T^ell + 3)) (dif t) + bb(1) {N^ell (t -) = 0} delta_(360) (dif t) ) \
         &qquad times (delta_1 (a) pi (t | cal(F)_(t-)) + delta_0 (a) (1 - pi (t |cal(F)_(t-))))),
 $ <eq:simulationintensity>
-where $h_z (t; 360; 5; epsilon)$ is the hazard function for a 
-Normal distribution with mean $360$ and standard deviation $5$,
-truncated from some small value $epsilon > 0$
-and $pi (t | cal(F)_(t-)) = "expit" (alpha_0 + alpha_"age" "age" + alpha_L L(t-))$
+where $pi (t | cal(F)_(t-)) = "expit" (alpha_0 + alpha_"age" "age" + alpha_L L(t-))$
 is the treatment assignment probability.
 Our intervention is $pi^* (t | cal(F)_(t-)) = 1$
 which corresponds to sustained treatment throughout the follow-up period.
@@ -714,11 +711,9 @@ for $N^ell$ and $N^y$ correspond to multiplicative intensity models.
 The case $x=a$ requires a bit more explanation:
 The visitation intensity depends on whether the patient has had a stroke or not.
 If the patient has not had a stroke, the model specifies
-that the patient can be expected to visit the doctor
-within 360 days (i.e., the patient is scheduled). If the patient has had a stroke, the visitation intensity
-is multiplicative, depending on age, and reflects the fact
-that a patient, who has had a stroke, is expected to visit the doctor
-within the near future.
+that the patient visits the doctor
+at 360'th day (i.e., the patient is scheduled). If the patient has had a stroke,
+the patient visits the doctor in 3 days (i.e., an acute visit).
 
 In the uncensored setting,
 we vary the treatment effect on the outcome
@@ -762,14 +757,14 @@ Three types of models are considered for the estimation of the counterfactual pr
 
 #figure(
     table(
-        columns: (20%, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto),
+        columns: (20%, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto),
         inset: 10pt,
         align: horizon,
         table.vline(x: 1),
-        [*Parameters*], [$alpha_(0)$], [$alpha_( "age")$], [$alpha_("L")$], [$beta^y_("age")$], [$beta^ell_("age")$], [$beta^y_(A)$], [$beta^ell_(A)$], [$beta^y_("L")$], [$lambda^y$], [$lambda^ell$], [$gamma_"age"$], [$gamma_0$],
-        [*Values \ (varying \ effects)*], [0.3], [0.02], [*-0.2*, \ #underline[0], \ 0.2], [0.025], [0.015], [*-0.3*, \ 0, \ 0.3], [*-0.2*, \ 0, \ 0.2], [-0.5, \ #underline([0]), \ *0.5*], [0.0001], [0.001], [0], [0.005],
-        [*Values \ (strong \ confounding)*], [0.3], [0.02], [-0.6, 0.6], [0.025], [0.015], [-0.8, 0.8], [-0.2], [1], [0.0001], [0.001], [0], [0.005],
-        [*Values \ (censoring)*], [0.3], [0.02], [-0.6, 0.6], [0.025], [0.015], [-0.8, 0.8], [-0.2], [1], [0.0001], [0.001], [0], [0.005]
+        [*Parameters*], [$alpha_(0)$], [$alpha_( "age")$], [$alpha_("L")$], [$beta^y_("age")$], [$beta^ell_("age")$], [$beta^y_(A)$], [$beta^ell_(A)$], [$beta^y_("L")$], [$lambda^y$], [$lambda^ell$], 
+        [*Values \ (varying \ effects)*], [0.3], [0.02], [*-0.2*, \ #underline[0], \ 0.2], [0.025], [0.015], [*-0.3*, \ 0, \ 0.3], [*-0.2*, \ 0, \ 0.2], [-0.5, \ #underline([0]), \ *0.5*], [0.0001], [0.001], 
+        [*Values \ (strong \ confounding)*], [0.3], [0.02], [-0.6, 0.6], [0.025], [0.015], [-0.8, 0.8], [-0.2], [1], [0.0001], [0.001], 
+        [*Values \ (censoring)*], [0.3], [0.02], [-0.6, 0.6], [0.025], [0.015], [-0.8, 0.8], [-0.2], [1], [0.0001], [0.001], 
     ),
     caption: [
         Simulation parameters for the simulation studies.
@@ -797,8 +792,8 @@ consistently matches or outperforms both the naive Cox method and the LTMLE esti
 
 Interestingly, when strong time-varying 
 confounding is present, LTMLE estimates are biased, but the mean squared errors
-are about the same as for the debiased ICE-IPCW estimator,
-likely owing to the fact that LTMLE has generally smaller standard errors.
+are about the same as for the debiased ICE-IPCW estimator.
+//likely owing to the fact that LTMLE has generally smaller standard errors.
 This reflects a bias–variance trade-off between continuous-time and discrete-time approaches.
 // The standard errors obtained from
 // the debiased procedure also appear slightly le biased
