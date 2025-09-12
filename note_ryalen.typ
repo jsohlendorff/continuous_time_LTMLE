@@ -74,6 +74,8 @@ $
 We are interested in the counterfactual mean outcome $mean(P) [tilde(Y)_t]$,
 where $(tilde(Y)_t)_(t >= 0)$ is the counterfactual outcome process
 of $Y := N^y$ under the intervention that sets treatment to $1$ at all visitation times.
+This process is assumed to satisfy the definition of counterfactual outcome processes
+of @ryalenPotentialOutcomes with their Example 4. 
 Note the different exchangeability condition compared to @ryalenPotentialOutcomes,
 as @ryalenPotentialOutcomes expresses exchangeability through the counting process $bb(1) {tau^A <= dot}$.
 //this appears to me to be a weaker condition (?).
@@ -92,28 +94,45 @@ $
     pi^*_t &= sum_k bb(1) {event(k-1) < t < event(k)} pi^*_(event(k)) (history(k-1)) = 1.
 $
 
-// - *Might be relevant:* https://pmc.ncbi.nlm.nih.gov/articles/PMC3857358/pdf/nihms529556.pdf
+*NOTES:*
+- Does the exchangeability condition simplify in the case of $cal(n)^a$ predictable in $P$-$cal(F)_t$
+  as specified in @ryalenPotentialOutcomes; as noted in their article the two likelihood ratios
+  turn out two be the same in the case of orthogonal martingales.
 
+  Suppose that $cal(n)^a$ is predictable
+  so that $N^(a 1) (dif t)$ is predictable
+  in that case the first exchangeability condition is trivial;
+  Pål's condition only grants exchangeability for
+  $N^(a 1) (t and tau^A) $ is predictable;
+  I think that this is the sufficient for the argument to go through. 
+
+- Positivity holds for example if $pi_t$ is bounded away from $0$ and $1$
+  and $N_t$ has bounded number of jumps in the study period. 
+
+// UI (Uniform integrability) implies zeta (t) = integral ... is uniformly integrable martingale,
+// but why is integral_0^t tilde(Y)_(t) zeta (dif s) a martingale (generally a martingale)
+
+// If there are two solutions (mine and theirs), they may be an infinite number of solutions
+// due to convexity
+//
+// Definition of Potential outcome process
+// 
 #theorem[
-Define
-$
-    zeta (t, m, a) := bb(1) {m=y} + bb(1) {m=a} (bb(1) {a = 1})/(pi_t)
-$
 If _all_ of the following conditions hold:
-- *Consistency*: $tilde(Y)_(t) bb(1) {tau^a > dot} = Y_(t) bb(1) {tau^a > dot} quad P-"a.s."$
+- *Consistency*: $tilde(Y)_(dot) bb(1) {tau^a > dot} = Y_(dot) bb(1) {tau^a > dot} quad P-"a.s."$
 - *Exchangeability*:
   Define $cal(H)_t := cal(F)_t or sigma(tilde(Y))$.
   The $P$-$cal(F)_t$ compensator for $N^a$ is also the $P$-$cal(H)_t$ compensator.
-- *Positivity*: Let $N^(a x) (dif t) := N^a (dif (t) times {x})$ for $x in {1, 0}$.
+- *Positivity*: Let $N^(a x) (dif t) := N^a (dif t times {x})$ for $x in {1, 0}$.
   $
       W (t) := product_(j = 1)^(N_t) (((pi^*_(event(j)) (history(j-1))) / (pi_(event(j)) (history(j-1))))^(bb(1) {treat(k) = 1}) ((1-pi^*_(event(j)) (history(j-1))) / (1-pi_(event(j)) (history(j-1))))^(bb(1) {treat(k) = 0}))^(bb(1) {status(j) = a}) 
   $ <eq:rytgaard>
   fulfills that
   $
-      integral_0^t W(s -) ( pi^*_(s) / pi_(s) - 1) N^(a 1) (dif s),
-      integral_0^t W(s -) ((1-pi^*_(s)) / (1-pi_(s)) - 1) N^(a 0) (dif s),
+      integral_0^t W(s -) ( pi^*_(s) / pi_(s) - 1) M^(a 1) (dif s) + integral_0^t W(s -) ((1-pi^*_(s)) / (1-pi_(s)) - 1) M^(a 0) (dif s),
   $
-  are zero mean square-integrable, $P$-$cal(F)_t$-martingales.
+  is a square-integrable, $P$-$cal(F)_t$-martingale.
+  
 Then,
 $
     mean(P) [tilde(Y)_t] = mean(P) [Y_t W (t)]
@@ -145,6 +164,29 @@ $
         mean(P) [Y_t W (t)] &=^(*) mean(P) [tilde(Y)_t W (t)] = mean(P) [tilde(Y)_t] + mean(P) [integral_0^t tilde(Y)_(t) zeta (dif s)] = mean(P) [tilde(Y)_t],
     $
     where in $*$ we used consistency by noting that $W (t) != 0$ if and only if $tau^a > t$.
+]
+
+#theorem[
+    Let $bb(N)_t^a = bb(1) {tau^A <= t}$.
+    The exchangeability condition of @thm:identifiabilitymartingale implies the one of @ryalenPotentialOutcomes, e.g.,
+    $bb(L)_t := Lambda_(t and tau^A)^a$ is both the $P$-$cal(F)_(t and tau^A)$ compensator 
+    and the $P$-$cal(H)_(t and tau^A)$ compensator of $bb(N)_t^a$.
+]
+
+#proof[
+  Consider some localizing sequence $S_n$ for $M^(a 0)$.
+  We note that $bb(N)_t^a = N^a ((0,t and tau^A], {0})$.
+  Apply optional sampling to $M_(dot and S_n)^(a 0)$ at $S := tau^A and S_n and s$ and $T := t and S_n and tau^A$ to see that
+  $
+      mean(P) [M_(t and S_n and tau^A)^(a 0) | cal(F)_(s and tau^A)] = M_(s and S_n and tau^A)^(a 0) quad P-"a.s."
+  $
+  If exchangeability for $Lambda^(a 0)$ holds (given in
+  @thm:identifiabilitymartingale),
+  then the same argument applies with $cal(H)_t$ instead of $cal(F)_t$, so that
+  $
+      mean(P) [M_(t and S_n and tau^A)^(a 0) | cal(H)_(s and tau^A)] = M_(s and S_n and tau^A)^(a 0) quad P-"a.s."
+  $
+  This is the desired result.
 ]
 
 #bibliography("references/ref.bib",style: "apa")
