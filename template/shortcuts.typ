@@ -156,7 +156,7 @@
     }
 }
 
-#let densitytrt(time, which)= $pi_(#which) (#time, covariate(#which), history(#which - 1))$
+#let densitytrt(time, which) = $pi_(#which) (#time, covariate(#which), history(#which - 1))$
 #let densitytrtnext(time, which) = $pi_(#which+1) (#time, covariate(#which + 1), treat(#which), H_(#which))$
 #let densitytrtcensored(time, which) = $pi_(#which) (#time, covariatecensored(#which), historycensored(#which - 1))$
 #let densitycova(time, arg, which) = $mu^a_(#which) (#time, #arg, history(#which - 1))$

@@ -1,6 +1,6 @@
 #import "@preview/fletcher:0.5.1": node, edge, diagram
 // #import "template.typ": conf
-#import "template/shortcuts.typ": *
+#import "template/definitions.typ": *
 #import "@preview/arkheion:0.1.0": arkheion
 #import "@preview/ctheorems:1.1.3": *
 #let definition = thmbox("definition", "Definition", inset: (x: 1.2em, top: 1em))
@@ -24,11 +24,6 @@
 }
 
 #show: thmrules.with(qed-symbol: $square$)
-
-= Potential outcomes
-
-== Potential outcomes (martingale approach)
-
 Let us consider the setting of @ryalenPotentialOutcomes
 and their regularity conditions.
 Specifically, we will work with an intervention
@@ -75,75 +70,14 @@ we also assume that we work with a version of the compensator
 such that $Lambda ({t} times {y, a} times {a_0, a_1}) < oo$ for all $t > 0$.
 We may generally also work with a compensator $Lambda$ that fulfills conditions (10.1.11)-(10.1.13) of @last1995marked.
 
-*NOTE:* So the issue is that *Positivity* might not actually hold. If we look at $W (t)$, then it is piecewise constant and only jumps at the treatment times.
-If it were generally a likelihood ratio, then it would solve @eq:sde.
-For the second term, this implies that $Lambda^a (dif t) = sum_k delta_(event(k)) (dif t)$,
-so we have placed restrictions on the compensator for $N^a$.
-To see this note that,
-$
-    W(t) &= 1 + integral_0^t W(s -) V(s, m, a) (N (d(s,m, a)) - Lambda (d(s,m, a)) \
-        &= 1 + integral_0^t W(s -) V(s, m, 0) (N^(a 0) (d s) - pi_s Lambda^a (d s)) \
-        &qquad +  integral_0^t W(s -) V(s, m, 1) (N^(a 1) (d s) - (1-pi_s) Lambda^a (d s)) \
-        &= 1 + integral_0^t W(s -) V(s, m, 0) (N^(a 0) (d s) - pi_s Lambda^(a,c) (d s)) \
-        &qquad + integral_0^t W(s -) V(s, m, 1) (N^(a 1) (d s) - (1-pi_s) Lambda^(a,c) (d s)) \
-        & + integral_0^t W(s -) V(s, m, 0) ( - pi_s Lambda^(a,"discrete") (d s)) \
-        & + integral_0^t W(s -) V(s, m, 1) ( - (1-pi_s) Lambda^(a,"discrete") (d s)).
-$
-By rearranging, we therefore have that
-$
-    W(t) - 1 - integral_0^t W(s -) V(s, m, 0) (N^(a 0) (d s) - pi_s Lambda^(a,"discrete") (d s)) \
-        - integral_0^t W(s -) V(s, m, 1) (N^(a 1) (d s) - (1-pi_s) Lambda^(a,"discrete") (d s)) \
-        = -integral_0^t W(s -) (V(s, m, 0) pi_s + V(s, m, 1) (1-pi_s)) lambda^(a,c) (s) dif s
-$
-However, the last integral is only piecewise constant if $lambda^(a,c) equiv 0$
-because $W(s -) (V(s, m, 0) pi_s + V(s, m, 1) (1-pi_s)) != 0$ unless the treatment decision is deterministic.
-Consequently,
-$
-    W(t) - 1 - integral_0^t W(s -) V(s, m, 0) N^(a 0) (d s) \
-        - integral_0^t W(s -) V(s, m, 1) N^(a 1) (d s) \
-        = integral_0^t W(s -) ((V(s, m, 0) pi_s + V(s, m, 1) (1-pi_s)) Lambda^(a,"discrete") (d s)
-$ <eq:piecewiseconstant>
-In order for @eq:piecewiseconstant to hold true,
-it must be the case that
-$
-    &Delta W(t) - W(t -) V(t, m, 0) Delta N^(a 0) (t) - W(t -) V(t, m, 1) Delta N^(a 1) (t) \
-        &= W(t -) ((V(t, m, 0) pi_t + V(t, m, 1) (1-pi_t)) Delta Lambda^(a,"discrete") (t).
-$
-However, the left-hand side is only non-zero whenever $Delta N^(a) (t) != 0$;
-because, again, $W(t -) ((V(t, m, 0) pi_t + V(t, m, 1) (1-pi_t)) != 0$,
-we have must that $Delta Lambda^(a,"discrete") (t) = 0$ whenever $Delta N^(a) (t) = 0$.
-Letting $T^a_((1)), T^a_((2)), dots$ denote the ordered jump times of $N^a$,
-we thus have
-$
-    Lambda^a (dif t) = sum_k A_k (cal(F)_(t-)) delta_(T^a_((k))) (dif t), A_k in (0, 1]
-$
-Hence
-$
-    N^a (t) - Lambda^a (t) = sum_k (1 - A_k) bb(1) {T^a_((k)) <= t} >= 0.
-$
-Let $K$ be the last number such that $P(T^a_((K)) < oo) > 0$.
-Note that
-$
-    N^a (t) - Lambda^a (t) = sum_(k=1)^K (1 - A_k) bb(1) {T^a_((k)) <= t}
-$
-However, the above must also be a zero mean martingale, so
-that $mean(P) [(1 - A_k) bb(1) {T^a_((k)) <= t}] = 0$.
-Measure theory implies that $(1- A_k ) P(T^a_((k)) <= t | A_k) = 0 quad P$-a.s. for all $t > 0$.
-
-If $P(T^a_((k)) <= t | A_k) = 0$ for all $t>0$ almost surely
-then $P(T^a_((k)) < oo | A_k) = 0$ almost surely and so $T^a_((k)) = oo$ almost surely -- a contradiction.
-Therefore $A_k = 1$ for all $k = 1, dots, K$
-and $N^a$ is then its own compensator.
-
-Then, the continuous part is zero of the compensator of $a$.
-In that case, local independence cannot even motivate this estimand.
-// If it is well defined, then Pål actually shows that they are not the same g-formula,
-// Unless the treatment counting process is predictable 
+*NOTE:* So the issue is that *Positivity* might not actually hold. If we look at $W (t)$, then it is piecewise constant and only jumps at event times.
+If it were generally a likelihood ratio, then it would solve @eq:sde. However, the second term is not generally piecewise constant,
+so we have placed restrictions (in this case $V(s, x)$ would have to be purely discontinuous $=>^(?)$ predictable visitation times (note: special case discrete compensator for treatment)).
+In that case, local independence cannot even motivate this estimand. 
 
 - *What about pointwise identification*?
 - $mean(P) [W (tau)] = 1$ but not necessarily $mean(P) [W (t)] != 1$ for all $t$, so that $W (t)$ is not generally a martingale,
   then it still be possible to reweight as follows $mean(P) [tilde(Y)_tau] = mean(P) [Y_tau W (tau)]$.
-  Might lose causal interpretation. 
 
 - *Might be relevant:* https://pmc.ncbi.nlm.nih.gov/articles/PMC3857358/pdf/nihms529556.pdf
 
@@ -153,7 +87,7 @@ $
     zeta (t, m, a) := bb(1) {m=y} + bb(1) {m=a} (bb(1) {a = a_0})/(pi_t)
 $
 If _all_ of the following conditions hold:
-- *Consistency*: $tilde(Y)_(t) bb(1) {tau^A > dot} = Y_(t) bb(1) {tau^A > dot} quad P-"a.s."$
+- *Consistency*: $tilde(Y)_(t) bb(1) {T^a > dot} = Y_(t) bb(1) {T^a > dot} quad P-"a.s."$
 - *Exchangeability*:
   Define $cal(H)_t := cal(F)_t or sigma(tilde(Y))$.
   The $P$-$cal(F)_t$ compensator for $N^a$ is also the $P$-$cal(H)_t$ compensator.
@@ -238,48 +172,4 @@ $
     $
 ]
 
-== Local approach
-
-#theorem[
-- *Consistency*: $tilde(Y)_(tau) bb(1) {tau^A > tau} = Y_(tau) bb(1) {tau^A > tau} quad P-"a.s."$
-- *Exchangeability*: We have
-   $
-       &tilde(Y)_tau bb(1) {event(j) <= tau < event(j+1)}
-       perp treat(k) | history(k-1), event(k), status(k) = a, quad forall j>=k>0
-   $ <eq:exchangeability>
-- *Positivity*: Let $pi_(event(k)) (history(k-1))$ denote the conditional probability of receiving treatment $a_0$ at time $event(k)$ given $history(k-1)$ and $status(k) = a$.
-  We have $eta > 0$ such that $pi_(event(k)) (history(k-1)) > eta quad P$-a.s. for all $k >= 1$.
-Then the estimand of interest is identifiable, i.e.,
-$
-        mean(P) [tilde(Y)_tau] = mean(P) [Y_tau W_(tau)]
-$
-]<thm:identifiability>
-#proof[
-    Write $tilde(Y)_t = sum_(k=1)^oo bb(1) {event(k-1) <= tau < event(k)} tilde(Y)_tau$.
-    The theorem is shown if we can prove that $mean(P) [bb(1) {event(k-1) <= tau < event(k)} tilde(Y)_tau] = mean(P) [bb(1) {event(k-1) <= tau < event(k)} Y_tau W_(tau)]$
-    by linearity of expectation.
-    We have that for $k >= 1$,
-    $
-        &bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} Y_tau W(tau)] \
-            &= bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} bb(1) {tau^A > tau} Y_tau W(tau)] \
-            &=bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} bb(1) {tau^A > tau} tilde(Y)_tau W(tau)] \
-            &=bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(Y)_tau W(tau)] \
-            &=bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(Y)_tau W(event(k-1)) ]\
-            &=bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(Y)_tau ((bb(1) {treat(k-1) = 1}) / (pi_(event(k-1)) (history(k-2))))^(bb(1) {status(k-1) =a}) W(event(k-2)) ]\
-            &=bb(E)_P [ bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(Y)_tau | history(k-2), status(k-1), event(k-1), treat(k-1)] \
-                &qquad times ((bb(1) {treat(k-1) = 1}) / (pi_(event(k-1)) (history(k-2))))^(bb(1) {status(k-1) =a}) W(event(k-2)) ]\
-                        &=bb(E)_P [ bb(E)_P [ bb(1) {event(k-1) <= tau< event(k)} tilde(Y)_tau | history(k-2), status(k-1), event(k-1)] \
-                &qquad times ((bb(1) {treat(k-1) = 1}) / (pi_(event(k-1)) (history(k-2))))^(bb(1) {status(k-1) =a}) W(event(k-2)) ]\
-            &=bb(E)_P [ bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(Y)_tau | history(k-2), status(k-1), event(k-1)] \
-                &qquad times mean(P) [((bb(1) {treat(k-1) = 1}) / (pi_(event(k-1)) (history(k-2))))^(bb(1) {status(k-1) =a}) | history(k-2), status(k-1), event(k-1)] W(event(k-2)) ]\
-            &=bb(E)_P [ bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(Y)_tau | history(k-2), status(k-1), event(k-1)] W(event(k-2)) ]\
-            &=bb(E)_P [ bb(E)_P [ bb(1) {event(k-1) <= tau < event(k)} tilde(Y)_tau | history(k-3), status(k-2), event(k-2), treat(k-2)] W(event(k-2)) ]\
-    $
-    Iteratively applying the same argument, we get that
-    $bb(E)_P [  bb(1) {event(k-1) <= tau < event(k)} tilde(Y)_tau ] = bb(E)_P [  bb(1) {event(k-1) <= tau < event(k)} Y_tau W(tau)]$ as needed.
-]
-
-
 #bibliography("references/ref.bib",style: "apa")
-
-
