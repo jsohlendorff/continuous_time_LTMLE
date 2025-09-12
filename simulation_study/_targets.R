@@ -33,7 +33,7 @@ if (dir.exists("/projects/biostat01/people/snf991/phd/continuous_time_LTMLE/simu
       log_output = "crew_log_%A.txt",
       log_error = "crew_log_%A.txt",
       verbose = TRUE
-    ) # start on markov
+    ) # Start on markov
   )
 } else {
   controller <- crew_controller_local(workers = 8,

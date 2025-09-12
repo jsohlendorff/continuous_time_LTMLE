@@ -17,9 +17,11 @@ target_names_plots <- tar_manifest() |>
   select(name) |>
   filter(grepl("^boxplot_", name))
 
+options(warn = 1) # Print warnings as they occur
 for (name in target_names_plots$name) {
   message("Saving plot for: ", name)
   p <- tar_read_raw(name)
+  ## Capture warnings from ggsave
   ggplot2::ggsave(filename = paste0("plots/", name, ".pdf"), device=cairo_pdf, plot = p[[1]], width = 12, height = 10)
   ggplot2::ggsave(filename = paste0("plots/se_", name, ".pdf"), device=cairo_pdf, plot = p[[2]], width = 12, height = 10)
   if (length(p) >= 3) {
