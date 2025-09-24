@@ -2,7 +2,9 @@
 // #import "template.typ": conf
 #import "template/definitions.typ": *
 #import "@preview/arkheion:0.1.0": arkheion
-#import "@preview/ctheorems:1.1.3": *
+#import "@preview/ctheorems:1.1.3": 
+#set footnote(numbering: "*")
+
 #let definition = thmbox("definition", "Definition", inset: (x: 1.2em, top: 1em))
 #let theorem = thmbox("theorem", "Theorem", fill: rgb("#eeffee"))
 #import "@preview/numty:0.0.5" as nt
@@ -12,7 +14,10 @@
 
 #let theorem = thmbox("theorem", "Theorem", fill: rgb("#eeffee"))
 #let proof = thmproof("proof", "Proof")
-
+#let scr(it) = text(
+  features: ("ss01",),
+  box($cal(it)$),
+)
 #set math.equation(numbering: "(1)")
 #show math.equation: it => {
   if it.block and not it.has("label") [
@@ -24,100 +29,129 @@
 }
 
 #show: thmrules.with(qed-symbol: $square$)
+#set heading(numbering: "1.a)")
 
 // In discrete time, the two formula are the same because every discrete time is a visitation event?
 // What if we are still in discrete time, but the treatment decision is not made at every time point, but randomly; then it maybe does not relate to discrete time theories
 // It appears then that the formulas can still be different. 
 
-= A counterfactual interpretation of target parameter in @rytgaardContinuoustimeTargetedMinimum2022
+= A causal interpretation in terms of potential outcomes of target parameter in @rytgaardContinuoustimeTargetedMinimum2022
 
-Let us consider a setting similar to the one of @ryalenPotentialOutcomes.
-It has been discussed in discrete time (@RobinsLongitudinal2001)
-that the g-formula is unique; however, as we shall
-see the g-formula in continuous time may not necessarily be uniquely defined.
-Specifically this may relate to conditional distributions
-in this setting not being uniquely defined.
+We consider a setting similar to the one of @ryalenPotentialOutcomes
+and @rytgaardContinuoustimeTargetedMinimum2022.
+As in @rytgaardContinuoustimeTargetedMinimum2022,
+we consider some measure $P$ on a probability space
+$(Omega, cal(F), P)$.
+We consider a setting in which we observe a
+multivariate random measure $N = (N^y, N^a, N^ell)$
+which is defined on $(Omega, cal(F))$,
+where any two of the components do not jump at the same time.
+These processes are observed in
+$[0, T]$ for some $T > 0$.
+Here, $N^y$ denotes an outcome process of interest $Y$ (e.g., death),
+random measure $N^a$
+on $[0, T] times cal(A)$ for treatment $A$,
+where $cal(A)$ is a measurable space;x
+$N^ell$ denotes a random measure for covariates $L$
+on $[0, T] times cal(L)$,
+where $cal(A)$ and $cal(L)$ are measurable spaces;
+for instance finite subsets of $RR$ and $RR^d$.
+Such a random measure gives rise to a filtration
+$(cal(F)_t)_(t >= 0)$,
+where
+$
+    cal(F)_t := sigma(N^y (dif s), N^a (dif s times {x}), N^ell (dif s times {y}) | s in (0, t], x in cal(A), y in cal(L)).
+$
+Further, we make the assumption of no explosion of $N$.
+
+We concern ourselves with the hypothetical question
+if the treatment process $N^a$ had been
+intervened upon such that treatment was given according to some
+treatment regime $g^*$.
 We will work with an intervention
 that specifies the treatment decisions
-but not the timing of treatment visits.
-We consider death as the outcome of interest
-and are interested in the probability of death,
-had had we followed the regime of always treating.
-To simplify,
-we work without right-censoring, no covariates,
-and compliance to treatment at time $0$.
-Let $(Omega, cal(F), P)$ be a probability space.
-and consider $(N^y, N^a)$,
-where
-- $N^y$ is a counting process on $[0, T]$ for death.
-- $N^a$ is a random measure for treatment on $[0, T] times {1, 0}$, where $1$ denotes treatment and $0$ no treatment.
+but does not change timing of treatment visits.
+What this means precisely will be made clear below.
+We are interested in the outcome process $Y$ under this intervention,
+which we denote by $tilde(Y)$.
+Importantly, the intervention is defined as a static/dynamic intervention
+$
+    N^(g^*) (dif t times dif x) = pi^*_t (dif x) N^a (dif t times cal(A))
+$
+where $pi^*_t (dif x)$ is some kernel
+that specifies the treatment decision deterministically at time $t$
+in the sense that there are functions $g^*_k : bb(H)_(k-1) times [0, T] -> cal(A)$
+such that
+$
+    pi^*_t (dif x) = sum_k bb(1) {event(k-1) < t <= event(k)} delta_(g^*_k (history(k-1), event(k))) (dif x),
+$
+i.e., $g_k^*$ is $history(k-1) times.circle cal(B) ([0, T])$-measurable
+This means that, critically,
+$N^(g^*) (dif t times dif x)$ is also a random measure.
+Note that $N^(g^*)$ has the compensator
+$
+    scr(L) (N) (dif t times dif x) = pi^*_t (dif x) underbrace(Lambda^a (dif t times cal(A)), =:Lambda^a (dif t)),
+$
+where $Lambda^a (dif t)$ is the $P$-$cal(F)_t$-compensator of $N^a (dif t times cal(A))$.
+However, $N^a$ generally has the compensator $Lambda^(a) (dif t times dif x) = pi_t (dif x) Lambda^a (dif t)$.
+Now define the time to deviation from the treatment regime as
+$
+    tau^(g^*) = inf {t >= 0 | N^a ((0, t] times {x}) != N^(g^*) ((0, t] times {x}) " for some " x in cal(A)},
+$
+when $cal(A) = {a_1, dots, a_k}$ consists of a finite set of treatment options.
 
-We consider the filtration generated by $(N^y, N^a)$ and denote it by $(cal(F)_t)_(t >= 0)$,
-i.e.,
-$
-    cal(F)_t := sigma(N^y (dif s), N^a (dif s times {x}) | s in (0, t], x in {0, 1}).
-$
-Further, we assume that
-- $N^y$ and $N^a ({(0, t] times {1, 0}})$ do not jump at the same time.
-- $M^y = N^y - Lambda^y$ denotes their $P$-$cal(F)_t$ (local) martingale,
-  where $Lambda^y$ is the $P$-$cal(F)_t$-compensator of $N^y$.
-- $M^a (dif t times {x}) = N^a (dif t times {x}) - (pi_t)^(bb(1) {x=1}) (1-pi_t)^(bb(1) {x=0}) Lambda^a (dif t)$
-  is the $P$-$cal(F)_t$ (local) martingale for $x in {1, 0}$,
-  where $pi_t$ is the $cal(F)_t$-predictable probability of treatment at time $t$ (mark probability) and
-  $Lambda^a (dif t)$ is the total $P$-$cal(F)_t$-compensator of $N^a (dif t times dif x)$.
+#definition[
+    A multivariate random measure $tilde(N) = (tilde(N)^y, tilde(N)^a, tilde(N)^ell)$
+    is a *counterfactual random measure* under the intervention $g^*$
+    if it satisfies the following conditions.
+    Let $cal(tilde(F))_t := sigma(tilde(N)^y (dif s), tilde(N)^a (dif s times {x}), tilde(N)^ell (dif s times {y}) | s in (0, t], x in cal(A), y in cal(L))$.
+    Let $scr(L)$ denote the $P$-$cal(F)_t$-canonical compensator of $N^(g^*)$
+    and let $Lambda$ denote the $P$-$cal(F)_t$-compensator of $N$.
+    1. $tilde(N)^a$ has compensator $scr(L) (tilde(N))$ with respect to $cal(tilde(F))_t$.
+    2. $tilde(N)^x$, has the same compensator $Lambda (tilde(N))$ with respect to $cal(tilde(F))_t$ for $x in {y, ell}$.
+]
 
-For this treatment regime, we see that 
-$
-    tau^A = inf {t >= 0 | N^a ((0, t] times {0}) > 0}.
-$
-// We can associate each of the random measures $N^y$ and $N^a$ with
-// the random measure
-// $
-//     N (dif (t, m, a)) = N^y (dif t) delta_y (dif m) + delta_a (dif m) {N^a (dif (t) times {1}) delta_(1) (dif m) + N^a (dif (t) times {0}) delta_(0) (dif m)}.
-// $
-// We can then find that $N$ has the $P$-$cal(F)_t$-compensator,
-// $
-//     Lambda (dif (t, m, a)) = Lambda^y (dif t) delta_y (dif m) + delta_a (dif m) {pi_t (cal(F)_(t-)) delta_(1) (dif m) +  (1-pi_t (cal(F)_(t-))) delta_(0) (dif m)} Lambda^a (dif (t)),
-// $
-//where we can choose $pi_t$ to be $cal(F)_t$-predictable.
-We are interested in the counterfactual mean outcome $mean(P) [tilde(Y)_t]$,
-where $(tilde(Y)_t)_(t >= 0)$ is the counterfactual outcome process
-of $Y := N^y$ under the intervention that sets treatment to $1$ at all visitation times.
-This process is assumed to satisfy the definition of counterfactual outcome processes
-of @ryalenPotentialOutcomes with their Example 4. 
-Note the different exchangeability condition compared to @ryalenPotentialOutcomes,
-as @ryalenPotentialOutcomes expresses exchangeability through the counting process $bb(1) {tau^A <= dot}$.
+The main outcome of interest is the counterfactual outcome process
+$tilde(Y) := tilde(N)^y$;
+and we wish to identify $mean(P) [tilde(Y)_t]$.
+
+//It has been discussed in discrete time (@RobinsLongitudinal2001)
+//that the g-formula is unique; however, as we shall
+//see the g-formula in continuous time may not necessarily be uniquely defined.
+//Specifically this may relate to conditional distributions
+//in this setting not being uniquely defined.
+// We are interested in the counterfactual mean outcome $mean(P) [tilde(Y)_t]$,
+// where $(tilde(Y)_t)_(t >= 0)$ is the counterfactual outcome process
+// of $Y := N^y$ under the intervention that sets treatment to $1$ at all visitation times.
+// Note the different exchangeability condition compared to @ryalenPotentialOutcomes,
+// as @ryalenPotentialOutcomes expresses exchangeability through the counting process $bb(1) {tau^(g^*) <= dot}$.
 //this appears to me to be a weaker condition (?).
+
 Let $(event(k), status(k), treat(k))$
 denote the ordered event times, event types, and treatment decisions at event $k$.
 Note that @eq:rytgaard is the same likelihood ratio as in @rytgaardContinuoustimeTargetedMinimum2022.
-We also impose the assumption that $N_t := N^y_t + N^a ( {(0, t] times {1, 0}})$ does not explode;
-we also assume that we work with a version of the compensator
-such that $Lambda ({t} times {y, a} times {1, 0}) < oo$ for all $t > 0$.
-We may generally also work with a compensator $Lambda$ that fulfills conditions (10.1.11)-(10.1.13) of @last1995marked.
-Let $pi_(event(k))^* (history(k-1))$ denote the interventional probability,
-which in this case we take to be $1$.
-In this case,
-$
-    pi_t &= sum_k bb(1) {event(k-1) < t < event(k)} pi_(event(k)) (history(k-1)) \
-    pi^*_t &= sum_k bb(1) {event(k-1) < t < event(k)} pi^*_(event(k)) (history(k-1)) = 1.
-$
-Let $N^(a x) (dif t) := N^a (dif t times {x})$ for $x in {1, 0}$.
+As a shorthand, we let $N^(a, x) (dif t) := N^a (dif t times {x})$ for $x in cal(A)$.
+//We also assume that we work with a version of the compensator
+//such that $Lambda ({t} times {y, a} times {1, 0}) < oo$ for all $t > 0$.
+//We may generally also work with a compensator $Lambda$ that fulfills conditions (10.1.11)-(10.1.13) of @last1995marked.
+// Let $pi_(event(k)) (history(k-1))$ denote the treatment probability
+// and let $pi^*_(event(k)) (history(k-1))$ denote the treatment probability under the intervention $g^*$
 
-*NOTES:*
-- Does the exchangeability condition simplify in the case of $cal(n)^a$ predictable in $P$-$cal(F)_t$
-  as specified in @ryalenPotentialOutcomes; as noted in their article the two likelihood ratios
-  turn out two be the same in the case of orthogonal martingales.
 
-  Suppose that $cal(n)^a$ is predictable
-  so that $N^(a 1) (dif t)$ is predictable
-  in that case the first exchangeability condition is trivial;
-  Pål's condition only grants exchangeability for
-  $N^(a 1) (t and tau^A) $ is predictable;
-  I think that this is the sufficient for the argument to go through. 
+// *NOTES:*
+// - Does the exchangeability condition simplify in the case of $cal(n)^a$ predictable in $P$-$cal(F)_t$
+//   as specified in @ryalenPotentialOutcomes; as noted in their article the two likelihood ratios
+//   turn out two be the same in the case of orthogonal martingales.
 
-- Positivity holds for example if $pi_t$ is bounded away from $0$ and $1$
-  and $N_t$ has bounded number of jumps in the study period. 
+//   Suppose that $cal(n)^a$ is predictable
+//   so that $N^(a 1) (dif t)$ is predictable
+//   in that case the first exchangeability condition is trivial;
+//   Pål's condition only grants exchangeability for
+//   $N^(a 1) (t and tau^(g^*)) $ is predictable;
+//   I think that this is the sufficient for the argument to go through. 
+
+// - Positivity holds for example if $pi_t$ is bounded away from $0$ and $1$
+//   and $N_t$ has bounded number of jumps in the study period. 
 
 // UI (Uniform integrability) implies zeta (t) = integral ... is uniformly integrable martingale,
 // but why is integral_0^t tilde(Y)_(t) zeta (dif s) a martingale (generally a martingale)
@@ -125,13 +159,11 @@ Let $N^(a x) (dif t) := N^a (dif t times {x})$ for $x in {1, 0}$.
 // If there are two solutions (mine and theirs), they may be an infinite number of solutions
 // due to convexity
 //
-// Definition of Potential outcome process
-//
 
 // Necessary criteria for the conclusion to hold
 // for two measures Q in terms of P
 // 1. E_P [tilde(Y)_t] = E_Q [Y_t]
-// 2. Q(tau^A > t) = 1
+// 2. Q(tau^(g^*) > t) = 1
 // 3. Q and P are equivalent on cal(F)_t and the likelihood ratio is W(t)
 
 // Look for restrictions on such that positivity in one situation implies the other
@@ -144,17 +176,17 @@ Let $N^(a x) (dif t) := N^a (dif t times {x})$ for $x in {1, 0}$.
 // CAR is stronger than exchangeability => likelihood factorizes, but we do not need it to. 
 #theorem[
 If _all_ of the following conditions hold:
-- *Consistency*: $tilde(Y)_(dot) bb(1) {tau^a > dot} = Y_(dot) bb(1) {tau^a > dot} quad P-"a.s."$
+- *Consistency*: $tilde(Y)_(dot) bb(1) {tau^(g^*) > dot} = Y_(dot) bb(1) {tau^(g^*) > dot} quad P-"a.s."$
 - *Exchangeability*:
   Define $cal(H)_t := cal(F)_t or sigma(tilde(Y))$.
   The $P$-$cal(F)_t$ compensator for $N^a$ is also the $P$-$cal(H)_t$ compensator.
 - *Positivity*: 
   $
-      W (t) := product_(j = 1)^(N_t) (((pi^*_(event(j)) (history(j-1))) / (pi_(event(j)) (history(j-1))))^(bb(1) {treat(k) = 1}) ((1-pi^*_(event(j)) (history(j-1))) / (1-pi_(event(j)) (history(j-1))))^(bb(1) {treat(k) = 0}))^(bb(1) {status(j) = a}) 
+      W (t) := product_(j = 1)^(N_t) (product_(i=1)^(k) ((pi^*_(event(j)) ({a_i}; history(j-1))) / (pi_(event(j)) ({a_i}; history(j-1))))^(bb(1) {treat(k) = a_i}))^(bb(1) {status(j) = a}) 
   $ <eq:rytgaard>
   is uniformly integrable.
   
-  Furthermore, assume that $K(s) = ((pi_s^*)/(pi_s) - 1) M^(a 1) (dif s) + ((1-pi_s^*)/(1-pi_s) - 1) M^(a 0) (dif s)$
+  Furthermore, assume that $K(t) = integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) M^(a, a_j) (dif s)$
   is a $P$-$cal(F)_t$-martingale and that $K$ is a process of *locally integrable variation*, meaning that $mean(P) [integral_0^t |d K(s)| ] < oo$ for all $t > 0$.
 
 Then,
@@ -168,58 +200,224 @@ $
     We shall use that the likelihood ratio solves a specific stochastic differential equation.
     To this end, note that
     $
-        &W(t) \
-            &= product_(s <= t) (1 + ((pi_s^*)/(pi_s) - 1) N^(a 1) (dif s) + ((1-pi_s^*)/(1-pi_s) - 1) N^(a 0) (dif s)) \
-            &= product_(s <= t) (1 + ((pi_s^*)/(pi_s) - 1) N^(a 1) (dif s) + ((1-pi_s^*)/(1-pi_s) - 1) N^(a 0) (dif s) - (pi_s^* - pi_s) Lambda^(a) (d s) - (pi_s - pi_s^*) Lambda^(a) (d s)) \
-            &= product_(s <= t) (1 + ((pi_s^*)/(pi_s) - 1) N^(a 1) (dif s) + ((1-pi_s^*)/(1-pi_s) - 1) N^(a 0) (dif s) - (pi_s^* - pi_s) / pi_s Lambda^(a 1) (d s) - (pi_s - pi_s^*) / (1-pi_s) Lambda^(a 0) (d s)) \
-            &= product_(s <= t) (1 + ((pi_s^*)/(pi_s) - 1) M^(a 1) (dif s) + ((1-pi_s^*)/(1-pi_s) - 1) M^(a 0) (dif s)).        
+        W(t) &= cal(E) (sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s))_t \
+            &=^((*)) cal(E) (sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s) - sum_(j=1)^(k) (pi_s^* ({a_j}) - pi_s ({a_j})) Lambda^(a) (dif s))_t \
+            &= cal(E) (sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s) - sum_(j=1)^(k) ((pi_s^* ({a_j})) / (pi_s ({a_j})) - 1) Lambda^(a, a_j) (dif s))_t \
+            &= cal(E) (sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) M^(a, a_j) (dif s))_t.
     $
+    In $(*)$, we use that $sum_(j=1)^k pi_s ({a_j}) = sum_(j=1)^k pi_s^* ({a_j}) = 1$.
         
     Thus, by properties of the product integral (e.g., Theorem II.6.1 of @andersenStatisticalModelsBased1993),
     $
-        W(t) = 1 + integral_0^t W(s -) ((pi_s^*)/(pi_s) - 1) M^(a 1) (dif s) + integral_0^t W(s-) ((1-pi_s^*)/(1-pi_s) - 1) M^(a 0) (dif s).
+        W(t) = 1 + integral_0^t W(s -) sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) M^(a, a_j) (dif s).
     $ <eq:sde>
     We have that
     $
-        zeta_t := integral_0^t W(s -) ((pi_s^*)/(pi_s) - 1) M^(a 1) (dif s) + integral_0^t W(s-) ((1-pi_s^*)/(1-pi_s) - 1) M^(a 0) (dif s)
+        zeta_t := integral_0^t W(s -) sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) M^(a, a_j) (dif s)
     $ is a zero mean $P$-$cal(H)_t$-martingale by positivity.
-    From this, we see that $integral_0^t tilde(Y)_(t) zeta (dif s)$ is also a uniformly integrable $P$-$cal(H)_t$-martingale,
-    which implies by Theorem 2.1.42 of @last1995marked
-    $integral_0^t tilde(Y)_(t) zeta (dif s)$ is a zero mean $P$-$cal(H)_t$-martingale.
+    From this, we see that $integral_0^t tilde(Y)_(t) zeta (dif s)$ is also a uniformly integrable $P$-$cal(H)_t$-martingale
+    by Theorem 2.1.42 of @last1995marked.
+    Hence, $(tilde(Y)_t W (s))_(s in [0, T])$ is a $P$-$cal(H)_t$-martingale.
     This implies that
     $
-        mean(P) [Y_t W (t)] &=^(*) mean(P) [tilde(Y)_t W (t)] = mean(P) [tilde(Y)_t] + mean(P) [integral_0^t tilde(Y)_(t) zeta (dif s)] = mean(P) [tilde(Y)_t],
+        mean(P) [Y_t W (t)] &=^((**)) mean(P) [tilde(Y)_t W (t)] = mean(P) [tilde(Y)_t W (0)] = mean(P) [tilde(Y)_t] 
     $
-    where in $*$ we used consistency by noting that $W (t) != 0$ if and only if $tau^a > t$.
+    where in $(**)$ we used consistency by noting that $W (t) != 0$ if and only if $tau^(g^*) > t$.
 ]
 
 It is also natural to ask oneself: how does
-our exchangeability condition
-relate to the one of @ryalenPotentialOutcomes?
-We present a result in this direction.
+our conditions
+relate to the ones of @ryalenPotentialOutcomes?
+The condition of consistency is the same.
+However, the exchangeability condition and
+the positivity condition are different in general.
+We present slightly strengthened versions of the conditions
+as these are easier to compare.
+Let $bb(N)_t^a = bb(1) {tau^(g^*) <= t}$
+and let $bb(L)_t$ denote its $P$-$cal(F)_t$-compensator.
+
+- *Exchangeability*: 
+  Define $cal(H)_t := cal(F)_t or sigma(tilde(Y))$.
+  The $P$-$cal(F)_t$ compensator for $bb(N)^a$ is also the $P$-$cal(H)_t$ compensator.
+
+- *Positivity*:
+  $
+      tilde(W) (t) := (cal(E) (-bb(N)^a))_t / (cal(E) (-bb(L)^a))_t = cal(E) (tilde(K))_t
+  $
+  is uniformly integrable, where $tilde(K)_t = integral_0^t 1/(1- Delta bb(L)^a_s ) (bb(N)^a (dif s) - bb(L)^a (dif s))$.
+  Furthermore, $tilde(K)$ is a process of *locally integrable variation*
+  and a $P$-$cal(F)_t$-martingale.
+
+== Comparison with the exchangeability condition of @ryalenPotentialOutcomes
 
 #theorem[
-    Let $bb(N)_t^a = bb(1) {tau^A <= t}$.
+    Let $bb(N)_t^a = bb(1) {tau^(g^*) <= t}$.
     The exchangeability condition of @thm:identifiabilitymartingale implies the one of @ryalenPotentialOutcomes, e.g.,
-    $bb(L)_t := Lambda_(t)^a$ is both the $P$-$cal(F)_(t and tau^A)$ compensator 
-    and the $P$-$cal(H)_(t and tau^A)$ compensator of $bb(N)_t^a$.
+    $bb(L)_t$ is both the $P$-$cal(F)_(t)$ compensator 
+    and the $P$-$cal(H)_(t)$ compensator of $bb(N)_t^a$.
 ]
 
 #proof[
-  Consider some localizing sequence $S_n$ for $M^(a 0)$.
-  We note that $bb(N)_t^a = N^a ((0,t and tau^A], {0})$.
-  Apply optional sampling to $M_(dot and S_n)^(a 0)$ at $S := tau^A and S_n and s$ and $T := t and S_n and tau^A$ to see that
+  First, let 
+//  A deterministic treatment regime is given by some measurable
+//    functions $g^*_k : bb(H)_(k) times [0, T] -> cal(A)$ so that 
   $
-      mean(P) [M_(t and S_n and tau^A)^(a 0) | cal(F)_(s and tau^A)] = M_(s and S_n and tau^A)^(a 0) quad P-"a.s."
+      N^(a,*) (dif t) =  sum_k sum_j bb(1) {event(k-1) < t <= event(k)}  bb(1) {j != g^*_k (history(k-1), t)}  N^(a, a_j) (dif t),
   $
-  If exchangeability for $Lambda^(a 0)$ holds (given in
+  which is the counting measure for the number of deviations from the treatment regime $g^*$ and consider
+  $
+      bb(1) (t <= event(K)) N^(a,*) (dif t) =sum_(k=1)^K sum_j bb(1) {event(k-1) < t <= event(k)}  bb(1) {j != g^*_k (history(k-1), t)}  N^(a, a_j) (dif t),
+  $
+  for some $K$.
+  Note that $(bb(1) {tau^(g^*) <= t} N^(a,*) (dif t))^p = bb(1) {tau^(g^*) <= t} Lambda^(a,*) (dif t)$,
+  where $p$ denotes the predictable projection (@last1995marked),
+  by definition of the predictable projection. On the other hand,
+  $
+      &(sum_(k=1)^K sum_j bb(1) {event(k-1) < t <= event(k)} bb(1) {j != g^*_k (history(k-1), t)}  N^(a, a_j) (dif t))^p \
+          &= sum_(k=1)^K sum_j (bb(1) {event(k-1) < t <= event(k)} bb(1) {j != g^*_k (history(k-1), t)}  N^(a, a_j) (dif t))^p \
+          &=^((*)) sum_(k=1)^K sum_j bb(1) {event(k-1) < t <= event(k)} bb(1) {j != g^*_k (history(k-1), t)} (N^(a, a_j) (dif t))^p \
+          &= sum_(k=1)^K sum_j bb(1) {event(k-1) < t <= event(k)} bb(1) {j != g^*_k (history(k-1), t)} Lambda^(a, a_j) (dif t),
+  $ <eq:pred_proj>
+  where we use in $(*)$ that $bb(1) {event(k-1) < t <= event(k)}  bb(1) {j != g^*_k (history(k-1), t)}$ is predictable (Theorem 2.2.22 of @last1995marked).
+  Letting $K -> oo$ and using the assumption of no explosion
+  shows that the $P$-$cal(F)_t$-compensator of $N^(a,*) (dif t)$ is
+  given by the limit as $K -> oo$ of the right-hand side of @eq:pred_proj.
+  Since $bb(N)_t^a = N^(a,*) ((0, t and tau^(g^*)])$, the corollary on p. 10 of @protter2005stochastic,
+  implies that the $P$-$cal(F)_t$-compensator of $bb(N)^a_t$ is
+  $
+      bb(L)^a_(t) = sum_k sum_j bb(1) {event(k-1) < t <= event(k)} bb(1) {j != g^*_k (history(k-1), t)} Lambda^(a, a_j) (t and tau^(g^*)).
+  $
+  by using the limit of the right-hand side of @eq:pred_proj.
+  If exchangeability holds (given in
   @thm:identifiabilitymartingale),
-  then the same argument applies with $cal(H)_t$ instead of $cal(F)_t$, so that
-  $
-      mean(P) [M_(t and S_n and tau^A)^(a 0) | cal(H)_(s and tau^A)] = M_(s and S_n and tau^A)^(a 0) quad P-"a.s."
-  $
+    then the same argument applies with $cal(H)_t$ instead of $cal(F)_t$.
   This is the desired result.
 ]
+
+== Comparisons of the positivity assumptions in @ryalenPotentialOutcomes
+
+One may ask oneself if positivity holds in @ryalenPotentialOutcomes;
+under what assumptions does positivity in @thm:identifiabilitymartingale
+hold? In general, however, it would appear that the two positivity conditions
+are different and neither implies the other.
+
+Can we find a process $phi$ such that
+$cal(E) (K) =  (cal(E) (-bb(N)^a)) / (cal(E) (-bb(L)^a)) cal(E) (phi)$?
+
+#theorem[
+    $phi$ is given by
+        $
+            phi_t = K_t - bb(L)_t^a + bb(N)_t^a - [K, bb(L)^a]_t,
+        $
+    where $[dot, dot]$ denotes the quadratic covariation process (@protter2005stochastic),
+    where
+    $
+        [K, bb(L)^a]_t &= integral_0^(t and tau^(g^*)) sum_v bb(1) {event(v-1) < s <= event(v)} sum_(i != g^*_v (history(v-1), event(v))) pi_s ({a_j}) Delta Lambda^(a) (s) \
+            &qquad times sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s) \
+    $
+    In the absolutely continuous case, $[K, bb(L)^a]_t = 0$ as $Delta Lambda^a_t = 0$ for all $t > 0$.
+    If, further, $pi_t^* ({a_j}) = 1$ for some $j$,
+    then
+    $
+        phi_t = integral_0^(t and tau^(g^*)) ((1)/(pi_s) - 1) M^(a, a_j) (dif s).
+    $
+]
+#proof[
+    To this end, let $v := bb(1) {W(t) > 0, tilde(W) (t) > 0} = bb(1) {tau^(g^*) > t} = cal(E) (- bb(N)^a)$
+    and calculate 
+$
+    cal(E) (phi) v &= (cal(E) (K) cal(E) (- bb(L)^a)) / (cal(E) (- bb(N)^a)) v \
+        &= cal(E) (K) cal(E) (-bb(L)^a) v \
+        &= cal(E) (K - bb(L)^a - [K, bb(L)^a]) v \
+        &= cal(E) (K - bb(L)^a + bb(N)^a - [K, bb(L)^a]) v,
+$
+where the last equality follows since $bb(N)^a v equiv 0$.
+Note that
+$
+    [K, bb(L)^a]_t &= integral_0^t Delta bb(L)^a_s sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s) \
+        &=^(*) integral_0^(t and tau^(g^*)) sum_v bb(1) {event(v-1) < s <= event(v)} sum_(i != g^*_v (history(v-1), event(v))) pi_s ({a_j}) Delta Lambda^(a) (s) \
+            &qquad times sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s) 
+$
+
+In the case where $Delta Lambda^a_s equiv 0$ and $pi_s^* ({a_j}) = 1$ for some $j$,
+then
+
+$
+    v(K_t - bb(L)_t^a + bb(N)_t^a) = v integral_0^(t and tau^(g^*)) ((1)/(pi_s) - 1) M^(a, a_j) (dif s)
+$
+and $[K, bb(L)^a]_t = 0$.
+]
+
+A simple consequence of this is the following.
+Assume that $Q_"ryalen" << P$ with $Q_"ryalen" = (cal(E) (-bb(N)^a)) / (cal(E) (-bb(L)^a)) bullet P$.
+and, say, $cal(E) (phi)$ is a uniformly integrable $Q_"ryalen"$-$cal(F)_t$-martingale,
+i.e., that $Q << Q_"ryalen"$, then $Q_"ryalen" << P$ implies that $Q << P$.
+This happens for example if $cal(E) (phi)$ is uniformly bounded by a constant.
+
+= Comparison with the @rytgaardContinuoustimeTargetedMinimum2022
+
+In @rytgaardContinuoustimeTargetedMinimum2022,
+both an exchangeability condition and a
+positivity condition are presented,
+but no proof is given that these conditions
+imply that their target parameter is identified.
+Our proposal shows that under the conditions of @thm:identifiabilitymartingale,
+the g-formula given in @rytgaardContinuoustimeTargetedMinimum2022
+causally identifies the counterfactual mean outcome
+under the assumption that the other martingales are orthogonal
+to the treatment martingale.
+Lemma 1 of @ryalenPotentialOutcomes then gives the desired target parameter.
+Note that this is slightly weaker than @rytgaardContinuoustimeTargetedMinimum2022,
+as they implicitly require that _all_ martingales are orthogonal
+due to their factorization of the likelihood (?).
+//A lingering question is whether the desired $g$-formula
+//can be obtained even if the martingales are not orthogonal.
+#theorem("g-formula")[
+    Let $Lambda_P^a (dif t)$ denote the total $P$-$cal(F)_t$-compensator of $N^a$.
+    Furthermore, let $Lambda_P^x$ denote the $P$-$cal(F)_t$-compensator of $N^x$ for $x in {y, ell}$.
+    Under positivity, then
+    1. The $Q$-$cal(F)_t$ compensator of $N^a (dif t times dif x)$ is $pi^*_t (dif x) Lambda_P^a (dif t)$.
+    2. The $Q$-$cal(F)_t$ compensator of $N^x$ is $Lambda_P^x + sum_j ((pi_s^* (a_j))/(pi_s (a_j)) - 1) dif angle.l M_P^x, M_P^(a, a_j) angle.r_s^P$ for $x in {y, ell}$.
+    Consequently, if $angle.l M^x, macron(M)^(a) angle.r_s^P equiv 0$ for $x in {y, ell}$,
+    where $macron(M)^(a) (dif t) = N^a (dif t times cal(A)) - Lambda_P^a (dif t)$,
+    then the $Q$-$cal(F)_t$ compensator of $N^x$ is $Lambda_P^x$ for $x in {y, ell}$.
+]
+
+#proof[
+    First note that for a local $cal(F)_t$-martingale $X$ in $P$, we have
+    $
+        integral_0^t 1/(W_(s -)) dif angle.l W, X angle.r_s^P = angle.l K, X angle.r_t^P
+    $ <eq:girsanov1>
+    since we have that $W_t = 1 + integral_0^t W_(s -) dif K_s$; whence
+    $
+        angle.l W, X angle.r_t = angle.l 1, X angle.r_t + angle.l W_(-) bullet K, X angle.r_t = W_(t -) bullet angle.l K, X angle.r_t
+    $ 
+    With $X= M^(a, x)$, we find
+    $
+        angle.l K, M^(a, x) angle.r_t^P &= integral_0^t sum_j ((pi_s^* (a_j))/(pi_s (a_j)) - 1) dif angle.l M_P^(a, a_j), M_P^(a, x) angle.r_s^P \
+            &= integral_0^t ((pi_s^* (x))/(pi_s (x)) - 1) dif angle.l M_P^(a, x) angle.r_s^P \
+            &quad + sum_(j != x) integral_0^t ((pi_s^* (a_j))/(pi_s (a_j)) - 1) dif angle.l M_P^(a, a_j), M_P^(a, x) angle.r_s^P \
+            &= integral_0^t ((pi_s^* (x))/(pi_s (x)) - 1) pi_s (x) Lambda_P^a (dif s) \
+            &quad - integral_0^t ((pi_s^* (x))/(pi_s (x)) - 1) Delta (pi (x) Lambda_P^a)_s pi_s (x) Lambda_P^a (dif s) \
+            &quad - sum_(j!= x) integral_0^t ((pi_s^* (a_j))/(pi_s (a_j)) - 1) Delta (pi (x) Lambda_P^a)_s pi_s (a_j) Lambda_P^a (dif s) \
+            &= integral_0^t (pi_s^* (x) - pi_s (x)) Lambda_P^a (dif s) \
+            &quad - sum_(j) integral_0^t (pi_s^* (a_j) - pi_s (a_j)) Delta (pi (x) Lambda_P^a)_s Lambda_P^a (dif s) \
+            &= integral_0^t (pi_s^* (x) - pi_s (x)) Lambda_P^a (dif s).
+    $ <eq:girsanova>
+    Girsanov's theorem (Theorem 41, p. 136 of @protter2005stochastic)
+    together with @eq:girsanov1 and @eq:girsanova
+    gives that 
+    $
+        N^a (dif t times dif x) - pi_t (dif x) Lambda_P^a (dif t) - (pi_t^* (dif x) - pi_t (dif x)) Lambda_P^a (dif t) = N^a (dif t times dif x) - pi_t^* (dif x) Lambda_P^a (dif t)
+    $
+    is a $Q$-$cal(F)_t$-local martingale. The second statement follows similarly.
+]
+
+== Comparison of the exchangeability condition of @rytgaardContinuoustimeTargetedMinimum2022
+Additionally, consistency is not explicitly stated,
+so we cannot compare this condition.
+The stated positivity condition is the same as the one in @thm:identifiabilitymartingale,
+so left is to compare the exchangeability conditions.
 
 We can also ask ourselves:
 Is the exchangeability criterion in @thm:identifiabilitymartingale
@@ -232,45 +430,55 @@ $
 $ for all $k$, where $T_(k)^a$ are the ordered treatment event times, where $cal(F)^(-)_(T)$ is defined on p. 62 of @last1995marked.
 This $sigma$-algebra contains all the information that occurs strictly before time $T$.
 
-In this case, we can express our exchangeability condition via something
-that is very similar to this statement:
+In this case, we can express one condition (in addition to another) for our exchangeability
+as something that is very similar (@thm:exchangeabilityequivalence),
 $
-    (tilde(Y)_t)_(t in [0, T]) perp treat(k) | status(k) = a, event(k), history(k-1), qquad (\*)
+    (tilde(Y)_t)_(t in [0, T]) perp treat(k) | Delta N_(event(k))^a = 1, event(k), history(k-1), qquad (\*)
 $ 
-for all $k$.
-The statements appear similar, but are generally not the same,
-since $T$ is not generally $cal(F)_T^-$ measurable.
-If $S$ and $Delta N_S^a$ are $cal(F)_S^-$ measurable, then the
-two statements should be the same. 
-However, if $S$ is predictable, then $S in sigma(cal(F)_S^-)$ (Theorem 2.2.19 of @last1995marked),
-If $N^a_t$-predictable, it should also be the case that $Delta N_S^a in sigma(cal(F)_S^-)$?
-Yes, if $N^a_t$ is predictable, then $N_t^a in sigma(cal(F)_(t-))$ (Theorem 2.2.9 of @last1995marked);
+for all $k$. A slightly weaker statement than $(\*)$ is that
+- The Radon-Nikodym derivative of $Lambda^(a, a_j) (dif t)$ with respect to $Lambda^a (dif t)$
+  is the same for $cal(F)_t$ and $cal(H)_t$. (\*!)
+// This is because there is a version of $pi_t$ such that
+// $
+//     pi_t^' = sum_k bb(1) {event(k-1) < t < event(k)} pi_(event(k)) (cal(H)_(event(k-1)))
+// $
+
+The statements $(')$ and $(*)$ appear similar, but are generally not the same,
+since $S$ and $Delta N_S^a$ are not generally $cal(F)_T^-$ measurable
+for a stopping time $S$.
+
+Let $S = T_(k)^a$ for some $k$.
+If $S$ and $Delta N_S^a$ are $cal(F)_S^-$ measurable, then whenever $(')$ holds, we have 
+$
+    (tilde(Y)_t)_(t in [0, T]) perp A(T_(k)^a) | T_k^a, Delta N_(T_k^a)^a, cal(F)^(-)_(T_(k)^a)
+$
+which implies $(\*)$.
+
+If $N^a (dot times {0,1})$ is a predictable counting process
+with respect to $cal(F)_t$, we will see that this indeed is the case.
+If this holds, $S$ is predictable, and so $S in sigma(cal(F)_S^-)$ (Theorem 2.2.19 of @last1995marked).
+If $N^a_t$-predictable, then $N_t^a in sigma(cal(F)_(t-))$ (Theorem 2.2.6 of @last1995marked);
 therefore $Delta N_S^a in sigma(cal(F)_S^-)$.
-However, due to the classical fact that conditional independence and independence
-never imply each other, the two statements are not equivalent and are generally different.
+//However, due to the classical fact that conditional independence and independence
+//never imply each other, the two statements are not equivalent and are generally different.
 // If it does not depend on T_a, is that enough?
 
-To have exchangeability, we also need that the compensator for $N^a = N^a (dot times {0,1})$ is the same under $cal(F)_t$ and $cal(H)_t$,
+To have exchangeability in the sense of @thm:exchangeabilityequivalence, we also need that the compensator for $N^a = N^a (dot times {0,1})$ is the same under $cal(F)_t$ and $cal(H)_t$,
 i.e., that
 - $Lambda^a (dif t)$ is the $P$-$cal(F)_t$-compensator and the $P$-$cal(H)_t$-compensator of $N^a (dif t times {0,1})$. (\*\*)
+This is obviously the case if $N^a (dot times cal(A))$ is $cal(F)_t$-predictable.
 
-A slight strengthening of $(\*)$ is that
-- The Radon-Nikodym derivative of $Lambda^(a 1) (dif t)$ with respect to $Lambda^a (dif t)$
-  is the same for $cal(F)_t$ and $cal(H)_t$. (\*!)
-This is because there is a version of $pi_t$ such that
-$
-    pi_t^' = sum_k bb(1) {event(k-1) < t < event(k)} pi_(event(k)) (cal(H)_(event(k-1)))
-$
 We then have the following result.
 #theorem[
     The conditions (\*\!) and (\*\*) hold if and only if the exchangeability condition of @thm:identifiabilitymartingale holds.
-]
+] <thm:exchangeabilityequivalence>
 
 #proof[
-To see that it is sufficient, note that (\*) and (\*\*) imply that
-    $
-        N^a (dif t times {x}) - (pi_t)^(bb(1) {x=1}) (1-pi_t)^(bb(1) {x=0}) Lambda^a (dif t)
-    $ <eq:1>
+    Obvious.
+// To see that it is sufficient, note that (\*) and (\*\*) imply that
+//     $
+//         N^a (dif t times {x}) - (pi_t)^(bb(1) {x=1}) (1-pi_t)^(bb(1) {x=0}) Lambda^a (dif t)
+//     $ <eq:1>
 
     //in view of (\*).
     // Furthermore, a version of $Lambda^a (dif t)$ is
@@ -279,89 +487,50 @@ To see that it is sufficient, note that (\*) and (\*\*) imply that
     // $
     //which must be both the $P$-$cal(F)_t$-compensator and the $P$-$cal(H)_t$-compensator of $N^a (dif t times {0,1})$ by (\*\*).
     //By Theorem 4.1.11 of @last1995marked, @eq:1 is a $P$-$cal(H)_t$ - local martingale.
-    However, it must also be a $P$-$cal(F)_t$-local martingale;
-    to see this, let $S_n$ be a localizing sequence for @eq:1 and consider $0 <= s < t$.
-    Then,
-    $
-        mean(P) [M_(t and S_n)^(a x) | cal(F)_s] &= mean(P) [mean(P) [M_(t and S_n)^(a x)| cal(H)_s]  | cal(F)_s] \
-            &= mean(P) [M_(s and S_n)^(a x) | cal(F)_s] =^(!) M_(s and S_n)^(a x) quad P-"a.s.".
-    $
-    In $!$, we used that $N_(s and S_n)^(a x)$ is (trivially) $cal(F)_s$ measurable;
-    moreover, by (\*), $pi_s$ is $cal(F)_s$ measurable;
-    finally, by (\*\*), $Lambda^(a) (dif t)$ is also the $P$-$cal(F)_t$-compensator of $N^a (dif t times {0,1})$;
-    and hence it is predictable with respect to this filtration because it is $cal(F)_(t-)$ measurable (Theorem 2.2.6 of @last1995marked).
-    // Nulmængder???? If we complete the filtration, then this argument should be ok.
-    Conversely, to see that it is necessary, we have directly (\*\*); however this is precisely what we needed to show $(\*!)$.
+    // However, it must also be a $P$-$cal(F)_t$-local martingale;
+    // to see this, let $S_n$ be a localizing sequence for $M_(t)^(a x)$ and consider $0 <= s < t$.
+    // Then,
+    // $
+    //     mean(P) [M_(t and S_n)^(a x) | cal(F)_s] &= mean(P) [mean(P) [M_(t and S_n)^(a x)| cal(H)_s]  | cal(F)_s] \
+    //         &= mean(P) [M_(s and S_n)^(a x) | cal(F)_s] =^(!) M_(s and S_n)^(a x) quad P-"a.s.".
+    // $
+    // In $!$, we used that $N_(s and S_n)^(a x)$ is (trivially) $cal(F)_s$ measurable;
+    // moreover, by (\*), $pi_s$ is $cal(F)_s$ measurable;
+    // finally, by (\*\*), $Lambda^(a) (dif t)$ is also the $P$-$cal(F)_t$-compensator of $N^a (dif t times {0,1})$;
+    // and hence it is predictable with respect to this filtration because it is $cal(F)_(t-)$ measurable (Theorem 2.2.6 of @last1995marked).
+    // // Nulmængder???? If we complete the filtration, then this argument should be ok.
+    // Conversely, to see that it is necessary, we have directly (\*\*); however this is precisely what we needed to show $(\*!)$.
 ]
 
-One may ask oneself if positivity holds in @ryalenPotentialOutcomes;
-under what assumptions does positivity in @thm:identifiabilitymartingale
-hold?
+= Score operator calculations
 
-@ryalenPotentialOutcomes introduces the weight
+Consider some parametric submodel $P_epsilon$ of $P_0$,
+$epsilon in (-delta, delta)$ for some $delta > 0$.
+These give rise to submodels of the compensator $Lambda^a_epsilon (A)$.
+For any $WW^epsilon = cal(E) (KK^epsilon)$,
+L'Hopitals rule gives that
 $
-    tilde(W) = (cal(E) (-bb(N)^a)) / (cal(E) (-bb(L)^a))
+    lim_(epsilon -> 0) ((WW^epsilon (t)) / (WW^0 (t)) - 1)/epsilon &= lim_(epsilon^* -> 0) (partial /(partial epsilon) WW^(epsilon) (t)) / (WW^0 (t)) |_(epsilon = epsilon^*) \
+        &=^("Thm. 8 of " \ #cite(<gill1990survey>))  lim_(epsilon^* -> 0) (WW^(epsilon^*) (t)) / (WW^0 (t)) integral_0^t 1/(1+ Delta KK^(epsilon^*)_s) (partial /(partial epsilon) KK^(epsilon) (dif s)) |_(epsilon = epsilon^*) \
+        &= integral_0^t lim_(epsilon^* -> 0) 1/(1+ Delta KK^(epsilon^*)_s) (partial /(partial epsilon) KK^(epsilon) (dif s)) |_(epsilon = epsilon^*) \
+        &= integral_0^t 1/(1+ Delta KK^(0)_s) lim_(epsilon^* -> 0) (partial /(partial epsilon) KK^(epsilon) (dif s)) |_(epsilon = epsilon^*) \
 $
-Similarly, we can introduce the weight
+For our specific case, i.e.,
 $
-  W = cal(E) (K),
+    KK_t^epsilon = integral_0^t sum_(j=1)^k ((pi^*_(s) ({a_j}))/(pi_(s,epsilon) ({a_j})) - 1) M^(a, a_j)_epsilon (dif s) = integral_0^t sum_(j=1)^k ((pi^*_(s) ({a_j}))/(pi_(s,epsilon) ({a_j})) - 1) N^(a, a_j) (dif s),
 $
-where
+but also that
 $
-    K_t = integral_0^t ( (pi_s^*)/(pi_s) - 1) N^(a 1) (dif s) + ((1-pi_s^*)/(1-pi_s) - 1) N^(a 0) (dif s).
+    partial KK_t^epsilon &= (partial integral_0^t sum_(j=1)^k ((pi^*_(s) ({a_j}))/(pi_(s,epsilon) ({a_j})) - 1) M^(a, a_j)_epsilon (dif s) \
+        &= integral_0^t (partial sum_(j=1)^k ((pi^*_(s) ({a_j}))/(pi_(s,epsilon) ({a_j})) - 1) N^(a, a_j) (dif s) \
+            &quad - integral_0^t sum_(j=1)^k pi^*_(s) ({a_j}) partial Lambda^(a)_epsilon (dif s) + integral_0^t sum_(j=1)^k partial (Lambda^(a, a_j)_epsilon (dif s)) \
+                &= -integral_0^t  sum_(j=1)^k (pi^*_(s) ({a_j}))/(pi_(s,0) ({a_j}))^2 pi_(s,0) ({a_j}) Gamma_s^(a,a_j,pi) N^(a, a_j) (dif s) \
+            //&quad - integral_0^t sum_(j=1)^k pi^*_(s) ({a_j}) Gamma^(a, Lambda)_s Lambda^(a) (dif s) + integral_0^t sum_(j=1)^k Gamma^(a, a_j, Lambda)_s Lambda^(a, a_j) (dif s) \
 $
-Can we find a process $phi$ such that
-$cal(E) (K) =  (cal(E) (-bb(N)^a)) / (cal(E) (-bb(L)^a)) cal(E) (phi)$?
-To this end, note that
+First note that
 $
-    cal(E) (phi) &= (cal(E) (K) cal(E) (- bb(L)^a)) / (cal(E) (- bb(N)^a)) \
-        &= (cal(E) (- bb(N)^a) cal(E) (K) cal(E) (- bb(L)^a)) / (cal(E) (- bb(N)^a)) \
-        &= cal(E) (K) cal(E) (-bb(L)^a) \
-        &= cal(E) (K - bb(L)^a - [K, bb(L)^a]).
+    pi_(s,epsilon) ({a_j}) = (dif Lambda^(a, a_j)_(epsilon,s)) / (dif Lambda^a_(epsilon,s))
 $
-where we use that
-$
-    cal(E) (K) = cal(E) (K) bb(1) {tau^a > dot} = cal(E) (K)  cal(E) (-bb(N)^a)
-$
-taking $0/0=1$. Note that
-$
-    [K, bb(L)^a]_t &= integral_0^t Delta bb(L)^a_s ((pi_s^*)/(pi_s) - 1) d N^(a 1)_s \
-        &quad + integral_0^t Delta bb(L)^a_s ((1-pi_s^*)/(1-pi_s) - 1) d N^(a 0)_s \
-        &=^(*) integral_0^(t and tau^a) pi_(s) Delta Lambda^a (s) ((1-pi_s^*)/(1-pi_s) - 1) d N^(a 0)_s \
-        &quad + integral_0^(t and tau^a) pi_(s) Delta Lambda^a (s) ((pi_s^*)/(pi_s) - 1) d N^(a 1)_s, \
-        &= integral_0^(t and tau^a) Delta Lambda^a (s) (pi_s- pi_s^*) pi_s /(1-pi_s) d N^(a 0)_s \
-        &quad + integral_0^(t and tau^a) Delta Lambda^a (s) (pi_s^* - pi_s) d N^(a 1)_s, \
-$
-
-In the absolutely continuous case, $[K, bb(L)^a]_t = 0$ as $Delta Lambda^a_t = 0$ for all $t > 0$.
-Also note that in $(*)$, we apply the corollary on p. 10 of @protter2005stochastic, e.g., stopped martingales
-are martingales and $bb(N)_t^a = N^(a 0) (t and tau^a)$.
-
-However, it is also the case that
-$
-    cal(E) (phi) &= cal(E) (K - bb(L)^a + bb(N)^a - [K, bb(L)^a])
-$
-because $bb(N)^a equiv 0$ whenever $cal(E) (K) != 0$ and $(cal(E) (-bb(N)^a)) / (cal(E) (-bb(L)^a)) != 0$.
-Also
-$
-    K_t- bb(L)_t^a + bb(N)_t^a &= integral_0^(t and tau^a) ((pi_s^*)/(pi_s) - 1) M^(a 1) (dif s) + ((1-pi_s^*)/(1-pi_s) - 1) M^(a 0) (dif s) \
-        &+quad integral_0^(t and tau^a) 1/(1- (1-pi_s^*) Delta Lambda_s^a ) (1-pi^*_s)  (N^a (dif s) - Lambda^a (dif s)) \
-        &+quad integral_0^(t and tau^a) 1/(1- pi_s^* Delta Lambda_s^a ) pi^*_s (N^a (dif s) - Lambda^a (dif s)) \
-$
-The last $bb(N)^a$ can be ignored.
-When $pi_s^* = 1$ and $Lambda^a_s$ absolutely continuous, then
-
-$
-    K_t - bb(L)_t^a + bb(N)_t^a = integral_0^(t and tau^a) ((1)/(pi_s) - 1) M^(a 1) (dif s)
-$
-and $[K, bb(L)^a]_t = 0$.
-// If only absolutely continuous, then
-// $
-//     K_t - bb(L)_t^a + bb(N)_t^a &= integral_0^(t and tau^a) ((pi^*)/(pi_s) - 1) (N^(a 1) (dif s) - pi_s Lambda^a (dif s))  + ((1-pi_s^*)/(1-pi_s) - 1) (N^(a 0) (dif s) - (1-pi_s) Lambda^a (dif s) )\
-//         &+quad integral_0^(t and tau^a) (1-pi^*_s)  (N^a (dif s) - Lambda^a (dif s)) \
-//         &+ quad integral_0^(t and tau^a)  pi^*_s (N^a (dif s) - Lambda^a (dif s)) \
-//         &= integral_0^(t and tau^a) ((pi^*)/(pi_s) - 1) N^(a 1) (dif s) + ((1-pi_s^*)/(1-pi_s) - 1) N^(a 0) (dif s) \
-//         &- quad integral_0^(t and tau^a) (pi^*) - pi_s) Lambda^a (dif s) + (pi_s-pi^*_s) Lambda^a (dif s) \
-// $
+This equals 
 
 #bibliography("references/ref.bib",style: "apa")
