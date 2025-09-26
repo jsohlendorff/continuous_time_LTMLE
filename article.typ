@@ -594,7 +594,7 @@ except $pi_k$. These may either be estimated by a direct regression procedure
 or alternatively be estimated by estimating the compensators of the counting processors $N^(a 1)$ and
 $N^(a)$, counting the number of times that the doctor has prescribed treatment and
 the number of times the patient has visited the doctor, respectively,
-and calculating the ratio of the two (estimated) compensators
+and calculating the ratio of the two (estimated) intensities
 in the absolutely continuous case.
 We only consider the first of these options.
 The latter choice, however, makes traditional intensity modeling methods applicable.

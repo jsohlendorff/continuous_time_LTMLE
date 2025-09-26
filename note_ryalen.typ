@@ -369,7 +369,11 @@ to the treatment martingale.
 Lemma 1 of @ryalenPotentialOutcomes then gives the desired target parameter.
 Note that this is slightly weaker than @rytgaardContinuoustimeTargetedMinimum2022,
 as they implicitly require that _all_ martingales are orthogonal
-due to their factorization of the likelihood (?).
+due to their factorization of the likelihood. This is because
+$cal(E) (X) cal(E) (Y) = cal(E) (X + Y)$ if and only if $[X, Y] = 0$.
+This can be seen by applying Theorem 38, p. 130 of @protter2005stochastic
+and using that the stochastic exponential solves a specific stochastic differential equation.
+
 //A lingering question is whether the desired $g$-formula
 //can be obtained even if the martingales are not orthogonal.
 #theorem("g-formula")[
@@ -377,10 +381,7 @@ due to their factorization of the likelihood (?).
     Furthermore, let $Lambda_P^x$ denote the $P$-$cal(F)_t$-compensator of $N^x$ for $x in {y, ell}$.
     Under positivity, then
     1. The $Q$-$cal(F)_t$ compensator of $N^a (dif t times dif x)$ is $pi^*_t (dif x) Lambda_P^a (dif t)$.
-    2. The $Q$-$cal(F)_t$ compensator of $N^x$ is $Lambda_P^x + sum_j ((pi_s^* (a_j))/(pi_s (a_j)) - 1) dif angle.l M_P^x, M_P^(a, a_j) angle.r_s^P$ for $x in {y, ell}$.
-    Consequently, if $angle.l M^x, macron(M)^(a) angle.r_s^P equiv 0$ for $x in {y, ell}$,
-    where $macron(M)^(a) (dif t) = N^a (dif t times cal(A)) - Lambda_P^a (dif t)$,
-    then the $Q$-$cal(F)_t$ compensator of $N^x$ is $Lambda_P^x$ for $x in {y, ell}$.
+    2. The $Q$-$cal(F)_t$ compensator of $N^x$ is $Lambda_P^x$ for $x in {y, ell}$ // addition should be zero; by Jacods formula for likelihood ratios
 ]
 
 #proof[
@@ -410,7 +411,15 @@ due to their factorization of the likelihood (?).
     $
         N^a (dif t times dif x) - pi_t (dif x) Lambda_P^a (dif t) - (pi_t^* (dif x) - pi_t (dif x)) Lambda_P^a (dif t) = N^a (dif t times dif x) - pi_t^* (dif x) Lambda_P^a (dif t)
     $
-    is a $Q$-$cal(F)_t$-local martingale. The second statement follows similarly.
+    is a $Q$-$cal(F)_t$-local martingale. The second statement follows by noting that
+    $
+        [M^(y), K]_t &= integral_0^t Delta N_t^y sum_j ((pi_s^* (a_j))/(pi_s (a_j)) - 1) N^(a, a_j) (dif s)  \
+            &- integral_0^t Delta Lambda_P^y (s) sum_j ((pi_s^* (a_j))/(pi_s (a_j)) - 1) M^(a, a_j) (dif s) \
+    $
+    where we apply the trick with adding and subtracting the treatment compensators in the second term.
+    The first term is zero because no two counting processes jump at the same time.
+    The second term is a local martingale. This implies $angle.l M^(y), K angle.r_t^P = 0$.
+    For $x=ell$ the argument is the same.
 ]
 
 == Comparison of the exchangeability condition of @rytgaardContinuoustimeTargetedMinimum2022
@@ -457,8 +466,8 @@ which implies $(\*)$.
 If $N^a (dot times {0,1})$ is a predictable counting process
 with respect to $cal(F)_t$, we will see that this indeed is the case.
 If this holds, $S$ is predictable, and so $S in sigma(cal(F)_S^-)$ (Theorem 2.2.19 of @last1995marked).
-If $N^a_t$-predictable, then $N_t^a in sigma(cal(F)_(t-))$ (Theorem 2.2.6 of @last1995marked);
-therefore $Delta N_S^a in sigma(cal(F)_S^-)$.
+If $N^a_t$-predictable, then $N_t^a in sigma(cal(F)_(t-), t)$ (Theorem 2.2.6 of @last1995marked);
+therefore $Delta N_S^a in sigma(cal(F)_S^-, S)$.
 //However, due to the classical fact that conditional independence and independence
 //never imply each other, the two statements are not equivalent and are generally different.
 // If it does not depend on T_a, is that enough?
@@ -502,35 +511,128 @@ We then have the following result.
     // Conversely, to see that it is necessary, we have directly (\*\*); however this is precisely what we needed to show $(\*!)$.
 ]
 
+= Which other solutions can we think of besides the one given in @thm:identifiabilitymartingale and in @ryalenPotentialOutcomes?
+
+#theorem[
+$
+    cal(E) (K^*)_t = cal(E) (K^*)_t cal(E) (- bb(N)^a)_t quad P-"a.s."
+$
+    if and only if
+$
+    bb(1) {tau^(g^*) < oo} K^*_(tau^(g^*)) = - bb(1) {tau^(g^*) < oo} quad P-"a.s."
+$
+]
+
 = Score operator calculations
 
-Consider some parametric submodel $P_epsilon$ of $P_0$,
-$epsilon in (-delta, delta)$ for some $delta > 0$.
-These give rise to submodels of the compensator $Lambda^a_epsilon (A)$.
-For any $WW^epsilon = cal(E) (KK^epsilon)$,
-L'Hopitals rule gives that
+Let $macron(K)_t = K^*_t + bb(N)_t^a$
+for a given (local) martingale $K_t^*$ with $Delta K_t^* >= -1$
+and $Delta K_t^* = -1$ if and only if $t = tau^(g^*)$ and $tau^(g^*) < oo$.
+Then, it is the case that $Delta macron(K)_t = bb(1) {t != tau^(g^*)} Delta K_t^*
++ bb(1) {t = tau^(g^*)} (0) > -1$ so $cal(E) (macron(K)) > 0$.
+First, we see that
 $
-    lim_(epsilon -> 0) ((WW^epsilon (t)) / (WW^0 (t)) - 1)/epsilon &= lim_(epsilon^* -> 0) (partial /(partial epsilon) WW^(epsilon) (t)) / (WW^0 (t)) |_(epsilon = epsilon^*) \
-        &=^("Thm. 8 of " \ #cite(<gill1990survey>))  lim_(epsilon^* -> 0) (WW^(epsilon^*) (t)) / (WW^0 (t)) integral_0^t 1/(1+ Delta KK^(epsilon^*)_s) (partial /(partial epsilon) KK^(epsilon) (dif s)) |_(epsilon = epsilon^*) \
-        &= integral_0^t lim_(epsilon^* -> 0) 1/(1+ Delta KK^(epsilon^*)_s) (partial /(partial epsilon) KK^(epsilon) (dif s)) |_(epsilon = epsilon^*) \
-        &= integral_0^t 1/(1+ Delta KK^(0)_s) lim_(epsilon^* -> 0) (partial /(partial epsilon) KK^(epsilon) (dif s)) |_(epsilon = epsilon^*) \
+    cal(E) (K^*)_t &= cal(E) (- bb(N)^a)_t cal(E) (K^*)_t \
+        &= cal(E) (K^* + bb(N)^a - bb(N)^a)_t cal(E) (- bb(N)^a)_t \
+        &= cal(E) (macron(K))_t cal(E) (- bb(N)^a)_t.
 $
-For our specific case, i.e.,
+Let $macron(W) = cal(E) (macron(K))$ and $partial_epsilon f(epsilon) = evaluated((partial)/(partial epsilon) f(epsilon))_(epsilon = 0)$.
+//Thus $macron(W) = cal(E) (macron(K))$ satisfies the desired property of
+//"Score operators for artificial censoring experiments".
+Then, let $cal(L)$ denote the stochastic logarithm, so that
 $
-    KK_t^epsilon = integral_0^t sum_(j=1)^k ((pi^*_(s) ({a_j}))/(pi_(s,epsilon) ({a_j})) - 1) M^(a, a_j)_epsilon (dif s) = integral_0^t sum_(j=1)^k ((pi^*_(s) ({a_j}))/(pi_(s,epsilon) ({a_j})) - 1) N^(a, a_j) (dif s),
+    1/epsilon cal(L) ((macron(W)^epsilon) / (macron(W)^0))_t &= 1/epsilon cal(L) (cal(E) (macron(K)^epsilon) cal(E) (- macron(K)^0 + sum_(0 < s <= dot) (Delta macron(K)^0_s)^2 / (1 + Delta macron(K)^0_s)))_t \
+        &= 1/epsilon cal(L) (cal(E) (macron(K)^epsilon - macron(K)^0 + sum_(0 < s <= dot) (Delta macron(K)^0_s)^2 / (1 + Delta macron(K)^0_s) + [macron(K)^epsilon, - macron(K)^0 + sum_(0 < s <= dot) (Delta macron(K)^0_s)^2 / (1 + Delta macron(K)^0_s)]))_t \
+        &= 1/epsilon (macron(K)_t^epsilon - macron(K)_t^0 + sum_(0 < s <= t) (Delta macron(K)^0_s)^2 / (1 + Delta macron(K)^0_s) + [macron(K)^epsilon, - macron(K)^0 + sum_(0 < s <= dot) (Delta macron(K)^0_s)^2 / (1 + Delta macron(K)^0_s)]_t) \
+        &= 1/epsilon (macron(K)_t^epsilon - macron(K)_t^0 + sum_(0 < s <= t) (Delta macron(K)^0_s)^2 / (1 + Delta macron(K)^0_s) - [macron(K)^epsilon, sum_(0 < s <= dot) (Delta macron(K)^0_s) / (1 + Delta macron(K)^0_s)]_t) \
+        &= 1/epsilon (macron(K)_t^epsilon - macron(K)_t^0 + sum_(0 < s <= t) (Delta macron(K)^0_s)^2 / (1 + Delta macron(K)^0_s) - sum_(0 < s <= t) Delta macron(K)_s^epsilon (Delta macron(K)^0_s) / (1 + Delta macron(K)^0_s)) \
+        &-> partial_epsilon macron(K)_t^epsilon - sum_(0 < s <= t) (partial_epsilon Delta macron(K)_s^epsilon) (Delta macron(K)^0_s) / (1 + Delta macron(K)^0_s) 
 $
-but also that
-$
-    partial KK_t^epsilon &= (partial integral_0^t sum_(j=1)^k ((pi^*_(s) ({a_j}))/(pi_(s,epsilon) ({a_j})) - 1) M^(a, a_j)_epsilon (dif s) \
-        &= integral_0^t (partial sum_(j=1)^k ((pi^*_(s) ({a_j}))/(pi_(s,epsilon) ({a_j})) - 1) N^(a, a_j) (dif s) \
-            &quad - integral_0^t sum_(j=1)^k pi^*_(s) ({a_j}) partial Lambda^(a)_epsilon (dif s) + integral_0^t sum_(j=1)^k partial (Lambda^(a, a_j)_epsilon (dif s)) \
-                &= -integral_0^t  sum_(j=1)^k (pi^*_(s) ({a_j}))/(pi_(s,0) ({a_j}))^2 pi_(s,0) ({a_j}) Gamma_s^(a,a_j,pi) N^(a, a_j) (dif s) \
-            //&quad - integral_0^t sum_(j=1)^k pi^*_(s) ({a_j}) Gamma^(a, Lambda)_s Lambda^(a) (dif s) + integral_0^t sum_(j=1)^k Gamma^(a, a_j, Lambda)_s Lambda^(a, a_j) (dif s) \
-$
-First note that
-$
-    pi_(s,epsilon) ({a_j}) = (dif Lambda^(a, a_j)_(epsilon,s)) / (dif Lambda^a_(epsilon,s))
-$
-This equals 
+as $epsilon -> 0$, where we use dominated convergence and L'Hopitals rule for the last step.
+The result is presented in @eq:scoreoperator.
 
+We will also need to calculate $partial_epsilon (pi_s ({a_j}) (P_epsilon))$,
+which by definition fulfills that
+$
+    Lambda^(a,a_j) (dif t) (P_epsilon) &=  pi_t ({a_j}) (P_epsilon) Lambda^(a) (dif t) (P_epsilon),
+$
+where $M^a = sum_(j=1)^K M^(a, a_j)$.
+Taking the derivative on both sides gives
+$
+    angle.l Gamma, M^(a, a_j) angle.r_t^P &= (partial_epsilon (pi_t ({a_j}) (P_epsilon)) Lambda^(a) (dif t) (P_0) + pi_t ({a_j}) (P_0) dif angle.l Gamma, M^(a) angle.r_t^P)
+$
+so we conclude that
+$
+    partial_epsilon (pi_t ({a_j}) (P_epsilon)) &= (dif angle.l Gamma, M^(a, a_j) angle.r_t^P - pi_t ({a_j}) (P_0) dif angle.l Gamma, M^(a) angle.r_t^P) / (dif Lambda^(a) (t) (P_0)) \
+        &= (dif angle.l Gamma, (1-pi_dot ({a_j}) (P_0)) bullet M^(a, a_j) - pi_dot ({a_j}) (P_0) bullet sum_(i != j) M^(a, a_i) angle.r_t^P) / (dif Lambda^(a) (t) (P_0)) \
+$
+Here, we have used that using that $partial_epsilon Lambda_t (P_epsilon) = angle.l Gamma, M angle.r_t^P$
+if $M = N - Lambda (P)$.
+
+Let $m_(s,k)^*$ predictable be given by $m_(s,k)^* = bb(1) {event(k-1) < s <= event(k)} bb(1) {j = g^*_k (history(k-1), s)}$. With $K_t^* = K_(t and tau^(g*))$, we can take 
+$
+    macron(K)_t &= integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K bb(1) {event(k-1) < s <= event(k)} ((pi^*_(s) ({a_j}))/(pi_(s) ({a_j})) - 1) N^(a, a_j) (dif s) + bb(N)_t^a \
+        &= integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K bb(1) {event(k-1) < s <= event(k)} bb(1) {j != g^*_k (history(k-1), s)} ( - 1) N^(a, a_j) (dif s) + bb(N)_t^a \
+        &quad + integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* ((1)/(pi_(s) ({a_j})) - 1) N^(a, a_j) (dif s) \
+        &= integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* ((1)/(pi_(s) ({a_j})) - 1) N^(a, a_j) (dif s)
+$ <eq:barKrep1>
+This can also be written as
+$
+    macron(K)_t &= integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* ((1)/(pi_(s) ({a_j})) - 1) M^(a, a_j) (dif s) + bb(L)_t^a
+$ <eq:barKrep2>
+Calculating the derivative of @eq:barKrep2 gives
+$
+    partial_epsilon macron(K)_t^epsilon &= - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1)/(pi_(s) ({a_j}) (P_0)^2) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) M^(a, a_j) (dif s) \
+        &quad - integral_0^(tau and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* ((1)/(pi_(s) ({a_j})) - 1) partial_epsilon (Lambda^(a, a_j) (dif s) (P_epsilon)) + partial_epsilon bb(L)_t^a (P_epsilon) \
+        &=- integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1)/(pi_(s) ({a_j}) (P_0)^2) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) M^(a, a_j) (dif s) \
+        &quad - integral_0^(tau and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* ((1)/(pi_(s) ({a_j})) - 1) dif angle.l Gamma, M^(a, a_j) angle.r^P_s + angle.l Gamma, bb(L)^a angle.r^P_t \
+        &= -integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1)/(pi_(s) ({a_j}) (P_0)^2) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) M^(a, a_j) (dif s) - angle.l Gamma, K^* angle.r^P_(t),
+$
+again using that $partial_epsilon Lambda_t (P_epsilon) = angle.l Gamma, M angle.r_t^P$
+if $M = N - Lambda (P)$ is a $P$-martingale.
+On the other hand also calculating it for @eq:barKrep1 gives
+$
+    partial_epsilon macron(K)_t^epsilon &= -integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1)/(pi_(s) ({a_j}) (P_0)^2) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) N^(a, a_j) (dif s) 
+$
+Also note that
+$
+    (Delta macron(K)^0_s) / (1 + Delta macron(K)^0_s) = sum_(k) sum_(j=1)^K m_(s,k)^* (1-pi_(s) ({a_j})) Delta N^(a, a_j) (s)
+$
+Thus,
+$
+    sum_(0 < s <= t) (partial_epsilon Delta macron(K)_s^epsilon) (Delta macron(K)^0_s) / (1 + Delta macron(K)^0_s) &= - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) 1/(pi_s ({a_j}))^2 (1-pi_(s) ({a_j})) N^(a, a_j) (dif s) \
+        &=- integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1)/(pi_(s) ({a_j}) (P_0)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) N^(a, a_j) (dif s) \
+            &= - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1)/(pi_(s) ({a_j}) (P_0)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) M^(a, a_j) (dif s) \
+        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1)/(pi_(s) ({a_j}) (P_0)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) Lambda^(a, a_j) (dif s) 
+$
+Conclude that, if $pi_s ({a_j}) (P_0) > 0$ for all $s in [0, T]$ and $j$,
+$
+    &partial_epsilon macron(K)_t^epsilon - sum_(0 < s <= t) (partial_epsilon Delta macron(K)_s^epsilon) (Delta macron(K)^0_s) / (1 + Delta macron(K)^0_s) \
+        &=- integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1)/(pi_(s) ({a_j}) (P_0)^2) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) M^(a, a_j) (dif s)  - angle.l Gamma, K^* angle.r^P_(t) \
+        &quad + integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1)/(pi_(s) ({a_j}) (P_0)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) M^(a, a_j) (dif s) \
+        &quad + integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1)/(pi_(s) ({a_j}) (P_0)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) Lambda^(a, a_j) (dif s) \
+        &= - angle.l Gamma, K^* angle.r^P_(t) \
+        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1)/(pi_(s) ({a_j}) (P_0)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) M^(a, a_j) (dif s) \
+        &quad + integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1)/(pi_(s) ({a_j}) (P_0)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) Lambda^(a, a_j) (dif s) \
+         &= - angle.l Gamma, K^* angle.r^P_(t) \
+        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (dif angle.l Gamma, M^(a, a_j) angle.r_s^P - pi_s ({a_j}) (P_0) dif angle.l Gamma, M^(a) angle.r_s^P) / (dif Lambda^(a, a_j) (s) (P_0)) M^(a, a_j) (dif s) \
+        &quad + integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1/(pi_(s) ({a_j}))-1) (dif angle.l Gamma, M^(a, a_j) angle.r_t^P - pi_s ({a_j}) (P_0) dif angle.l Gamma, M^(a) angle.r_s^P) \
+        &= - angle.l Gamma, K^* angle.r^P_(t) \
+        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (dif angle.l Gamma, M^(a, a_j) angle.r_s^P - pi_s ({a_j}) (P_0) dif angle.l Gamma, M^(a) angle.r_s^P) / (dif Lambda^(a, a_j) (s) (P_0)) M^(a, a_j) (dif s) \
+        &quad +integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1/(pi_(s) ({a_j}))-1) dif angle.l Gamma, M^(a, a_j) angle.r_s^P \
+        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1-pi_(s) ({a_j})) (P_0) dif angle.l Gamma, M^(a) angle.r_s^P \
+$ <eq:scoreoperatorfinal>
+Note that $(dif angle.l Gamma, (1-pi_dot ({a_j}) (P_0)) bullet M^(a, a_j) - pi_dot ({a_j}) (P_0) bullet sum_(i != j) M^(a, a_i) angle.r_s^P) / (dif Lambda^(a, a_j) (s) (P_0))$
+can be be chosen predictable so that the corresponding term is a (local) martingale
+and that the last two terms in @eq:scoreoperatorfinal can be written as $angle.l Gamma, Z angle.r_t^P$
+for some (local) martingale $Z$ not specified (here).
+Conclude that the Score operator is given by
+$
+    Gamma &mapsto Gamma - angle.l Gamma, K^* angle.r^P_(t) \
+        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (dif angle.l Gamma, M^(a, a_j) angle.r_s^P - pi_s ({a_j}) (P_0) dif angle.l Gamma, M^(a) angle.r_s^P) / (dif Lambda^(a, a_j) (s) (P_0)) M^(a, a_j) (dif s) \
+        &quad +integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1/(pi_(s) ({a_j}))-1) dif angle.l Gamma, M^(a, a_j) angle.r_s^P \
+        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1-pi_(s) ({a_j})) (P_0) dif angle.l Gamma, M^(a) angle.r_s^P \
+$ <eq:scoreoperator>
+The three last terms, which is a $Q$-(local) martingale consists
+of a sum of a $P$-predictable process and a $P$-(local) martingale.
 #bibliography("references/ref.bib",style: "apa")

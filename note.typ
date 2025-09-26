@@ -695,6 +695,28 @@ This means that we usually select $t_1=0$ and $t_m <= tau - min_i macron(T)_(k+1
 ]
 
 = Rates for the ICE-IPCW procedure
+In this section, we discuss the rates of convergence for the ICE-IPCW estimator
+and variations thereof.
+Consider i.i.d. observations from $P_0 in cal(M)$
+and a learner $cal(L)_o$ that maps
+$cal(L)_o: (O_i)_(i=1)^n mapsto m_n$.
+Let $cal(J)_(n k)$ be a collection of measurable functions
+$f_k: [0, tauend] times cal(F)_k -> [0,1]$.
+Furthermore, let
+$
+    cal(A)_(k u) := {h_u (O): h_u in L_2 (P), mean(P) [h_u | historycensored(k)] = Qbar(k+1) (u, historycensored(k)) }
+$
+for $u <= tau$. Consider the squared error loss
+$L: cal(Z) times cal(F)_(k)$ where $L(m, f) := (m(f) - f)^2$.
+
+We consider the least squares regression estimator given by
+$
+    m_(k,n) (u) := "argmin"_(f in cal(J)_(n k)) 1/n sum_(i=1)^n (macron(Z)^a_(k, tau) (u) (hat(S)^c, m_(k+1, n)) - f (historycensored(k)))^2
+$
+
+x
+
+
 Recall the definitions $Qbar(K): (a_k, h_k) mapsto 0$ and define recursively, for $k = K, dots, 0$,
 $
         macron(Z)^a_(k, tau) (u) =
@@ -710,13 +732,17 @@ $
 where $h_k = (a_k, l_k, t_k, d_k, dots, a_0, l_0)$.
 However, in practice, we need to estimate $Qbar(k)$ and $tilde(S)^c$
 since these are unknown quantities.
-We may denote these by $hat(Qbar(k+1))$ and $hat(S)^c$;
-whence $hat(Z)^a_(k, tau)$ can be obtained.
+We may denote these by $m_(k+1,n)$ and $hat(S)^c$;
+whence estimates of the pseudo-outcomes $macron(Z)^a_(k, tau) (hat(S)^c, m_(k+1, n))$ can be obtained.
 After this we can apply our regression estimator of choice.
 Let $m_(k,n)$ be an estimator of $Qbar(k)$ obtained
 in this way and let $m^*_(k,n)$ denote the estimate
 obtained by regressing $macron(Z)^a_(k, tau)$
-directly on the history $historycensored(k)$. An elementary bound gives,
+directly on the history $historycensored(k)$.
+This is the oracle estimator
+in which we use the true values of $tilde(S)^c$ and
+$Qbar(k+1)$.
+An elementary bound gives,
 $
     integral (Qbar(k) (u; f_k) - m_(k,n) (u, f_k)^2 P (dif f_k)
         &<= 2 integral (Qbar(k) (u; f_k) - m^*_(k,n) (u, f_k))^2 P (dif f_k) \
@@ -727,9 +753,33 @@ the convergence rate of the regression estimator used.
 However, the second term is evidently more difficult.
 To relax this problem, we consider specifically the case
 when the regression estimator is a least squares regression
-estimator. 
+estimator, i.e., $m_(k,n)$ minimizes
+$
+    m_(k,n) := "argmin"_(f in cal(F)_n) 1/n sum_(i=1)^n (macron(Z)^a_(k, tau) (hat(S)^c, m_(k+1, n)) - f (historycensored(k)))^2
+$
+Similarly, $m^*_(k,n)$ minimizes
+$
+    m^*_(k,n) := "argmin"_(f in cal(F)_n) 1/n sum_(i=1)^n (macron(Z)^a_(k, tau) (tilde(S)^c, Qbar(k+1)) - f (historycensored(k)))^2 
+$
+The estimators are related in the following way.
+$
+    m_(k,n) <= 2/n sum_(i=1)^n (macron(Z)^a_(k, tau) (hat(S)^c, m_(k+1, n)) - macron(Z)^a _(k, tau) (tilde(S)^c, Qbar(k+1)))^2 +2 m^*_(k,n)
+$
+We can write
+$
+    &integral (m^*_(k,n) (u, f_k) - m_(k,n) (u, f_k))^2 P (dif f_k) \
+        &= 
+$
+// Notes: van der laan bound in Lemma 5.3, bounds in terms of previous regression and pi (here can use lemma 19.24 of van der vaaart)
+// and for the second term involving vc dimension, we should be able to use some other bracketing number. 
 
-= Discussion
+
+//         &<=//  integral (m^*_(k,n) (u, f_k) - m_(k,n) (u, f_k))^2 (P (dif f_k) - bb(P)_n (dif f_k)) \
+//         &+ 2/n sum_(i=1)^n (macron(Z)^a_(k, tau) (hat(S)^c, m_(k+1, n)) - m_(k,n) (u, f_k))^2 \
+//         &+ 2/n sum_(i=1)^n (macron(Z)^a_(k, tau) (tilde(S)^c, Qbar(k+1)) - m^*_(k,n) (u, f_k))^2 \
+// $
+
+// = Discussion
 
 Let us discuss a pooling approach to handle the issue with few events. We consider parametric maximum likelihood estimation for the cumulative cause specific censoring-hazard $Lambda_(theta_k)^c$ of the $k$'th event. 
 Pooling is that we use the model $Lambda_(theta_j)^c = Lambda_(theta^*)^c$ for all $j in S subset.eq {1, dots, K}$ and $theta^* in Theta^*$
