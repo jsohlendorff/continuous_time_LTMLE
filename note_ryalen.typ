@@ -614,24 +614,24 @@ $
         &= - angle.l Gamma, K^* angle.r^P_(t) \
         &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1)/(pi_(s) ({a_j}) (P_0)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) M^(a, a_j) (dif s) \
         &quad + integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1)/(pi_(s) ({a_j}) (P_0)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) Lambda^(a, a_j) (dif s) \
-         &= - angle.l Gamma, K^* angle.r^P_(t) \
-        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (dif angle.l Gamma, M^(a, a_j) angle.r_s^P - pi_s ({a_j}) (P_0) dif angle.l Gamma, M^(a) angle.r_s^P) / (dif Lambda^(a, a_j) (s) (P_0)) M^(a, a_j) (dif s) \
-        &quad + integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1/(pi_(s) ({a_j}))-1) (dif angle.l Gamma, M^(a, a_j) angle.r_t^P - pi_s ({a_j}) (P_0) dif angle.l Gamma, M^(a) angle.r_s^P) \
         &= - angle.l Gamma, K^* angle.r^P_(t) \
-        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (dif angle.l Gamma, M^(a, a_j) angle.r_s^P - pi_s ({a_j}) (P_0) dif angle.l Gamma, M^(a) angle.r_s^P) / (dif Lambda^(a, a_j) (s) (P_0)) M^(a, a_j) (dif s) \
-        &quad +integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1/(pi_(s) ({a_j}))-1) dif angle.l Gamma, M^(a, a_j) angle.r_s^P \
-        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1-pi_(s) ({a_j})) (P_0) dif angle.l Gamma, M^(a) angle.r_s^P \
+        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1)/(pi_(s) ({a_j}) (P_0)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (M^(a, a_j) (dif s) - sum_v sum_i m_(s,v)^* (1/(pi_(s) ({a_i}))-1) Lambda^(a, a_i) (dif s)) \
+        &= - angle.l Gamma, K^* angle.r^P_(t) \
+        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1)/(pi_(s) ({a_j}) (P_0)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (M^(a, a_j) (dif s) - sum_v sum_i (m_(s,v)^* (1/(pi_(s) ({a_i}))-1) \
+            &quad quad - (0/(pi_s ({a_j})) - 1) bb(1) {event(v-1) < s <= event(v)} bb(1) {j != g^*_v (history(v-1), s)} Lambda^(a, a_i) (dif s))\
+        &= - angle.l Gamma, K^* angle.r^P_(t) \
+            &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1)/(pi_(s) ({a_j}) (P_0)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (M^(a, a_j) (dif s) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
+            &= - angle.l Gamma, K^* angle.r^P_(t) \
+            &quad  - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (dif angle.l Gamma, M^(a, a_j) angle.r_t^P - pi_t ({a_j}) (P_0) dif angle.l Gamma, M^(a) angle.r_t^P) / (dif Lambda^(a, a_j) (t) (P_0)) (M^(a, a_j) (dif s) - dif angle.l M^(a, a_j), K^* angle.r_s^P) 
 $ <eq:scoreoperatorfinal>
-Note that $(dif angle.l Gamma, (1-pi_dot ({a_j}) (P_0)) bullet M^(a, a_j) - pi_dot ({a_j}) (P_0) bullet sum_(i != j) M^(a, a_i) angle.r_s^P) / (dif Lambda^(a, a_j) (s) (P_0))$
+Note that $(dif angle.l Gamma, M^(a, a_j) angle.r_t^P - pi_t ({a_j}) (P_0) dif angle.l Gamma, M^(a) angle.r_t^P) / (dif Lambda^(a, a_j) (t) (P_0))$
 can be be chosen predictable so that the corresponding term is a (local) martingale
 and that the last two terms in @eq:scoreoperatorfinal can be written as $angle.l Gamma, Z angle.r_t^P$
 for some (local) martingale $Z$ not specified (here).
 Conclude that the Score operator is given by
 $
     Gamma &mapsto Gamma - angle.l Gamma, K^* angle.r^P_(t) \
-        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (dif angle.l Gamma, M^(a, a_j) angle.r_s^P - pi_s ({a_j}) (P_0) dif angle.l Gamma, M^(a) angle.r_s^P) / (dif Lambda^(a, a_j) (s) (P_0)) M^(a, a_j) (dif s) \
-        &quad +integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1/(pi_(s) ({a_j}))-1) dif angle.l Gamma, M^(a, a_j) angle.r_s^P \
-        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (1-pi_(s) ({a_j})) (P_0) dif angle.l Gamma, M^(a) angle.r_s^P \
+        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (dif angle.l Gamma, M^(a, a_j) angle.r_t^P - pi_t ({a_j}) (P_0) dif angle.l Gamma, M^(a) angle.r_t^P) / (dif Lambda^(a, a_j) (t) (P_0)) (M^(a, a_j) (dif s) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
 $ <eq:scoreoperator>
 The three last terms, which is a $Q$-(local) martingale consists
 of a sum of a $P$-predictable process and a $P$-(local) martingale.
