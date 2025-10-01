@@ -96,10 +96,10 @@
 }
 
 #let cumhazardcensored(eventno, which, var) = {
-    $tilde(Lambda)_(#eventno)^(#which)(#var, cal(F)^beta_(macron(T)_((#eventno - 1))))$
+    $tilde(Lambda)_(#eventno)^(#which)(#var, cal(F)_(macron(T)_((#eventno - 1))))$
 }
 #let cumhazardcensoredprev(eventno, which, var) = {
-    $tilde(Lambda)_(#eventno+1)^(#which)(#var, cal(F)^beta_(macron(T)_((#eventno))))$
+    $tilde(Lambda)_(#eventno+1)^(#which)(#var, cal(F)_(macron(T)_((#eventno))))$
 }
 
 #let historypast(eventno) = $underline(history(#eventno))$
@@ -157,6 +157,7 @@
 }
 
 #let densitytrt(time, which) = $pi_(#which) (#time, covariate(#which), history(#which - 1))$
+#let densitytrtint(time, which) = $pi^*_(#which) (#time, covariate(#which), history(#which - 1))$
 #let densitytrtnext(time, which) = $pi_(#which+1) (#time, covariate(#which + 1), treat(#which), H_(#which))$
 #let densitytrtcensored(time, which) = $pi_(#which) (#time, covariatecensored(#which), historycensored(#which - 1))$
 #let densitycova(time, arg, which) = $mu^a_(#which) (#time, #arg, history(#which - 1))$

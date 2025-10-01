@@ -6,7 +6,7 @@
 #set cite(form: "prose")
 #show ref: it => [#text(fill: blue)[#it]]
 #show: arkheion.with(
-    title: "A Novel Sequential Regression Approach for Efficient Continuous-Time Causal Inference",
+    title: "A Sequential Regression Approach for Efficient Continuous-Time Causal Inference",
     authors: (
         (name: "Johan S. Ohlendorff", email: "johan.ohlendorff@sund.ku.dk", affiliation: "University of Copenhagen", orcid: "0009-0006-8794-6641"),
         (name: "Anders Munch", email: "a.munch@sund.ku.dk", affiliation: "University of Copenhagen", orcid: "0000-0003-4625-1465"),
@@ -64,16 +64,15 @@ Randomized controlled trials (RCTs) are widely regarded as the gold standard for
 However, RCTs are often expensive, time-consuming, and in many cases infeasible or unethical to conduct.
 As a result, researchers frequently turn to observational data as an alternative.
 Even in RCTs, challenges such as treatment noncompliance and time-varying confounding — due to factors like side effects or disease progression — can complicate causal inference.
-In such cases, one may be interested in estimating the effects of initiating or adhering to treatment over time
-on a medical outcome such as the time to an event of interest.
 
 Marginal structural models (MSMs), introduced by @robins1986, are a widely used approach for estimating causal effects from observational data, particularly in the presence of time-varying confounding and treatment.
-MSMs typically require that data be recorded on a discrete time scale, capturing all relevant information available to the clinician at each treatment decision point and for the outcome.
+Discrete-time MSMs typically require that data be recorded on a discrete time scale.//, capturing all relevant information available to the clinician at each treatment decision point and for the outcome.
+Longitudinal Targeted Maximum Likelihood Estimation (LTMLE) (@ltmle) is often used for estimating causal effects in discrete time.
 
 However, many real-world datasets — such as health registries — are collected in continuous time, with patient characteristics updated at irregular, subject-specific times.
 These datasets often include detailed, timestamped information on events and biomarkers, such as drug purchases, hospital visits, and laboratory results.
 Analyzing data in its native continuous-time form avoids the need for discretization
-which results in bias (@ryalen2019additive @discretization2020guerra @kant2025irregular @sun2023role @adams2020impact @sofrygin2019targeted).
+which can result in bias (@ryalen2019additive @discretization2020guerra @kant2025irregular @sun2023role @adams2020impact @sofrygin2019targeted).
 
 In this paper, we consider a longitudinal continuous-time framework similar to that of @rytgaardContinuoustimeTargetedMinimum2022
 and @roysland2011martingale.
@@ -85,14 +84,17 @@ iteratively updates nuisance parameters
 by regressing back through the history. Both
 methods extend the original discrete-time iterative regression method introduced by @bangandrobins2005.
 A key advantage of using iterative regressions is that the resulting estimator will be
-less sensitive to/near practical positivity violations.
+less sensitive to/near practical positivity violations
+compared to inverse probability of treatment weighting (IPW) estimators.
 
 A key innovation in our method is that these updates are performed by indexing backwards through the number of events rather than through calendar time.
-This then allows us to apply simple regression techniques
-for the nuisance parameters. 
-Moreover, our estimator addresses challenges associated with the high dimensionality of the target parameter by employing inverse probability of censoring weighting (IPCW).
+This allows us to apply standard regression techniques to estimate nuisance parameters.
+Moreover, our estimator accounts for the temporal complexity of the target parameter through inverse probability of censoring weighting (IPCW).
+To draw an analogy, in multi-state settings, state occupation probabilities are expressed as multiple—often numerous—integrals over the transition intensities between states.
+In contrast, in non-Markov settings, even if these transition intensities can be estimated, the corresponding integrals are typically not numerically tractable
+to compute without resorting to Monte Carlo methods.
 The distinction between event-based and time-based updating is illustrated in @fig:timegrid and @fig:eventgrid.
-To the best of our knowledge, no general estimation procedure has yet been proposed for the components involved in the efficient influence function.
+//To the best of our knowledge, no general estimation procedure has yet been proposed for the components involved in the efficient influence function.
 
 For electronic health records (EHRs), the number of registrations for each patient can be enormous.
 However, for finely discretized time grids in discrete time,
@@ -103,10 +105,14 @@ Yet, many existing methods for estimating causal effects in continuous time
 apply inverse probability of treatment weighting (IPW)
 to estimate the target parameter (e.g., @roeysland2024 @roysland2011martingale).
 
-Continuous-time methods for causal inference in event history analysis have also been explored by @roysland2011martingale and @lok2008.
-@roysland2011martingale developed identification criteria using a formal martingale framework based on local independence graphs,
-enabling causal effect estimation in continuous time via a change of measure.
-We shall likewise employ a change of measure to define the target parameter.
+Earlier work on continuous-time methods for causal inference in event history analysis are @roysland2011martingale and @lok2008.
+@roysland2011martingale developed identification criteria using a martingale framework based on local independence graphs,
+enabling causal effect estimation in continuous time via a change of measure. We shall likewise employ a change of measure to define the target parameter.
+
+Most of the existing literature on continuous-time causal inference have been concerned theoretical identification formulas
+In contrast, our work focuses on deriving a feasible, efficient, and debiased estimator.
+In this sense, our work is related to @shirakawaContinuousTime; however, they restrict attention to a specific type of nuisance parameter estimator and use a discrete-time approximation of the efficient influence function.
+Our method is agnostic to the type of nuisance parameter estimator used and relies on the exact continuous-time efficient influence function.
 
 In @section:setting,
 we introduce the setting and notation used throughout the paper.
@@ -140,14 +146,16 @@ emulating a diabetes trial.
 Let $tauend$ be the end of the observation period.
 We will focus on the estimation of the interventional absolute risk in the presence of time-varying confounding at a specified time horizon $tau < tauend$.
 We let $(Omega, cal(F), P)$ be a statistical experiment on which all processes
-and random variables are defined. 
+and random variables are defined.
+// Anders comment: don't know what it means here.
 
 At baseline,
 we record the values of the treatment $treat(0)$ and the time-varying covariates $covariate(0)$
 and let $cal(F)_0 = sigma(treat(0), covariate(0))$ be the $sigma$-algebra corresponding
 to the baseline information.
-It is not a loss of generality to assume that we have two treatment options over time so that $A(t) in {0, 1}$ (e.g., placebo and active treatment),
-where $A(t)$ denotes the treatment at time $t>=0$.
+We assume that there are a finite number of treatment options.
+It is then not a loss of generality to assume that we have two treatment options over time so that $A(t) in {0, 1}$ (e.g., placebo and active treatment),
+where $A(t)$ denotes the treatment at time $t>=0$ as contrasts are often of interest.
 
 The time-varying confounders $L(t)$ at time $t>0$ are assumed
 to take values in a finite subset $cal(L) subset RR^m$,
@@ -157,13 +165,16 @@ jump processes.
 Furthermore, we require that the times at which the treatment and covariate values may change 
 are dictated entirely by the counting processes $(N^a (t))_(t>=0)$ and $(N^ell (t))_(t>=0)$, respectively
 in the sense that $Delta A (t) != 0$ only if $Delta N^a (t) != 0$ and $Delta L (t) != 0$ only if $Delta N^ell (t) != 0$ or $Delta N^a (t) != 0$.
-Note that we allow, for practical reasons, some of the covariate values to change at the same time as the treatment values.
-This can occur if registrations occur only on a daily level if, for example, a patient visits the doctor,
-gets a blood test, and receives a treatment all on the same day.
+The process $N^a$ determines when the doctor may decide on treatment,
+but we allow for the time-varying covariates to change at the same time as the treatment values.
+$N^ell$ determines when only the covariate values may change, but not the treatment values.
+//Note that we allow, for practical reasons, some of the covariate values to change at the same time as the treatment values.
+//This can occur if registrations occur only on a daily level if, for example, a patient visits the doctor,
+//gets a blood test, and receives a treatment all on the same day.
 This means that we can practically assume that $Delta N^a Delta N^ell equiv 0$.
 For technical reasons and ease of notation, we shall assume that the number of jumps at time $tauend$
 for the processes $L$ and $A$ satisfies $N^a (tauend)+ N^ell (tauend) <= K - 1$ $P$-a.s. for some $K >= 1$.
-Let further $(N^y (t))_(t>=0)$ and the competing event $(N^d (t))_(t>=0)$
+Let further $(N^y (t))_(t>=0)$ and $(N^d (t))_(t>=0)$
 denote the counting processes for the event of interest and the competing event, respectively.
 It is reasonable to also assume that $Delta N^y Delta N^x equiv 0$ for $x in {a, ell, d}$ and $Delta N^d Delta N^x equiv 0$ for $x in {a, ell, y}$;
 therefore $(N^y, N^d, N^a, N^ell)$ is a multivariate counting process in the sense of @andersenStatisticalModelsBased1993.
@@ -172,29 +183,39 @@ Thus, we have observations from a jump process $alpha(t) = (N^a (t), A (t), N^el
 and the natural filtration $(cal(F)_t)_(t>=0)$ is given by $cal(F)_t = sigma (alpha(s) | s <= t) or cal(F)_0$.
 Let $event(k)$ be the $k$'th ordered jump time of $alpha$, that is $T_0 = 0$ and $event(k) = inf {t > event(k-1) | alpha (t) != alpha (event(k-1))} in [0, oo]$ be the time of the $k$'th event
 and let $status(k) in {c, y, d, a, ell}$ be the status of the $k$'th event, i.e., $status(k) = x$ if $Delta N^x (event(k)) = 1$.
-We let $event(k+1) = oo$ if $event(k) = oo$ or $status(k-1) in {y, d, c}$.
-As is common in the point process literature, we define $status(k) = Ø$
-if $event(k) = oo$ or $status(k-1) in {y, d,c }$ for the empty mark.
+We let $event(k+1) = oo$ if $event(k) = oo$ or $status(k) in {y, d, c}$.
+As is common in the point process literature, we define $status(k) = A(oo)= L(oo) = Ø$
+if $event(k) = oo$ for the empty mark.
 
-We let $treat(k)$ ($covariate(k)$) be the treatment (covariate values) at the $k$'th event. //, i.e., $treat(k) = treat(k-1)$ if $status(k) = ell$.
-If $event(k-1) = oo$, $status(k-1) in {y, d, c}$, or $status(k) in {y, d, c}$, we let $treat(k) = Ø$ and $covariate(k) = Ø$.
-To the process $(alpha(t))_(t>=0)$, we associate the corresponding random measure $N$ on $(RR_+ times ({a, ell, y, d, c} times {0,1} times cal(L)))$ by
-
-$
-    N (dif (t, x, a, ell)) = sum_(k: event(k) < oo) delta_((event(k), status(k), treat(k), covariate(k))) (dif (t, x, a, ell)),
-$
-where $delta_x$ denotes the Dirac measure on $(RR_+ times ({a, ell, y, d, c} times {0,1} times cal(L)))$.
-It follows that the filtration $(cal(F)_t)_(t>=0)$ is the natural filtration of the random measure $N$ (e.g., Theorem 2.5.10 of @last1995marked).
-Thus, the random measure $N$ carries the same information as the stochastic process $(alpha(t))_(t>=0)$.
-This will be critical for dealing with right-censoring.
-
-We observe $O= (event(K), status(K), treat(K-1), covariate(K-1), event(K-1), status(K-1), dots, treat(0), covariate(0)) ~ P in cal(M)$ where
+The observed process can without loss of information be encoded as $O= (event(K), status(K), treat(K-1), covariate(K-1), event(K-1), status(K-1), dots, treat(0), covariate(0)) ~ P in cal(M)$ where
 $cal(M)$ is the statistical model, i.e., a set of probability measures
 and obtain a sample $O = (O_1, dots, O_n)$ of size $n$.
 As a concrete example, we refer to @fig:longitudinaldatalong,
 which provides the long format of a hypothetical longitudinal dataset
 with time-varying covariates and treatment registered at irregular time points,
 and its conversion to wide format in @fig:longitudinaldatawide.
+
+To the process $(alpha(t))_(t>=0)$, we associate the corresponding random measure $N$ on $(RR_+ times ({a, ell, y, d, c} times {0,1} times cal(L)))$ by
+
+$
+    N (dif (t, x, a, ell)) = sum_(k: event(k) < oo) delta_((event(k), status(k), treat(k), covariate(k))) (dif (t, x, a, ell)),
+$ <eq:randommeasure>
+where $delta_x$ denotes the Dirac measure on $(RR_+ times ({a, ell, y, d, c} times {0,1} times cal(L)))$.
+It follows that the filtration $(cal(F)_t)_(t>=0)$ is the natural filtration of the random measure $N$ (e.g., Theorem 2.5.10 of @last1995marked)
+under a no explosion assumption, i.e., that the number of jumps in $[0, tauend]$ is finite $P$-a.s.
+Thus, the random measure $N$ carries the same information as the stochastic process $(alpha(t))_(t>=0)$.
+This will be critical for dealing with right-censoring.
+
+We work with the natural filtration $(cal(F)_t)_(t>=0)$ generated by the random measure $N$.
+within the so-called canonical setting for technical reasons (@last1995marked, Section 2.2).
+This is needed to ensure that the compensators can be explicitly written via by the regular conditional distributions of the jump times and marks
+but also to ensure that $history(k) = sigma(event(k), status(k), treat(k-1), covariate(k-1)) or history(k-1)$
+and $cal(F)_0 = sigma(treat(0), covariate(0))$, where
+$history(k)$ stopping time $sigma$-algebra $history(k)$ -- representing the information up to and including the $k$'th event -- associated with
+stopping time $event(k)$.
+
+//We let $treat(k)$ ($covariate(k)$) be the treatment (covariate values) at the $k$'th event. //, i.e., $treat(k) = treat(k-1)$ if $status(k) = ell$.
+//If $event(k-1) = oo$, $status(k-1) in {y, d, c}$, or $status(k) in {y, d, c}$, we let $treat(k) = Ø$ and $covariate(k) = Ø$.
 
 #show table.cell.where(y: 0): strong
 #set table(
@@ -261,60 +282,49 @@ and its conversion to wide format in @fig:longitudinaldatawide.
 // $cal(N)_(bold(X))$ denotes the $sigma$-algebra $cal(B) ((RR^+ times bold(X))^(K))$.
 // Here $cal(B) (X)$ denotes the Borel $sigma$-algebra on $X$.
 
-We work with the natural filtration $(cal(F)_t)_(t>=0)$ generated by the random measure $N^alpha$
-within the so-called canonical setting for technical reasons (@last1995marked, Section 2.2).
-This is needed to ensure the existence of compensators which can be explicitly written via by the regular conditional distributions of the jump times and marks,
-but also to ensure that $history(k) = sigma(event(k), status(k), treat(k-1), covariate(k-1)) or history(k-1)$
-and $cal(F)_0 = sigma(treat(0), covariate(0))$, where
-$history(k)$ stopping time $sigma$-algebra $history(k)$ -- representing the information up to and including the $k$'th event -- associated with
-stopping time $event(k)$.
-//In this article,
-//we do not consider the completed probability space.
-We will interpret $history(k)$ as a random variable instead of a $sigma$-algebra, whenever it is convenient to do so and also make the implicit assumption that whenever we condition on $history(k)$,
-we only consider the cases where $event(k) < oo$ and $status(k) in {a, ell}$.
-
 Let $densitytrt(t, k)$ be the probability of being treated at the $k$'th event given $status(k) =a$, $event(k) = t$, $covariate(k)$, and $history(k-1)$.
-Let also $cumhazard(k, x, dif t)$ be the cumulative cause-specific hazard measure (see e.g., Appendix A5.3 of @last1995marked).
-Note that in many places, we will not distinguish between $cumhazard(k, x, (0, t])$ and $cumhazard(k, x, t)$.
+Let also $cumhazard(k, x, dif t)$ be the cumulative cause-specific hazard measure,
+that is the hazard measure of the marked point $(event(k), bb(1) {status(k) = x})$ 
+given $history(k-1)$ (see Appendix A5.3 of @last1995marked for a definition).
 At baseline, we let $pi_0 (covariate(0))$ be the probability of being treated given $covariate(0)$
 and $mu_0 (dot)$ be the probability measure for the covariate value.
 
 = Estimand of interest and iterative representation <section:estimand>
 
 We are interested in the causal effect of a treatment regime $g$ on the cumulative incidence function of the event of interest $y$ at time $tau$.
-We consider regimes which naturally act upon the treatment decisions
-at each visitation time but not the times at which the individuals
+We consider regimes which naturally affects the treatment decisions
+at each visitation time but not the times at which the patients
 visit the doctor. 
 The treatment regime $g$ specifies for each event $k = 1, dots, K-1$
 with $status(k) = a$ (visitation time) the probability that
-a patient will remain treated until the next visitation time via 
+a patient receives treatment at the current visitation time via 
 $pi_k^* (event(k), history(k-1))$ and at $k=0$ the
 initial treatment probability $pi_0^* (covariate(0))$.
 
-For this, we define the likelihood ratio
-process as follows, 
+Define the likelihood ratio process
 
 $
-    W^g (t) &= product_(k=1)^(N_t) ((densitytrt(event(k), k)^(treat(k)) (1-densitytrt(event(k), k))^(1-treat(k))) / (densitytrt(event(k), k)^(treat(k)) (1-densitytrt(event(k), k))^(1-treat(k))))^(bb(1) {status(k) = a}) \
+    W^g (t) &= product_(k=1)^(N_t) ((densitytrtint(event(k), k)^(treat(k)) (1-densitytrtint(event(k), k))^(1-treat(k))) / (densitytrt(event(k), k)^(treat(k)) (1-densitytrt(event(k), k))^(1-treat(k))))^(bb(1) {status(k) = a}) \
         &quad times (pi^*_0 (covariate(0))^(A(0)) (1-pi^*_0 (covariate(0)))^(1-A(0)))/ (pi_0 (covariate(0))^(A(0)) (1-pi_0 (covariate(0)))^(1-A(0))),
 $ <eq:weightprocess>
 // Should be N_(t-)?
 
 where $N_t = sum_k bb(1) {event(k) <= t}$ is random variable denoting the number of events up to time $t$.
-If we define the measure $P^(G^*)$ by the density, 
+We define the measure $P^(G^*)$ by
 $
-    (dif P^(G^*))/(dif P) (omega) = W^g (tauend, omega), quad omega in Omega,
+    (dif P^(G^*))/(dif P) = W^g (tauend), 
 $ <eq:likelihoodratio>
-representing the interventional world in which the doctor assigns treatments according to the probability measure $pi^*_k (event(k), history(k-1))$ for $k = 0, dots, K-1$,
-then our target parameter is given by the mean interventional cumulative incidence function at time $tau$,
+which represents the interventional world in which the doctor assigns treatments according to the probability
+measure $pi_k^*$ for $𝑘 = 0, dots, 𝐾 − 1$.
+Our target parameter is the mean interventional cumulative incidence function at time $tau$ under $P^(G^*)$, which can by identified through the formula
 $
     Psi_tau^(g) (P) = mean(P^(G^*)) [N^y (tau)] =  mean(P) [N^y (tau) W^g (tau)],
 $ 
 where $N^y (t) = sum_(k=1)^K bb(1) {event(k) <= t, status(k) =y}$.
-In order for @eq:likelihoodratio to define
-a likelihood ratio, we need to further assume that $angle.l M^a, M^x angle.r equiv 0$, $x in {ell, y, d}$
-where $angle.l dot, dot angle.r$ denotes the quadratic covariation process (@andersenStatisticalModelsBased1993)
-such that $M^x (t) = N^x (t) - Lambda^x (t)$ is a $P$-$cal(F)_t$ martingale for $x in {a, ell, y, d}$.
+// In order for @eq:likelihoodratio to define
+// a likelihood ratio, we need to further assume that $angle.l M^a, M^x angle.r equiv 0$, $x in {ell, y, d}$
+// where $angle.l dot, dot angle.r$ denotes the quadratic covariation process (@andersenStatisticalModelsBased1993)
+// such that $M^x (t) = N^x (t) - Lambda^x (t)$ is a $P$-$cal(F)_t$ martingale for $x in {a, ell, y, d}$.
 
 In our application, $pi_k^*$ may be chosen arbitrarily,
 so that, in principle, _stochastic_, _dynamic_, and _static_ treatment regimes
@@ -322,12 +332,12 @@ can be considered.
 However, for simplicity of presentation, we use the static observation plan $pi^*_k = 1$ for all $k = 0, dots, K-1$,
 and the methods we present can easily be extended to more complex treatment regimes
 and contrasts.
-We that this corresponds to the intervention considered in
-@rytgaardContinuoustimeTargetedMinimum2022, albeit we
-work with a specific _version_ of the intervention.
+This corresponds to the interventions considered in
+@rytgaardContinuoustimeTargetedMinimum2022.
+//, albeit we
+//work with a specific _version_ of the intervention.
 
-Note that alternatively,
-if we do not want to limit ourselves to $K$ events, we can interpret
+If we do not want to limit ourselves to $K$ events, we can interpret
 the target parameter $Psi_tau^(g) (P)$ as
 the counterfactual cumulative incidence function of the event of interest $y$ at time $tau$,
 when the intervention enforces treatment as part of the $K-1$ first events.
@@ -351,14 +361,16 @@ We denote this target parameter by $Psi_tau^(g, K)$ and return to this interpret
 // Defining $O = (covariate(0), treat(0), event(1), status(1), dots, event(K-1), status(K-1), treat(K-1), covariate(K-1), event(k^*), status(k^*))$,
 // we see that $Phi_tau^(g, K) (P) = Psi_tau^(g, K) (P)$.
 
-We now present a simple iterated representation of the data target parameter $Psi_tau^g (P)$ in the case with no censoring.
+We now present a simple iterated representation of the target parameter $Psi_tau^g (P)$ in the case with no censoring.
 We discuss more thoroughly the implications for inference of this representation, the algorithm for estimation and examples in @section:censoring
 where we also deal with right-censoring.
+Note that the quantities given in @thm:ice are also defined for $u < tau$
+as we need those definitions later for the efficient influence function.
 
 #theorem[
     Let $H_k = (covariate(k), event(k), status(k), treat(k-1), covariate(k-1), event(k-1), status(k-1), dots, treat(0), covariate(0))$ be the history up to and including the $k$'th event,
-    but excluding the $k$'th treatment values for $k > 0$. For $k = 0$, let $H_0 = covariate(0)$.
-    Let $Qbar(K): (a_k, h_k) mapsto 0$ and recursively define for $k = K-1, dots, 1$,
+    but excluding the $k$'th treatment values for $k > 0$. Let $H_0 = covariate(0)$.
+    Let $Qbar(K): (u, a_k, h_k) mapsto 0$ and recursively define for $k = K-1, dots, 1$,
     $
         Z^a_(k+1, tau) (u) &= bb(1) {event(k+1) <= u, event(k+1) < tau, status(k+1) = ell) Qbar(k+1) (tau, treat(k), H_(k+1)) \
             &qquad+ bb(1) {event(k+1) <= u, event(k+1) < tau, status(k+1) = a) Qbar(k+1) (tau, 1, H_(k+1)) \
@@ -392,9 +404,7 @@ where we also deal with right-censoring.
     The proof is given in the Appendix (@section:proofice).
 ] 
 
-Throughout the, we will use the notation $Qbar(k) (u)$ to denote the value of $Qbar(k) (u, treat(k), H_(k))$
-and $Qbar(k)$ to denote $Qbar(k) (tau, treat(k), H_(k))$.
-
+Throughout the, we will use the notation $Qbar(k) (u)$ to denote the value of $Qbar(k) (u, treat(k), H_(k))$ and $Qbar(k)$ to denote $Qbar(k) (tau, treat(k), H_(k))$.
 $Qbar(k)$ represents the counterfactual probability of the primary event occuring at or before time $tau$
 given the history up to and including the $k$'th event, among the people who are at risk of the event before time $tau$ after $k$ events.
 @eq:ice then suggests that we can estimate $Qbar(k-1)$ via $Qbar(k)$:
@@ -403,91 +413,99 @@ and apply the intervention by setting $treat(k)$ to 1 if $status(k) = a$.
 Then, we regress these values directly on $(treat(k-1), covariate(k-1), event(k-1), status(k-1), dots, treat(0), covariate(0))$
 to obtain an estimator of $Qbar(k-1)$.
 
-Note that here, we only set the current value of $treatcensored(k)$ to 1,
+Note that here, we only set the current value of $treat(k)$ to 1,
 instead of replacing all prior values with 1. The latter is certainly closer
 to the original iterative conditional expectation estimator (@bangandrobins2005), and mathematically equivalent, but computationally more demanding.
+@sofrygin2019targeted demonstrated this in the discrete-time setting.
+
 // e.g., E[ h(X, Y) | Y=1] = E[ h(X, 1) | Y=1]
 
 = Censoring <section:censoring>
 
-In this section, we allow for right-censoring. That is, we introduce a right-censoring time $C>0$
+In this section, we consider the situation where the observed data is subject to right-censoring.
+Let $C>0$ denote the right-censoring time
 at which we stop observing the multivariate jump process
 $alpha$. Let $N^c$ be the censoring process
 given by $N^c (t) = bb(1) {C <= t}$.
+In @section:estimand, we proposed an estimation strategy based on fitting a sequence of iterated regressions backword in time for each event.
+When the data is subject to right-censoring, standard regression techniques cannot immediately be applied.
+To handle this, we use inverse probability of censoring weights. 
+Our algorithm is presented in @alg:iceipcw and we later present the assumptions necessary for validity of the ICE-IPCW estimator
+in @section:validity.
+To do so, we first need additional notation.
 
-We will introduce the notation necessary to
-discuss the algorithm for the the ICE-IPCW estimator in @alg:iceipcw
-and later discuss the assumptions necessary for consistency of the ICE-IPCW estimator
-in @section:consistency.
 In the remainder of the paper,
-we will assume that $C != event(k)$ for all $k$ with probability 1 or
-alternatively $Delta N^c Delta N^x equiv 0$ for $x in {a, ell, y, d}$.
-
-We can now let $(eventcensored(k), statuscensored(k), treatcensored(k), covariatecensored(k))$ for $k=1, dots, K$ be the observed data given by 
+we will assume that $C != event(k)$ for all $k$ with probability 1.
+We now let $(eventcensored(k), statuscensored(k), treatcensored(k), covariatecensored(k))$ for $k=1, dots, K$ be the observed data given by 
 $
     eventcensored(k) &= cases(event(k) "if" C > event(k), C "if" C <= event(k) "and" event(k-1) > C, oo "otherwise") \
     statuscensored(k) &= cases(status(k) "if" C > event(k), "c" "if" C <= event(k) "and" statuscensored(k-1) != c, Ø "otherwise") \
-    treatcensored(k) &= cases(treat(k)"if" C > event(k), Ø "otherwise") \
-    covariatecensored(k) &= cases(covariate(k) "if" C > event(k), Ø "otherwise")
+    treatcensored(k) &= cases(treat(k)"if" C > event(k), A(C) "if" statuscensored(k-1) = c, Ø "otherwise") \
+    covariatecensored(k) &= cases(covariate(k) "if" C > event(k), L(C) "if" statuscensored(k-1) = c, Ø "otherwise")
 $ 
 for $k = 1, dots, K$,
-and let $historycensored(k)$, for now, heuristically be defined by
+and $historycensored(k)$ is given by
 $
     historycensored(k) = sigma(eventcensored(k), statuscensored(k), treatcensored(k), covariatecensored(k), dots, eventcensored(1), statuscensored(1), treatcensored(1), covariatecensored(1), treat(0), covariate(0)),
 $ 
 defining the observed history up to and including the $k$'th event.
-Thus $O=(eventcensored(1), statuscensored(1), treatcensored(1), covariatecensored(1), dots, eventcensored(K), statuscensored(K), treatcensored(K), covariatecensored(K))$ is the observed data
-and a sample consists of $O = (O_1, dots, O_n)$ for $n$ independent and identically distributed observations
-with $O_i tilde P$.
+Thus $tilde(O)=(eventcensored(1), statuscensored(1), treatcensored(1), covariatecensored(1), dots, eventcensored(K), statuscensored(K), treatcensored(K), covariatecensored(K))$ is the observed data
+and a sample consists of $tilde(O) = (tilde(O)_1, dots, tilde(O)_n)$ for $n$ independent and identically distributed observations
+with $tilde(O)_i tilde P$.
 //We will formally show @eq:ftkcens later.
 
-Define $cumhazardcensored(k, c, dif t)$ as the cause-specific cumulative hazard measure for censoring of the $k$'th event  given the observed history $historycensored(k-1)$
-and the corresponding censoring survival functions $tilde(S)^c (t | historycensored(k-1)) = prodint(s, event(k-1), t) (1 - cumhazardcensored(k, c, dif s))$,
+Define $cumhazardcensored(k, c, dif t)$ as the cause-specific cumulative hazard measure for censoring of the $k$'th event given the observed history $historycensored(k-1)$
+and the corresponding conditional censoring survival functions $tilde(S)^c (t | historycensored(k-1)) = prodint(s, event(k-1), t) (1 - cumhazardcensored(k, c, dif s))$,
 where $product_(s in (0, t])$ is the product integral over the interval $(0, t]$ (@gill1990survey).
 
-== Algorithm for ICE-IPCW Estimator <alg:iceipcw>
-
-In this section, we present an algorithm for the ICE-IPCW estimator.
-Ideally, the model for iterative regressions should be chosen flexibly, since even with full knowledge of the data-generating mechanism, the true functional form of the regression model
+With these definitions, we can now present the ICE-IPCW procedure in @alg:iceipcw.
+Note that ideally the model for iterative regressions should be chosen flexibly, since even with full knowledge of the data-generating mechanism, the true functional form of the regression model
 cannot typically be derived in closed form.
 We also recommend that the model should also be chosen such that the predictions are $[0,1]$-valued.
 
-Let $O_i = (eventcensoredi(K), statuscensoredi(K), treatcensoredi(K-1), covariatecensoredi(K-1), eventcensoredi(K-1), statuscensoredi(K-1), dots, treatcensoredi(0), covariatecensoredi(0))$ be the observed data for the $i$'th individual.
-We suppose that we are given an estimator
-of the censoring compensator $hat(Lambda)^c$.
-In particular, for $Qbar(k), k = 0, dots, K-1$,
-we start the algorithm at $k = K- 1$ by calculating $hat(S)^c (eventcensoredi(k)- | treatcensoredi(k-1), H_(k-1,i))
-= product_(s in (eventcensoredi(k-1), eventcensoredi(k)-)) (1 - hat(Lambda)_i^c (s))$.
-Given an estimator of $Qbar(k+1)$ denoted by $Qbarhat(k+1)$, we then estimate the pseudo-outcome $hat(Z)^a_(k,tau,i)$ as follows
-- If $statuscensoredi(k) = y$, we calculate $hat(Z)^a_(k,tau,i) =1 /(hat(S)^c (eventcensoredi(k)- | treatcensoredi(k-1), H_(k-1,i))) bb(1) {eventcensoredi(k) <= tau}$.
-- If $statuscensoredi(k) = a$, evaluate $Qbarhat(k+1) (1, H_(k,i))$ and calculate
-  $
-      hat(Z)^a_(k,i) = 1/ (hat(S)_k^c (eventcensoredi(k)- | treatcensoredi(k-1), H_(k-1,i))) bb(1) {eventcensoredi(k) < tau} Qbarhat(k+1) (1, macron(H)_(k,i)).
-  $
-- If $statuscensoredi(k) = ell$, evaluate $Qbarhat(k+1) (treatcensoredi(k-1), H_(k,i))$,
-  and calculate
-  $
-      hat(Z)^a_(k,i) = 1/(hat(S)_k^c (eventcensoredi(k)- | treatcensoredi(k-1), H_(k-1,i))) bb(1) {eventcensoredi(k) < tau} Qbarhat(k+1) (treatcensoredi(k-1), macron(H)_(k,i)).
-  $
-Then regress $hat(Z)^a_(k,i)$ on $(treatcensoredi(k-1), H_(k-1,i))$
-for the observations with with $eventcensoredi(k-1) < tau$ and $statuscensoredi(k-1) in {a, ell}$
-to obtain a prediction function $Qbarhat(k)$.
-At $k=0$, we compute $hat(Psi)_n = 1/n sum_(i=1)^n Qbarhat(0) (1, L_i (0))$.
+#algorithm("ICE-IPCW procedure")[
+    
+    Input: Observed data $tilde(O)_i$, $i = 1, dots, n$, estimator of the censoring compensator $hat(Lambda)^c$, time horizon $tau < tauend$,
+    and $K-1$.
+    
+    Output: ICE-IPCW estimator $hat(Psi)_n$ of $Psi_tau^g (P)$.
+    
+    1. Initialize ($hat(Q)_(K) (tau, a_k, h_k) := 0$).
+    2. For each event $k = K - 1, dots, 1$:
+       
+       a. For each observation, compute $hat(S)^c (eventcensored(k)- | treatcensored(k-1), H_(k-1)) = product_(s in (eventcensored(k-1), eventcensored(k))) (1 - hat(Lambda)^c (s))$.
+       
+       b. For each observation with $eventcensored(k-1) < tau$ and $statuscensored(k-1) in {a, ell}$ compute the pseudo-outcome $hat(Z)^a_(k,tau)$ as follows:
+        - If $statuscensored(k) = y$, calculate $hat(Z)^a_(k,tau) =1 /(hat(S)^c (eventcensored(k)- | treatcensored(k-1), H_(k-1))) bb(1) {eventcensored(k) <= tau}$.
+        - Else if $statuscensored(k) = a$, evaluate $hat(Q)_(k+1) (tau, 1, H_(k))$ and calculate
+          $
+              hat(Z)^a_(k,tau) = 1/ (hat(S)^c (eventcensored(k)- | treatcensored(k-1), H_(k-1))) bb(1) {eventcensored(k) < tau} hat(Q)_(k+1) (tau, 1, H_(k)).
+          $
+        - Else if $statuscensored(k) = ell$, evaluate $hat(Q)_(k+1) (tau, treatcensored(k-1), H_(k))$,
+          and calculate
+          $
+              hat(Z)^a_(k,tau) = 1/(hat(S)^c (eventcensored(k)- | treatcensored(k-1), H_(k-1))) bb(1) {eventcensored(k) < tau} hat(Q)_(k+1) (tau, treatcensored(k-1), H_(k)).
+          $
+        c. Regress $hat(Z)^a_(k,tau)$ on $(treatcensored(k-1), macron(H)_(k-1))$
+        for the observations with $eventcensored(k-1) < tau$ and $statuscensored(k-1) in {a, ell}$
+       to obtain a prediction function $hat(Q)_(k)$.
+    3. Compute $hat(Psi)_n = 1/n sum_(i=1)^n hat(Q)_(0) (tau, 1, L_i (0))$.
+] <alg:iceipcw>
 
-We mention how one may obtain an estimator of the censoring
-compensator, but this is a wider topic that we will not concern ourselves with here.
-We provide a model for the censoring
-that can provide estimates of the cause-specific hazard measure $1/(P(eventcensored(k) >= t | treatcensored(k-1), macron(H)_(k-1))) P(eventcensored(k) in dif t, statuscensored(k) = c | treatcensored(k-1), macron(H)_(k-1))$,
-which is always estimable from observed data.
-Then, regress $macron(E)_((k),i) = eventcensoredi(k) - eventcensoredi(k-1)$, known as the $k$'th _interarrival_ time,
-       with the censoring as the cause of interest
-on $(treatcensoredi(k-1), macron(H)_(k-1,i))$ among the patients who are still at risk after $k-1$ events,
-that is for $i$ with $macron(Delta)_(k-1,i) in {a, ell}$ if $k > 1$ and otherwise all $i = 1, dots, n$.
-This gives an estimator of the cause-specific cumulative hazard function $hat(Lambda)_k^c$
-and provides an estimator of the compensator as follows
-$
-    hat(Lambda)_i^c (t) = sum_(k=1)^K bb(1) {eventcensoredi(k-1) < t <= eventcensoredi(k)} hat(Lambda)_k^c (t - eventcensoredi(k-1) | treatcensoredi(k-1), macron(H)_((k-1),i)).
-$
+// We mention how one may obtain an estimator of the censoring
+// compensator, but this is a wider topic that we will not concern ourselves with here.
+// We provide a model for the censoring
+// that can provide estimates of the cause-specific hazard measure $1/(P(eventcensored(k) >= t | treatcensored(k-1), macron(H)_(k-1))) P(eventcensored(k) in dif t, statuscensored(k) = c | treatcensored(k-1), macron(H)_(k-1))$,
+// which is always estimable from observed data.
+// Then, regress $macron(E)_((k),i) = eventcensoredi(k) - eventcensoredi(k-1)$, known as the $k$'th _interarrival_ time,
+//        with the censoring as the cause of interest
+// on $(treatcensoredi(k-1), macron(H)_(k-1,i))$ among the patients who are still at risk after $k-1$ events,
+// that is for $i$ with $macron(Delta)_(k-1,i) in {a, ell}$ if $k > 1$ and otherwise all $i = 1, dots, n$.
+// This gives an estimator of the cause-specific cumulative hazard function $hat(Lambda)_k^c$
+// and provides an estimator of the compensator as follows
+// $
+//     hat(Lambda)_i^c (t) = sum_(k=1)^K bb(1) {eventcensoredi(k-1) < t <= eventcensoredi(k)} hat(Lambda)_k^c (t - eventcensoredi(k-1) | treatcensoredi(k-1), macron(H)_((k-1),i)).
+// $
 
 // In the first step, the modeler wish to alter the history from an intuitive point of view, so that, in
 // the history $historycensored(k-1)$, we use the variables $macron(T)_(k-1) - macron(T)_(j)$ for $j <= k-1$
@@ -506,43 +524,41 @@ $
 //Looking at the algorithm, we see that this does not matter as no observations; indicator functions are all zero.
 // otherwise we would not have data.
 
-== Consistency of the ICE-IPCW Estimator <section:consistency>
-
-Now let $T^e$ further denote the (uncensored) terminal event time given by
-$
-    T^e = inf_(t>0) {N^y (t) + N^d (t) = 1}.
-$
-and let $beta = (alpha, N^c)$ be the fully observable multivariate jump process in $[0, tauend]$
-(note that we put $T^e = oo$ if $T^e > tauend$).
+== Validity of the ICE-IPCW Estimator <section:validity>
+//In this article,
+//we do not consider the completed probability space.
+//We will interpret $history(k)$ as a random variable instead of a $sigma$-algebra, whenever it is convenient to do so and also make the implicit assumption that whenever we condition on $history(k)$,
+//we only consider the cases where $event(k) < oo$ and $status(k) in {a, ell}$.
+Let $T^e$ denote the (uncensored) terminal event time, i.e., $T^e = inf_(t>0) {N^y (t) + N^d (t) = 1}$
+and let $beta = (alpha, N^c)$ be the full unobserved multivariate jump process in $[0, tauend]$.
+//(note that we put $T^e = oo$ if $T^e > tauend$).
 Its natural filtration is denoted $cal(F)^"full"_t = sigma(beta(s) | s <= t) or cal(F)_0$.
-
 Thus, we observe the trajectories of the process given by $[0, tauend] in.rev t mapsto beta (t and C and T^e)$
 and the observed filtration is given by 
 $macron(cal(F))_t = sigma(beta(s and C and T^e) | s <= t) or cal(F)_0$.
 //The observed data is then given by @eq:observedata.
-Abusing notation a bit, we see that for observed histories, we
-have $history(k) = historycensored(k)$ if $statuscensored(k) != c$.
+//Abusing notation a bit, we see that for observed histories, we
+//have $history(k) = historycensored(k)$ if $statuscensored(k) != c$.
 
-We posit specific conditions in @thm:iceipcw similar to those that may be found the literature based on independent censoring (@andersenStatisticalModelsBased1993; Definition III.2.1)
+We posit an independent censoring condition (1. in @thm:iceipcw) that enables the use of regression techniques similar to those that may be found the literature based on independent censoring (@andersenStatisticalModelsBased1993; Definition III.2.1)
 or local independence conditions (@roeysland2024; Definition 4).
-A simple, sufficient condition for this to hold is e.g., that $C perp history(K)$.
-Note that 1. is a slight strengthening of the orthogonal martingale condition.
+//A simple, sufficient condition for this to hold is e.g., that $C perp history(K)$.
+Note that 2. is a slight strengthening of the orthogonal martingale condition.
 Note that this condition can be relaxed by applying the generalized Trotter formula (@gill1994),
 but is not further considered here. 
 For example if the compensator of the (observed) censoring
 process is absolutely continuous with respect to the Lebesgue measure,
-then 1. of @thm:iceipcw is satisfied.
-Our second condition in @thm:iceipcw is a positivity condition,
+then 2. of @thm:iceipcw is satisfied.
+Our third condition in @thm:iceipcw is a positivity condition,
 ensuring that the conditional expectations are well-defined.
-//1. is mostly a technicality that is generally
+//2. is mostly a technicality that is generally
 //satisfied and not of interest. 
 
 #theorem[
-    Assume that the compensator $Lambda$ of $N$ with respect to the filtration $cal(F)^"full"_t$ is
-    also the compensator with respect to the filtration $cal(F)_t$..
     If
-    1. $Delta tilde(Lambda)_(k)^c (dot, historycensored(k-1)) Delta cumhazard(k, x, dot) equiv 0$ for $x in {a, ell, y, d}$ and $k in {1, dots, K}$.
-    2. $tilde(S)^c (t | historycensored(k-1)) > eta$ for all $t in (0, tau]$ and $k in {1, dots, K}$ $P$-a.s. for some $eta > 0$.
+    1. The $P$-$cal(F)_t$-compensator $Lambda$ of $N$ (@eq:randommeasure) is also the $P$-$cal(F)^"full"_t$ compensator of $N$.//, that is $N(t) - Lambda(t)$ is a (local) $P$-$cal(F)^"full"_t$ martingale and a (local) $P$-$cal(F)_t$ martingale.
+    2. $Delta tilde(Lambda)_(k)^c (dot, historycensored(k-1)) Delta cumhazard(k, x, dot) equiv 0$ for $x in {a, ell, y, d}$ and $k in {1, dots, K}$.
+    3. $tilde(S)^c (t | historycensored(k-1)) > eta$ for all $t in (0, tau]$ and $k in {1, dots, K}$ $P$-a.s. for some $eta > 0$.
     
     Let
     $
@@ -620,17 +636,17 @@ we can adaptively select $K$ based on the observed data.
 For instance, we may pick $K^*=k$ such that $k$ is the largest integer such that
 there are at least 40 observations fulfilling that $eventcensored(k-1) < tau$.
 Doing so will ensure that we will not have to estimate the terms in @eq:eif
-and the corresponding iterative regressions for which there is very little data.
-Therefore, our target parameter is instead
-$
-    Psi_tau^(g, K^*) (P) = mean(P) [tilde(N)^y (tau) W^g (tau and eventcensored(K^*))].
-$
-It holds that $Psi_tau^(g, K^*) (P) = Psi_tau^g (P)$ if $K^* = K_"lim"$.
-Noting that we can pool the last $K_"lim" - K^*$ events into
-a single terminal event, the theory discussed thus far can also be
-applied to the target parameter $Psi_tau^(g, K^*) (P)$.
-In practice, this means that we can essentially ignore the last $K_"lim" - K^*$ events;
-however, the latter will come at the cost of some finite sample size bias.
+and @eq:iceipcw for which there is very little data. 
+// Therefore, our target parameter is instead
+// $
+//     Psi_tau^(g, K^*) (P) = mean(P) [tilde(N)^y (tau) W^g (tau and eventcensored(K^*))].
+// $
+// It holds that $Psi_tau^(g, K^*) (P) = Psi_tau^g (P)$ if $K^* = K_"lim"$.
+// Noting that we can pool the last $K_"lim" - K^*$ events into
+// a single terminal event, the theory discussed thus far can also be
+// applied to the target parameter $Psi_tau^(g, K^*) (P)$.
+// In practice, this means that we can essentially ignore the last $K_"lim" - K^*$ events;
+// however, the latter will come at the cost of some finite sample size bias.
 
 #theorem("Efficient influence function")[
     Let for each $P in cal(M)$, $tilde(Lambda)^c_k (t, historycensored(k-1); P)$ be the corresponding
@@ -652,7 +668,9 @@ however, the latter will come at the cost of some finite sample size bias.
 #proof[The proof is given in the Appendix (@section:proofeif).]
 
 #theorem[Adaptive selection of $K$][
-    Let $K_(n c) = max_(v : sum_(i=1)^n bb(1) {N_(tau i) (tau) >= v} > c)$
+    Let $N_tau = sum_(k) bb(1) {event(k) <= tau}$
+    and $tilde(N)_tau = N_(tau and C)$ be the number of events before time $tau$ in the uncensored and censored data, respectively.
+    Let $K_(n c) = max_(v : sum_(i=1)^n bb(1) {tilde(N)_(tau, i) (tau) >= v} > c)$
     denote the maximum number of events with at
     least $c$ people at risk.
     Suppose that we have the decomposition of the
@@ -662,7 +680,7 @@ however, the latter will come at the cost of some finite sample size bias.
     $
     where $bb(P)_n$ is the empirical measure and $phi_tau^(*, k^*) (dot; P)$ is the efficient influence function for the target parameter $Psi_tau^(g, k^*) (P)$.
     Suppose that there is a number $K_"lim" in bb(N)$, such that $P(N_tau = K_"lim") > 0$,
-    but $P(N_(tau) > K_"lim") = 0$.
+    but $P(N_(tau) > K_"lim") = 0$ and that $P(tilde(N)_tau = K_"lim") > 0$.
     Then, the estimator $hat(Psi)_n$ satisfies
     $
         hat(Psi)_n - Psi_tau^(g, K_"lim") (P) = (bb(P)_n - P) phi_tau^(*, K_"lim") (dot; P) + o_P (n^(-1/2)).
@@ -1057,14 +1075,31 @@ to deal with these issues.
 =
 
 == Proof of @thm:ice <section:proofice>
-Let $W_(k, j) = (W^g (event(j))) / (W^g (event(k)))$ for $k < j$ (defining $0/0 = 0$).
+Let $W_(k, j) = product_(v = k + 1)^(j) ((bb(1) {treat(v) = 1}) / (densitytrt(event(v), v)))^(bb(1) {status(v) = a})$ denote the treatment weights for $k < j$
+(taking $densitytrt(event(0), 0) := pi_0 (L(0))$).
 We show that 
 $
     Qbar(k) (tau, treat(k), H_k) = mean(P) [sum_(j=k+1)^K W_(k,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k), H_k]
 $ <eq:iterativeProof>
 for $k = 0, dots, K - 1$ by backwards induction: 
 
-_Base case_: The case $k = K-1$ is trivial $(W_(K-1,K) bb(1) {event(K) <= tau, status(K) = y} = bb(1) {event(K) <= tau, status(K) = y})$.
+_Base case_: We consider case $k = K-1$.
+First note that 
+$
+    Z_(K, tau)^a (u) = bb(1) {event(K) <= u, status(K) = y},
+$
+and
+$
+    W_(K-1,K) bb(1) {event(K) <= tau, status(K) = y} &= ((bb(1) {treat(K) = 1}) / (densitytrt(event(K), K)))^(bb(1) {status(K) = a}) bb(1) {event(K) <= tau, status(K) = y} \
+        &= bb(1) {event(K) <= tau, status(K) = y}
+$
+so we have
+$
+    &mean(P) [W_(K-1,K) bb(1) {event(K) <= tau, status(j) = y} | treat(K-1), H_(K-1)] \
+        &= mean(P) [bb(1) {event(K) <= tau, status(j) = y} | treat(K-1), H_(K-1)] \
+        &= mean(P) [Z_(K, tau)^a (tau) | treat(K-1), H_(K-1)], \
+        &= Qbar(K-1) (tau, treat(K-1), H_(K-1).
+$
     
 _Inductive step_: Assume that the claim holds for $k+1$. Now, we first note that
 $
@@ -1086,7 +1121,11 @@ $ <eq:proofThm1>
 In (a), we use the induction hypothesis. Using @eq:proofThm1 then gives, 
 $
     &mean(P) [sum_(j=k+1)^K W_(k,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k), H_k] \
-        &=^((b)) mean(P) (bb(1) {event(k+1) <= tau, status(k+1) = y} W_(k,k+1) \
+        &= mean(P) [bb(1) {event(k+1) <= tau, status(k+1) = y} W_(k,k+1)| treat(k), H_k] \
+        &quad + mean(P) [sum_(j=k+2)^K W_(k,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k), H_k] \
+        &=^((b)) mean(P) [bb(1) {event(k+1) <= tau, status(k+1) = y} W_(k,k+1)| treat(k), H_k] \
+        &quad + mean(P) [bb(1) {event(k+1) < tau, status(k+1) in {a, ell}} sum_(j=k+2)^K W_(k,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k), H_k] \
+        &= mean(P) (bb(1) {event(k+1) <= tau, status(k+1) = y} W_(k,k+1) \
             &#h(0.5cm)+ bb(1) {event(k+1) < tau, status(k+1) in {a, ell}} \
             &#h(1cm) times mean(P) [W_(k,k+1) mean(P) [sum_(j=k+2)^K W_(k+1,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k+1), H_(k+1)]  | event(k+1), status(k+1), treat(k), H_k] | treat(k), H_k) \
         &= mean(P) (bb(1) {event(k+1) <= tau, status(k+1) = y} \
@@ -1105,7 +1144,7 @@ In (b), we use that
 $
     (event(k) <= tau, status(k) = y) subset.eq (event(j) < tau, status(j) in {a, ell})
 $
-for all $j = 1, dots, k-1$ and $k = 1, dots, K$.
+for all $j = 1, dots, k-1$ and $k = 1, dots, K$ as otherwise the corresponding term would be zero. 
     
 The desired statement (@eq:iterativeProof) now follows from the fact that
 $
@@ -1121,90 +1160,90 @@ and @eq:stepInduction.
 A similar calculation to @eq:stepTheorem1 shows that $Psi_tau^g (P) = mean(P) [Qbar(0) (tau, 1, covariate(0))]$
 and so @eq:ice-end follows.
     
-=
+//=
 
-== Finite dimensional distributions and compensators <appendix:fidi>
+// == Finite dimensional distributions and compensators <appendix:fidi>
 
-Let $(tilde(X)(t))_(t >= 0)$ be a $d$-dimensional càdlàg jump process,
-where each component $i$ is two-dimensional such that $tilde(X)_i (t) = (N_i (t), X_i (t))$
-and $N_i (t)$ is the counting process for the measurements of
-the $i$'th component $X_i (t)$ such that $Delta X_i (t) != 0$ only if $Delta N_i (t) != 0$
-and $X (t) in cal(X)$ for some Euclidean space $cal(X) subset.eq RR^(m)$.
-Assume that the counting processes $N_i$ with probability 1 have no simultaneous jumps and that the number of event times is bounded by a finite constant $K < oo$.
-Furthermore, let $cal(F)_t = sigma(tilde(X)(s) | s <= t) or sigma(W) in cal(W) subset.eq RR^w$ be the natural filtration.
-Let $T_k$ be the $k$'th jump time of $t mapsto tilde(X) (t)$
-and let a random measure on $RR_+ times cal(X)$
-be given by
-$
-    N (dif (t, x)) = sum_(k : event(k) < oo) delta_((event(k), X(event(k)))) (dif (t, x)).
-$
-Let $cal(F)_(T_((k)))$ be the stopping time $sigma$-algebra associated with
-the $k$'th event time of the process $tilde(X)$.
-Furthermore, let $status(k) = j$ if $Delta N_j (event(k)) != 0$ and let $bb(F)_k = cal(W) times (RR_+ times {1, dots, d} times cal(X))^k$.
+// Let $(tilde(X)(t))_(t >= 0)$ be a $d$-dimensional càdlàg jump process,
+// where each component $i$ is two-dimensional such that $tilde(X)_i (t) = (N_i (t), X_i (t))$
+// and $N_i (t)$ is the counting process for the measurements of
+// the $i$'th component $X_i (t)$ such that $Delta X_i (t) != 0$ only if $Delta N_i (t) != 0$
+// and $X (t) in cal(X)$ for some Euclidean space $cal(X) subset.eq RR^(m)$.
+// Assume that the counting processes $N_i$ with probability 1 have no simultaneous jumps and that the number of event times is bounded by a finite constant $K < oo$.
+// Furthermore, let $cal(F)_t = sigma(tilde(X)(s) | s <= t) or sigma(W) in cal(W) subset.eq RR^w$ be the natural filtration.
+// Let $T_k$ be the $k$'th jump time of $t mapsto tilde(X) (t)$
+// and let a random measure on $RR_+ times cal(X)$
+// be given by
+// $
+//     N (dif (t, x)) = sum_(k : event(k) < oo) delta_((event(k), X(event(k)))) (dif (t, x)).
+// $
+// Let $cal(F)_(T_((k)))$ be the stopping time $sigma$-algebra associated with
+// the $k$'th event time of the process $tilde(X)$.
+// Furthermore, let $status(k) = j$ if $Delta N_j (event(k)) != 0$ and let $bb(F)_k = cal(W) times (RR_+ times {1, dots, d} times cal(X))^k$.
 
-#theorem("Finite-dimensional distributions")[
-    Under the stated conditions of this section:
+// #theorem("Finite-dimensional distributions")[
+//     Under the stated conditions of this section:
     
-    (i).  We have $history(k) = sigma( event(k), status(k), X(event(k))) or history(k-1)$
-    and $history(0) = sigma(W)$. Furthermore, $cal(F)^(macron(N))_t = sigma(macron(N) ((0, s], dot) | s <= t) or sigma(W) = cal(F)_t$,
-    where
-    $
-        macron(N) (dif (t, m, x)) = sum_(k:event(k)<oo) delta_((event(k), status(k), X(event(k)))) (dif (t,m,x)).
-    $
-    We refer to $macron(N)$ as the _associated_ random measure. 
+//     (i).  We have $history(k) = sigma( event(k), status(k), X(event(k))) or history(k-1)$
+//     and $history(0) = sigma(W)$. Furthermore, $cal(F)^(macron(N))_t = sigma(macron(N) ((0, s], dot) | s <= t) or sigma(W) = cal(F)_t$,
+//     where
+//     $
+//         macron(N) (dif (t, m, x)) = sum_(k:event(k)<oo) delta_((event(k), status(k), X(event(k)))) (dif (t,m,x)).
+//     $
+//     We refer to $macron(N)$ as the _associated_ random measure. 
     
-    (ii). There exist stochastic kernels $Lambda_(k, i)$ from $bb(F)_(k-1)$ to $RR$ and $zeta_(k,i)$ from $RR_+ times bb(F)_(k-1)$ to $RR_+$ such that the compensator for $N$ is given by,
-    $
-        Lambda (dif (t, m, x)) = sum_(k : event(k) < oo) bb(1) {event(k-1) < t <= event(k)} sum_(i=1)^d delta_i (dif m) zeta_(k,i) (dif x, t, history(k-1)) Lambda_(k,i) (dif t, history(k-1)) product_(l != i) delta_((X_l (event(k-1)))) (dif x_l) 
-    $
-    Here $Lambda_(k, i)$ is the cause-specific hazard measure for $k$'th event of the $i$'th type,
-    and $zeta_(k,i)$ is the conditional distribution of $X_i (event(k))$ given $history(k-1)$, $event(k)$ and $status(k) = i$.
+//     (ii). There exist stochastic kernels $Lambda_(k, i)$ from $bb(F)_(k-1)$ to $RR$ and $zeta_(k,i)$ from $RR_+ times bb(F)_(k-1)$ to $RR_+$ such that the compensator for $N$ is given by,
+//     $
+//         Lambda (dif (t, m, x)) = sum_(k : event(k) < oo) bb(1) {event(k-1) < t <= event(k)} sum_(i=1)^d delta_i (dif m) zeta_(k,i) (dif x, t, history(k-1)) Lambda_(k,i) (dif t, history(k-1)) product_(l != i) delta_((X_l (event(k-1)))) (dif x_l) 
+//     $
+//     Here $Lambda_(k, i)$ is the cause-specific hazard measure for $k$'th event of the $i$'th type,
+//     and $zeta_(k,i)$ is the conditional distribution of $X_i (event(k))$ given $history(k-1)$, $event(k)$ and $status(k) = i$.
 
-    // (iii). The distribution of $history(n)$ is given by
-    //    $
-    //       &F_n (d w, d t_1, d delta_1, d x_(11), dots, d x_(1 d), dots, d t_n, d delta_n, d x_(n 1), dots, d x_(n d)) \
-    //         &= (product_(i=1)^n bb(1) {t_(i-1) < t_i} prodint2(u, t_(i-1), t_i) (1-sum_(j=1)^d Lambda_(i,j) (d u, f_(i-1))) sum_(j=1)^d delta_j (d delta_i) zeta_(i,j) (d x_(i j), t_i, f_(i-1)) Lambda_(i,j) (d t_i, f_(i-1))) mu (d w),
-    //    $
-    //    and $f_k = (t_k, d_k, x_k, dots t_1, d_1, x_1, w) in bb(F)_k$ for $n in NN$.
-    //    Here $#scale(160%)[$pi$]$ denotes the product integral.
-] <thm:jointdensity>
-#proof[
-    To prove (i), we first note that since the number of events are bounded,
-    we have the _minimality_ condition of Theorem 2.5.10 of @last1995marked, so
-    the filtration $cal(F)^N_t = sigma(N ((0, s], dot) | s <= t) or sigma(W) = cal(F)_t$ where
-    $
-        N (dif (t, tilde(x))) = sum_(k : event(k) < oo) delta_((event(k), tilde(X)(event(k)))) (dif (t, tilde(x)))
-    $
-    Thus $history(k) = sigma (event(k), tilde(X)(event(k))) or history(k-1)$
-    and $history(0) = sigma(W)$ in view of Equation (2.2.44) of @last1995marked.
-    To get (i), simply note that since the counting proceses do not jump at the same time,
-    there is a one-to-one corresponding between $status(k)$ and $N^i (event(k))$ for $i = 1, dots, d$,
-    implying that $macron(N)$ generates the same filtration as $N$, i.e., $cal(F)^N_t = cal(F)^(macron(N))_t$ for all $t>=0$.
+//     // (iii). The distribution of $history(n)$ is given by
+//     //    $
+//     //       &F_n (d w, d t_1, d delta_1, d x_(11), dots, d x_(1 d), dots, d t_n, d delta_n, d x_(n 1), dots, d x_(n d)) \
+//     //         &= (product_(i=1)^n bb(1) {t_(i-1) < t_i} prodint2(u, t_(i-1), t_i) (1-sum_(j=1)^d Lambda_(i,j) (d u, f_(i-1))) sum_(j=1)^d delta_j (d delta_i) zeta_(i,j) (d x_(i j), t_i, f_(i-1)) Lambda_(i,j) (d t_i, f_(i-1))) mu (d w),
+//     //    $
+//     //    and $f_k = (t_k, d_k, x_k, dots t_1, d_1, x_1, w) in bb(F)_k$ for $n in NN$.
+//     //    Here $#scale(160%)[$pi$]$ denotes the product integral.
+// ] <thm:jointdensity>
+// #proof[
+//     To prove (i), we first note that since the number of events are bounded,
+//     we have the _minimality_ condition of Theorem 2.5.10 of @last1995marked, so
+//     the filtration $cal(F)^N_t = sigma(N ((0, s], dot) | s <= t) or sigma(W) = cal(F)_t$ where
+//     $
+//         N (dif (t, tilde(x))) = sum_(k : event(k) < oo) delta_((event(k), tilde(X)(event(k)))) (dif (t, tilde(x)))
+//     $
+//     Thus $history(k) = sigma (event(k), tilde(X)(event(k))) or history(k-1)$
+//     and $history(0) = sigma(W)$ in view of Equation (2.2.44) of @last1995marked.
+//     To get (i), simply note that since the counting proceses do not jump at the same time,
+//     there is a one-to-one corresponding between $status(k)$ and $N^i (event(k))$ for $i = 1, dots, d$,
+//     implying that $macron(N)$ generates the same filtration as $N$, i.e., $cal(F)^N_t = cal(F)^(macron(N))_t$ for all $t>=0$.
     
-    To prove (ii), simply use Theorem 4.1.11 of @last1995marked which states that
-    $
-        Lambda(dif (t, m, x)) &= sum_(k: event(k) < oo) bb(1) {event(k-1) < t <= event(k)} (P( (event(k), status(k), X (event(k))) in dif (t, m, x) | history(k-1))) / P(event(k) >= t | history(k-1))  
-    $
-    is a $P$-$cal(F)_t$ martingale.
-    Then, we find by the "no simultaneous jumps" condition, 
-    $
-        P(X(event(k)) in dif x | history(k-1), event(k) = t, status(k) = j) =  P (X_j (event(k)) in dif x_j | history(k-1), event(k) = t, status(k) = j) product_(l != j) delta_((X_l (event(k-1)))) (dif x_l)
-    $
-    We then have,
-    $
-        &P( (event(k), status(k), X (event(k))) in dif (t, m, x) | history(k-1)) / P(event(k) >= t | history(k-1)) \
-            &=sum_(j=1)^d delta_j (dif m) P(X(event(k)) in dif x | history(k-1), event(k) = t, status(k) = j) P(event(k) in dif t, status(k) = j | history(k-1) = f_(k-1)) / P(event(k) >= t | history(k-1) = f_(k-1)).
-    $
-    Letting
-    $
-        zeta_(k,j) (dif x, t, f_(k-1)) := P (X_j (event(k)) in dif x | history(k-1) = f_(k-1), event(k) = t, status(k) = j) \
-        Lambda_(k, j) (dif t, f_(k-1)) := P(event(k) in dif t, status(k) = j | history(k-1) = f_(k-1)) / P(event(k) >= t | history(k-1) = f_(k-1))
-    $
-    completes the proof of (ii).
+//     To prove (ii), simply use Theorem 4.1.11 of @last1995marked which states that
+//     $
+//         Lambda(dif (t, m, x)) &= sum_(k: event(k) < oo) bb(1) {event(k-1) < t <= event(k)} (P( (event(k), status(k), X (event(k))) in dif (t, m, x) | history(k-1))) / P(event(k) >= t | history(k-1))  
+//     $
+//     is a $P$-$cal(F)_t$ martingale.
+//     Then, we find by the "no simultaneous jumps" condition, 
+//     $
+//         P(X(event(k)) in dif x | history(k-1), event(k) = t, status(k) = j) =  P (X_j (event(k)) in dif x_j | history(k-1), event(k) = t, status(k) = j) product_(l != j) delta_((X_l (event(k-1)))) (dif x_l)
+//     $
+//     We then have,
+//     $
+//         &P( (event(k), status(k), X (event(k))) in dif (t, m, x) | history(k-1)) / P(event(k) >= t | history(k-1)) \
+//             &=sum_(j=1)^d delta_j (dif m) P(X(event(k)) in dif x | history(k-1), event(k) = t, status(k) = j) P(event(k) in dif t, status(k) = j | history(k-1) = f_(k-1)) / P(event(k) >= t | history(k-1) = f_(k-1)).
+//     $
+//     Letting
+//     $
+//         zeta_(k,j) (dif x, t, f_(k-1)) := P (X_j (event(k)) in dif x | history(k-1) = f_(k-1), event(k) = t, status(k) = j) \
+//         Lambda_(k, j) (dif t, f_(k-1)) := P(event(k) in dif t, status(k) = j | history(k-1) = f_(k-1)) / P(event(k) >= t | history(k-1) = f_(k-1))
+//     $
+//     completes the proof of (ii).
 
-    // 3. is simply a straightforward extension of Proposition 1/Theorem 3 of @ryalenPotentialOutcomes
-    // or an application of Theorem 8.1.2 of @last1995marked. It also follows from iterative applications of 2. 
-]
+//     // 3. is simply a straightforward extension of Proposition 1/Theorem 3 of @ryalenPotentialOutcomes
+//     // or an application of Theorem 8.1.2 of @last1995marked. It also follows from iterative applications of 2. 
+// ]
 
 =
 
@@ -1223,22 +1262,21 @@ $
 We apply @lemma:iceone and @lemma:survivalfactorgeneral in $(*)$ and so the theorem is complete. 
 
 #lemma[
-    Assume that the compensator $Lambda$ of $N$ with respect to the filtration $cal(F)^"full"_t$ is
-    also the compensator with respect to the filtration $cal(F)_t$. Let
-    $densitycovl(t, dot, k)$ is the probability measure for the covariate value given $status(k) = ell, event(k) = t$, and $history(k-1)$
-    and $densitycova(t, dot, k)$ is the probability measure for the covariate value given $status(k) = a, event(k) = t$, and $history(k-1)$.
+    Assume condition 1. of @thm:iceipcw.
+    $densitycovl(t, dot, k)$ be the probability measure for $covariate(k)$ given $status(k) = ell, event(k) = t$, and $history(k-1)$,
+    and $densitycova(t, dot, k)$ be the probability measure for $covariate(k)$ given $status(k) = a, event(k) = t$, and $history(k-1)$.
     Then, we have 
     $
         &bb(1) {statuscensored(k-1) in {a,ell}} P ((eventcensored(k), macron(Delta)_(k), A(eventcensored(k)), L(eventcensored(k))) in dif (t, m, a,l)| historycensored(k-1)) \
             &= bb(1) {eventcensored(k-1) < t,statuscensored(k-1) in {a,ell}} (tilde(S) (t- | historycensored(k-1)) sum_(x=a, ell, d, y) delta_x (dif m) psi_(k,x) (t, dif (a, l)) cumhazard(k, x, dif t) \
-                &qquad + delta_((c, Ø, Ø)) (dif (m, a, l)) cumhazardcensored(k, c, dif t)), 
+                &qquad + delta_((c, A(C), L(C))) (dif (m, a, l)) cumhazardcensored(k, c, dif t)), 
     $ <eq:densitycens>
     where
     $
-        psi_(k, x) (t, history(k-1),dif (m, a, l)) &=   bb(1) {x = a}(delta_(1) (dif a) pi_k (t, l, history(k-1)) \
+        psi_(k, x) (t, dif (a, l)) &=   bb(1) {x = a}(delta_(1) (dif a) pi_k (t, l, history(k-1)) \
             &qquad + delta_(0) (dif a) (1 - pi_k (t, l, history(k-1))) densitycova(dif l, t, k)) \
             &+ bb(1) {x = ell} densitycovl(dif l, t, k) delta_(treat(k-1)) (dif a) \
-            &+ bb(1) {x in {y, d}} delta_(Ø) (dif a) delta_(Ø) (dif l),
+            &+ bb(1) {x in {y, d}} delta_(A(T^e)) (dif a) delta_(L(T^e)) (dif l),
     $ 
     and
     $
@@ -1247,45 +1285,87 @@ We apply @lemma:iceone and @lemma:survivalfactorgeneral in $(*)$ and so the theo
     $
 ] <lemma:iceone>
 #proof[
-    A version of the compensator of the random measure $N$ with respect to the filtration $(cal(F)_t)_(t >= 0)$ can be given by Theorem 4.2.2 (ii) of @last1995marked,
+    A version of the compensator of the random measure $N$ with respect to the filtration $(cal(F)_t)_(t >= 0)$ is by Theorem 4.1.11 (ii) of @last1995marked is
     $
-        Lambda (dif (t, m, a, l)) &= K'((L(0), A(0)), N, t, dif (m, a, l)) V' ((A(0),L(0)), N, dif t)
-    $ 
-    for some kernel $K'$ from ${0, 1} times cal(L) times N_bold(X) times RR_+$ to $bold(X)$
-    and some predictable kernel $V'$ from ${0, 1} times cal(L) times N_bold(X) times RR_+$ to $RR_+ times bold(X)$.
-    //This follows since we can pick the kernel $K'$ and $V'$ based on the smaller filtration $cal(F)^alpha_t$.
+        &Lambda (dif (t, m, a, l)) \
+            &= sum_k bb(1) {event(k-1) < t <= event(k)} (P((event(k), status(k), treat(k), covariate(k)) in dif (t, m, a, l) | history(k-1))) / P(event(k) >= t | history(k-1)) \
+            &= sum_k bb(1) {event(k-1) < t <= event(k)}  P((covariate(k), treat(k)) in dif (l, a) | history(k-1), event(k) = t, status(k) = m) (P((treat(k), status(k)) in dif (t, m))) / P(event(k) >= t | history(k-1)) \
+            &= sum_k bb(1) {event(k-1) < t <= event(k)} sum_(x=a,ell,y,d) P((covariate(k), treat(k)) in dif (l, a) | history(k-1), event(k) = t, status(k) = x) delta_x (dif m) cumhazard(k, x, dif t) \
+            &= sum_k bb(1) {event(k-1) < t <= event(k)} sum_(x=a,ell,y,d) psi_(k,x) (t, dif (a, l)) delta_x (dif m) cumhazard(k, x, dif t),
+    $
+    where we use explicit conditioning and the definition of the cause-specific hazard measures.
+    Under condition 1. of @thm:iceipcw, this is also the compensator for $N^alpha$ with respect to the filtration $cal(F)^"full"_t$.
+    
+    We now let $N^"full" (dif (t, m, a, l)) = N (dif (t, m, a, l)) + delta_((c, A(C), L(C))) (dif (m, a, l)) N^c (dif t)$ be the _full_ random measure,
+    where $N^c$ is the counting process for censoring events.
+    Similarly, let $tilde(N) (dif (t, m, a, l))$ denote the observed random measure, i.e., the random measure corresponding to the observed data.
+    Let $T_((k))^*, Delta_((k))^*,
+    A(T_((k))^*), L(T_((k))^*)$ denote the event times and marks of the random measure $N^"full"$.
+    Again by Theorem 4.1.11 (ii) of @last1995marked, a version of the compensator of $N^c$ with respect to the filtration $(cal(F)^"full"_t)_(t >= 0)$ is given by
+    $
+        Lambda^c (dif t) &= sum_k bb(1) {T_((k-1))^* < t <= T_((k))^*} tilde(Lambda)^(c)_k (dif t, cal(F)^"full"_(T_((k-1))^*)),
+    $ <eq:compensatorc>
+    // Note this must be the same as the compensator with respect to the stopped filtration corresponding to observed data
+    // up to the the terminal event
+    // On ..., the conditioning sets are the same.
+    
+    //where $tilde(Lambda)^(c,*)_k (dif t, cal(F)^"full"_(T_((k-1))^*))$ corresponding cause-specific hazard measure. 
+    // By the corollary on p. 10 of @protter2005stochastic that the compensator of the stopped process $N^c (t and T^e)$ is
+    // $
+    //     tilde(Lambda)^c (dif t) = sum_k bb(1) {T_((k-1))^* and T^e < t <= T_((k))^* and T^e} tilde(Lambda)^(c,*)_k (dif t, cal(F)^"full"_(T_((k-1))^*)).
+    // $
+    // However, this compensator can also by using Theorem 4.1.11 (ii) of @last1995marked as
+    // $
+    //     sum_k bb(1) {eventcensored(k-1) < t <= eventcensored(k)} cumhazardcensored(k, c, dif t),
+    // $
+    // noting that a stopped natural filtration is the same as the natural filtration of the stopped process.
+    // We conclude by uniqueness of the canonical compensator (Theorem 4.2.2 (ii) of @last1995marked) that
+    // $cumhazardcensored(k, c, dif t) = tilde(Lambda)^(c,*)_k (dif t, cal(F)^"full"_(T_((k-1))^*))$ whenever $C > event(k-1)$,
+    
+    and also that a version of the compensator of $N^"full"$ with respect to the filtration $(cal(F)^"full"_t)_(t >= 0)$ is given by
+    $
+        Lambda^"full" (dif (t, m, a, l)) = Lambda (dif (t, m, a, l)) + delta_((c, A(C), L(C))) (dif (m, a, l)) Lambda^c (dif t).
+    $
+    This defines a canonical compensator because each term can be written explicitly as a functional of the history of the process $N^"full"$
+    and the baseline covariates. Denote this explicit representation by $rho$, i.e.,
+    $
+        rho( (L(0), A(0)), N^"full", dif (t, m, a, l)) = Lambda^"full" (dif (t, m, a, l)).
+    $
+    where $rho$ is now a kernel (in the measure theoretical sense) from ${0, 1} times cal(L) times N_bold(X) times RR_+$ to $RR_+ times bold(X)$.
     Here $N_bold(X)$ denotes the canonical point process space with mark space $bold(X)$ (@last1995marked).
     In this case, $bold(X) = cal(A) times cal(L) times {a, ell, d, y, c}$, where
     $cal(A) = {0, 1}$ and $cal(L) subset.eq RR^d$.
-    Under the local independence condition, this is also the compensator for $N^alpha$ with respect to the filtration $(cal(F)^"full"_t)_(t >= 0)$.
+    
+    // //K'((L(0), A(0)), N, t, dif (m, a, l)) V' ((A(0),L(0)), N, dif t)
+    // for some kernel $K'$ from ${0, 1} times cal(L) times N_bold(X) times RR_+$ to $bold(X)$
+    // and some predictable kernel $V'$ from ${0, 1} times cal(L) times N_bold(X) times RR_+$ to $RR_+ times bold(X)$.
+    // //This follows since we can pick the kernel $K'$ and $V'$ based on the smaller filtration $cal(F)^alpha_t$.
         
-    Similarly, we find a compensator of the process $N^c$ with respect to the filtration $(cal(F)^"full"_t)_(t>=0)$ given by
-    $
-        Lambda^c (dif (t, m, a, l)) &=  delta_((c, Ø, Ø)) (dif (m, a, l)) V'' ((A(0),L(0)), N^beta, dif t) 
-    $
-    for some kernel $V''$ from ${0, 1} times cal(L) times N_bold(X) times RR_+$ to $RR_+ times bold(X)$.
-    We now find the _canonical_ compensator of $N^beta (dif (t, m, a, l)) = bb(1) {m in {a, ell, d, y}} N (dif (t, m, a, l)) + delta_((c, Ø, Ø)) (m, a, l)) N^c (dif t)$,
-    given by
-    $
-        rho ((l_0, a_0), phi^beta, dif (t, m, a, l)) &= bb(1) {m in {a, ell, d, y}} K'((l_(0), a_(0)), phi^alpha, t, dif (m, a, l)) V' ((a_(0),l_(0)), phi^alpha, dif t) \
-            &+ V' ((a_(0),l_(0)), phi^beta, dif t) delta_((c, Ø, Ø)) (dif (m, a, l)).
-    $
-    //Then $rho ((covariate(0),treat(0)), N^(beta), dif (t, m, a, l))$ is a compensator,
-    //so it is by definition the canonical compensator.
-    By construction,
-    $
-        &V'' ((treat(0), covariate(0)), (N^(beta))^(event(k-1)), dif t) = tilde(Lambda)_k^c (dif t, cal(F)^"full"_event(k-1)), \ \
-            &K'((l_(0), a_(0)), (N^(beta))^(event(k-1)), t, dif (m, a, l)) V' ((a_(0),l_(0)), (N^(beta))^(event(k-1)), dif t) = \
-            &sum_(x=a,ell,d,y) psi_(k,x) (t, d(a,l), history(k-1)) Lambda_k^x (dif t, history(k-1)),
-    $ <eq:compensatorpart>
-    where $(N^(beta))^(event(k-1))$ stopped process at the $(k-1)$'th event time
-    (see for instance (ii) of @thm:jointdensity to see how we arrive at the second line of @eq:compensatorpart).
+    // Similarly, we find a compensator of the process $N^c$ with respect to the filtration $(cal(F)^"full"_t)_(t>=0)$ given by
+    // $
+    //     Lambda^c (dif (t, m, a, l)) &=  delta_((c, Ø, Ø)) (dif (m, a, l)) V'' ((A(0),L(0)), N^beta, dif t) 
+    // $
+    // for some kernel $V''$ from ${0, 1} times cal(L) times N_bold(X) times RR_+$ to $RR_+ times bold(X)$.
+    // We now find the _canonical_ compensator of $N^beta (dif (t, m, a, l)) = bb(1) {m in {a, ell, d, y}} N (dif (t, m, a, l)) + delta_((c, Ø, Ø)) (m, a, l)) N^c (dif t)$,
+    // given by
+    // $
+    //     rho ((l_0, a_0), phi^beta, dif (t, m, a, l)) &= bb(1) {m in {a, ell, d, y}} K'((l_(0), a_(0)), phi^alpha, t, dif (m, a, l)) V' ((a_(0),l_(0)), phi^alpha, dif t) \
+    //         &+ V' ((a_(0),l_(0)), phi^beta, dif t) delta_((c, Ø, Ø)) (dif (m, a, l)).
+    // $
+    // //Then $rho ((covariate(0),treat(0)), N^(beta), dif (t, m, a, l))$ is a compensator,
+    // //so it is by definition the canonical compensator.
+    // By construction,
+    // $
+    //     &V'' ((treat(0), covariate(0)), (N^(beta))^(event(k-1)), dif t) = tilde(Lambda)_k^c (dif t, cal(F)^"full"_event(k-1)), \ \
+    //         &K'((l_(0), a_(0)), (N^(beta))^(event(k-1)), t, dif (m, a, l)) V' ((a_(0),l_(0)), (N^(beta))^(event(k-1)), dif t) = \
+    //         &sum_(x=a,ell,d,y) psi_(k,x) (t, d(a,l), history(k-1)) Lambda_k^x (dif t, history(k-1)),
+    // $ <eq:compensatorpart>
+    // where $(N^("full"))^(event(k-1))$ stopped process at the $(k-1)$'th event time.
+    //(see for instance (ii) of @thm:jointdensity to see how we arrive at the second line of @eq:compensatorpart).
     // Do we need to show whether Delta Rho <= 1?
 
-    Let $T_((k))^*, Delta_((k))^*,
-    A(T_((k))^*), L(T_((k))^*)$ denote the event times and marks of the random measure $N^beta$.
     Note that $T^*_((k+1)) = eventcensored(k+1)$ whenever $event(k) < C$.
-    Let $T_(S,1)$ denote the first event time of $N^beta$ after $T_(S,0):=S$,
+    Let $T_(S,1)$ denote the first event time of $N^"full"$ after $T_(S,0):=S$,
     where $S$ is a stopping time with respect to the filtration $(cal(F)^"full"_t)_(t >= 0)$.
     With $S:= T^e and C and event(k)$, we
     have $T_(S, 0) := S = T^e and C and event(k)$. It also holds that
@@ -1294,28 +1374,24 @@ We apply @lemma:iceone and @lemma:survivalfactorgeneral in $(*)$ and so the theo
     $
         &bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} P( (macron(T)_(k+1), macron(Delta)_(k+1), A(macron(T)_(k+1)), L(macron(T)_(k+1))) in dif (t, m, a,l) | historycensored(k-1)) \
             &=bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} P( (T_(S,1)^*, Delta_(S,1)^*, A(T_(S,1)^*), L(T_(S,1)^*)) in dif (t, m, a,l) | historycensored(k-1)) \
-            &=^((*)) bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} P( (T_(S,1)^*, Delta_(S,1)^*, A(T_(S,1)^*), L(T_(S,1)^*)) in dif (t, m, a,l) | cal(F)^(beta)_(T_(S,0))) \
+            &=^((*)) bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} P( (T_(S,1)^*, Delta_(S,1)^*, A(T_(S,1)^*), L(T_(S,1)^*)) in dif (t, m, a,l) | cal(F)^("full")_(T_(S,0))) \
             &=^("Thm. 4.3.8") bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} bb(1) {T_(S,0) < t} \
-            &quad times product_(s in (T_(S,0), t)) (1 - rho ((L(0),A(0)), (N^(beta))^(T_(S,0)), dif s, {a,y,l,d,y} times {0,1} times cal(L))) rho ((L(0),A(0)), (N^(beta))^(T_(S,0)), dif (t, m, a, l)) \
+            &quad times product_(s in (T_(S,0), t)) (1 - rho ((L(0),A(0)), (N^("full"))^(T_(S,0)), dif s, {a,y,l,d,y} times {0,1} times cal(L))) rho ((L(0),A(0)), (N^("full"))^(T_(S,0)), dif (t, m, a, l)) \
             &= bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} bb(1) {eventcensored(k) < t} \
-            &quad times product_(s in (eventcensored(k), t)) (1 - rho ((L(0),A(0)), (N^(tilde(beta)))^(eventcensored(k)), dif s, {a,y,l,d,y} times {0,1} times cal(L))) rho (A(0), L(0), (N^(tilde(beta)))^(eventcensored(k)), dif (t, m, a, l)).
+            &quad times product_(s in (eventcensored(k), t)) (1 - rho ((L(0),A(0)), (N^(tilde(beta)))^(eventcensored(k)), dif s, {a,y,l,d,y} times {0,1} times cal(L))) rho (A(0), L(0), (tilde(N)))^(eventcensored(k)), dif (t, m, a, l)).
     $ <eq:densitycensProof>
-    In $(*)$, we use that $cal(F)^(beta)_(T_(S,0)) =^((**)) sigma((A(0), L(0)), (N^(beta))^(T_(S,0))) = sigma((A(0), L(0)),(N^(tilde(beta)))^(eventcensored(k))) =  cal(F)^(tilde(beta))_(eventcensored(k))$ where $(**)$ follows from Theorem 2.1.14 of @last1995marked.
-    From @eq:densitycensProof, we get @eq:densitycens by noting that $psi_(k, x) (t, history(k-1),{a,y,l,d,y} times {0,1} times cal(L)) = 1$.
+    In $(*)$, we use that $cal(F)^("full")_(T_(S,0)) =^((**)) sigma((A(0), L(0)), (N^("full"))^(T_(S,0))) = sigma((A(0), L(0)),(tilde(N))^(eventcensored(k))) =  cal(F)_(eventcensored(k))$ where $(**)$ follows from Theorem 2.1.14 of @last1995marked.
+    This is because no terminal event has occurred before or at $T_(S,0)$.
+    From @eq:densitycensProof, we get @eq:densitycens by noting that $psi_(k, x) (t, {a,y,l,d,y} times {0,1} times cal(L)) = 1$.
 ] 
 
 #lemma[
-    Assume independent censoring as in @thm:iceipcw.
-    Assume also $angle.l tilde(M)^c, tilde(M)^x angle.r = 0$ for $x=a,ell,y,d$ where $tilde(M)^c = tilde(N)^c - tilde(Lambda)^c$ and $tilde(M)^x = tilde(N)^x - Lambda^x$ are the martingales of the observed counting processes with respect to the filtration $cal(F)^tilde(beta)_t$.
+    Assume condition 1. and 2. of @thm:iceipcw.
     Then the left limit of the survival function factorizes on $(0, tau]$, i.e.,
     $
         &bb(1) {statuscensored(k-1)!=c, eventcensored(k-1) < t} tilde(S) (t-| historycensored(k-1)) \
             &= bb(1) {statuscensored(k-1)!=c, eventcensored(k-1) < t}product_(s in (0, t)) (1 - sum_(x=a,ell,y,d) cumhazard(k, x, dif s)) product_(s in (0, t)) (1 - tilde(Lambda)_k^c (dif t, historycensored(k-1)))
     $ 
-    if
-    $
-        Delta tilde(Lambda)_k^c (dot, historycensored(k-1)) Delta cumhazard(k, x, dot) equiv 0,
-    $ <eq:nonsimultaneous>
     for $x=a,ell,y,d$.
 ] <lemma:survivalfactorgeneral>
 
@@ -1361,7 +1437,7 @@ We apply @lemma:iceone and @lemma:survivalfactorgeneral in $(*)$ and so the theo
             &=^((*)) exp(-beta^c) exp( -gamma^c) product_(v in (s, t) \ gamma(v) != gamma(v-)) (1- Delta gamma) product_(v in (s, t) \ zeta(v) != zeta(v-)) (1 - Delta zeta) \
             &= product_(v in (s, t)) (1 - dif zeta (v) ) product_(v in (s, t)) (1 - dif gamma (v)),
     $
-    where we apply @eq:nonsimultaneous in $(*)$.
+    where we apply condition 2. of @thm:iceipcw in $(*)$.
     // Then, we have that for $event(k-1) and C < t$
     // $
     //     & bb(1) {product_(v in (s, t)) (1 - dif (zeta+gamma) (v) ) > 0} product_(v in (s, t)) (1 - dif (zeta+gamma) (v)) \
@@ -1506,7 +1582,7 @@ $
     & integral_(eventcensored(k - 1))^(tau and eventcensored(k)) (Qbar(k-1)(tau) - Qbar(k-1)(u)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u | historycensored(k-1))) M^bullet (dif u) \
         &=(Qbar(k-1)(tau) - Qbar(k-1)(eventcensored(k))) 1/(tilde(S)^c (eventcensored(k) | historycensored(k-1)) S (eventcensored(k) | historycensored(k-1))) bb(1){eventcensored(k) <= tau} \
         &-Qbar(k-1)(tau) (1/(tilde(S)^c (eventcensored(k) and tau | historycensored(k-1)) S (eventcensored(k) and tau | historycensored(k-1)))-1) \
-        &1/(tilde(S)^c (tau and eventcensored(k) | historycensored(k-1)) S (tau and eventcensored(k) | historycensored(k-1))) Qbar(k-1) (tau and eventcensored(k)) \
+        &quad times 1/(tilde(S)^c (tau and eventcensored(k) | historycensored(k-1)) S (tau and eventcensored(k) | historycensored(k-1))) Qbar(k-1) (tau and eventcensored(k)) \
         &-integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/ (tilde(S)^c (s | historycensored(k-1)))  [  Qbar(k) (1, covariate(k-1), s, a, historycensored(k-1)) lambda_k^a (s , historycensored(k-1))  \
             &quad quad +  mean(P) [Qbar(k) (tau) | event(k) =s , status(k) = ell, history(k-1)] lambda_k^ell (s , historycensored(k-1))  \
             &quad quad +  lambda_k^y (s , historycensored(k-1)) ] dif s \
@@ -1614,27 +1690,28 @@ $ <eq:proofAdaptive>
 
 To do so, we now show that $P(K_(n c) != K_"lim") -> 0$.
 First define
-$K_n = max_i N_(tau i)$.
+$K_n = max_i tilde(N)_(tau i)$.
 Then, we can certainly write that
 $
     K_(n c) -  K_"lim" = K_(n c) - K_n + K_n - K_"lim",
 $ <eq:Knlim>
 By independence and definition of $K_n$, we have
 $
-    P(K_n != K_"lim") = P(K_n < K_"lim") = P(N_tau < K_"lim")^n -> 0
+    P(K_n != K_"lim") =^((a)) P(K_n < K_"lim") = P(tilde(N)_tau < K_"lim")^n -> 0.
 $ <eq:Kn>
+In $(a)$, we use that $N_t >= tilde(N)_t$ and the fact that $P(N_tau > K_"lim")=0$.
 We now show that $P(K_(n c) < K_n) -> 0$ as $n -> oo$,
 which will show that $P(K_(n c) != K_"lim") -> 0$ as $n -> oo$ by @eq:Knlim
 and @eq:Kn.
 We have, 
 $
-    P( K_(n c) != K_n) = P( union_(v=1)^(K_"lim") (sum_(i=1)^n bb(1) {N_(tau i) >= v} <= c))
-        &<= sum_(v=1)^(K_"lim") P( sum_(i=1)^n bb(1) {N_(tau i) >= v} <= c) -> 0
+    P( K_(n c) != K_n) = P( union_(v=1)^(K_"lim") (sum_(i=1)^n bb(1) {tilde(N)_(tau, i) >= v} <= c))
+        &<= sum_(v=1)^(K_"lim") P( sum_(i=1)^n bb(1) {tilde(N)_(tau, i) >= v} <= c) -> 0
 $
-as $n -> oo$. Here, we use that $sum_(i=1)^n bb(1) {N_(tau i) >= v}$ diverges almost surely to $oo$. Too see this, note that $sum_(i=1)^n bb(1) {N_(tau i) >= v}$ is almost surely monotone
-in $n$, and $sum_(i=1)^n P(N_(tau i) >= v) = n P(N_tau >= v) -> oo$.
-From this and Kolmogorov's three series theorem, we conclude that $sum_(i=1)^n bb(1) {N_(tau i) >= v} -> oo$
-almost surely as $n -> oo$ and that $sum_(i=1)^n bb(1) {N_(tau i) >= v} <= c$ has probability tending to zero as $n -> oo$ as desired.
+as $n -> oo$. Here, we use that $sum_(i=1)^n bb(1) {tilde(N)_(tau, i) >= v}$ diverges almost surely to $oo$. Too see this, note that $sum_(i=1)^n bb(1) {N_(tau i) >= v}$ is almost surely monotone
+in $n$, and $sum_(i=1)^n P(tilde(N)_(tau, i) >= v) = n P(tilde(N)_tau >= v) -> oo$.
+From this and Kolmogorov's three series theorem, we conclude that $sum_(i=1)^n bb(1) {tilde(N)_(tau i) >= v} -> oo$
+almost surely as $n -> oo$ and that $sum_(i=1)^n bb(1) {tilde(N)_(tau i) >= v} <= c$ has probability tending to zero as $n -> oo$ as desired.
 
 Returning to showing 1 and 2, we now have that
 $

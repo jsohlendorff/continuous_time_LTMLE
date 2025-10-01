@@ -514,15 +514,90 @@ We then have the following result.
 = Which other solutions can we think of besides the one given in @thm:identifiabilitymartingale and in @ryalenPotentialOutcomes?
 
 #theorem[
+    Let $K^*_t$ be a (local) martingale with $Delta K_t^* >= -1$
+    and $Delta K_t^* > -1$ if $t < tau^(g^*)$. Then, 
 $
-    cal(E) (K^*)_t = cal(E) (K^*)_t cal(E) (- bb(N)^a)_t quad P-"a.s."
+    W_t^* := cal(E) (K^*)_t = cal(E) (K^*)_t cal(E) (- bb(N)^a)_t quad P-"a.s."
 $
     if and only if
 $
     bb(1) {tau^(g^*) < oo} K^*_(tau^(g^*)) = - bb(1) {tau^(g^*) < oo} quad P-"a.s."
 $
 ]
+#proof[
+    Using the well-known formula $cal(E) (X) cal(E) (Y) = cal(E) (X + Y + [X, Y])$,
+    we have
+    $
+        cal(E) (K^*) = cal(E) (K^* - bb(N)^a - [K^*, bb(N)^a])
+    $
+    This holds if and only if
+    $
+        1 + integral_0^t W_(t -) dif K^*_s = 1 + integral_0^t W_(t -) dif (K^*_s - bb(N)^a_s - [K^*, bb(N)^a]_s)
+    $
+    if and only if
+    $
+        integral_0^t W_(t -) Delta K_s^* dif bb(N)^a_s = - integral_0^t W_(t -) dif bb(N)^a_s 
+    $
+    and this is
+    $
+        bb(1) {tau^(g^*) <= t} W_(tau^(g^*) -) Delta K_(tau^(g^*)) = - bb(1) {tau^(g^*) <= t} W_(tau^(g^*) -)
+    $
+    By assumption, $W_(tau^(g^*) -) > 0$ (looking at the explicit solution of the SDE) and so the above holds if and only if
+    $
+        bb(1) {tau^(g^*) <= t} Delta K_(tau^(g^*)) = - bb(1) {tau^(g^*) <= t}
+    $
+    Taking $t -> oo$ gives the desired result. On the other hand, if the result holds then,
+    $
+        bb(1) {tau^(g^*) <= t} Delta K_(tau^(g^*)) &= bb(1) {tau^(g^*) <= t} bb(1) {tau^(g^*) < oo} Delta K_(tau^(g^*)) \
+            &=bb(1) {tau^(g^*) <= t} bb(1) {tau^(g^*) < oo} (-1) = - bb(1) {tau^(g^*) <= t}
+    $
+]
 
+Now, we consider only $K^*$'s of the form 
+$
+    K^* (t) = integral sum_(x in cal(A)) bb(1) {s <= t} tilde(h) (s, x) M^(a, x) (dif s)
+$
+with $tilde(h) (s, x)$ $P$-$cal(F)_t$ predictable
+with the restriction stated in the above theorem.
+We also suppose that $Delta Lambda^(a, x)_t < 1$.
+This happens for example if $Delta Lambda^a_t < 1$.
+The above theorem gives that we must have
+$
+    Delta K^*_(tau^(g^*)) = sum_(x in cal(A)) tilde(h) (tau^(g^*), x) Delta M^(a, x)_(tau^(g^*)) = -1
+$
+on the event that $tau^(g^*) < oo$. Let $Delta_(a)$ denote
+the component of $N^a$ that jumps at time $tau^(g^*)$.
+Then, we must have
+$
+    tilde(h) (tau^(g^*), Delta_(a)) = -1/(1- Delta Lambda^(a, Delta_(a))_(tau^(g^*))) 
+$
+on the event that $tau^(g^*) < oo$.
+Let $h_x (s)$ be predictable processes with $h_x (s) > -1 /(Delta M^(a, x)_s) bb(1) {Delta M^(a, x)_s> 0}$
+(letting $0/0 = 0$)
+ and let
+$
+    tilde(h) (s, x) = (1 - pi^*_s (x)) (-1/(1- Delta Lambda^(a, x)_s)) bb(1) {1 > Delta Lambda^(a,x)_s}) + pi_s^* (x) h_x (s)
+$
+First, note that $pi_t^* (x) = 1$ if $t < tau^(g^*)$
+$
+    Delta K^*_(t) &= sum_(x in cal(A)) tilde(h) (t, x) Delta M^(a, x)_t \
+        &= sum_(x in cal(A)) sum_k bb(1) {event(k-1) < t = event(k)} tilde(h) (t, x) Delta M^(a, x)_t bb(1) {Delta M^(a, x)_t != 0} \
+        &+ sum_(x in cal(A)) sum_k bb(1) {event(k-1) < t <= event(k)} tilde(h) (t, x) Delta M^(a, x)_t bb(1) {Delta M^(a, x)_t = 0} \
+        &= sum_k sum_(x in cal(A)) bb(1) {event(k-1) < t <= event(k)} bb(1) {x != g^*_k (history(k-1), t)} (-1 /(1- Delta Lambda^(a, x)_t)) bb(1) {1 > Delta Lambda^(a,x)_s} Delta M^(a, x)_t \
+        &+ sum_k sum_(x in cal(A)) bb(1) {event(k-1) < t <= event(k)} bb(1) {x != g^*_k (history(k-1), t)} (-1) bb(1) {1 = Delta Lambda^(a,x)_s} Delta M^(a, x)_t \
+        &+ sum_k sum_(x in cal(A)) bb(1) {event(k-1) < t <= event(k)} bb(1) {x = g^*_k (history(k-1), t)} h_x (t) Delta M^(a, x)_t \
+        &>= sum_k sum_(x in cal(A)) bb(1) {event(k-1) < t <= event(k)} bb(1) {x = g^*_k (history(k-1), t)} h_x (t) Delta M^(a, x)_t bb(1) {Delta M^(a, x)_t > 0} \
+        &+ sum_k sum_(x in cal(A)) bb(1) {event(k-1) < t <= event(k)} bb(1) {x = g^*_k (history(k-1), t)} h_x (t) Delta M^(a, x)_t bb(1) {Delta M^(a, x)_t = 0} \
+        &>= sum_k sum_(x in cal(A)) bb(1) {event(k-1) < t <= event(k)} bb(1) {x = g^*_k (history(k-1), t)} h_x (t) Delta M^(a, x)_t bb(1) {Delta M^(a, x)_t > 0} \
+        &> -1 
+$
+On the other hand,
+$
+    Delta K^*_(tau^(g^*)) &= sum_(x in cal(A)) sum_k bb(1) {tau^(g^*) = event(k)} tilde(h) (tau^(g^*), x) Delta M^(a, x)_(tau^(g^*)) \
+        &= sum_k sum_(x in cal(A)) bb(1) {tau^(g^*) = event(k)} bb(1) {x != g^*_k (history(k-1), tau^(g^*))} (-1 /(1- Delta Lambda^(a, x)_(tau^(g^*)))) Delta M^(a, x)_(tau^(g^*)) bb(1) {Delta M^(a, x)_(tau^(g^*)) > 0} \
+        &= -1
+$
+Does not quite work in the non-absolutely continuous case. 
 = Score operator calculations
 
 Let $macron(K)_t = K^*_t + bb(N)_t^a$
@@ -633,6 +708,9 @@ $
     Gamma &mapsto Gamma - angle.l Gamma, K^* angle.r^P_(t) \
         &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k)^* (dif angle.l Gamma, M^(a, a_j) angle.r_t^P - pi_t ({a_j}) (P_0) dif angle.l Gamma, M^(a) angle.r_t^P) / (dif Lambda^(a, a_j) (t) (P_0)) (M^(a, a_j) (dif s) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
 $ <eq:scoreoperator>
-The three last terms, which is a $Q$-(local) martingale consists
-of a sum of a $P$-predictable process and a $P$-(local) martingale.
+
+With respect to the adjoint of the Score operator maybe conclude that
+the argument in Kjetils document shows that the adjoint gives
+my efficient influence function. 
+
 #bibliography("references/ref.bib",style: "apa")
