@@ -551,7 +551,7 @@ $
         bb(1) {tau^(g^*) <= t} Delta K_(tau^(g^*)) &= bb(1) {tau^(g^*) <= t} bb(1) {tau^(g^*) < oo} Delta K_(tau^(g^*)) \
             &=bb(1) {tau^(g^*) <= t} bb(1) {tau^(g^*) < oo} (-1) = - bb(1) {tau^(g^*) <= t}
     $
-]
+] 
 
 Now, we consider only $K^*$'s of the form 
 $
@@ -559,45 +559,78 @@ $
 $
 with $tilde(h) (s, x)$ $P$-$cal(F)_t$ predictable
 with the restriction stated in the above theorem.
-We also suppose that $Delta Lambda^(a, x)_t < 1$.
-This happens for example if $Delta Lambda^a_t < 1$.
+//We also suppose that $Delta Lambda^(a, x)_t < 1$.
+//This happens for example if $Delta Lambda^a_t < 1$.
 The above theorem gives that we must have
 $
     Delta K^*_(tau^(g^*)) = sum_(x in cal(A)) tilde(h) (tau^(g^*), x) Delta M^(a, x)_(tau^(g^*)) = -1
 $
-on the event that $tau^(g^*) < oo$. Let $Delta_(a)$ denote
-the component of $N^a$ that jumps at time $tau^(g^*)$.
-Then, we must have
-$
-    tilde(h) (tau^(g^*), Delta_(a)) = -1/(1- Delta Lambda^(a, Delta_(a))_(tau^(g^*))) 
-$
 on the event that $tau^(g^*) < oo$.
-Let $h_x (s)$ be predictable processes with $h_x (s) > -1 /(Delta M^(a, x)_s) bb(1) {Delta M^(a, x)_s> 0}$
-(letting $0/0 = 0$)
- and let
+Suppose that $cal(A) = {a_0, a_1}$
+and that $pi_t^* (a_1) = 1$.
+In this case, we can write the equation above as
 $
-    tilde(h) (s, x) = (1 - pi^*_s (x)) (-1/(1- Delta Lambda^(a, x)_s)) bb(1) {1 > Delta Lambda^(a,x)_s}) + pi_s^* (x) h_x (s)
+    h(tau^(g^*), a_1) (0 - pi_(tau^(g^*)) (a_1) Delta Lambda^(a)_(tau^(g^*))) + h(tau^(g^*), a_0) (1 - (1- pi_(tau^(g^*)) (a_1)) Delta Lambda^(a)_(tau^(g^*))) = -1
 $
-First, note that $pi_t^* (x) = 1$ if $t < tau^(g^*)$
+or
 $
-    Delta K^*_(t) &= sum_(x in cal(A)) tilde(h) (t, x) Delta M^(a, x)_t \
-        &= sum_(x in cal(A)) sum_k bb(1) {event(k-1) < t = event(k)} tilde(h) (t, x) Delta M^(a, x)_t bb(1) {Delta M^(a, x)_t != 0} \
-        &+ sum_(x in cal(A)) sum_k bb(1) {event(k-1) < t <= event(k)} tilde(h) (t, x) Delta M^(a, x)_t bb(1) {Delta M^(a, x)_t = 0} \
-        &= sum_k sum_(x in cal(A)) bb(1) {event(k-1) < t <= event(k)} bb(1) {x != g^*_k (history(k-1), t)} (-1 /(1- Delta Lambda^(a, x)_t)) bb(1) {1 > Delta Lambda^(a,x)_s} Delta M^(a, x)_t \
-        &+ sum_k sum_(x in cal(A)) bb(1) {event(k-1) < t <= event(k)} bb(1) {x != g^*_k (history(k-1), t)} (-1) bb(1) {1 = Delta Lambda^(a,x)_s} Delta M^(a, x)_t \
-        &+ sum_k sum_(x in cal(A)) bb(1) {event(k-1) < t <= event(k)} bb(1) {x = g^*_k (history(k-1), t)} h_x (t) Delta M^(a, x)_t \
-        &>= sum_k sum_(x in cal(A)) bb(1) {event(k-1) < t <= event(k)} bb(1) {x = g^*_k (history(k-1), t)} h_x (t) Delta M^(a, x)_t bb(1) {Delta M^(a, x)_t > 0} \
-        &+ sum_k sum_(x in cal(A)) bb(1) {event(k-1) < t <= event(k)} bb(1) {x = g^*_k (history(k-1), t)} h_x (t) Delta M^(a, x)_t bb(1) {Delta M^(a, x)_t = 0} \
-        &>= sum_k sum_(x in cal(A)) bb(1) {event(k-1) < t <= event(k)} bb(1) {x = g^*_k (history(k-1), t)} h_x (t) Delta M^(a, x)_t bb(1) {Delta M^(a, x)_t > 0} \
-        &> -1 
+    (h(tau^(g^*), a_0) - h(tau^(g^*), a_1)) pi_(tau^(g^*)) (a_1) Delta Lambda^(a)_(tau^(g^*)) + h(tau^(g^*), a_0) (1 - Delta Lambda^(a)_(tau^(g^*))) = -1
 $
-On the other hand,
+We consider various cases:
+- Absolutely continuous case: $Delta Lambda^(a) equiv 0$.
+- $macron(N)^a$ is $cal(F)_t$-predictable.
+- Jump times for $macron(N)^a$ are discrete.
+- General case.
+
+== Absolutely continuous case
+In this case, conclude that $h(tau^(g^*), a_0) = -1$.
+However, nothing else can be said about $h(tau^(g^*), a_1)$
+as the equation does not place any other restrictions than
+it being predictable.
+We can, however, conclude that $integral_0^(t and tau^(g^*)) h(s, a_0) M^(a, a_0) (dif s) = integral_0^(t and tau^(g^*)) (-1) M^(a, a_0) (dif s) = - bb(N)^(a) (t) + bb(L)^(a) (t)$
+whenever that integral happens to be of finite variation.
+To see this, note that
 $
-    Delta K^*_(tau^(g^*)) &= sum_(x in cal(A)) sum_k bb(1) {tau^(g^*) = event(k)} tilde(h) (tau^(g^*), x) Delta M^(a, x)_(tau^(g^*)) \
-        &= sum_k sum_(x in cal(A)) bb(1) {tau^(g^*) = event(k)} bb(1) {x != g^*_k (history(k-1), tau^(g^*))} (-1 /(1- Delta Lambda^(a, x)_(tau^(g^*)))) Delta M^(a, x)_(tau^(g^*)) bb(1) {Delta M^(a, x)_(tau^(g^*)) > 0} \
-        &= -1
+    integral_0^(t and tau^(g^*)) h(s, a_0) M^(a, a_0) (dif s) &= integral_0^(t and tau^(g^*)) h(s, a_0) N^(a, a_0) (dif s) - integral_0^(t and tau^(g^*)) h(s, a_0) Lambda^(a, a_0) (dif s) \
+        &= integral_0^(t and tau^(g^*)) (-1) N^(a, a_0) (dif s) - integral_0^(t and tau^(g^*)) h(s, a_0) Lambda^(a, a_0) (dif s) \
+        &= integral_0^(t and tau^(g^*)) (-1) M^(a, a_0) (dif s) - integral_0^(t and tau^(g^*)) (h(s, a_0) + 1) Lambda^(a, a_0) (dif s),
 $
-Does not quite work in the non-absolutely continuous case. 
+meaning that $integral_0^(t and tau^(g^*)) (h(s, a_0) + 1) Lambda^(a, a_0) (dif s)$
+is of finite variation, a local martingale, predicable and hence constant (and thus zero)
+by Theorem 15, p. 115 of @protter2005stochastic.
+
+== $macron(N)^a$ is $cal(F)_t$-predictable
+Im this case, $Delta Lambda_t^a = Delta macron(N)_t^a$
+which is 1 at $t = tau^(g^*)$.
+Therefore,
+$
+    (h(tau^(g^*), a_0) - h(tau^(g^*), a_1)) pi_(tau^(g^*)) (a_1) = -1
+$
+or
+$
+    h(tau^(g^*), a_0) = h(tau^(g^*), a_1) - 1/(pi_(tau^(g^*)) (a_1))
+$
+Thus, we have
+$
+    K^(h)_t &= integral_0^(t and tau^(g^*)) h(s, a_0) M^(a, a_0) (dif s) + integral_0^(t and tau^(g^*)) h(s, a_1) M^(a, a_1) (dif s) \
+        &= integral_0^(t and tau^(g^*)) h(s, a_0) M^(a, a_0) (dif s) - integral_0^(t and tau^(g^*)) (h(s, a_1)) M^(a, a_0) (dif s) + integral_0^(t and tau^(g^*)) (h(s, a_1)) M^(a) (dif s) \
+        &= integral_0^(t and tau^(g^*)) (h(s, a_0)-h(s, a_1)) M^(a, a_0) (dif s) \
+        &= integral_0^(t and tau^(g^*)) (- 1/(pi_(s) (a_1))) N^(a, a_0) (dif s) - integral_0^(t and tau^(g^*)) (h(s, a_0)-h(s, a_1)) Lambda^(a, a_0) (dif s) \
+        &= integral_0^(t and tau^(g^*)) (- 1/(pi_(s) (a_1))) M^(a, a_0) (dif s) - integral_0^(t and tau^(g^*)) ((h(s, a_0)-h(s, a_1)) + 1/(pi_(s) (a_1))) Lambda^(a, a_0) (dif s) \
+$
+Assuming that $integral_0^(t and tau^(g^*)) (h(s, a_0)-h(s, a_1)) M^(a, a_0) (dif s)$ is of finite variation,
+we have that $integral_0^(t and tau^(g^*)) ((h(s, a_0)-h(s, a_1)) M^(a, a_0) (dif s) = integral_0^(t and tau^(g^*)) (- 1/(pi_(s) (a_1))) M^(a, a_0) (dif s)$.
+We conclude that the stochastic exponential of $K^(h)_t$ if $integral_0^(t and tau^(g^*)) (h(s, a_0)-h(s, a_1)) M^(a, a_0) (dif s)$ is of finite variation
+does not depend on the choice of $h$ since $integral_0^(t and tau^(g^*)) ((h(s, a_0)-h(s, a_1)) M^(a, a_0) (dif s)$ does not depend on the choice of $h$.
+
+== Jump times for $macron(N)^a$ are discrete
+
+??
+
+== General case
+
+??
+
 = Score operator calculations
 
 Let $macron(K)_t = K^*_t + bb(N)_t^a$
