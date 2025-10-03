@@ -657,9 +657,11 @@ Conclude that
 $
     &integral_0^(t and tau^(g^*)) h(s, a_0) M^(a, a_0) (dif s) \
         &= integral_0^(t and tau^(g^*)) ((- 1 + h(s, a_1) pi_(s) (a_1) Delta Lambda^(a)_(s)) / (1 - (1-pi_(s) (a_1)) Delta Lambda^(a)_(s)) bb(1) {Lambda^(a) ({s}) > 0} - bb(1) {Lambda^(a) ({s}) = 0}) M^(a, a_0) (dif s) \
-        &= integral_0^(t and tau^(g^*)) (- 1 + bb(1) {Lambda^(a) ({s}) > 0} h(s, a_1) pi_(s) (a_1) Delta Lambda^(a)_(s)) / (1-bb(1) {Lambda^(a) ({s}) > 0}(1-pi_(s) (a_1)) Delta Lambda^(a)_(s)) M^(a, a_0) (dif s) 
+        &= integral_0^(t and tau^(g^*)) (- 1 + bb(1) {Lambda^(a) ({s}) > 0} h(s, a_1) pi_(s) (a_1) Delta Lambda^(a)_(s)) / (1-bb(1) {Lambda^(a) ({s}) > 0}(1-pi_(s) (a_1)) Delta Lambda^(a)_(s)) M^(a, a_0) (dif s),
 $
-and $h(dot,a_1)$ freely chosen, predictable satisfying some integrability criteria. 
+and $h(dot,a_1)$ freely chosen, predictable satisfying some integrability criteria.
+Interestingly, this means that the stochastic exponential $cal(E) (K^(h))_t$ will depend on the choice of $h$ in general,
+but only through $h(s, a_1)$ which can be freely chosen. 
 
 = Score operator calculations
 
@@ -775,5 +777,52 @@ $ <eq:scoreoperator>
 With respect to the adjoint of the Score operator maybe conclude that
 the argument in Kjetils document shows that the adjoint gives
 my efficient influence function. 
+
+= Sequential representation of exchangeabillity
+
+#theorem[
+    Suppose consistency and positivity holds as in @thm:identifiabilitymartingale.
+    Then, we have
+    $
+        mean(P) [tilde(Y)_t] = mean(P) [W_t Y_t],
+    $
+    for all $t in [0, T]$, if for $k in bb(N)$
+    and $t in [0, T]$ it holds that
+    $
+        tilde(Y)_t perp bb(1) {treat(k) = g^* (history(k-1), event(k))} | cal(F)^(g^*)_(event(k-1)), event(k), status(k) = a,
+    $
+    where
+    $
+        cal(F)^(g^*)_event(k) = sigma(covariate(k), status(k), bb(1) {treat(k) = g_k^* (history(k-1), event(k))), dots, bb(1) {treat(0) = g_0^*(covariate(0))}, covariate(0))
+    $
+]
+// should be able to do it witrh F_(T_k and t)
+// look at conditions with both right censoring and coarsening
+
+#proof[
+    We see immediately that,
+    $
+        &integral W_(s-) bb(1) {event(m) < s < event(m+1) and t} dif K_s \
+            &= W_(event(m)) integral bb(1) {event(m) < s < event(m+1) and t} dif K_s \
+            &= W_(event(m)) bb(1) {event(m) < t} (sum_j (pi^*_(event(m)) ({a_j})) / (pi_(event(m)) ({a_j})) - 1) N^(a, a_j) (event(m+1) and t) \
+//            &= W_(event(m)) bb(1) {event(m) < t} (product_j ((pi^*_(event(m)) ({a_j})) / (pi_(event(m)) ({a_j})))^(bb(1) {treat(k) = a_j}) - 1) N^(a, a_j) (event(m+1) and t) \
+            &= W_(event(m)) bb(1) {event(m) < t} ((bb(1) {treat(m) = g_m^* (history(m-1), event(m))}) / (pi_(event(m)) ({g_m^* (history(m-1), event(m))}))- 1) N^(a, a_j) (event(m+1) and t) 
+    $
+    By consistency and positivity, the desired result is equivalent to 
+    $
+        sum_(m=0)^(oo) mean(P) [integral W_(s-) bb(1) {event(m) < s < event(m+1) and t} dif K_s tilde(Y)_t] = 0
+    $
+    by Lemma 4 of @ryalenPotentialOutcomes, so
+    $
+        &sum_(m=0)^(oo) mean(P) [integral W_(s-) bb(1) {event(m) < s < event(m+1) and t} dif K_s tilde(Y)_t] \
+            &= sum_(m=0)^(oo) mean(P) [W_(event(m)) bb(1) {event(m) < t} ((bb(1) {treat(m) = g_m^* (history(m), event(m+1))}) / (pi_(event(m)) ({g_m^* (history(m), event(m+1))}))- 1) N^(a, a_j) (event(m+1) and t) tilde(Y)_t] \
+            &= sum_(m=0)^(oo) mean(P) [W_(event(m)) bb(1) {event(m) < t} N^(a, a_j) (event(m+1) and t) \
+                &quad times mean(P) [((bb(1) {treat(m) = g_m^* (history(m), event(m+1))}) / (pi_(event(m)) ({g_m^* (history(m-1), event(m))}))- 1) tilde(Y)_t | history(m), event(m+1), status(m+1) = a]] \
+            &= sum_(m=0)^(oo) mean(P) [W_(event(m)) bb(1) {event(m) < t} N^(a, a_j) (event(m+1) and t) \
+                &quad times mean(P) [((bb(1) {treat(m) = g_m^* (history(m), event(m+1))}) / (pi_(event(m)) ({g_m^* (history(m-1), event(m))}))- 1) | history(m), event(m+1), status(m+1) = a] mean(P) [tilde(Y)_t | history(m), event(m+1), status(m+1) = a]] \
+                    &= sum_(m=0)^(oo) mean(P) [W_(event(m)) bb(1) {event(m) < t} N^(a, a_j) (event(m+1) and t) times (1- 1) mean(P) [tilde(Y)_t | history(m), event(m+1), status(m+1) = a]] \
+            &= 0.
+    $
+]
 
 #bibliography("references/ref.bib",style: "apa")
