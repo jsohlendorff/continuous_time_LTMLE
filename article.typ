@@ -283,8 +283,7 @@ stopping time $event(k)$.
 
 Let $densitytrt(t, k)$ be the probability of being treated at the $k$'th event given $status(k) =a$, $event(k) = t$, $covariate(k)$, and $history(k-1)$.
 Let also $cumhazard(k, x, dif t)$ be the cumulative cause-specific hazard measure,
-that is the hazard measure of the marked point $(event(k), bb(1) {status(k) = x})$ 
-given $history(k-1)$ (see Appendix A5.3 of @last1995marked for a definition).
+that is the measure given by $bb(1) {t > 0} (P (event(k) in dif t, status(k) = x | history(k-1)))(P(event(k) >= t | history(k-1)))^(-1)$.
 At baseline, we let $pi_0 (covariate(0))$ be the probability of being treated given $covariate(0)$
 and $mu_0 (dot)$ be the probability measure for the covariate value.
 
@@ -453,9 +452,8 @@ and a sample consists of $tilde(O) = (tilde(O)_1, dots, tilde(O)_n)$ for $n$ ind
 with $tilde(O)_i tilde P$.
 //We will formally show @eq:ftkcens later.
 
-Define $cumhazardcensored(k, c, dif t)$ as the cause-specific cumulative hazard measure for censoring of the $k$'th event given the observed history $historycensored(k-1)$,
-that is the hazard measure of the marked point $(eventcensored(k), bb(1) {statuscensored(k) = c})$ given
-$historycensored(k-1)$
+Define $cumhazardcensored(k, c, dif t)$ as the cause-specific hazard measure for censoring of the $k$'th event given the observed history $historycensored(k-1)$,
+that is $bb(1) {t > 0} (P (eventcensored(k) in dif t, statuscensored(k) = c | historycensored(k-1)))(P(eventcensored(k) >= t | historycensored(k-1)))^(-1)$
 and the corresponding conditional censoring survival functions $tilde(S)^c (t | historycensored(k-1)) = prodint(s, event(k-1), t) (1 - cumhazardcensored(k, c, dif s))$,
 where $product_(s in (0, t])$ is the product integral over the interval $(0, t]$ (@gill1990survey).
 Alost let $tilde(M)^c (t) = tilde(N)^c (t) - tilde(Lambda)^c (t)$ where $tilde(N)^c (t) = bb(1) {C <= t, T^e > t} = sum_(k=1)^K bb(1) {eventcensored(k) <= t, statuscensored(k) = c}$ is the censoring counting process,
