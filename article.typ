@@ -606,6 +606,42 @@ of estimates for the nuisance parameters appearing in @eq:eif.
 Under certain regularity conditions, this estimator is asymptotically linear at $P$ with influence function $phi_tau^* (dot; P)$;
 however, such conditions are not the focus of this paper.
 
+// Anders comment: Suggest restructuring above in this way:
+//
+// In this section, we derive the efficient influence function for
+// $Psi_tau^g$ which we denote by $phi_tau^*$. The effient influence
+// function is a $P$-indexed function which is square integrable and
+// has mean zero under $P$. The efficient influence function
+// $phi_tau^*$ can be interpreted as the functional derivative of
+// $Psi_tau^g$ [refs to Kennedy paper or Hines, Dukes et al
+// "Demystifying efficient ..."]. The efficient influence function can
+// be used to construct efficient estimators and construct
+// asymptotically valid tests and confidence interval. In addition,
+// influence function-based estimators can use of machine learning
+// methods to estimate the nuisance parameters under certain
+// regularity. To achieve this, we debias our initial ICE-IPCW
+// estimator (defined in Algorithm...) using double/debiased machine
+// learning (@chernozhukovDoubleMachineLearning2018). This leads to
+// the one-step estimator,
+//
+// $hat(Psi)_n = hat(Psi)^0_n + bb(P)_n phi_tau^* (dot; hat(eta)), $
+//
+// where $hat(Psi)^0_n$ is the initial estimator ICE-IPCW estimator,
+// and $hat(eta)$ is a collection of estimates for the nuisance
+// parameters appearing in @eq:eif. Under certain regularity
+// conditions, this estimator is asymptotically linear at $P$ with
+// influence function $phi_tau^*(dot; P)$.
+
+// Anders comment: There is some clash of notation above if we both
+// write \phi(P) and \phi(\hat\eta). Should explain this and
+// preferable only use one of the two. We could perhaps just use
+// \hat{P} instead of \hat\eta to avoid the clash.
+
+
+// Anders comment: I don't understand the following paragraph? You say
+// you don't have a method for obtaining valid inference with ML? But
+// you do have a method for constructing CI's, right? What do you mean
+// by "not formally obtain inference..."?
 An algorithm for this one-step estimator is given in the uncensored situation
 or to obtain conservative inference when censoring is present (@alg:onestepsimple).
 However, we do not formally obtain inference if flexible machine learning methods
@@ -615,6 +651,13 @@ although this estimator is not further considered here.
 //If censoring is present, one may not apply flexible machine learning methods
 //to estimate censoring nuisance parameters as we have not fully debiased the estimator
 //resulting in the possibility of the estimator not being regular.
+
+// Anders comment: Maybe easier to read the algorithm below if it is
+// placed after equation 5.1 is introduced. Also, I think the phrasing
+// is a bit to vague, e.g., "plug in the estimates in equation
+// ...". It should be like: 1. Let Q_k be the estiamtes of ... obtained
+// from algorithm 1. 2: Calculate \phi^*... defined in equation 5.1
+// using Q_k. etc
 
 #algorithm("Debiased ICE-IPCW estimator (simple)")[
     Input: Observed data $tilde(O)_i$, $i = 1, dots, n$, time horizon $tau < tauend$,
@@ -634,7 +677,10 @@ although this estimator is not further considered here.
 ] <alg:onestepsimple>
 
 We have provided ways to estimate all the nuisance parameters appearing in the efficient influence function
-except $pi_k$. These may either be estimated by a direct regression procedure
+except $pi_k$. These may either be estimated by a direct regression
+procedure
+// Anders comment: I think there is no need mention the following if
+// it is not something we do. It can be moved to the discussion.
 or alternatively be estimated by estimating the compensators of the counting processors $N^(a 1)$ and
 $N^(a)$, counting the number of times that the doctor has prescribed treatment and
 the number of times the patient has visited the doctor, respectively,
@@ -647,6 +693,13 @@ We derive the efficient influence function using the iterative representation gi
 in @eq:iceipcw, working under the conclusions of @thm:iceipcw, by finding the Gateaux derivative of the target parameter.
 Note that this does not constitute a rigorous proof that @eq:eif
 is the efficient influence function, but rather a heuristic argument.
+// Anders comment: I think we need to think a bit about how to
+// formulate the above -- it is weird to call it the efficient
+// influence function if we at the same time say that it is not. So
+// either we could swep this under the carpet and just refer to the
+// Hines paper, saying that this is a valid strategy for finding the
+// EIF. Alternative, if we have an expression for the remainder term,
+// I think we could give a formal proof with very little extra afford.
 
 We note the close resemblance of @eq:eif to the well-known efficient influence function
 for the discrete time case which was established in @bangandrobins2005,
@@ -659,6 +712,12 @@ simplifies to the same as the one derived by @rytgaardContinuoustimeTargetedMini
 (@section:compareif) when the compensators are absolutely continuous with respect to the Lebesgue measure
 and under the assumption that $Delta L (t) = 0$ whenever $Delta N^a (t) = 1$.
 
+// Anders comment: Move the following paragraph down to Theorem
+// 4. You could then also expand a little bit, for instance by
+// starting with "We might not in advance know how many events can
+// happen. Furthermore, if the maximal number of events is very large,
+// it will be difficult to estimate Q_k for large k because there will
+// typically be few subject with very many event. We show that ..."
 Of separate interest is @thm:adaptive which shows that
 we can adaptively select $K$ based on the observed data.
 For instance, we may pick $K^*=k$ such that $k$ is the largest integer such that
@@ -677,6 +736,10 @@ and @eq:iceipcw for which there is very little data.
 // however, the latter will come at the cost of some finite sample size bias.
 
 #theorem("Efficient influence function")[
+// Anders comment: I think this first part could be moved out of the
+// theorem. Then you can also explain what this is. I don't think
+// "cause-specific cumulative hazard function for the observed
+// censoring" is a very standard expression, so it deserves to be explained.
     Let for each $P in cal(M)$, $tilde(Lambda)^c_k (t, historycensored(k-1); P)$ be the corresponding
     cause-specific cumulative hazard function for the observed censoring
     for the $k$'th event. Suppose that there is a universal constant $C^* > 0$
@@ -695,7 +758,9 @@ and @eq:iceipcw for which there is very little data.
         phi_tau^(*, "MGc") (P) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1))) \
             &integral_(eventcensored(k - 1))^(tau and eventcensored(k)) (Qbar(k-1) (tau)-Qbar(k-1) (u)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u- | historycensored(k-1))) tilde(M)^c (dif u)
     $ <eq:eifMG>
-    The Gateaux derivative is then given by
+    The Gateaux derivative
+    // Anders comment: The Gateaux derivative of what...?
+    is then given by
     #text(size: 7.5pt)[$
         phi_tau^* (P) &=  phi_tau^(*, "MGc") (P) + phi_tau^(*, "discrete") (P).
     $<eq:eif>]
@@ -704,6 +769,8 @@ and @eq:iceipcw for which there is very little data.
 #proof[The proof is given in the Appendix (@section:proofeif).]
 
 #theorem[Adaptive selection of $K$][
+// Anders comment: Is there something missing here? Has the parameter
+// Psi_tau^(g, K_(n c)) been defined?
     Let $N_tau = sum_(k) bb(1) {event(k) <= tau}$
     and $tilde(N)_tau = N_(tau and C)$ be the number of events before time $tau$ in the uncensored and censored data, respectively.
     Let $K_(n c) = max_(v : sum_(i=1)^n bb(1) {tilde(N)_(tau, i) (tau) >= v} > c)$
