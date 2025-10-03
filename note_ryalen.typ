@@ -582,7 +582,7 @@ We consider various cases:
 - Jump times for $macron(N)^a$ are discrete.
 - General case.
 
-== Absolutely continuous case
+== Absolutely continuous case <sec:absolutely_continuous_case>
 In this case, conclude that $h(tau^(g^*), a_0) = -1$.
 However, nothing else can be said about $h(tau^(g^*), a_1)$
 as the equation does not place any other restrictions than
@@ -620,16 +620,46 @@ $
 $
 Assuming that $integral_0^(t and tau^(g^*)) (h(s, a_0)-h(s, a_1)) M^(a, a_0) (dif s)$ is of finite variation,
 we have that $integral_0^(t and tau^(g^*)) ((h(s, a_0)-h(s, a_1)) M^(a, a_0) (dif s) = integral_0^(t and tau^(g^*)) (- 1/(pi_(s) (a_1))) M^(a, a_0) (dif s)$.
-We conclude that the stochastic exponential of $K^(h)_t$ if $integral_0^(t and tau^(g^*)) (h(s, a_0)-h(s, a_1)) M^(a, a_0) (dif s)$ is of finite variation
-does not depend on the choice of $h$ since $integral_0^(t and tau^(g^*)) ((h(s, a_0)-h(s, a_1)) M^(a, a_0) (dif s)$ does not depend on the choice of $h$.
-
-== Jump times for $macron(N)^a$ are discrete
-
-??
+We conclude that $K^(h)_t$ if $integral_0^(t and tau^(g^*)) (h(s, a_0)-h(s, a_1)) M^(a, a_0) (dif s)$ is of finite variation
+does not depend on the choice of $h$.
+Therefore, the stochastic exponential $cal(E) (K^(h))_t$ does not depend on the choice of $h$ either,
+and we may conclude that $cal(E) (K^(h))_t = cal(E) (K)_t$.
 
 == General case
+Suppose that $(1-pi_t (a_1)) Delta Lambda^(a)_(t) < 1$ for all $t > 0$.
+Otherwise, an argument similar to the one we will give will split into cases.
 
-??
+We have that
+$
+    &(h(tau^(g^*), a_0) - h(tau^(g^*), a_1)) pi_(tau^(g^*)) (a_1) Lambda^(a) ({tau^(g^*)}) bb(1) {Lambda^(a) ({tau^(g^*)}) > 0} \
+        &quad + h(tau^(g^*), a_0) (1 - Lambda^(a) ({tau^(g^*)})) bb(1) {Lambda^(a) ({tau^(g^*)}) > 0} \
+        &quad + h(tau^(g^*), a_0) (bb(1) {Lambda^(a) ({tau^(g^*)}) = 0}) = -1
+$
+
+By the same argument as in the absolutely continuous case,
+we have that
+$
+    &integral_0^(t and tau^(g^*)) h(s, a_0) bb(1) {Lambda^(a) ({s}) = 0} M^(a, a_0) (dif s) \
+        &= - integral_0^(t and tau^(g^*)) bb(1) {Lambda^(a) ({s}) = 0} M^(a,a_0) (dif s) \
+        &= - bb(N)^(a) (t) bb(1) {Lambda^(a) ({tau^(g^*)}) = 0} + bb(L)^(a, c) (t),
+$
+where $bb(L)^(a, c)$ is the continuous part of $bb(L)^a$.
+Next whenever $Lambda^(a) ({tau^(g^*)}) > 0$, we find
+$
+    h(tau^(g^*), a_0) = (- 1 + h(tau^(g^*), a_1) pi_(tau^(g^*)) (a_1) Delta Lambda^(a)_(tau^(g^*))) / (1 - (1-pi_(tau^(g^*)) (a_1)) Delta Lambda^(a)_(tau^(g^*)))
+$
+Therefore, it will again be the case that
+$
+    &integral_0^(t and tau^(g^*)) h(s, a_0) bb(1) {Lambda^(a) ({s}) > 0} M^(a, a_0) (dif s) \
+        &= integral_0^(t and tau^(g^*)) (- 1 + h(s, a_1) pi_(s) (a_1) Delta Lambda^(a)_(s)) / (1 - (1-pi_(s) (a_1)) Delta Lambda^(a)_(s)) bb(1) {Lambda^(a) ({s}) > 0} M^(a, a_0) (dif s) \
+$
+Conclude that
+$
+    &integral_0^(t and tau^(g^*)) h(s, a_0) M^(a, a_0) (dif s) \
+        &= integral_0^(t and tau^(g^*)) ((- 1 + h(s, a_1) pi_(s) (a_1) Delta Lambda^(a)_(s)) / (1 - (1-pi_(s) (a_1)) Delta Lambda^(a)_(s)) bb(1) {Lambda^(a) ({s}) > 0} - bb(1) {Lambda^(a) ({s}) = 0}) M^(a, a_0) (dif s) \
+        &= integral_0^(t and tau^(g^*)) (- 1 + bb(1) {Lambda^(a) ({s}) > 0} h(s, a_1) pi_(s) (a_1) Delta Lambda^(a)_(s)) / (1-bb(1) {Lambda^(a) ({s}) > 0}(1-pi_(s) (a_1)) Delta Lambda^(a)_(s)) M^(a, a_0) (dif s) 
+$
+and $h(dot,a_1)$ freely chosen, predictable satisfying some integrability criteria. 
 
 = Score operator calculations
 

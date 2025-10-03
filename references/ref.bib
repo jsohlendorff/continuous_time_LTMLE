@@ -721,3 +721,60 @@ lastchecked = {2025-05-22}
  title = {Deep LTMLE+: Scalable Causal Survival Analysis with Continuous Time, Natural Visits, and Competing Risks},
  year = {2024}
 }
+
+
+@article{rubin_imputation_2005,
+	title = {A General Imputation Methodology for Nonparametric Regression with Censored Data},
+	url = {https://biostats.bepress.com/ucbbiostat/paper194},
+	journaltitle = {U.C. Berkeley Division of Biostatistics Working Paper Series},
+	author = {Rubin, Daniel and van der Laan, Mark J.},
+	date = {2005-11-14},
+	file = {PDF:/home/johan/Zotero/storage/6G2VTZTG/Rubin - A General Imputation Methodology for Nonparametric Regression with Censored Data.pdf:application/pdf;text/html Attachment:/home/johan/Zotero/storage/6QI8L5W3/paper194.html:text/html},
+}
+
+@misc{luedtke_sequential_2018,
+	title = {Sequential Double Robustness in Right-Censored Longitudinal Models},
+	url = {http://arxiv.org/abs/1705.02459},
+	doi = {10.48550/arXiv.1705.02459},
+	abstract = {Consider estimating the G-formula for the counterfactual mean outcome under a given treatment regime in a longitudinal study. Bang and Robins provided an estimator for this quantity that relies on a sequential regression formulation of this parameter. This approach is doubly robust in that it is consistent if either the outcome regressions or the treatment mechanisms are consistently estimated. We define a stronger notion of double robustness, termed sequential double robustness, for estimators of the longitudinal G-formula. The definition emerges naturally from a more general definition of sequential double robustness for the outcome regression estimators. An outcome regression estimator is sequentially doubly robust ({SDR}) if, at each subsequent time point, either the outcome regression or the treatment mechanism is consistently estimated. This form of robustness is exactly what one would anticipate is attainable by studying the remainder term of a first-order expansion of the G-formula parameter. We show that a particular implementation of an existing procedure is {SDR}. We also introduce a novel {SDR} estimator, whose development involves a novel translation of ideas used in targeted minimum loss-based estimation to the infinite-dimensional setting.},
+	number = {{arXiv}:1705.02459},
+	publisher = {{arXiv}},
+	author = {Luedtke, Alexander R. and Sofrygin, Oleg and Laan, Mark J. van der and Carone, Marco},
+	urldate = {2025-10-02},
+	date = {2018-05-17},
+	eprinttype = {arxiv},
+	eprint = {1705.02459 [stat]},
+	keywords = {Statistics - Methodology},
+	file = {Preprint PDF:/home/johan/Zotero/storage/4P6LUE87/Luedtke et al. - 2018 - Sequential Double Robustness in Right-Censored Longitudinal Models.pdf:application/pdf;Snapshot:/home/johan/Zotero/storage/N6C89F72/1705.html:text/html},
+}
+
+
+@article{hines_demystifying_2022,
+	title = {Demystifying Statistical Learning Based on Efficient Influence Functions},
+	volume = {76},
+	issn = {0003-1305},
+	url = {https://doi.org/10.1080/00031305.2021.2021984},
+	doi = {10.1080/00031305.2021.2021984},
+	abstract = {Evaluation of treatment effects and more general estimands is typically achieved via parametric modeling, which is unsatisfactory since model misspecification is likely. Data-adaptive model building (e.g., statistical/machine learning) is commonly employed to reduce the risk of misspecification. Naïve use of such methods, however, delivers estimators whose bias may shrink too slowly with sample size for inferential methods to perform well, including those based on the bootstrap. Bias arises because standard data-adaptive methods are tuned toward minimal prediction error as opposed to, for example, minimal {MSE} in the estimator. This may cause excess variability that is difficult to acknowledge, due to the complexity of such strategies. Building on results from nonparametric statistics, targeted learning and debiased machine learning overcome these problems by constructing estimators using the estimand’s efficient influence function under the nonparametric model. These increasingly popular methodologies typically assume that the efficient influence function is given, or that the reader is familiar with its derivation. In this article, we focus on derivation of the efficient influence function and explain how it may be used to construct statistical/machine-learning-based estimators. We discuss the requisite conditions for these estimators to perform well and use diverse examples to convey the broad applicability of the theory.},
+	pages = {292--304},
+	number = {3},
+	journaltitle = {The American Statistician},
+	author = {Hines, Oliver and Dukes, Oliver and Diaz-Ordaz, Karla and Vansteelandt, Stijn},
+	urldate = {2025-10-03},
+	date = {2022-07-03},
+	note = {Publisher: {ASA} Website \_eprint: https://doi.org/10.1080/00031305.2021.2021984},
+	keywords = {Data-adaptive estimation, Double machine learning, Nonparametric methods, Post-selection inference, Targeted learning},
+	file = {Full Text:/home/johan/Zotero/storage/SL86R37E/Hines et al. - 2022 - Demystifying Statistical Learning Based on Efficient Influence Functions.pdf:application/pdf},
+}
+
+
+@incollection{kennedy_semiparametric_2024,
+	title = {Semiparametric Doubly Robust Targeted Double Machine Learning: A Review},
+	shorttitle = {Semiparametric Doubly Robust Targeted Double Machine Learning},
+	abstract = {In this review, we cover the basics of efficient nonparametric parameter estimation (also called functional estimation), with a focus on parameters that arise in causal inference problems. We review both efficiency bounds (i.e., what is the best possible performance for estimating a given parameter?) and the analysis of particular estimators (i.e., what is this estimator's error, and does it attain the efficiency bound?) under weak assumptions.},
+	booktitle = {Handbook of Statistical Methods for Precision Medicine},
+	publisher = {Chapman and Hall/{CRC}},
+	author = {Kennedy, Edward H.},
+	date = {2024},
+	note = {Num Pages: 30},
+}
