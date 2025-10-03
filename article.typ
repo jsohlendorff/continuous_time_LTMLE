@@ -145,9 +145,8 @@ emulating a diabetes trial.
 
 Let $tauend$ be the end of the observation period.
 We will focus on the estimation of the interventional absolute risk in the presence of time-varying confounding at a specified time horizon $tau < tauend$.
-We let $(Omega, cal(F), P)$ be a statistical experiment on which all processes
-and random variables are defined.
-// Anders comment: don't know what it means here.
+We let $(Omega, cal(F), P)$ be a probability space on which all processes
+and random variables will be defined.
 
 At baseline,
 we record the values of the treatment $treat(0)$ and the time-varying covariates $covariate(0)$
@@ -454,9 +453,15 @@ and a sample consists of $tilde(O) = (tilde(O)_1, dots, tilde(O)_n)$ for $n$ ind
 with $tilde(O)_i tilde P$.
 //We will formally show @eq:ftkcens later.
 
-Define $cumhazardcensored(k, c, dif t)$ as the cause-specific cumulative hazard measure for censoring of the $k$'th event given the observed history $historycensored(k-1)$
+Define $cumhazardcensored(k, c, dif t)$ as the cause-specific cumulative hazard measure for censoring of the $k$'th event given the observed history $historycensored(k-1)$,
+that is the hazard measure of the marked point $(eventcensored(k), bb(1) {statuscensored(k) = c})$ given
+$historycensored(k-1)$
 and the corresponding conditional censoring survival functions $tilde(S)^c (t | historycensored(k-1)) = prodint(s, event(k-1), t) (1 - cumhazardcensored(k, c, dif s))$,
 where $product_(s in (0, t])$ is the product integral over the interval $(0, t]$ (@gill1990survey).
+Alost let $tilde(M)^c (t) = tilde(N)^c (t) - tilde(Lambda)^c (t)$ where $tilde(N)^c (t) = bb(1) {C <= t, T^e > t} = sum_(k=1)^K bb(1) {eventcensored(k) <= t, statuscensored(k) = c}$ is the censoring counting process,
+$tilde(Lambda)^c (t) = sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} tilde(Lambda)_k^c (t, historycensored(k-1))$ is the censoring compensator
+and $S (t | history(k-1)) = product_(s in (0, t]) (1 - sum_(x=a,ell,y,d) Lambda_k^x (dif s, history(k-1)))$
+is the overall (uncensored) survival function for the $k$'th event given $history(k-1)$.
 
 With these definitions, we can now present the ICE-IPCW procedure in @alg:iceipcw.
 Note that ideally the model for iterative regressions should be chosen flexibly, since even with full knowledge of the data-generating mechanism, the true functional form of the regression model
@@ -581,125 +586,48 @@ ensuring that the conditional expectations are well-defined.
 
 = Inference <section:efficientinference>
 
-In this section, we derive the efficient influence function for $Psi_tau^g$.
-The overall objective is to conduct inference for this parameter.
-In particular, if $hat(Psi)_n$ is asymptotically linear at $P$ with influence function $phi_tau^* (P)$, 
+In this section, we derive the efficient influence function for
+$Psi_tau^g$ which we denote by $phi_tau^*$. The effient influence
+function is a $P$-indexed function which is square integrable and
+has mean zero under $P$. The efficient influence function
+$phi_tau^*$ can be interpreted as the functional derivative of
+$Psi_tau^g$ (@kennedy_semiparametric_2024 @hines_demystifying_2022).
+The efficient influence function can
+be used to construct efficient estimators and construct
+asymptotically valid tests and confidence interval. In addition,
+influence function-based estimators can use of machine learning
+methods to estimate the nuisance parameters under certain
+regularity. To achieve this, we debias our initial ICE-IPCW
+estimator (@alg:onestepsimple and @alg:one-stepgeneral) using double/debiased machine
+learning (@chernozhukovDoubleMachineLearning2018). This leads to
+the one-step estimator,
+
 $
-    hat(Psi)_n - Psi_tau^g (P) = bb(P)_n phi_tau^* (dot; P) + o_P (n^(-1/2))
+    hat(Psi)_n = hat(Psi)^0_n + bb(P)_n phi_tau^* (dot; hat(P)),
 $
-then $hat(Psi)_n$ is regular and (locally) nonparametically efficient (Chapter 25 of @vaart1998).
-In this case, one can construct confidence intervals and hypothesis tests based on estimates of the influence function.
-Therefore, our goal is to construct an asymptotically linear estimator
-of $Psi_tau^g$ with influence function $phi_tau^* (P)$.
 
-The efficient influence function in the nonparametric setting enables the use of machine learning methods to estimate the nuisance parameters
-under certain regularity conditions to provide inference for the target parameter.
-To achieve this, we debias our initial ICE-IPCW estimator through double/debiased machine learning (@chernozhukovDoubleMachineLearning2018),
-obtaining a one-step estimator for given estimators of the nuisance parameters
-appearing in the efficient influence function,
-$
-    hat(Psi)_n = hat(Psi)^0_n + bb(P)_n phi_tau^* (dot; hat(eta)),
-$
-where $hat(Psi)^0_n$ is the initial estimator, i.e.,
-the ICE-IPCW estimator, and $hat(eta)$ is a collection
-of estimates for the nuisance parameters appearing in @eq:eif.
-Under certain regularity conditions, this estimator is asymptotically linear at $P$ with influence function $phi_tau^* (dot; P)$;
-however, such conditions are not the focus of this paper.
+where $hat(Psi)^0_n$ is the initial estimator ICE-IPCW estimator,
+and $hat(P)$ is a collection of estimates for the nuisance
+parameters appearing in @eq:eif. Under certain regularity
+conditions, this estimator is asymptotically linear at $P$ with
+influence function $phi_tau^*(dot; P)$.
+We derive the efficient influence function using the iterative representation given
+in @eq:iceipcw, working under the conclusions of @thm:iceipcw,
+by finding the Gateaux derivative of the target parameter.
 
-// Anders comment: Suggest restructuring above in this way:
-//
-// In this section, we derive the efficient influence function for
-// $Psi_tau^g$ which we denote by $phi_tau^*$. The effient influence
-// function is a $P$-indexed function which is square integrable and
-// has mean zero under $P$. The efficient influence function
-// $phi_tau^*$ can be interpreted as the functional derivative of
-// $Psi_tau^g$ [refs to Kennedy paper or Hines, Dukes et al
-// "Demystifying efficient ..."]. The efficient influence function can
-// be used to construct efficient estimators and construct
-// asymptotically valid tests and confidence interval. In addition,
-// influence function-based estimators can use of machine learning
-// methods to estimate the nuisance parameters under certain
-// regularity. To achieve this, we debias our initial ICE-IPCW
-// estimator (defined in Algorithm...) using double/debiased machine
-// learning (@chernozhukovDoubleMachineLearning2018). This leads to
-// the one-step estimator,
-//
-// $hat(Psi)_n = hat(Psi)^0_n + bb(P)_n phi_tau^* (dot; hat(eta)), $
-//
-// where $hat(Psi)^0_n$ is the initial estimator ICE-IPCW estimator,
-// and $hat(eta)$ is a collection of estimates for the nuisance
-// parameters appearing in @eq:eif. Under certain regularity
-// conditions, this estimator is asymptotically linear at $P$ with
-// influence function $phi_tau^*(dot; P)$.
-
-// Anders comment: There is some clash of notation above if we both
-// write \phi(P) and \phi(\hat\eta). Should explain this and
-// preferable only use one of the two. We could perhaps just use
-// \hat{P} instead of \hat\eta to avoid the clash.
-
-
-// Anders comment: I don't understand the following paragraph? You say
-// you don't have a method for obtaining valid inference with ML? But
-// you do have a method for constructing CI's, right? What do you mean
-// by "not formally obtain inference..."?
-An algorithm for this one-step estimator is given in the uncensored situation
+We also provide an algorithm for the one-step estimator in the uncensored situation
 or to obtain conservative inference when censoring is present (@alg:onestepsimple).
-However, we do not formally obtain inference if flexible machine learning methods
-are applied to estimate the nuisance parameters. Alternatively,
-we may use the algorithm in @alg:one-stepgeneral of @section:algorithmgeneral to obtain valid inference
-although this estimator is not further considered here.
+Alternatively,
+we may use the algorithm in @alg:one-stepgeneral of @section:algorithmgeneral to obtain valid
+non-conservative inference although this estimator is not further considered here.
+//However, we do not formally obtain inference if flexible machine learning methods
+//are applied to estimate the nuisance parameters.
 //If censoring is present, one may not apply flexible machine learning methods
 //to estimate censoring nuisance parameters as we have not fully debiased the estimator
 //resulting in the possibility of the estimator not being regular.
 
-// Anders comment: Maybe easier to read the algorithm below if it is
-// placed after equation 5.1 is introduced. Also, I think the phrasing
-// is a bit to vague, e.g., "plug in the estimates in equation
-// ...". It should be like: 1. Let Q_k be the estiamtes of ... obtained
-// from algorithm 1. 2: Calculate \phi^*... defined in equation 5.1
-// using Q_k. etc
-
-#algorithm("Debiased ICE-IPCW estimator (simple)")[
-    Input: Observed data $tilde(O)_i$, $i = 1, dots, n$, time horizon $tau < tauend$,
-    and $K-1$.  Estimators of the propensity score $hat(pi)_0$, $hat(pi)_k$ for $k = 1, dots, K-1$
-    and the censoring compensator $hat(Lambda)^c$.
-    
-    Output: One-step estimator $hat(Psi)_n$ of $Psi_tau^g (P)$; estimate of influence function $phi_tau^* (tilde(O); hat(eta))$.
-    
-    1. Compute the ICE-IPCW estimator $hat(Psi)^0_n$ and obtain estimators of $Qbar(k)$ for $k = 0, dots, K-1$
-    using @alg:iceipcw.
-    2. Plug in the estimates in @eq:eifdiscrete to obtain estimates of $phi^(*, "discrete") (tilde(O)_i; hat(eta))$ for $i = 1, dots, n$.
-    3. Compute the one-step estimator
-       $
-           hat(Psi)_n = hat(Psi)^0_n + 1/n sum_(i=1)^n phi_tau^(*,"discrete") (tilde(O)_i; hat(eta)).
-       $
-    4. Return $hat(Psi)_n$ and $phi_tau^(*,"discrete") (tilde(O_i); hat(eta))$ for $i = 1, dots, n$.
-] <alg:onestepsimple>
-
-We have provided ways to estimate all the nuisance parameters appearing in the efficient influence function
-except $pi_k$. These may either be estimated by a direct regression
-procedure
-// Anders comment: I think there is no need mention the following if
-// it is not something we do. It can be moved to the discussion.
-or alternatively be estimated by estimating the compensators of the counting processors $N^(a 1)$ and
-$N^(a)$, counting the number of times that the doctor has prescribed treatment and
-the number of times the patient has visited the doctor, respectively,
-and calculating the ratio of the two (estimated) intensities
-in the absolutely continuous case.
-We only consider the first of these options.
-The latter choice, however, makes traditional intensity modeling methods applicable.
-
-We derive the efficient influence function using the iterative representation given
-in @eq:iceipcw, working under the conclusions of @thm:iceipcw, by finding the Gateaux derivative of the target parameter.
-Note that this does not constitute a rigorous proof that @eq:eif
-is the efficient influence function, but rather a heuristic argument.
-// Anders comment: I think we need to think a bit about how to
-// formulate the above -- it is weird to call it the efficient
-// influence function if we at the same time say that it is not. So
-// either we could swep this under the carpet and just refer to the
-// Hines paper, saying that this is a valid strategy for finding the
-// EIF. Alternative, if we have an expression for the remainder term,
-// I think we could give a formal proof with very little extra afford.
+//Note that this does not constitute a rigorous proof that @eq:eif
+//is the efficient influence function, but rather a heuristic argument.
 
 We note the close resemblance of @eq:eif to the well-known efficient influence function
 for the discrete time case which was established in @bangandrobins2005,
@@ -712,14 +640,63 @@ simplifies to the same as the one derived by @rytgaardContinuoustimeTargetedMini
 (@section:compareif) when the compensators are absolutely continuous with respect to the Lebesgue measure
 and under the assumption that $Delta L (t) = 0$ whenever $Delta N^a (t) = 1$.
 
-// Anders comment: Move the following paragraph down to Theorem
-// 4. You could then also expand a little bit, for instance by
-// starting with "We might not in advance know how many events can
-// happen. Furthermore, if the maximal number of events is very large,
-// it will be difficult to estimate Q_k for large k because there will
-// typically be few subject with very many event. We show that ..."
-Of separate interest is @thm:adaptive which shows that
-we can adaptively select $K$ based on the observed data.
+#theorem("Efficient influence function")[
+// Anders comment: I think this first part could be moved out of the
+// theorem. Then you can also explain what this is. I don't think
+// "cause-specific cumulative hazard function for the observed
+// censoring" is a very standard expression, so it deserves to be explained.
+    Suppose that there is a universal constant $C^* > 0$
+    such that $tilde(Lambda)^c_k (tauend, historycensored(k-1); P) <= C^*$ for all $k = 1, dots, K$ and
+    every $P in cal(M)$.
+
+    Define
+    $
+        phi_tau^(*, "discrete") (P) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1)))   \
+            & quad times bb(1) {statuscensored(k-1) in {ell, a}, eventcensored(k-1) < tau} (macron(Z)^a_(k,tau) (tau)- Qbar(k-1) (tau)) \
+            & quad +  Qbar(0) (tau) - Psi_tau^g (P)
+    $ <eq:eifdiscrete>
+    and
+    $
+        phi_tau^(*, "MGc") (P) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1))) \
+            &integral_(eventcensored(k - 1))^(tau and eventcensored(k)) (Qbar(k-1) (tau)-Qbar(k-1) (u)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u- | historycensored(k-1))) tilde(M)^c (dif u)
+    $ <eq:eifMG>
+    The Gateaux derivative of $Psi_tau^g$ at $P in cal(M)$ in the direction of the Dirac measure $delta_(tilde(O))$
+    is then given by
+    #text(size: 7.5pt)[$
+        phi_tau^* (P) &=  phi_tau^(*, "MGc") (P) + phi_tau^(*, "discrete") (P).
+    $<eq:eif>]
+] <thm:eif>
+
+#proof[The proof is given in the Appendix (@section:proofeif).]
+
+#algorithm("Debiased ICE-IPCW estimator (simple)")[
+    Input: Observed data $tilde(O)_i$, $i = 1, dots, n$, time horizon $tau < tauend$,
+    and $K-1$.  Estimators of the propensity score $hat(pi)_0$, $hat(pi)_k$ for $k = 1, dots, K-1$
+    and the censoring compensator $hat(Lambda)^c$.
+    
+    Output: One-step estimator $hat(Psi)_n$ of $Psi_tau^g (P)$; estimate of influence function $phi_tau^* (tilde(O); hat(P))$.
+    
+    1. Compute the ICE-IPCW estimator $hat(Psi)^0_n$ and obtain estimators of $Qbar(k)$ for $k = 0, dots, K-1$
+    using @alg:iceipcw.
+    
+    2. Let $hat(Q)_k$ and $hat(S)^c (dot | historycensored(k-1))$ be the estimates obtained in @alg:iceipcw. Use @eq:eifdiscrete
+    based on these estimates and the estimates of $pi_k$ to obtain the estimates $phi^(*, "discrete") (tilde(O)_i; hat(P))$ for $i = 1, dots, n$.
+    
+    3. Compute the one-step estimator
+    $
+           hat(Psi)_n = hat(Psi)^0_n + 1/n sum_(i=1)^n phi_tau^(*,"discrete") (tilde(O)_i; hat(P)).
+    $
+       
+    4. Return $hat(Psi)_n$ and $phi_tau^(*,"discrete") (tilde(O_i); hat(P))$ for $i = 1, dots, n$.
+] <alg:onestepsimple>
+
+
+In practice, we may not know the maximum number of events $K_"lim"$ that can occur.
+Furthermore, the maximal number of events may be enormous
+and it may be difficult to estimate $Qbar(k)$ for large $k$
+due to the limited number of observations
+with many events.
+We show in @thm:adaptive that we can adaptively select $K$ based on the observed data.
 For instance, we may pick $K^*=k$ such that $k$ is the largest integer such that
 there are at least 40 observations fulfilling that $eventcensored(k-1) < tau$.
 Doing so will ensure that we will not have to estimate the terms in @eq:eif
@@ -734,39 +711,6 @@ and @eq:iceipcw for which there is very little data.
 // applied to the target parameter $Psi_tau^(g, K^*) (P)$.
 // In practice, this means that we can essentially ignore the last $K_"lim" - K^*$ events;
 // however, the latter will come at the cost of some finite sample size bias.
-
-#theorem("Efficient influence function")[
-// Anders comment: I think this first part could be moved out of the
-// theorem. Then you can also explain what this is. I don't think
-// "cause-specific cumulative hazard function for the observed
-// censoring" is a very standard expression, so it deserves to be explained.
-    Let for each $P in cal(M)$, $tilde(Lambda)^c_k (t, historycensored(k-1); P)$ be the corresponding
-    cause-specific cumulative hazard function for the observed censoring
-    for the $k$'th event. Suppose that there is a universal constant $C^* > 0$
-    such that $tilde(Lambda)^c_k (tauend, historycensored(k-1); P) <= C^*$ for all $k = 1, dots, K$ and
-    every $P in cal(M)$.
-    Let $tilde(M)^c (t) = tilde(N)^c (t) - tilde(Lambda)^c (t)$ where $tilde(N)^c (t) = bb(1) {C <= t, T^e > t} = sum_(k=1)^K bb(1) {eventcensored(k) <= t, statuscensored(k) = c}$ is the censoring counting process,
-    $tilde(Lambda)^c (t) = sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} tilde(Lambda)_k^c (t, historycensored(k-1))$ is the censoring compensator and $S (t | history(k-1)) = product_(s in (0, t]) (1 - sum_(x=a,ell,y,d) Lambda_k^x (dif s, history(k-1)))$.
-    Also define
-    $
-        phi_tau^(*, "discrete") (P) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1)))   \
-            & quad times bb(1) {statuscensored(k-1) in {ell, a}, eventcensored(k-1) < tau} (macron(Z)^a_(k,tau) (tau)- Qbar(k-1) (tau)) \
-            & quad +  Qbar(0) (tau) - Psi_tau^g (P)
-    $ <eq:eifdiscrete>
-    and
-    $
-        phi_tau^(*, "MGc") (P) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1))) \
-            &integral_(eventcensored(k - 1))^(tau and eventcensored(k)) (Qbar(k-1) (tau)-Qbar(k-1) (u)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u- | historycensored(k-1))) tilde(M)^c (dif u)
-    $ <eq:eifMG>
-    The Gateaux derivative
-    // Anders comment: The Gateaux derivative of what...?
-    is then given by
-    #text(size: 7.5pt)[$
-        phi_tau^* (P) &=  phi_tau^(*, "MGc") (P) + phi_tau^(*, "discrete") (P).
-    $<eq:eif>]
-] <thm:eif>
-
-#proof[The proof is given in the Appendix (@section:proofeif).]
 
 #theorem[Adaptive selection of $K$][
 // Anders comment: Is there something missing here? Has the parameter
@@ -1159,6 +1103,17 @@ and the variables in the history are highly correlated.
 //and that the covariates in the history are highly correlated, since many covariates may not change between events.
 This may yield issues with regression-based methods. If we adopt a TMLE approach, we may be able to use collaborative TMLE (@van2010collaborative)
 to deal with these issues. 
+
+We also did not concern ourselves with the estimation of the compensators here
+and the propensity scores.
+In this article, we used a simple logistic regression model for the propensity scores.
+However, an alternative is to estimate the compensators of the counting processors $N^(a 1)$ and
+$N^(a)$, counting the number of times that the doctor has prescribed treatment and
+the number of times the patient has visited the doctor, respectively,
+and calculating the ratio of the two (estimated) intensities
+in the absolutely continuous case.
+We only consider the first of these options.
+The latter choice, however, makes traditional intensity modeling methods applicable.
 
 //Another alternative method for inference within the TMLE framework is to use temporal difference learning to avoid iterative estimation of $Qbar(k)$ altogether (@shirakawaLongitudinalTargetedMinimum2024)
 //by appropriately extending it to the continuous-time setting;
@@ -1839,28 +1794,57 @@ as $n -> oo$, so that 1 holds. A similar conclusion holds for 2, so the proof is
 #algorithm("Debiased ICE-IPCW estimator (general)")[
     Input: Observed data $tilde(O)_i$, $i = 1, dots, n$, time horizon $tau < tauend$,
     and $K-1$.  Estimators of the propensity score $hat(pi)_0$, $hat(pi)_k$ for $k = 1, dots, K-1$
-    and the censoring compensator $hat(Lambda)^c$.
+    and the censoring compensator $hat(Lambda)^c$. Estimates of $hat(S) (dot | historycensored(k-1)) = product_(s in (eventcensored(k-1), eventcensored(k))) (1 - sum_(x=a,ell,d,y) cumhazard(k,x,dif s))$.
     
-    Output: One-step estimator $hat(Psi)_n$ of $Psi_tau^g (P)$; estimate of influence function $phi_tau^* (tilde(O); hat(eta))$.
+    Output: One-step estimator $hat(Psi)_n$ of $Psi_tau^g (P)$; estimate of influence function $phi_tau^* (tilde(O); hat(P))$.
     1. Compute the ICE-IPCW estimator $hat(Psi)^0_n$ and obtain estimators of $Qbar(k)$ for $k = 0, dots, K-1$.
-    2. Plug in the estimates in @eq:eifdiscrete to obtain estimates of $phi_tau^(*,"discrete") (tilde(O)_i; hat(eta))$ for $i = 1, dots, n$.
+    2. Obtain estimates of $phi_tau^(*,"discrete") (tilde(O)_i; hat(P))$ for $i = 1, dots, n$ via @alg:onestepsimple.
     3. For $k = K - 1, dots, 1$:
 
        a. Estimate $Qbar(k-1) (u)$ for $u = t_1, dots, t_(m-1)$ where $0 < t_1 < dots < t_m = tau$
-          by applying a procedure analogous to @alg:iceipcw with the pseudo-outcome 
-          of $Qbar(k) (tau)$ and changing to the appropriate indicator functions in step 2 among the individuals with $eventcensored(k-1) < u$ and $statuscensored(k-1) in {a, ell}$.
+          by applying the following procedure: 
 
-       b. Approximate the integral in @eq:eifMG using an integral approximation along the grid $t_1, dots, t_m$. 
+          - For each observation with $eventcensored(k-1) < u$ and $statuscensored(k-1) in {a, ell}$ compute the pseudo-outcome $hat(Z)^a_(k,tau)$ as follows:
+              - If $statuscensored(k) = y$, calculate $hat(Z)^a_(k,tau)(u) =1 /(hat(S)^c (eventcensored(k)- | treatcensored(k-1), H_(k-1))) bb(1) {eventcensored(k) <= u, eventcensored(k) < tau}$.
+              - Else if $statuscensored(k) = a$, evaluate $hat(Q)_(k+1) (tau, 1, H_(k))$ and calculate
+              $
+                  hat(Z)^a_(k,tau)(u) = 1/ (hat(S)^c (eventcensored(k)- | treatcensored(k-1), H_(k-1))) bb(1) {eventcensored(k) <= u, eventcensored(k) < tau} hat(Q)_(k+1) (tau, 1, H_(k)).
+              $
+              - Else if $statuscensored(k) = ell$, evaluate $hat(Q)_(k+1) (tau, treatcensored(k-1), H_(k))$,
+                and calculate
+              $
+                  hat(Z)^a_(k,tau)(u)= 1/(hat(S)^c (eventcensored(k)- | treatcensored(k-1), H_(k-1))) bb(1) {eventcensored(k) < tau} hat(Q)_(k+1) (tau, treatcensored(k-1), H_(k)).
+              $
+          
+          - Regress $hat(Z)^a_(k,tau) (u)$ on $(treatcensored(k-1), macron(H)_(k-1))$
+            for the observations with $eventcensored(k-1) < u$ and $statuscensored(k-1) in {a, ell}$
+            to obtain a prediction function $hat(Q)_(k) (u)$.
+      b. Approximate the integral in @eq:eifMG using an integral approximation along the grid $t_1, dots, t_m$,
+         that is:
+
+        - Obtain estimates for each observation $i = 1, dots, n$
+          $
+              bb(1) {eventcensored(k) <= tau, statuscensored(k) = c} (Qbar(k-1) (tau)-Qbar(k-1) (eventcensored(k))) 1/(hat(S)^c (eventcensored(k) | historycensored(k-1)) hat(S) (eventcensored(k)- | historycensored(k-1)))
+          $
+          where we find an estimate of $Qbar(k-1) (eventcensored(k))$ by using the $u in {t_1, dots, t_m}$ closest to it. 
           (Only need to compute this for the individuals with $eventcensored(k-1) < tau$ and $statuscensored(k-1) in {a, ell}$
-          who have followed the treatment regime up to $k-1$ events, i.e., $treatcensored(j) = 1$ for $j < k$).
-    
-    3. Plug in the estimates in @eq:eifMG to obtain estimates of $phi_tau^(*, "MGc") (tilde(O)_i; hat(eta))$ for $i = 1, dots, n$.
-    4. Compute an estimate $phi_tau^* (tilde(O)_i; hat(eta)) = phi_tau^(*,"MGc") (tilde(O)_i; hat(eta)) + phi_tau^(*,"discrete") (tilde(O)_i; hat(eta))$ for $i = 1, dots, n$.
-    4. Compute the one-step estimator
+          who have followed the treatment regime up to $k-1$ events, i.e., $treatcensored(j) = 1$ for $j < k$)
+        - Obtain estimates of the compensator term for each observation $i = 1, dots, n$
+          $
+              &sum_(j=1)^m bb(1) {eventcensored(k - 1) < t_j <= eventcensored(k) and tau} (Qbar(k-1) (tau)-Qbar(k-1) (t_j)) 1/(tilde(S)^c (t_j | historycensored(k-1)) S (t_j- | historycensored(k-1))) \
+                  &quad times (cumhazardcensored(k,c,t_j)-cumhazardcensored(k,c,t_(j-1)))
+          $
+          (Only need to compute this for the individuals with $eventcensored(k-1) < tau$ and $statuscensored(k-1) in {a, ell}$
+          who have followed the treatment regime up to $k-1$ events, i.e., $treatcensored(j) = 1$ for $j < k$)
+        - Plug in the estimates in @eq:eifMG of the martingale term, and the propensity scores $hat(pi)_k$ and censoring weights $hat(S)^c$
+          to obtain estimates of $phi_tau^(*, "MGc") (tilde(O)_i; hat(P))$ for $i = 1, dots, n$.
+ 
+    4. Compute an estimate $phi_tau^* (tilde(O)_i; hat(P)) = phi_tau^(*,"MGc") (tilde(O)_i; hat(P)) + phi_tau^(*,"discrete") (tilde(O)_i; hat(P))$ for $i = 1, dots, n$.
+    5. Compute the one-step estimator
        $
-           hat(Psi)_n = hat(Psi)^0_n + 1/n sum_(i=1)^n phi_tau^(*) (tilde(O)_i; hat(eta)).
+           hat(Psi)_n = hat(Psi)^0_n + 1/n sum_(i=1)^n phi_tau^(*) (tilde(O)_i; hat(P)).
        $
-    5. Return $hat(Psi)_n$ and $phi_tau^* (tilde(O_i); hat(eta))$ for $i = 1, dots, n$.
+    6. Return $hat(Psi)_n$ and $phi_tau^* (tilde(O_i); hat(P))$ for $i = 1, dots, n$.
     
 ] <alg:one-stepgeneral>
 
