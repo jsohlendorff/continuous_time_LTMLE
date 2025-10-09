@@ -1681,6 +1681,7 @@ so that
 $
     &evaluated(partial / (partial epsilon))_(epsilon=0) product_(u in (s, t)) (1- tilde(Lambda)_(k,epsilon)^c (dif t | f_(k-1))) \
         &=evaluated(partial / (partial epsilon))_(epsilon=0) 1/(1-Delta tilde(Lambda)_(k,epsilon)^c (t | f_(k-1)))product_(u in (s, t]) (1- tilde(Lambda)_(k,epsilon)^c (dif t | f_(k-1))) \
+	// Anders comment: No epsilon denomitaor below, right?
         &=^((*))-1/(1-Delta tilde(Lambda)^c_(k,epsilon) (t | f_(k-1))) product_(u in (s, t]) (1- tilde(Lambda)_k^c (dif t | f_(k-1))) integral_((s,t]) 1/(1 - Delta tilde(Lambda)_k^c (u |  f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_k (dif u | f_(k-1)) \
         &quad +product_(u in (s, t]) (1- tilde(Lambda)_k^c (dif t | f_(k-1))) 1/(1- Delta tilde(Lambda)_k^c (t |f_(k-1)))^2 evaluated(partial / (partial epsilon))_(epsilon=0) Delta tilde(Lambda)_(k,epsilon)^c (t | f_(k-1)) \
         &=-1/(1-Delta tilde(Lambda)^c_(k) (t |f_(k-1))) product_(u in (s, t]) (1- tilde(Lambda)_k^c (dif t | f_(k-1))) integral_((s,t)) 1/(1 - Delta tilde(Lambda)_k^c (u | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_k (dif u | f_(k-1)) \
@@ -1694,7 +1695,10 @@ $
     &integral_((s,t]) product_(v in (s, u)) (1 + mu(dif v)) product_(v in (u, t]) (1 + mu(dif v)) h(dif u)
         &=product_(v in (s, t]) (1 + mu(dif v)) integral_((s,t]) 1/(1+Delta mu (u)) h(dif u).
 $
-In $(**)$, we use that $integral_({t}) 1/(1 - Delta tilde(Lambda)_k^c (u | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_k (dif u | f_(k-1)) = 1/(1 - Delta tilde(Lambda)_k^c (t | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_(k,epsilon) (t | f_(k-1))$.
+
+In $(**)$, we use that
+// Anders comment: It should be \Delta \tilde \Lambda here, right? And in the denominator, is it correct that it is t and not t-?
+$integral_({t}) 1/(1 - Delta tilde(Lambda)_k^c (u | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_k (dif u | f_(k-1)) = 1/(1 - Delta tilde(Lambda)_k^c (t | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_(k,epsilon) (t | f_(k-1))$.
 Furthermore, for $P_epsilon = P + epsilon (delta_((X,Y)) - P)$, a simple calculation yields the well-known result
 $
     evaluated(partial / (partial epsilon))_(epsilon=0) mean(P_epsilon) [Y | X = x] = (delta_(X) (x)) / P(X = x) (Y - mean(P) [Y | X = x]).
@@ -1710,7 +1714,9 @@ $
 $
 for $k=1, dots, K$,
 where in the notation with $macron(Z)^a_(k,tau)$, we have made the dependencies explicit.
+// Anders comment: I think it is bit unclear what exactly A and B is. Maybe write ... = A + B, where we have defined A = ... and B =...
 To get B, we use a similar derivation to the one given in @eq:stepTheorem1.
+// Anders comment: What do you mean by "to get B"? Maybe some additonal comments are needed here.
 Now note that for simplifying A, we can write
 $
     &integral_(eventcensored(k-1))^(tau) macron(Z)^a_(k,tau) (t_k, d_k, l_k, a_k, f_(k-1)) integral_((eventcensored(k-1),t_k)) 1/(1- Delta tilde(Lambda)_k^c (s | f_(k-1))) 1/(tilde(S) (s - | historycensored(k-1) = f_(k-1)))  (tilde(N)^c (dif s) - tilde(Lambda)^c (dif s)) \
