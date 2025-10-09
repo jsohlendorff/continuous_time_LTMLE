@@ -618,6 +618,9 @@ or to obtain conservative inference when censoring is present (@alg:onestepsimpl
 Alternatively,
 we may use the algorithm in @alg:one-stepgeneral of @section:algorithmgeneral to obtain valid
 non-conservative inference although this estimator is not further considered here.
+In the rest of this work, we do not consider the estimation
+of the censoring martingale further due to the computational difficulties and
+leave this as a future research topic.
 //However, we do not formally obtain inference if flexible machine learning methods
 //are applied to estimate the nuisance parameters.
 //If censoring is present, one may not apply flexible machine learning methods
@@ -639,10 +642,6 @@ simplifies to the same as the one derived by @rytgaardContinuoustimeTargetedMini
 and under the assumption that $Delta L (t) = 0$ whenever $Delta N^a (t) = 1$.
 
 #theorem("Efficient influence function")[
-// Anders comment: I think this first part could be moved out of the
-// theorem. Then you can also explain what this is. I don't think
-// "cause-specific cumulative hazard function for the observed
-// censoring" is a very standard expression, so it deserves to be explained.
     Suppose that there is a universal constant $C^* > 0$
     such that $tilde(Lambda)^c_k (tauend, historycensored(k-1); P) <= C^*$ for all $k = 1, dots, K$ and
     every $P in cal(M)$.
@@ -699,18 +698,10 @@ For instance, we may pick $K^*=k$ such that $k$ is the largest integer such that
 there are at least 40 observations fulfilling that $eventcensored(k-1) < tau$.
 Doing so will ensure that we will not have to estimate the terms in @eq:eif
 and @eq:iceipcw for which there is very little data. 
-// Therefore, our target parameter is instead
-// $
-//     Psi_tau^(g, K^*) (P) = mean(P) [tilde(N)^y (tau) W^g (tau and eventcensored(K^*))].
-// $
-// It holds that $Psi_tau^(g, K^*) (P) = Psi_tau^g (P)$ if $K^* = K_"lim"$.
-// Noting that we can pool the last $K_"lim" - K^*$ events into
-// a single terminal event, the theory discussed thus far can also be
-// applied to the target parameter $Psi_tau^(g, K^*) (P)$.
-// In practice, this means that we can essentially ignore the last $K_"lim" - K^*$ events;
-// however, the latter will come at the cost of some finite sample size bias.
 
 #theorem[Adaptive selection of $K$][
+    Let $Psi_tau^(g, k^*) (P) = mean(P) [tilde(N)^y (tau) W^g (tau and eventcensored(k^*))]$ for $k^* in bb(N)$
+    denote the target parameter when we only intervene up to the $k^*$'th event.
 // Anders comment: Is there something missing here? Has the parameter
 // Psi_tau^(g, K_(n c)) been defined?
 // In general, I find a bit difficult to digest this theorem. How is the estimator \hat\Psi_n defined in relation to k and K_{nc}? 
@@ -720,7 +711,7 @@ and @eq:iceipcw for which there is very little data.
     denote the maximum number of events with at
     least $c$ people at risk.
     Suppose that we have the decomposition of the
-    estimator $hat(Psi)_n$, such that
+    estimator $hat(Psi)_n$ of $Psi_tau^(g, K_(n c)) (P)$, such that
     $
         hat(Psi)_n - Psi_tau^(g, K_(n c)) (P) = (bb(P)_n - P) phi_tau^(*, K_(n c)) (dot; P) + o_P (n^(-1/2)),
     $
@@ -747,17 +738,8 @@ and @eq:iceipcw for which there is very little data.
 We consider a simulation study to evaluate the performance of our ICE-IPCW estimator
 and its debiased version. Overall, the purpose of the simulation study is to
 establish that our estimating procedure provides valid inference with varying degrees of confounding.
-In the censored setting, we do not consider the estimation
-of the censoring martingale due to the computational difficulties and
-leave this as a future research topic.
-// Anders comment: So if I recall correctly, this is okay because it
-// just makes CIs a bit conservative. I think this belong in the
-// inference section where you define the estimator and not in this
-// section. That will also make it easier to explain by "estimating
-// the censoring martingale".
-The second overall
-// Andes comment: Maybe instead, "Additional, the objective..." (because you don't have a "firstly ..." part)
-objective is to compare
+
+Additionally, the objective is to compare
 with existing methods in causal inference, such as
 discrete time methods (@ltmle) and a naive
 Cox model which treats deviation as censoring,
@@ -774,40 +756,41 @@ for the iterative regressions.
 We simulate a cohort of patients who initiate treatment at time $t = 0$, denoted by $A(0) = 1$
 and who are initially stroke-free, $L(0) = 0$.
 All individuals are followed for up to $tauend = 900 "days"$ or until death.
-During follow-up, patients may experience (at most) one stroke, stop treatment (irreversibly), and die,
-that is $N^x (t) <= 1$ for $x = a, ell, y$.
+During follow-up, patients may experience (at most) one stroke, stop treatment (irreversibly), die, or drop out 
+that is $tilde(N)^x (t) <= 1$ for $x = a, ell, y, c$.
 The primary outcome is the _risk of death within $tau = 720$ days_.
 We simulate baseline data as $"age" tilde "Unif"(40,90)$,
 $L (0) =0$, and $A(0) = 1$.
-To simulate the time-varying data, we generate data according to the following intensities
-// Anders comment: Perhaps it will be easier to understand this if we
-// write this out as cases instead of with indicator functions
+To simulate the time-varying data, we generate data according to the following compensator
 $
-    Lambda^(alpha) (dif (t, x, a, ell)) &= bb(1) {t <= T^e and tauend} (delta_(y) (x) lambda^y exp(beta^y_"age" "age" + beta_A^y A(t-) + beta^y_L L(t -)) \
-    &quad + bb(1) {N^ell (t -) = 0} delta_(ell) (x) delta_(1) (ell) lambda^ell exp(beta^ell_"age" "age" + beta_A^ell A(t-)) \
-        &quad + bb(1) {N^a (t -) = 0} delta_(a) (x) ((1-bb(1) {N^ell (t -) = 0}) gamma_0 exp(gamma_"age" "age") + bb(1) {N^ell (t -) = 0} h_z (t; 360) ) \
-        &qquad times (delta_1 (a) pi (t | cal(F)_(t-)) + delta_0 (a) (1 - pi (t |cal(F)_(t-))))),
+    tilde(Lambda) (dif (t, x, a, ell)) &= delta_((y, A(t-), L(t-))) (dif (x, a, ell)) lambda^y (t) dif t \
+        &quad + delta_((ell, A(t-), 1)) (dif (x, a, ell)) lambda^ell (t) dif t \
+        &quad + delta_((y, L(t-))) (dif (x, ell)) pi_t (dif a) lambda^a (t) dif t \
+        &quad + delta_((c, A(t-), L(t-))) (dif (x, a, ell)) lambda_c (t) dif t
 $ <eq:simulationintensity>
-// Anders comment: h_z (t; 360; 5; epsilon) notation does not match
-// number of arguments in the equation above
+where
+$
+    lambda^y (t) &= bb(1) {t <= T^e and C and tauend} lambda^y exp(beta^y_"age" "age" + beta_A^y A(t-) + beta^y_L L(t -)) \
+    lambda^ell (t) &= bb(1) {t <= T^e and C and tauend} bb(1) {tilde(N)^ell (t -) = 0} lambda^ell exp(beta^ell_"age" "age" + beta_A^ell A(t-)) \
+    lambda^a (t) &= bb(1) {t <= T^e and C and tauend}  bb(1) {tilde(N)^a (t -) = 0} \
+        &quad times ((1-bb(1) {tilde(N)^ell (t -) = 0}) gamma_0 exp(gamma_"age" "age") + bb(1) {tilde(N)^ell (t -) = 0} h_z (t; 360; epsilon)) \
+    pi_t (dif a) &= bb(1) {t <= T^e and C and tauend}  bb(1) {tilde(N)^a (t -) = 0} (delta_1 (dif a) pi (t | cal(macron(F))_(t-)) + delta_0 (dif a) (1 - pi (t |cal(macron(F))_(t-)))) \
+        lambda_c (t) &= bb(1) {t <= T^e and C and tauend} lambda_c
+$
+
 where $h_z (t; 360; 5; epsilon)$ is the hazard function for a 
 Normal distribution with mean $360$ and standard deviation $5$,
 truncated from some small value $epsilon > 0$
-and $pi (t | cal(F)_(t-)) = "expit" (alpha_0 + alpha_"age" "age" + alpha_L L(t-))$
+and $pi (t | cal(macron(F))_(t-)) = "expit" (alpha_0 + alpha_"age" "age" + alpha_L L(t-))$
 is the treatment assignment probability.
-Our intervention is $pi^* (t | cal(F)_(t-)) = 1$
-which corresponds to sustained treatment throughout the follow-up period.
-// Anders comment: suggesting the following for change:
-//
-// Note that @eq:simulationintensity states that the intensities
-// for $N^ell$ and $N^y$ correspond to multiplicative intensity models.
-// The case $x=a$ requires a bit more explanation:
-// The visitation intensity depends on whether the patient has had a stroke or not.
-//
-Under the data-generating mechanism specified in
-@eq:simulationintensity, the processes $N^ell$ and $N^y$ are specified
-by multiplicative intensity models. The visition process $N^a$ depends
-on whether the patient has had a stroke or not.
+Our intervention is $pi^* (t | cal(macron(F))_(t-)) = 1$
+which corresponds to sustained treatment throughout the follow-up period
+and, in the censored setting, $lambda_c^*=0$.
+
+Note that @eq:simulationintensity states that the intensities
+for $N^ell$ and $N^y$ correspond to multiplicative intensity models.
+The case $x=a$ requires a bit more explanation:
+The visitation intensity depends on whether the patient has had a stroke or not.
 If the patient has not had a stroke, the model specifies
 that the patient can be expected to visit the doctor
 within 360 days (i.e., the patient is scheduled). If the patient has had a stroke, the visitation intensity
@@ -815,8 +798,7 @@ is multiplicative, depending on age, and reflects the fact
 that a patient, who has had a stroke, is expected to visit the doctor
 within the near future.
 
-
-In the uncensored setting,
+In the uncensored setting (i.e., $lambda_c = 0$),
 we vary the treatment effect on the outcome
 corresponding to $beta^y_A >0$, $beta^y_A = 0$, and $beta^y_A < 0$
 and the effect of stroke on the outcome $beta^y_L > 0$, $beta^y_L = 0$, and $beta^y_L < 0$.
@@ -835,14 +817,14 @@ For the LTMLE procedure, we use an undersmoothed LASSO (@lasso) estimator.
 Additionally, we vary sample size in the uncensored setting ($n in {100, 2000, 500, 1000}$);
 otherwise $n=1000$.
 
-For the censored setting, we consider a simulation involving _completely_ independent censoring.
-The censoring variable is simply generated as $C tilde "Exp"(lambda_c)$
-and we vary the degree of censoring $lambda_c in {0.0002, 0.0005, 0.0008}$.
+For the censored setting, we consider a simulation involving _completely_ independent censoring,
+where we vary the degree of censoring $lambda_c in {0.0002, 0.0005, 0.0008}$
+in @eq:simulationintensity.
 We consider only two parameter settings for the censoring martingale
 as outlined in @table:simulation-parameters.
 Three types of models are considered for the estimation of the counterfactual probabilities $Qbar(k)$:
 1. A linear model, which is a simple linear regression of the pseudo-outcomes $hat(Z)_(k,tau)^a$ on the treatment and history variables.
-2. A scaled quasibinomial GLM, which is a generalized linear model with the `quasibinomial` as a family argument, where the outcomes are scaled down to $[0, 1]$ by dividing with the largest value of $hat(Z)^a_(k,tau)$ in the sample.
+2. An ad-hoc scaled quasibinomial GLM, which is a generalized linear model with the `quasibinomial` as a family argument, where the outcomes are scaled down to $[0, 1]$ by dividing with the largest value of $hat(Z)^a_(k,tau)$ in the sample.
    Afterwards, the predictions are scaled back up to the original scale by multiplying with the largest value of $hat(Z)^a_(k,tau)$ in the sample.
 // Anders comment: Why do we need this scaling trick? If the outcome is not restricted to be in [0,1], could we not just use some regression for standard scalar-valued outcomes?
 3. A tweedie GLM, which is a generalized linear model with the `tweedie` family, as the pseudo-outcomes $hat(Z)_(k,tau)^a$ may appear marginally as a mixture of a continuous random variable and a point mass at 0.
@@ -1045,11 +1027,10 @@ table(
 To illustrate the applicability of our methods,
 we applied them to Danish registry data emulating a target trial in diabetes research.
 The dataset consisted of $n=15,937$ patients from the Danish registers who
-// Anders comment: I think we need to introduce all the clinical
-// abbreviations, DPP4, SGLT2, HbA1c
-redeemed a prescription for either DPP4 inhibitors or SGLT2 inhibitors between 2012 and 2022.
+redeemed a prescription for either DPP-4 (Dipeptidyl peptidase-4)
+inhibitors or SGLT2 (sodium/glucose cotransporter 2) inhibitors between 2012 and 2022.
 The emulated target trial specifies two regimes for each patient.
-One is to start treatment with DPP4 inhibitors
+One is to start treatment with DPP-4 inhibitors
 and do not add or switch to SGLT2 inhibitors during follow-up.
 The other with SGLT2 inhibitors is defined analogously.
 // Anders comment: Hm, okay, so this is a little bit unclear, because
@@ -1059,10 +1040,11 @@ The other with SGLT2 inhibitors is defined analogously.
 // reference to this thing about "the first 20 registrations".
 We are interested on the effect of enforcing treatment for the 20 first events/registrations
 and the outcome of interest is all-cause mortality
-within 1260 days (approximately 3.5 years) of follow-up. // Anders comment: delete "of follow-up".
+within 1260 days (approximately 3.5 years). For computational reasons,
+we enforce treatment for the first 20 events/registrations.
 
 At baseline (time zero), patients were required to have redeemed such a prescription and
-to have an HbA1c measurement recorded prior to their first prescription redemption.
+to have an HbA1c (hemoglobin A1c) measurement recorded prior to their first prescription redemption.
 Additionally, certain exclusion criteria were applied (@emulateempareg).
 Within our framework, we defined:
 - $N^y$ be the counting process for the event of death.
@@ -1073,7 +1055,7 @@ Within our framework, we defined:
 - $L(t)$ denote the (latest) HbA1c measurement at time $t$ and with the baseline HbA1c measurement at time zero (age, sex, education level, income and duration of diabetes at baseline).
 - For each treatment regime (say SGLT2), we defined $A (0) = 1$ if 
   the patient redeemed a prescription for SGLT2 inhibitors first.
-  For $t>0$, we defined $A (t) = 1$ if the patient has not purchased DPP4 inhibitors
+  For $t>0$, we defined $A (t) = 1$ if the patient has not purchased DPP-4 inhibitors
   prior to time $t$.
 
 For the nuisance parameter estimation, we used a logistic regression model
@@ -1106,14 +1088,6 @@ to the ones of the debiased ICE-IPCW estimator.
 
 = Discussion
 
-// Anders comment: I think that one very important thing that is
-// missing from the discussion is a discussion of how to model the
-// regression function you are estimating. Thomas as pointed this out
-// many times, namely that the regression problems are very atypical
-// because they include people observed at different times and include
-// the time as a regression covariate. So understanding how to model
-// such regression functions is an interesting challenge.
-
 In this article, we have presented a new method for causal inference
 in continuous-time settings with competing events and censoring.
 We have shown that the ICE-IPCW estimator is consistent for the target parameter,
@@ -1121,17 +1095,17 @@ and provided inference for the target parameter using the efficient influence fu
 However, we have not addressed the issue of model misspecification,
 which is likely to occur in practice as we have not proposed flexible intensity estimators
 for both the censoring intensity and the propensity scores.
-The literature on flexible intensity estimation is somewhat sparse,
-// Anders comment: I would tend to agree with you that the literature
-// is sparse compared to general ML literature. But I think it not
-// strategically wise to write this, depending on which reviewers we
-// get. Also, it is not that sparse as, from the top of my head, I
-// could mention HAL approaches and the gradient boosting thing from
-// (BOXhed) from Ishwaran.
-but there are some options based on neural networks (see @liguoriModelingEventsInteractions2023 for an overview)
-and forest based methods (@weissForestBasedPointProcess2013).
+There are a few available options for flexible intensity estimation.
+For instance, neural networks (see @liguoriModelingEventsInteractions2023 for an overview),
+forest based methods (@weissForestBasedPointProcess2013) and gradient boosting
+(@ishwaranBoosting).
 Other choices include flexible parametric models/highly adaptive LASSO
-using piecewise constant intensity models where the likelihood is based on Poisson regression (e.g., @piecewiseconstant).
+using piecewise constant intensity models where the likelihood is based on Poisson regression (e.g., @rytgaardContinuoustimeTargetedMinimum2022).
+Additionally, future work should thoroughly investigate how
+one should model the iterative regressions of the pseudo-outcomes
+since they include people observed at different times
+and include event times as a regression covariate.
+We stress, however, that any regression method may be used.
 
 We could have also opted to use the TMLE framework (@laanTargetedMaximumLikelihood2006) in lieu 
 of a one-step estimator. Here, we can use an iterative TMLE procedure
@@ -1735,8 +1709,7 @@ so that
 $
     &evaluated(partial / (partial epsilon))_(epsilon=0) product_(u in (s, t)) (1- tilde(Lambda)_(k,epsilon)^c (dif t | f_(k-1))) \
         &=evaluated(partial / (partial epsilon))_(epsilon=0) 1/(1-Delta tilde(Lambda)_(k,epsilon)^c (t | f_(k-1)))product_(u in (s, t]) (1- tilde(Lambda)_(k,epsilon)^c (dif t | f_(k-1))) \
-	// Anders comment: No epsilon denomitaor below, right?
-        &=^((*))-1/(1-Delta tilde(Lambda)^c_(k,epsilon) (t | f_(k-1))) product_(u in (s, t]) (1- tilde(Lambda)_k^c (dif t | f_(k-1))) integral_((s,t]) 1/(1 - Delta tilde(Lambda)_k^c (u |  f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_k (dif u | f_(k-1)) \
+        &=^((*))-1/(1-Delta tilde(Lambda)^c_(k) (t | f_(k-1))) product_(u in (s, t]) (1- tilde(Lambda)_k^c (dif t | f_(k-1))) integral_((s,t]) 1/(1 - Delta tilde(Lambda)_k^c (u |  f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_k (dif u | f_(k-1)) \
         &quad +product_(u in (s, t]) (1- tilde(Lambda)_k^c (dif t | f_(k-1))) 1/(1- Delta tilde(Lambda)_k^c (t |f_(k-1)))^2 evaluated(partial / (partial epsilon))_(epsilon=0) Delta tilde(Lambda)_(k,epsilon)^c (t | f_(k-1)) \
         &=-1/(1-Delta tilde(Lambda)^c_(k) (t |f_(k-1))) product_(u in (s, t]) (1- tilde(Lambda)_k^c (dif t | f_(k-1))) integral_((s,t)) 1/(1 - Delta tilde(Lambda)_k^c (u | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_k (dif u | f_(k-1)) \
         &quad -1/(1-Delta tilde(Lambda)^c_(k) (t | f_(k-1))) product_(u in (s, t]) (1- tilde(Lambda)_k^c (dif t | f_(k-1))) integral_({t}) 1/(1 - Delta tilde(Lambda)_k^c (u | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_k (dif u | f_(k-1)) \
@@ -1751,26 +1724,25 @@ $
 $
 
 In $(**)$, we use that
-// Anders comment: It should be \Delta \tilde \Lambda here, right? And in the denominator, is it correct that it is t and not t-?
-$integral_({t}) 1/(1 - Delta tilde(Lambda)_k^c (u | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_k (dif u | f_(k-1)) = 1/(1 - Delta tilde(Lambda)_k^c (t | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_(k,epsilon) (t | f_(k-1))$.
+$integral_({t}) 1/(1 - Delta tilde(Lambda)_k^c (u | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_k (dif u | f_(k-1)) = 1/(1 - Delta tilde(Lambda)_k^c (t | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) Delta tilde(Lambda)^c_(k,epsilon) (t | f_(k-1))$.
 Furthermore, for $P_epsilon = P + epsilon (delta_((X,Y)) - P)$, a simple calculation yields the well-known result
 $
     evaluated(partial / (partial epsilon))_(epsilon=0) mean(P_epsilon) [Y | X = x] = (delta_(X) (x)) / P(X = x) (Y - mean(P) [Y | X = x]).
 $ <eq:derivcondexp>
 Using @eq:iceipcw with @eq:derivcondexp and @eq:derivcumhazard, we have
 $
-    & evaluated(partial / (partial epsilon))_(epsilon=0) Qbar(k-1) (tau, f_(k-1); P_epsilon) \
-        &= delta_(historycensored(k-1) (f_(k-1)))/P(historycensored(k-1) = f_(k-1))  (macron(Z)^a_(k,tau) (tau) - Qbar(k-1) (tau) + \            
-            &quad+ integral_(eventcensored(k-1))^(tau) macron(Z)^a_(k,tau) (t_k, d_k, l_k, a_k, f_(k-1)) integral_((eventcensored(k-1), t_k)) 1/(1- Delta tilde(Lambda)_k^c (s | f_(k-1))) 1/(tilde(S) (s - | historycensored(k-1) = f_(k-1))) (tilde(N)^c (dif s) - tilde(Lambda)^c (dif s)) \
-            &underbrace(#h(1.5cm) P_((eventcensored(k), statuscensored(k), covariatecensored(k), treatcensored(k))) (dif (t_k, d_k, l_k, a_k) | f_(k-1)), "A")) \
-        &quad+ integral_(eventcensored(k-1))^(tau) (bb(1) {t_k < tau, d_(k) in {a, ell}})/(tilde(S)^c (t_k - | f_(k-1)))  ((bb(1) {a_k = 1}) / (densitytrtcensored(t_(k), k)))^(bb(1) {d_(k) = a}) evaluated(partial / (partial epsilon))_(epsilon=0) lr(Qbar(k) (P_epsilon | a_(k), l_(k),t_(k), d_(k), f_(k-1))) \
-        &underbrace(#h(1.5cm) P_((eventcensored(k), statuscensored(k), covariatecensored(k), treatcensored(k))) (dif (t_k, d_k, l_k, a_k) | f_(k-1)), "B"),
+    evaluated(partial / (partial epsilon))_(epsilon=0) Qbar(k-1) (tau, f_(k-1); P_epsilon) = delta_(historycensored(k-1) (f_(k-1)))/P(historycensored(k-1) = f_(k-1))  (macron(Z)^a_(k,tau) (tau) - Qbar(k-1) (tau) + A + B),
 $
 for $k=1, dots, K$,
-where in the notation with $macron(Z)^a_(k,tau)$, we have made the dependencies explicit.
-// Anders comment: I think it is bit unclear what exactly A and B is. Maybe write ... = A + B, where we have defined A = ... and B =...
+where in the notation with $macron(Z)^a_(k,tau)$, we have made the dependencies explicit,
+where
+$
+    A &:= integral_(eventcensored(k-1))^(tau) macron(Z)^a_(k,tau) (t_k, d_k, l_k, a_k, f_(k-1)) integral_((eventcensored(k-1), t_k)) 1/(1- Delta tilde(Lambda)_k^c (s | f_(k-1))) 1/(tilde(S) (s - | historycensored(k-1) = f_(k-1))) (tilde(N)^c (dif s) - tilde(Lambda)^c (dif s)) \
+        &quad P_((eventcensored(k), statuscensored(k), covariatecensored(k), treatcensored(k))) (dif (t_k, d_k, l_k, a_k) | f_(k-1)) \
+        B &:=integral_(eventcensored(k-1))^(tau) (bb(1) {t_k < tau, d_(k) in {a, ell}})/(tilde(S)^c (t_k - | f_(k-1)))  ((bb(1) {a_k = 1}) / (densitytrtcensored(t_(k), k)))^(bb(1) {d_(k) = a}) evaluated(partial / (partial epsilon))_(epsilon=0) lr(Qbar(k) (P_epsilon | a_(k), l_(k),t_(k), d_(k), f_(k-1))) \
+        & P_((eventcensored(k), statuscensored(k), covariatecensored(k), treatcensored(k))) (dif (t_k, d_k, l_k, a_k) | f_(k-1)),
+$
 To get B, we use a similar derivation to the one given in @eq:stepTheorem1.
-// Anders comment: What do you mean by "to get B"? Maybe some additonal comments are needed here.
 Now note that for simplifying A, we can write
 $
     &integral_(eventcensored(k-1))^(tau) macron(Z)^a_(k,tau) (t_k, d_k, l_k, a_k, f_(k-1)) integral_((eventcensored(k-1),t_k)) 1/(1- Delta tilde(Lambda)_k^c (s | f_(k-1))) 1/(tilde(S) (s - | historycensored(k-1) = f_(k-1)))  (tilde(N)^c (dif s) - tilde(Lambda)^c (dif s)) \
