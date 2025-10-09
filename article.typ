@@ -713,6 +713,7 @@ and @eq:iceipcw for which there is very little data.
 #theorem[Adaptive selection of $K$][
 // Anders comment: Is there something missing here? Has the parameter
 // Psi_tau^(g, K_(n c)) been defined?
+// In general, I find a bit difficult to digest this theorem. How is the estimator \hat\Psi_n defined in relation to k and K_{nc}? 
     Let $N_tau = sum_(k) bb(1) {event(k) <= tau}$
     and $tilde(N)_tau = N_(tau and C)$ be the number of events before time $tau$ in the uncensored and censored data, respectively.
     Let $K_(n c) = max_(v : sum_(i=1)^n bb(1) {tilde(N)_(tau, i) (tau) >= v} > c)$
@@ -742,7 +743,14 @@ establish that our estimating procedure provides valid inference with varying de
 In the censored setting, we do not consider the estimation
 of the censoring martingale due to the computational difficulties and
 leave this as a future research topic.
-The second overall objective is to compare
+// Anders comment: So if I recall correctly, this is okay because it
+// just makes CIs a bit conservative. I think this belong in the
+// inference section where you define the estimator and not in this
+// section. That will also make it easier to explain by "estimating
+// the censoring martingale".
+The second overall
+// Andes comment: Maybe instead, "Additional, the objective..." (because you don't have a "firstly ..." part)
+objective is to compare
 with existing methods in causal inference, such as
 discrete time methods (@ltmle) and a naive
 Cox model which treats deviation as censoring,
@@ -751,6 +759,11 @@ In the censored setting, we also address the choice of nuisance parameter models
 for the iterative regressions.
 
 *Simulation scenario:*
+// Anders comment: I think it would be easier to gain an overview if
+// you divide this into two simulations scenarios: First is the one
+// without censoring and the other is with censoring. Then you can
+// clearly describe the data-generating mechanism, estimator and
+// settings completely separately for these two setups. 
 We simulate a cohort of patients who initiate treatment at time $t = 0$, denoted by $A(0) = 1$
 and who are initially stroke-free, $L(0) = 0$.
 All individuals are followed for up to $tauend = 900 "days"$ or until death.
@@ -760,12 +773,16 @@ The primary outcome is the _risk of death within $tau = 720$ days_.
 We simulate baseline data as $"age" tilde "Unif"(40,90)$,
 $L (0) =0$, and $A(0) = 1$.
 To simulate the time-varying data, we generate data according to the following intensities
+// Anders comment: Perhaps it will be easier to understand this if we
+// write this out as cases instead of with indicator functions
 $
     Lambda^(alpha) (dif (t, x, a, ell)) &= bb(1) {t <= T^e and tauend} (delta_(y) (x) lambda^y exp(beta^y_"age" "age" + beta_A^y A(t-) + beta^y_L L(t -)) \
     &quad + bb(1) {N^ell (t -) = 0} delta_(ell) (x) delta_(1) (ell) lambda^ell exp(beta^ell_"age" "age" + beta_A^ell A(t-)) \
         &quad + bb(1) {N^a (t -) = 0} delta_(a) (x) ((1-bb(1) {N^ell (t -) = 0}) gamma_0 exp(gamma_"age" "age") + bb(1) {N^ell (t -) = 0} h_z (t; 360) ) \
         &qquad times (delta_1 (a) pi (t | cal(F)_(t-)) + delta_0 (a) (1 - pi (t |cal(F)_(t-))))),
 $ <eq:simulationintensity>
+// Anders comment: h_z (t; 360; 5; epsilon) notation does not match
+// number of arguments in the equation above
 where $h_z (t; 360; 5; epsilon)$ is the hazard function for a 
 Normal distribution with mean $360$ and standard deviation $5$,
 truncated from some small value $epsilon > 0$
@@ -773,16 +790,24 @@ and $pi (t | cal(F)_(t-)) = "expit" (alpha_0 + alpha_"age" "age" + alpha_L L(t-)
 is the treatment assignment probability.
 Our intervention is $pi^* (t | cal(F)_(t-)) = 1$
 which corresponds to sustained treatment throughout the follow-up period.
-Note that @eq:simulationintensity states that the intensities
-for $N^ell$ and $N^y$ correspond to multiplicative intensity models.
-The case $x=a$ requires a bit more explanation:
-The visitation intensity depends on whether the patient has had a stroke or not.
+// Anders comment: suggesting the following for change:
+//
+// Note that @eq:simulationintensity states that the intensities
+// for $N^ell$ and $N^y$ correspond to multiplicative intensity models.
+// The case $x=a$ requires a bit more explanation:
+// The visitation intensity depends on whether the patient has had a stroke or not.
+//
+Under the data-generating mechanism specified in
+@eq:simulationintensity, the processes $N^ell$ and $N^y$ are specified
+by multiplicative intensity models. The visition process $N^a$ depends
+on whether the patient has had a stroke or not.
 If the patient has not had a stroke, the model specifies
 that the patient can be expected to visit the doctor
 within 360 days (i.e., the patient is scheduled). If the patient has had a stroke, the visitation intensity
 is multiplicative, depending on age, and reflects the fact
 that a patient, who has had a stroke, is expected to visit the doctor
 within the near future.
+
 
 In the uncensored setting,
 we vary the treatment effect on the outcome
@@ -812,6 +837,7 @@ Three types of models are considered for the estimation of the counterfactual pr
 1. A linear model, which is a simple linear regression of the pseudo-outcomes $hat(Z)_(k,tau)^a$ on the treatment and history variables.
 2. A scaled quasibinomial GLM, which is a generalized linear model with the `quasibinomial` as a family argument, where the outcomes are scaled down to $[0, 1]$ by dividing with the largest value of $hat(Z)^a_(k,tau)$ in the sample.
    Afterwards, the predictions are scaled back up to the original scale by multiplying with the largest value of $hat(Z)^a_(k,tau)$ in the sample.
+// Anders comment: Why do we need this scaling trick? If the outcome is not restricted to be in [0,1], could we not just use some regression for standard scalar-valued outcomes?
 3. A tweedie GLM, which is a generalized linear model with the `tweedie` family, as the pseudo-outcomes $hat(Z)_(k,tau)^a$ may appear marginally as a mixture of a continuous random variable and a point mass at 0.
 
 #set table(
@@ -1012,14 +1038,21 @@ table(
 To illustrate the applicability of our methods,
 we applied them to Danish registry data emulating a target trial in diabetes research.
 The dataset consisted of $n=15,937$ patients from the Danish registers who
+// Anders comment: I think we need to introduce all the clinical
+// abbreviations, DPP4, SGLT2, HbA1c
 redeemed a prescription for either DPP4 inhibitors or SGLT2 inhibitors between 2012 and 2022.
 The emulated target trial specifies two regimes for each patient.
 One is to start treatment with DPP4 inhibitors
 and do not add or switch to SGLT2 inhibitors during follow-up.
 The other with SGLT2 inhibitors is defined analogously.
+// Anders comment: Hm, okay, so this is a little bit unclear, because
+// that is not what we are estimating when using LTMLE. Are the many
+// subject which have more than 20 events within 3.5 years? If not, we
+// could say that we are estimating sustained treatment without
+// reference to this thing about "the first 20 registrations".
 We are interested on the effect of enforcing treatment for the 20 first events/registrations
 and the outcome of interest is all-cause mortality
-within 1260 days (approximately 3.5 years) of follow-up.
+within 1260 days (approximately 3.5 years) of follow-up. // Anders comment: delete "of follow-up".
 
 At baseline (time zero), patients were required to have redeemed such a prescription and
 to have an HbA1c measurement recorded prior to their first prescription redemption.
@@ -1066,6 +1099,14 @@ to the ones of the debiased ICE-IPCW estimator.
 
 = Discussion
 
+// Anders comment: I think that one very important thing that is
+// missing from the discussion is a discussion of how to model the
+// regression function you are estimating. Thomas as pointed this out
+// many times, namely that the regression problems are very atypical
+// because they include people observed at different times and include
+// the time as a regression covariate. So understanding how to model
+// such regression functions is an interesting challenge.
+
 In this article, we have presented a new method for causal inference
 in continuous-time settings with competing events and censoring.
 We have shown that the ICE-IPCW estimator is consistent for the target parameter,
@@ -1073,7 +1114,13 @@ and provided inference for the target parameter using the efficient influence fu
 However, we have not addressed the issue of model misspecification,
 which is likely to occur in practice as we have not proposed flexible intensity estimators
 for both the censoring intensity and the propensity scores.
-The literature on flexible intensity estimation is somewhat sparse, 
+The literature on flexible intensity estimation is somewhat sparse,
+// Anders comment: I would tend to agree with you that the literature
+// is sparse compared to general ML literature. But I think it not
+// strategically wise to write this, depending on which reviewers we
+// get. Also, it is not that sparse as, from the top of my head, I
+// could mention HAL approaches and the gradient boosting thing from
+// (BOXhed) from Ishwaran.
 but there are some options based on neural networks (see @liguoriModelingEventsInteractions2023 for an overview)
 and forest based methods (@weissForestBasedPointProcess2013).
 Other choices include flexible parametric models/highly adaptive LASSO
