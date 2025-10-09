@@ -849,40 +849,38 @@ $
 $
 where the last equality follows by "Projection Notes".
 So this will follow, if we can show that $"Id" - sum_j Y_j^*$ is injective.
-We show that $sum_j Y_j^*$ is a contraction; this then follows
-by a fixed-point theorem.
+Note that $"ker" ("Id" - sum_j Y_j^*) = "ran" ("Id" - sum_j Y_j)^perp$.
+To this end, we shall show that $"Id" - sum_j Y_j$ is surjective
+if $pi_s ({a_j}) (P) > 0$ for all $s in [0, T]$ and $j$.
+Take $Gamma^* in cal(M)^2 (P)$;
+we shall find $Gamma in cal(M)^2 (P)$ such that
+$
+    Gamma^* = Gamma - sum_j Y_j Gamma.
+$
+By the martingale representation theorem, we can write
+$
+    Gamma^* &= integral_0^dot sum_x gamma^*_x (s) M^(x) (dif s) \
+    Gamma &= integral_0^dot sum_x gamma_x (s) M^(x) (dif s)
+$
+//We show that $sum_j Y_j^*$ is a contraction; this then follows
+//by a fixed-point theorem.
 
-$
-    angle.l sum_j Y_j^* Gamma- sum_j Y_j^* Gamma' angle.r_P &= angle.l sum_j Y_j^* (Gamma- Gamma') angle.r_P \
-        &= mean(P) [angle.l sum_j Y_j^* (Gamma- Gamma') angle.r^P_t] \
-        &= mean(P) [integral_0^t bb(1) {tau^(g^*) <= s} sum_j sum_k m_(s,k,j)^* (dif angle.l M^(a, a_j), Gamma-Gamma' angle.r_s^P)/(dif Lambda^(a, a_j) (s) (P)) dif angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r^P_s] \
-        &= mean(P) [integral_0^t bb(1) {tau^(g^*) <= s} sum_j sum_k m_(s,k,j)^* (dif angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r^P_s )/(dif Lambda^(a, a_j) (s) (P)) dif angle.l M^(a, a_j), Gamma-Gamma' angle.r_s^P] \
-        &<= mean(P)[ ( [integral_0^t bb(1) {tau^(g^*) <= s} sum_j sum_k m_(s,k,j)^* ((dif angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r^P_s)/(dif Lambda^(a, a_j) (s) (P)))^2 dif angle.l M^(a, a_j) angle.r^P_s])^(1/2) \
-            &times ( [integral_0^t bb(1) {tau^(g^*) <= s} sum_j sum_k m_(s,k,j)^* ((dif angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r^P_s)/(dif Lambda^(a, a_j) (s) (P)))^2 dif angle.l Gamma-Gamma' angle.r^P_s])^(1/2)] \
-$
-Kunita Watanabe inequality or Cauchy-Schwarz like inequality gives???
-Second integrand can b ebounded by something $<=1$? What to do about square root. 
+//Another strategy: Show that $-(sum_j Y_j^* - "Id")$ is surjective.
+//By Fredholms alternative, this will imply injectivity under certain regularity conditions. Alternatively,
+//can try to show the same for $-(sum_j Y_j - "Id")$.
 
-Can this contraction be zero ???? in the absolutely continuous case.
-No, that's not how bilinearity works. 
-First, let $Gamma$ be MG by MG representation theorem so that
-$
-    Gamma = integral_0^dot sum_x h_x (s) M^(x) (dif s)
-$
-for some predictable $h_x (s)$.
-Then,
+We will need to find the $angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_t^P$ term.
 $
     angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_t^P &=  integral_0^(t) sum_x h_x (s) dif angle.l M^(x), M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_s^P \
-        &= integral_0^(t) sum_x h_x (s) dif angle.l M^(x), M^(a, a_j) angle.r_s^P - integral_0^(t) pi_s ({a_j}) (P) (sum_x h_x (s)) dif angle.l M^(x), M^(a) angle.r_s^P \
 $
-Have:
+Now note that
 $
-    angle.l M^(x), M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_s^P &= Lambda_s^(*,x) - integral_0^s Delta angle.l M^x angle.r_s dif Lambda^(a,a_j) (s) + integral_0^s pi_s ({a_j}) (P) Delta angle.l M^x angle.r_s dif Lambda^(a) (s) \
-        &= Lambda_s^(*,x) - integral_0^s Delta angle.l M^x angle.r_s pi_s ({a_j}) (P) dif Lambda^(a) (s) + integral_0^s pi_s ({a_j}) (P) Delta angle.l M^x angle.r_s dif Lambda^(a) (s) \
-        &= Lambda_s^(*,x)
+    angle.l M^(x), M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_s^P &= Lambda_s^(*,x,j) - integral_0^s Delta angle.l M^x angle.r_s dif Lambda^(a,a_j) (s) + integral_0^s pi_s ({a_j}) (P) Delta angle.l M^x angle.r_s dif Lambda^(a) (s) \
+        &= Lambda_s^(*,x,a_j) - integral_0^s Delta angle.l M^x angle.r_s pi_s ({a_j}) (P) dif Lambda^(a) (s) + integral_0^s pi_s ({a_j}) (P) Delta angle.l M^x angle.r_s dif Lambda^(a) (s) \
+        &= Lambda_s^(*,x,a_j)
 $
-where $Lambda^(*,x)$ is the compensator of $integral_0^t Delta N^x_s dif N^(a,a_j) (s) - integral_0^t pi_s ({a_j}) (P) Delta N^(x) (s)) dif N^a_s$.
-If $x in.not cal(A)$, then $Lambda^(*,x) = 0$.
+where $Lambda^(*,x,a_j)$ is the compensator of $integral_0^t Delta N^x_s dif N^(a,a_j) (s) - integral_0^t pi_s ({a_j}) (P) Delta N^(x) (s)) dif N^a_s$.
+If $x in.not cal(A)$, then $Lambda^(*,x,a_j) = 0$.
 If $x = a_i in cal(A)$, then
 $
 
@@ -891,58 +889,72 @@ $
 $
 This has the compensator
 $
-    Lambda_t^(*,x) = bb(1) {j=i} Lambda^(a,a_j) (t) - integral_0^t pi_s ({a_j}) (P) dif Lambda^(a,a_i) (s) 
+    Lambda_t^(*,x,a_j) &= bb(1) {j=i} Lambda^(a,a_j) (t) - integral_0^t pi_s ({a_j}) (P) dif Lambda^(a,a_i) (s) \
+        &= bb(1) {j=i} Lambda^(a,a_j) (t) - integral_0^t pi_s ({a_i}) (P) dif Lambda^(a,a_j) (s) \
+    &= integral_0^t bb(1) {j=i} - pi_s ({a_i}) (P) dif Lambda^(a,a_j) (s)
 $
-
-Now calculate
+where the second properties works by properties of Radon-Nikodym derivatives and positivity.
+Now, we have that
 $
-    S S^* Gamma &= (D - sum_j D Y_j)(D^* Gamma - sum_j Y_j^* D^* Gamma) \
-        &= D D^* Gamma - D sum_j Y_j^* D^* Gamma - sum_j D Y_j D^* Gamma + (sum_j D Y_j) sum_i Y_i^* D^* Gamma \
-        &= Gamma_0 + integral_0^dot macron(W)_s dif Gamma_s  - D sum_j Y_j^* D^* Gamma - (sum_j D Y_j) D^* Gamma + (sum_j D Y_j) (sum_i Y_i^* D^* Gamma) 
+    Y_j Gamma - Gamma &= integral_0^(dot and tau^(g^*)) sum_j sum_k m_(s,k,j)^* (dif angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r^P_s) / (dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) )_s - integral_0^dot sum_x gamma_x (s) M^(x) (dif s) \
+        &= integral_0^(dot and tau^(g^*)) sum_j sum_k m_(s,k,j)^* sum_(x in cal(A)) gamma_x (s) (bb(1) {a_j= x} - pi_s ({x}) (P))dif M_s^(a, a_j) - integral_0^dot sum_x gamma_x (s) M^(x) (dif s) \
 $
-Note that
+Whenever $x in.not cal(A)$, we can choose $gamma_x (s) = - gamma^*_x (s)$.
+Otherwise, we may pick
 $
-    (sum_j D Y_j) (sum_i Y_i^* D^* Gamma) &= sum_j sum_i D Y_j Y_i^* D^* Gamma \
-        &= sum_j sum_i integral_0^(dot and tau^(g^*)) sum_k m_(s,k,j)^* (dif angle.l Y_i^* D^* Gamma, M^(a, a_j) - pi_s ({a_j}) (P) bullet M^(a)  angle.r_s^P) / (dif Lambda^(a, a_j) (t) (P)) \
-        &times dif (M^(a, a_j) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
-        &= sum_j sum_i integral_0^(dot and tau^(g^*)) sum_k m_(s,k,j)^* \
-        &times (bb(1) {tau^(g^*) <= s} sum_k m_(s,k,i)^* W_(s-) (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a), M^(a, a_i) - pi_dot ({a_i}) (P) bullet M^(a) angle.r_s) / (dif Lambda^(a, a_j) (t) (P)) \
-        &= sum_j integral_0^(dot and tau^(g^*)) W_(s-) sum_k m_(s,k,j)^* (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) (dif angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_s) / (dif Lambda^(a, a_j) (t) (P)) \
-        &times dif (M^(a, a_j) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
+    gamma_x (s) &= bb(1) {s <= tau^(g^*)} sum_k bb(1) {event(k-1) < s <= event(k)} bb(1) {x != g^*_k (history(k-1), s)} (- gamma^*_x (s)) \
+        &+ bb(1) {s <= tau^(g^*)} sum_k bb(1) {event(k-1) < s <= event(k)} bb(1) {x = g^*_k (history(k-1), s)} (- (sum_(y in cal(A), y!= x) pi_s ({y}) (P) gamma^*_y (s)) / (pi_s ({x}) (P))) \
+        &+ bb(1) {s > tau^(g^*)} (- gamma^*_x (s))
 $
-and
-$
-    D sum_j Y_j^* D^* Gamma &= D sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s \
-        &= sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (D (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)))_s \
-        &= sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) \
-        &times (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) - angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a), K^* angle.r^P)_s \
-$
+// Now calculate
+// $
+//     S S^* Gamma &= (D - sum_j D Y_j)(D^* Gamma - sum_j Y_j^* D^* Gamma) \
+//         &= D D^* Gamma - D sum_j Y_j^* D^* Gamma - sum_j D Y_j D^* Gamma + (sum_j D Y_j) sum_i Y_i^* D^* Gamma \
+//         &= Gamma_0 + integral_0^dot macron(W)_s dif Gamma_s  - D sum_j Y_j^* D^* Gamma - (sum_j D Y_j) D^* Gamma + (sum_j D Y_j) (sum_i Y_i^* D^* Gamma) 
+// $
+// Note that
+// $
+//     (sum_j D Y_j) (sum_i Y_i^* D^* Gamma) &= sum_j sum_i D Y_j Y_i^* D^* Gamma \
+//         &= sum_j sum_i integral_0^(dot and tau^(g^*)) sum_k m_(s,k,j)^* (dif angle.l Y_i^* D^* Gamma, M^(a, a_j) - pi_s ({a_j}) (P) bullet M^(a)  angle.r_s^P) / (dif Lambda^(a, a_j) (t) (P)) \
+//         &times dif (M^(a, a_j) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
+//         &= sum_j sum_i integral_0^(dot and tau^(g^*)) sum_k m_(s,k,j)^* \
+//         &times (bb(1) {tau^(g^*) <= s} sum_k m_(s,k,i)^* W_(s-) (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a), M^(a, a_i) - pi_dot ({a_i}) (P) bullet M^(a) angle.r_s) / (dif Lambda^(a, a_j) (t) (P)) \
+//         &= sum_j integral_0^(dot and tau^(g^*)) W_(s-) sum_k m_(s,k,j)^* (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) (dif angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_s) / (dif Lambda^(a, a_j) (t) (P)) \
+//         &times dif (M^(a, a_j) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
+// $
+// and
+// $
+//     D sum_j Y_j^* D^* Gamma &= D sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s \
+//         &= sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (D (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)))_s \
 //         &= sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) \
-//         &times (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) - angle.l M^(a, a_j), K^* angle.r^P)_s \
+//         &times (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) - angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a), K^* angle.r^P)_s \
 // $
-// Here, we use that
+// //         &= sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) \
+// //         &times (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) - angle.l M^(a, a_j), K^* angle.r^P)_s \
+// // $
+// // Here, we use that
+// // $
+// //     angle.l - pi_dot ({a_j}) (P) bullet M^(a), K^* angle.r^P_t &= integral_0^(t and tau^(g^*)) sum_i (pi_s ({a_i}) - pi_s^* ({a_i}) dif angle.l M^(a, a_j), M^(a, a_i) angle.r_s^P \
+// //         &= 0
+// // $
+// Finally, note that
 // $
-//     angle.l - pi_dot ({a_j}) (P) bullet M^(a), K^* angle.r^P_t &= integral_0^(t and tau^(g^*)) sum_i (pi_s ({a_i}) - pi_s^* ({a_i}) dif angle.l M^(a, a_j), M^(a, a_i) angle.r_s^P \
-//         &= 0
+//     sum_j D Y_j D^* Gamma &= integral_0^(t and tau^(g^*)) W_(s-) sum_(k) sum_(j=1)^K m_(s,k,j)^* (dif angle.l Gamma + [Gamma, K^*], M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r_t^P) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
+//         & integral_0^(t and tau^(g^*)) W_(s-) sum_(k) sum_(j=1)^K m_(s,k,j)^* (dif angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r_t^Q) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif angle.l M^(a, a_j), K^* angle.r_s^P)
 // $
-Finally, note that
-$
-    sum_j D Y_j D^* Gamma &= integral_0^(t and tau^(g^*)) W_(s-) sum_(k) sum_(j=1)^K m_(s,k,j)^* (dif angle.l Gamma + [Gamma, K^*], M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r_t^P) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
-        & integral_0^(t and tau^(g^*)) W_(s-) sum_(k) sum_(j=1)^K m_(s,k,j)^* (dif angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r_t^Q) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif angle.l M^(a, a_j), K^* angle.r_s^P)
-$
-Thus, we find
-$
-    S^* S Gamma &= sum_j integral_0^(dot and tau^(g^*)) W_(s-) sum_k m_(s,k,j)^* \
-        &quad times ((dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) ((dif angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_s) / (dif Lambda^(a, a_j) (t) (P)) -1) - (dif angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r_t^Q) / (dif Lambda^(a, a_j) (t) (P))) \
-        &quad times dif (M^(a, a_j) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
-        &+sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) pi_s ({a_j}) (P)  (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a) - angle.l M^(a), K^* angle.r^P)_s \
-        &+ Gamma_0 + integral_0^dot macron(W)_s dif Gamma_s \
-    &= sum_j integral_0^(dot and tau^(g^*)) W_(s-) sum_k m_(s,k,j)^* \
-        &quad times ((dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) ((dif angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r^P_s) / (dif Lambda^(a, a_j) (t) (P)) -1) - (dif angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r_t^Q) / (dif Lambda^(a, a_j) (t) (P))) \
-        &quad times dif (M^(a, a_j) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
-        &+sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-)  (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a) (s) (P)) dif (M^(a) - angle.l M^(a), K^* angle.r^P)_s \
-        &+ Gamma_0 + integral_0^dot macron(W)_s dif Gamma_s
-$
+// Thus, we find
+// $
+//     S^* S Gamma &= sum_j integral_0^(dot and tau^(g^*)) W_(s-) sum_k m_(s,k,j)^* \
+//         &quad times ((dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) ((dif angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_s) / (dif Lambda^(a, a_j) (t) (P)) -1) - (dif angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r_t^Q) / (dif Lambda^(a, a_j) (t) (P))) \
+//         &quad times dif (M^(a, a_j) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
+//         &+sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) pi_s ({a_j}) (P)  (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a) - angle.l M^(a), K^* angle.r^P)_s \
+//         &+ Gamma_0 + integral_0^dot macron(W)_s dif Gamma_s \
+//     &= sum_j integral_0^(dot and tau^(g^*)) W_(s-) sum_k m_(s,k,j)^* \
+//         &quad times ((dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) ((dif angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r^P_s) / (dif Lambda^(a, a_j) (t) (P)) -1) - (dif angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r_t^Q) / (dif Lambda^(a, a_j) (t) (P))) \
+//         &quad times dif (M^(a, a_j) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
+//         &+sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-)  (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a) (s) (P)) dif (M^(a) - angle.l M^(a), K^* angle.r^P)_s \
+//         &+ Gamma_0 + integral_0^dot macron(W)_s dif Gamma_s
+// $
 
 // With respect to the adjoint of the Score operator maybe conclude that
 // the argument in Kjetils document shows that the adjoint gives
