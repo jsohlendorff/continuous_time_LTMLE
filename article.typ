@@ -737,6 +737,13 @@ and @eq:iceipcw for which there is very little data.
 
 = Simulation study <section:simulationstudy>
 
+// Anders comment: There are very many results in this section, so I
+// think we should move some of them to supplementary material. I
+// would argue that the most important point of the simulation is
+// comparing to LTMLE. So maybe the censoring setting and some of the
+// other estimators could be moved to suppl. We should discuss this
+// with Thomas.
+
 We consider a simulation study to evaluate the performance of our ICE-IPCW estimator
 and its debiased version. Overall, the purpose of the simulation study is to
 establish that our estimating procedure provides valid inference with varying degrees of confounding.
