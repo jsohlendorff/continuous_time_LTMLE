@@ -1,5 +1,4 @@
 #import "@preview/fletcher:0.5.1": node, edge, diagram
-// #import "template.typ": conf
 #import "template/definitions.typ": *
 #import "@preview/arkheion:0.1.0": arkheion
 #import "@preview/ctheorems:1.1.3": 
@@ -404,6 +403,81 @@ is sufficient for causal identification.
             &= 0.
     $
 ]
+
+== Comparison between Rytgaard and Ryalen
+
+Consider a simple example where $N^a (t) <= 1$ for all $t$,
+and consists of the multivariate counting process $N = (N^y, N^(a,a_0), N^(a,a_1))$.
+We consider the intervention $pi^*_t (a_1) = 1$ for all $t$.
+Suppose that $(N^y, N^(a,a_0), N^(a,a_1))$ has compensator
+$
+    Lambda^y (dif t) (P) &= lambda_t^y dif t, \
+    Lambda^(a,a_j) (dif t) (P) &= pi_t (a_j) lambda_t^a dif t, j=0,1.
+$
+with respect to $cal(F)_t$ in $P$.
+In $P$, note that
+$
+    mean(P) [Y_t] &= mean(P) [N^y (t)] \
+        &= mean(P) [bb(1) {event(1) <= t, status(1) = y} \
+            &+ bb(1) {status(1) = a, treat(1) = 1, event(2) <= t, status(2) = y}\
+            &+ bb(1) {status(1) = a, treat(1) = 0, event(2) <= t, status(2) = y}]\
+        &= integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a,a_1) + lambda_u^(a,a_0)) dif u) lambda_s^y dif s \
+        &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a,a_1) + lambda_u^(a,a_0)) dif u) lambda_s^(a,a_1) \
+        &quad times integral_s^t exp(- integral_s^v lambda_u^y ) dif u) lambda_v^y dif v dif s \
+        &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a,a_1) + lambda_u^(a,a_0)) dif u) lambda_s^(a,a_0) \
+        &quad times integral_s^t exp(- integral_s^v lambda_u^y ) dif u) lambda_v^y dif v dif s \
+$
+
+Then, in $Q$, we have
+$
+    Lambda^y (dif t) (Q) &= lambda_t^y dif t, \
+    Lambda^(a,a_0) (dif t) (Q) &= 0, \
+    Lambda^(a,a_1) (dif t) (Q) &= lambda_t^a dif t.
+$
+Therefore,
+$
+    mean(Q) [Y_t] &= mean(Q) [N^y (t)] \
+        &= mean(Q) [bb(1) {event(1) <= t, status(1) = y} \
+            &+ bb(1) {status(1) = a, treat(1) = 1, event(2) <= t, status(2) = y}]\
+        &= integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) lambda_s^y dif s \
+        &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) lambda_s^(a) \
+        &quad times integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \ 
+$
+However, in $tilde(Q)$ (Ryalen), we have
+$
+    Lambda^y (dif t) (tilde(Q)) &= (lambda_t^y dif t-0)/(1-0), \
+    Lambda^(a,a_0) (dif t) (tilde(Q)) &= (0-0)/(1-0) \
+    Lambda^(a,a_1) (dif t) (tilde(Q)) &= (lambda_t^a dif t - (1-pi_(t and tau^(g^*))(a_1)) lambda^a_(t and tau^(g^*)) dif t)/(1-0) = pi_(t and tau^(g^*))(a_1) lambda^a_(t and tau^(g^*)) dif t = pi_(t)(a_1) lambda^a_(t) dif t.
+$
+since $tau^(g^*) = oo$ almost surely in $tilde(Q)$.
+Therefore,
+$
+    mean(tilde(Q)) [Y_t] &= mean(tilde(Q)) [N^y (t)] \
+        &= mean(tilde(Q)) [bb(1) {event(1) <= t, status(1) = y} \
+            &+ bb(1) {status(1) = a, treat(1) = 1, event(2) <= t, status(2) = y}]\
+        &= integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a)) dif u) lambda_s^y dif s \
+        &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a)) dif u) pi_s (a_1) lambda_s^(a) \
+        &quad times integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \ 
+$
+The difference can be written as
+$
+    mean(tilde(Q)) [Y_t] - mean(Q) [Y_t] &= integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a)) dif u) (1 - exp(- integral_0^s (pi_u (a_0) lambda_u^(a)) dif u)) lambda_s^y dif s \
+        &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a)) dif u) (1 - exp(- integral_0^s (pi_u (a_0) lambda_u^(a)) dif u)) (pi_s (a_1) lambda_s^(a) \
+            &quad times integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
+            &- integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) pi_s (a_0) lambda_s^(a)  integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
+            &=integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) (exp(integral_0^s (pi_u (a_0) lambda_u^(a)) dif u) - 1) lambda_s^y dif s \
+        &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) (exp(integral_0^s (pi_u (a_0) lambda_u^(a)) dif u)-1) (pi_s (a_1) lambda_s^(a) \
+            &quad times integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
+            &- integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) pi_s (a_0) lambda_s^(a)  integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
+            &=integral_0^t integral_0^s exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) (exp(integral_0^w (pi_u (a_0) lambda_u^(a) dif u)) pi_w (a_0) lambda_w^(a) dif w) lambda_s^y dif s \
+            &+ integral_0^t integral_0^s exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) (exp(integral_0^w (pi_u (a_0) lambda_u^(a) dif u)) pi_w (a_0) lambda_w^(a) dif w) (pi_s (a_1) lambda_s^(a) \
+            &quad times integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
+                &- integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) pi_s (a_0) lambda_s^(a)  integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
+                &=integral_0^t integral_w^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u)  lambda_s^y dif s exp(integral_0^w (pi_u (a_0) lambda_u^(a) dif u)) pi_w (a_0) lambda_w^(a) dif w \
+                &+ integral_0^t integral_w^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) integral_s^v exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v pi_s (a_1) lambda_s^(a) dif s \
+                &quad times (exp(integral_0^w (pi_u (a_0) lambda_u^(a) dif u)) pi_w (a_0) lambda_w^(a) )  dif w\
+            &- integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) pi_s (a_0) lambda_s^(a)  integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s 
+$
 
 = More general exchangeability conditions
 
@@ -1018,6 +1092,68 @@ $
     - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K bb(1) {event(k-1) < s <= event(k)} bb(1) {j != g^*_k (history(k-1), s)} N^(a, a_j) (dif s) \
 $
 which is zero $Q$-a.s.
+
+== Efficient influence function calculations
+
+Let $I_P nu (tilde(Y))$ be an influence function for $nu: cal(P)_(|sigma(tilde(Y))) -> R$,
+$nu (P) = E_P [tilde(Y)]$ and let us take $I_P nu (tilde(Y)) = tilde(Y) - E_P [tilde(Y)]$.
+Let $zeta_t = mean(P) [I_P nu (Y) | cal(F)_t] = mean(P) [tilde(Y) | cal(F)_t] - E_P [tilde(Y)]$.
+Now, we see that
+
+$
+    S^* zeta_T &= W_T (P) (Y_T - mean(P) [tilde(Y)_T]) \
+        &- integral_0^(T) zeta_(s -) W (s -) dif K^*_s \
+        &- integral_0^t bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^* (dif angle.l M^(a, a_j), D^* I_P nu (Y) angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s \
+        &= W_T (P) Y_T - (W_T (P) - integral_0^(T) W (s -) dif K^*_s) mean(P) [tilde(Y)_T]  \
+        &- integral_0^T bb(1) {tau^(g^*) <= s} mean(P) [W_T (P) Y_T | cal(F)_(t -)] sum_j ( (pi^*_s ({a_j})) / (pi_s ({a_j})) - 1) dif N^(a, a_j) (s) \
+        &- integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  (dif angle.l M^(a, a_j), mean(P) [W_T (P) Y_T | cal(F)_(dot)] - integral_0^t mean(P) [W_T (P) Y_T | cal(F)_(u-)] dif K_u^* angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) \
+        &times dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s \
+        &= W_T (P) Y_T - mean(P) [tilde(Y)_T]  \
+        &- integral_0^T bb(1) {tau^(g^*) <= s} mean(P) [W_T (P) Y_T | cal(F)_(t -)] sum_j ( (pi^*_s ({a_j})) / (pi_s ({a_j})) - 1) dif N^(a, a_j) (s) \
+        &- integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  (dif angle.l M^(a, a_j), mean(P) [W_T (P) Y_T | cal(F)_(dot)] angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) \
+        &times dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s \
+        &+ integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  mean(P) [W_T (P) Y_T | cal(F)_(s-)] (dif angle.l M^(a, a_j), K^* angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) \
+        &times dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s \
+                    &= W_T (P) Y_T - mean(P) [tilde(Y)_T]  \
+        &- integral_0^T bb(1) {tau^(g^*) <= s} mean(P) [W_T (P) Y_T | cal(F)_(t -)] sum_j ( (pi^*_s ({a_j})) / (pi_s ({a_j})) - 1) dif N^(a, a_j) (s) \
+        &- integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  (dif angle.l M^(a, a_j), mean(P) [W_T (P) Y_T | cal(F)_(dot)] angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) \
+        &times dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s \
+        &+ integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  mean(P) [W_T (P) Y_T | cal(F)_(s-)] (dif angle.l M^(a, a_j), K^* angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) \
+        &times dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s \
+     &= W_T (P) Y_T - mean(P) [tilde(Y)_T]  \
+        &- integral_0^T bb(1) {tau^(g^*) <= s} mean(P) [W_T (P) Y_T | cal(F)_(t -)] sum_j ( (pi^*_s ({a_j})) / (pi_s ({a_j})) - 1) dif N^(a, a_j) (s) \
+        &- integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  (dif angle.l M^(a, a_j), mean(P) [W_T (P) Y_T | cal(F)_(dot)] angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s \
+        &+ integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  mean(P) [W_T (P) Y_T | cal(F)_(s-)] sum_i ((pi^*_s ({a_i}))/(pi_s ({a_i}))-1) (bb(1) {i = j} - pi_s ({a_i}) Delta Lambda^a (s)) \
+        &times dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s \
+
+$
+
+This is also equal to
+$
+    &= W_T (P) Y_T - mean(P) [tilde(Y)_T]  \
+        &- integral_0^T bb(1) {tau^(g^*) <= s} mean(P) [W_T (P) Y_T | cal(F)_(t -)] sum_j ( (pi^*_s ({a_j})) / (pi_s ({a_j})) - 1) dif N^(a, a_j) (s) \
+        &- integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  (dif angle.l M^(a, a_j), mean(P) [W_T (P) Y_T | cal(F)_(dot)] angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s \
+        &+ integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  mean(P) [W_T (P) Y_T | cal(F)_(s-)] ((pi^*_s ({a_j}))/(pi_s ({a_j}))-1) \
+        &times dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s
+$
+The integrators can be replaced with their corresponding martingales.
+
+@sequentialRegressionOhlendorff suggested the EIF:
+
+$
+    &integral_0^T W (s -) (( mean(P) [W_T (P) Y_T | cal(F)^g_(s)] - mean(P) [W_T (P) Y_T | cal(F)^g_(s-)]) dif macron(N)_s \
+        &+mean(P) [W_T (P) Y_T | cal(F)^g_0] - E_P [tilde(Y)_T] \
+$
+Here
+$
+    cal(F)^g_t = cal(F)_0 or sigma((N^a (s), g^*(s), N^ell (s), L(s), N^y (s)): s <= t)
+$
+where
+$
+    g^* (s) = sum_k bb(1) {event(k-1) <= s < event(k)} (bb(1) {status(k-1) = a} g^*_(k-1) (history(k-2), event(k-1)) + bb(1) {status(k-1) != a} g^(*) (s -))
+$
+
+
 == Comparisons of the positivity assumptions in @ryalenPotentialOutcomes
 
 One may ask oneself if positivity holds in @ryalenPotentialOutcomes;
