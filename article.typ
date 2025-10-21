@@ -650,7 +650,7 @@ and under the assumption that $Delta L (t) = 0$ whenever $Delta N^a (t) = 1$.
     $
         phi_tau^(*, "discrete") (P) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1)))   \
             & quad times bb(1) {statuscensored(k-1) in {ell, a}, eventcensored(k-1) < tau} (macron(Z)^a_(k,tau) (tau)- Qbar(k-1) (tau)) \
-            & quad +  Qbar(0) (tau) - Psi_tau^g (P)
+            & quad +  Qbar(0) (tau, 1, covariate(0)) - Psi_tau^g (P)
     $ <eq:eifdiscrete>
     and
     $
