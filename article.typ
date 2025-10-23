@@ -655,7 +655,7 @@ and under the assumption that $Delta L (t) = 0$ whenever $Delta N^a (t) = 1$.
     and
     $
         phi_tau^(*, "MGc") (P) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1))) \
-            &integral_(eventcensored(k - 1))^(tau and eventcensored(k)) (Qbar(k-1) (tau)-Qbar(k-1) (u)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u- | historycensored(k-1))) tilde(M)^c (dif u)
+            &integral_((eventcensored(k - 1), tau)) bb(1) {s <= eventcensored(k)} (Qbar(k-1) (tau)-Qbar(k-1) (u)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u- | historycensored(k-1))) tilde(M)^c (dif u)
     $ <eq:eifMG>
     The Gateaux derivative of $Psi_tau^g$ at $P in cal(M)$ in the direction of the Dirac measure $delta_(tilde(O))$
     is then given by
@@ -1562,9 +1562,10 @@ This completes the proof.
 == Comparison with the EIF in @rytgaardContinuoustimeTargetedMinimum2022 <section:compareif>
 Let us define in the censored setting
 $
-    W^g (t) = product_(k = 1)^(tilde(N)_t) (bb(1) {treatcensored(k) = 1}) / (pi_k (eventcensored(k), historycensored(k-1))) (bb(1) {treat(0) = 1}) / (pi_0 (covariate(0))) product_(k=1)^(tilde(N)_t) (bb(1) {status(k) != c}) / (product_(u in (eventcensored(k-1), eventcensored(k))) (1 - cumhazardcensored(k,c,dif u))),
+    W^g (t) = product_(k = 1)^(tilde(N)_t) (bb(1) {treatcensored(k) = 1}) / (pi_k (eventcensored(k), historycensored(k-1))) product_(k=1)^(tilde(N)_t) (bb(1) {status(k) != c}) / (product_(u in (eventcensored(k-1), eventcensored(k))) (1 - cumhazardcensored(k,c,dif u))),
 $
-in alignment with @eq:weightprocess.
+in alignment with @eq:weightprocess
+with perfect compliance at time zero. 
 We verify that our efficient influence function is the same as @rytgaardContinuoustimeTargetedMinimum2022
 in the case with absolutely continuous compensators.
 For simplicity, we also assume that $covariate(k) = covariate(k-1)$ ($covariatecensored(k) = covariatecensored(k-1)$)
@@ -1619,13 +1620,13 @@ where in $(**)$, we use that the event $(event(k) = t, status(k) != x)$ has prob
 Let $B_(k-1) (u) = (Qbar(k-1)(tau) -Qbar(k-1)(u)) 1/( S (u | historycensored(k-1)))$.
 Combining @eq:rytgaardproof1, @eq:rytgaardproof2, @eq:rytgaardproof3, and @eq:rytgaardproof4 with @eq:rytgaardeif, we find that the efficient influence function can also be written as:
 $
-    phi_tau^*(P) &=(bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1))) bb(1) {statuscensored(k-1) in {ell, a}, eventcensored(k-1) < tau} \
+    phi_tau^*(P) &=sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1))) bb(1) {statuscensored(k-1) in {ell, a}, eventcensored(k-1) < tau} \
         &[integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) (Qbar(k) (tau, 1, u, a, historycensored(k-1))- B_(k-1) (u)) tilde(M)^(a) (d u) \
             &quad+integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) (mean(P) [Qbar(k) (tau) | event(k) =u , status(k) = ell, history(k-1)] - B_(k-1) (u)) tilde(M)^(ell) (d u) \
             &quad+integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) (1 - B_(k-1) (u)) tilde(M)^(y) (d u) +integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1)))(0 - B_(k-1) (u)) tilde(M)^(d) (d u) \
             &quad+  1/(tilde(S)^c (eventcensored(k) | historycensored(k-1))) bb(1) (eventcensored(k) < tau, statuscensored(k) = ell, k < K) ( Qbar(k) (tau) - mean(P) [Qbar(k) (tau) | eventcensored(k), status(k) = ell, history(k-1)] )]\
         &+ Qbar(0) (tau, 1, covariate(0))- Psi_tau^g (P) \
-        &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1))) bb(1) {statuscensored(k-1) in {ell, a}, eventcensored(k-1) < tau} [ \
+        &= sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1))) bb(1) {statuscensored(k-1) in {ell, a}, eventcensored(k-1) < tau} [ \
             &quad-integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) Qbar(k) (1, covariatecensored(k-1), u, a, historycensored(k-1))  lambda^a_k (u , historycensored(k-1)) dif u \
             &quad-integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) mean(P) [Qbar(k) (tau) | eventcensored(k) =s , status(k) = ell, historycensored(k-1)] lambda_k^(ell) (u , historycensored(k-1)) dif u \
             &quad-integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) (1) lambda_k^(y) (u , historycensored(k-1)) dif u -integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1)))(0) lambda_k^(d) (u , historycensored(k-1)) dif u \
@@ -1747,11 +1748,11 @@ Now note that for simplifying A, we can write
 $
     &integral_(eventcensored(k-1))^(tau) macron(Z)^a_(k,tau) (t_k, d_k, l_k, a_k, f_(k-1)) integral_((eventcensored(k-1),t_k)) 1/(1- Delta tilde(Lambda)_k^c (s | f_(k-1))) 1/(tilde(S) (s - | historycensored(k-1) = f_(k-1)))  (tilde(N)^c (dif s) - tilde(Lambda)^c (dif s)) \
         &#h(1.5cm) P_((eventcensored(k), statuscensored(k), covariatecensored(k), treatcensored(k))) (dif (t_k, d_k, l_k, a_k) | historycensored(k-1) = f_(k-1)) \
-        &= integral_(eventcensored(k-1))^(tau) integral_(s)^tau macron(Z)^a_(k,tau) (t_k, d_k, l_k, a_k, f_(k-1)) P_((eventcensored(k), statuscensored(k), covariatecensored(k), treatcensored(k))) (dif (t_k, d_k, l_k, a_k) | historycensored(k-1) = f_(k-1)) \
+        &= integral_((eventcensored(k-1),tau)) integral_(s)^tau macron(Z)^a_(k,tau) (t_k, d_k, l_k, a_k, f_(k-1)) P_((eventcensored(k), statuscensored(k), covariatecensored(k), treatcensored(k))) (dif (t_k, d_k, l_k, a_k) | historycensored(k-1) = f_(k-1)) \
         &#h(1.5cm) 1/(1- Delta tilde(Lambda)_k^c (s | f_(k-1))) 1/(tilde(S) (s - | historycensored(k-1) = f_(k-1)))  (tilde(N)^c (dif s) - tilde(Lambda)^c (dif s)) \
-        &= integral_(eventcensored(k-1))^(tau) (Qbar(k-1)(tau) - Qbar(k-1)(s)) \
+        &= integral_((eventcensored(k-1),tau)) (Qbar(k-1)(tau) - Qbar(k-1)(s)) \
         &#h(1.5cm) 1/(1- Delta tilde(Lambda)_k^c (s | f_(k-1))) 1/(tilde(S) (s - | historycensored(k-1) = f_(k-1)))  (tilde(N)^c (dif s) - tilde(Lambda)^c (dif s)) \
-        &= integral_(eventcensored(k-1))^(tau) (Qbar(k-1)(tau) - Qbar(k-1)(s)) \
+        &= integral_((eventcensored(k-1),tau)) (Qbar(k-1)(tau) - Qbar(k-1)(s)) \
         &#h(1.5cm) 1/(tilde(S)^c (s | historycensored(k-1) = f_(k-1)) S (s - | historycensored(k-1) = f_(k-1))) (tilde(N)^c (dif s) - tilde(Lambda)^c (dif s)),
 $
 by an exchange of integrals. Here, we apply the result of @thm:iceipcw to get the last equation.
@@ -1759,7 +1760,7 @@ Hence, we have
 $
     & evaluated(partial / (partial epsilon))_(epsilon=0) Qbar(k-1) (tau, f_(k-1); P_epsilon) \
         &= delta_(historycensored(k-1) (f_(k-1)))/P(historycensored(k-1) = f_(k-1))  (macron(Z)^a_(k,tau) (tau) - Qbar(k-1) (tau) + \            
-            &quad+ integral_(eventcensored(k-1))^(tau) (Qbar(k-1)(tau) - Qbar(k-1)(s)) \
+            &quad+ integral_((eventcensored(k-1),tau)) (Qbar(k-1)(tau) - Qbar(k-1)(s)) \
             &#h(1.5cm) 1/(tilde(S)^c (s | historycensored(k-1) = f_(k-1)) S (s - | historycensored(k-1) = f_(k-1))) (tilde(N)^c (dif s) - tilde(Lambda)^c (dif s))) \
         &quad+ integral_(eventcensored(k-1))^(tau) (bb(1) {t_k < tau, d_(k) in {a, ell}})/(tilde(S)^c (t_k - | f_(k-1)))  ((bb(1) {a_k = 1}) / (densitytrtcensored(t_(k), k)))^(bb(1) {d_(k) = a}) evaluated(partial / (partial epsilon))_(epsilon=0) lr(Qbar(k) (P_epsilon | a_(k), l_(k),t_(k), d_(k), f_(k-1))) \
         &#h(1.5cm) P_((eventcensored(k), statuscensored(k), covariatecensored(k), treatcensored(k))) (dif (t_k, d_k, l_k, a_k) | f_(k-1)).
