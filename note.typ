@@ -1,5 +1,5 @@
 #import "template/definitions.typ": *
-#import "@preview/arkheion:0.1.0": arkheion, arkheion-appendices
+#import "@preview/arkheion:0.1.1": arkheion, arkheion-appendices
 #import "@preview/colorful-boxes:1.4.3": *
 #import "@preview/algo:0.3.6": *
 
@@ -24,7 +24,7 @@
 #show math.equation: it => {
   if it.block and not it.has("label") [
     #counter(math.equation).update(v => v - 1)
-    #math.equation(it.body, block: true, numbering: none)#label("")
+    #math.equation(it.body, block: true, numbering: none)#label("empty")
   ] else {
     it
   }  
@@ -695,6 +695,15 @@ This means that we usually select $t_1=0$ and $t_m <= tau - min_i macron(T)_(k+1
 ]
 
 = Rates for the ICE-IPCW procedure
+Three possible approaches:
+
+1. Cross-validation for non-sequential regression at each event point.
+   For the rates (see @rubin_imputation_2005).
+2. Least-squares estimators of $Qbar(k)$ at each event time.
+   For the rates, we may use @rubin_imputation_2005.
+3. An empirical risk minimizer, solving the efficient influence function equation
+   directly via a loss-based approach (see @luedtke_sequential_2018).
+
 In this section, we discuss the rates of convergence for the ICE-IPCW estimator
 and variations thereof.
 Consider i.i.d. observations from $P_0 in cal(M)$
@@ -714,8 +723,11 @@ $
     m_(k,n) (u) := "argmin"_(f in cal(J)_(n k)) 1/n sum_(i=1)^n (macron(Z)^a_(k, tau) (u) (hat(S)^c, m_(k+1, n)) - f (historycensored(k)))^2
 $
 
-x
-
+The truncated least squares regression estimator is given by for positive $beta_(k,n) > 0$,
+$
+    m^(beta_(k,n))_(k,n) (u) := "sign"(m_(k,n) (u)) (m_(k,n) (u) and beta_(k,n))
+$
+We note that this estimator is always non-negative. 
 
 Recall the definitions $Qbar(K): (a_k, h_k) mapsto 0$ and define recursively, for $k = K, dots, 0$,
 $
@@ -779,7 +791,7 @@ $
 //         &+ 2/n sum_(i=1)^n (macron(Z)^a_(k, tau) (tilde(S)^c, Qbar(k+1)) - m^*_(k,n) (u, f_k))^2 \
 // $
 
-// = Discussion
+ = Discussion
 
 Let us discuss a pooling approach to handle the issue with few events. We consider parametric maximum likelihood estimation for the cumulative cause specific censoring-hazard $Lambda_(theta_k)^c$ of the $k$'th event. 
 Pooling is that we use the model $Lambda_(theta_j)^c = Lambda_(theta^*)^c$ for all $j in S subset.eq {1, dots, K}$ and $theta^* in Theta^*$

@@ -1,5 +1,5 @@
-#import "@preview/fletcher:0.5.7" as fletcher: node, edge, diagram
-#import "@preview/cetz:0.3.4"
+#import "@preview/fletcher:0.5.8" as fletcher: node, edge, diagram
+#import "@preview/cetz:0.4.2"
 #import "@preview/touying:0.6.1": *
 
 #let edgemsm = edge.with(marks: "->", label-angle: auto)

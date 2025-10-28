@@ -1,7 +1,7 @@
 #import "template/definitions.typ": *
 #import "@preview/colorful-boxes:1.4.3": *
 #import "@preview/ctheorems:1.1.3": *
-#import "@preview/arkheion:0.1.0": arkheion, arkheion-appendices
+#import "@preview/arkheion:0.1.1": arkheion, arkheion-appendices
 
 #set cite(form: "prose")
 #show ref: it => [#text(fill: blue)[#it]]
@@ -38,7 +38,7 @@
 #show math.equation: it => {
   if it.block and not it.has("label") [
     #counter(math.equation).update(v => v - 1)
-    #math.equation(it.body, block: true, numbering: none)#label("")
+    #math.equation(it.body, block: true, numbering: none)#label("empty")
   ] else {
     it
   }  
@@ -1138,8 +1138,11 @@ $N^(a)$, counting the number of times that the doctor has prescribed treatment a
 the number of times the patient has visited the doctor, respectively,
 and calculating the ratio of the two (estimated) intensities
 in the absolutely continuous case.
-We only consider the first of these options.
+We only considered the first of these options.
 The latter choice, however, makes traditional intensity modeling methods applicable.
+Another possibility is to learn the intensities sequentially regressing
+the $k$'th event and mark on the history with the $(k-1)$'th event.
+We consider this possibility in future work. 
 
 //Another alternative method for inference within the TMLE framework is to use temporal difference learning to avoid iterative estimation of $Qbar(k)$ altogether (@shirakawaLongitudinalTargetedMinimum2024)
 //by appropriately extending it to the continuous-time setting;
@@ -1710,10 +1713,10 @@ so that
 $
     &evaluated(partial / (partial epsilon))_(epsilon=0) product_(u in (s, t)) (1- tilde(Lambda)_(k,epsilon)^c (dif t | f_(k-1))) \
         &=evaluated(partial / (partial epsilon))_(epsilon=0) 1/(1-Delta tilde(Lambda)_(k,epsilon)^c (t | f_(k-1)))product_(u in (s, t]) (1- tilde(Lambda)_(k,epsilon)^c (dif t | f_(k-1))) \
-        &=^((*))-1/(1-Delta tilde(Lambda)^c_(k) (t | f_(k-1))) product_(u in (s, t]) (1- tilde(Lambda)_k^c (dif t | f_(k-1))) integral_((s,t]) 1/(1 - Delta tilde(Lambda)_k^c (u |  f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_k (dif u | f_(k-1)) \
+        &=^((*))-1/(1-Delta tilde(Lambda)^c_(k) (t | f_(k-1))) product_(u in (s, t]) (1- tilde(Lambda)_k^c (dif t | f_(k-1))) integral_((s,t]) 1/(1 - Delta tilde(Lambda)_k^c (u |  f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_(k,epsilon) (dif u | f_(k-1)) \
         &quad +product_(u in (s, t]) (1- tilde(Lambda)_k^c (dif t | f_(k-1))) 1/(1- Delta tilde(Lambda)_k^c (t |f_(k-1)))^2 evaluated(partial / (partial epsilon))_(epsilon=0) Delta tilde(Lambda)_(k,epsilon)^c (t | f_(k-1)) \
-        &=-1/(1-Delta tilde(Lambda)^c_(k) (t |f_(k-1))) product_(u in (s, t]) (1- tilde(Lambda)_k^c (dif t | f_(k-1))) integral_((s,t)) 1/(1 - Delta tilde(Lambda)_k^c (u | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_k (dif u | f_(k-1)) \
-        &quad -1/(1-Delta tilde(Lambda)^c_(k) (t | f_(k-1))) product_(u in (s, t]) (1- tilde(Lambda)_k^c (dif t | f_(k-1))) integral_({t}) 1/(1 - Delta tilde(Lambda)_k^c (u | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_k (dif u | f_(k-1)) \
+        &=-1/(1-Delta tilde(Lambda)^c_(k) (t |f_(k-1))) product_(u in (s, t]) (1- tilde(Lambda)_k^c (dif t | f_(k-1))) integral_((s,t)) 1/(1 - Delta tilde(Lambda)_k^c (u | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_(k,epsilon) (dif u | f_(k-1)) \
+        &quad -1/(1-Delta tilde(Lambda)^c_(k) (t | f_(k-1))) product_(u in (s, t]) (1- tilde(Lambda)_k^c (dif t | f_(k-1))) integral_({t}) 1/(1 - Delta tilde(Lambda)_k^c (u | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_(k,epsilon) (dif u | f_(k-1)) \
         &quad +product_(u in (s, t]) (1- tilde(Lambda)_k^c (dif t | f_(k-1))) 1/(1- Delta tilde(Lambda)_k^c (t | f_(k-1)))^2 evaluated(partial / (partial epsilon))_(epsilon=0) Delta tilde(Lambda)_(k,epsilon)^c (t | f_(k-1)) \
         &=^((**)) -product_(u in (s, t)) (1- tilde(Lambda)_k^c (dif t | f_(k-1))) integral_((s,t)) 1/(1 - Delta tilde(Lambda)_k^c (u | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_(k,epsilon) (dif u |  f_(k-1)).
 $ <eq:derivcumhazard>

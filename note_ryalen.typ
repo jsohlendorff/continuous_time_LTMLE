@@ -1,6 +1,5 @@
-#import "@preview/fletcher:0.5.1": node, edge, diagram
 #import "template/definitions.typ": *
-#import "@preview/arkheion:0.1.0": arkheion
+#import "@preview/arkheion:0.1.1": arkheion
 #import "@preview/ctheorems:1.1.3": 
 #set footnote(numbering: "*")
 
@@ -21,7 +20,7 @@
 #show math.equation: it => {
   if it.block and not it.has("label") [
     #counter(math.equation).update(v => v - 1)
-    #math.equation(it.body, block: true, numbering: none)#label("")
+    #math.equation(it.body, block: true, numbering: none)#label("empty")
   ] else {
     it
   }  
@@ -86,7 +85,7 @@ $
 $
 where $pi^*_t (dif x)$ is some kernel
 that specifies the treatment decision deterministically at time $t$
-in the sense that there are $history(k-1) times.circle cal(B) ([0, T])$-measurable functions $g^*_k$
+in the sense that there are $history(k-1) times.o cal(B) ([0, T])$-measurable functions $g^*_k$
 which return a treatment decision in $cal(A)$
 such that
 $
@@ -240,9 +239,14 @@ $
     by Theorem 2.1.42 of @last1995marked.
     This implies that
     $
-        mean(P) [Y_t W (t)] &=^((**)) mean(P) [tilde(Y)_t W (t)] = mean(P) [tilde(Y)_t mean(P) [W(t) | cal(H)_0]]= mean(P) [tilde(Y)_t W (0)] = mean(P) [tilde(Y)_t] 
+        mean(P) [Y_t W (t)] &= mean(P) [Y_t bb(1) {tau^(g^*) > t} W(t)]  \
+            &=^((**)) mean(P) [tilde(Y)_t bb(1) {tau^(g^*) > t} W (t)] \
+            &= mean(P) [tilde(Y)_t W (t)] \
+            &= mean(P) [tilde(Y)_t mean(P) [W(t) | cal(H)_0]] \
+            &= mean(P) [tilde(Y)_t W (0)] \
+            &= mean(P) [tilde(Y)_t] 
     $
-    where in $(**)$ we used consistency by noting that $W (t) != 0$ if and only if $tau^(g^*) > t$.
+    where in $(**)$ we used consistency.
 ]
 
 Note that in the proof, it suffices that $W(t)$ is uniformly bounded because
@@ -310,17 +314,17 @@ and using that the stochastic exponential solves a specific stochastic different
 #proof[
     First note that for a local $cal(F)_t$-martingale $X$ in $P$, we have
     $
-        integral_0^t 1/(W_(s -)) dif angle.l W, X angle.r_s^P = angle.l K, X angle.r_t^P
+        integral_0^t 1/(W_(s -)) dif chevron.l W, X chevron.r_s^P = chevron.l K, X chevron.r_t^P
     $ <eq:girsanov1>
     since we have that $W_t = 1 + integral_0^t W_(s -) dif K_s$; whence
     $
-        angle.l W, X angle.r_t = angle.l 1, X angle.r_t + angle.l W_(-) bullet K, X angle.r_t = W_(t -) bullet angle.l K, X angle.r_t
+        chevron.l W, X chevron.r_t = chevron.l 1, X chevron.r_t + chevron.l W_(-) bullet K, X chevron.r_t = W_(t -) bullet chevron.l K, X chevron.r_t
     $ 
     With $X= M^(a, x)$, we find
     $
-        angle.l K, M^(a, x) angle.r_t^P &= integral_0^t sum_j ((pi_s^* (a_j))/(pi_s (a_j)) - 1) dif angle.l M_P^(a, a_j), M_P^(a, x) angle.r_s^P \
-            &= integral_0^t ((pi_s^* (x))/(pi_s (x)) - 1) dif angle.l M_P^(a, x) angle.r_s^P \
-            &quad + sum_(j != x) integral_0^t ((pi_s^* (a_j))/(pi_s (a_j)) - 1) dif angle.l M_P^(a, a_j), M_P^(a, x) angle.r_s^P \
+        chevron.l K, M^(a, x) chevron.r_t^P &= integral_0^t sum_j ((pi_s^* (a_j))/(pi_s (a_j)) - 1) dif chevron.l M_P^(a, a_j), M_P^(a, x) chevron.r_s^P \
+            &= integral_0^t ((pi_s^* (x))/(pi_s (x)) - 1) dif chevron.l M_P^(a, x) chevron.r_s^P \
+            &quad + sum_(j != x) integral_0^t ((pi_s^* (a_j))/(pi_s (a_j)) - 1) dif chevron.l M_P^(a, a_j), M_P^(a, x) chevron.r_s^P \
             &= integral_0^t ((pi_s^* (x))/(pi_s (x)) - 1) pi_s (x) Lambda_P^a (dif s) \
             &quad - integral_0^t ((pi_s^* (x))/(pi_s (x)) - 1) Delta (pi (x) Lambda_P^a)_s pi_s (x) Lambda_P^a (dif s) \
             &quad - sum_(j!= x) integral_0^t ((pi_s^* (a_j))/(pi_s (a_j)) - 1) Delta (pi (x) Lambda_P^a)_s pi_s (a_j) Lambda_P^a (dif s) \
@@ -341,7 +345,7 @@ and using that the stochastic exponential solves a specific stochastic different
     $
     where we apply the trick with adding and subtracting the treatment compensators in the second term.
     The first term is zero because no two counting processes jump at the same time.
-    The second term is a local martingale. This implies $angle.l M^(y), K angle.r_t^P = 0$.
+    The second term is a local martingale. This implies $chevron.l M^(y), K chevron.r_t^P = 0$.
     For $x=ell$ the argument is the same.
 ]
 
@@ -404,7 +408,434 @@ is sufficient for causal identification.
     $
 ]
 
-== Comparison between Rytgaard and Ryalen
+== On the existence of counterfactual processes fulfilling consistency and exchangeability
+
+It is natural to ask oneself whether there exist counterfactual processes
+for any given law of $N$ such that consistency and exchangeability holds,
+that is can we extend the law of $N$ to some possibly larger sample space?
+This question was already posed by @RobinsLongitudinal2001 in the discrete time setting.
+If this does not hold, then, certainly, we would implicitly be imposing
+restrictions on the observed data law of $N$. As the theorem below shows, it
+is thus harmless to pretend that such counterfactual processes do in fact exist,
+as they cannot be ruled out by the observed data law of $N$.
+
+#theorem[
+    For any law of $N$, we can construct a probability space,
+    wherein a counterfactual process $tilde(N)$ and $N$ exists
+    such that (strong) consistency and exchangeability holds.
+    Here (strong) consistency means that
+    $
+        tilde(N)_t bb(1) {tau^(g^*) >= t} = N_t bb(1) {tau^(g^*) >= t} quad P-"a.s."
+    $
+    which implies that
+    $
+        integral_0^t bb(1) {s <= tau^(g^*)} dif tilde(N)_t  = integral_0^t bb(1) {s <= tau^(g^*)} dif N_t,
+    $
+    or
+    $
+        tilde(N)_(dot and tau^(g^*)) = N_(dot and tau^(g^*))
+    $
+] <thm:existencecounterfactuals>
+
+#proof[
+    // Do we need to check the compensator definition?
+    We provide an argument somewhat analogous to the one given in Section 6 of @RobinsLongitudinal2001.
+    We also consider only the case where $cal(A) = {0, 1}$ and the static intervention $g^* (history(k-1), event(k)) = 1$ for all $k$.
+    First, we let $(event(k), status(k), treat(k), covariate(k))_(k in NN)$ denote the marked point process
+    corresponding to $N$ and $(treat(0), covariate(0))$ be the initial values of the treatment and covariate process.
+    First, we generate $covariate(0)$ from its marginal distribution.
+    Next, for $a_0 = 0, 1$, we generate $(L^(a_0)(T_((1))^(a_0)),T_((1))^(a_0), Delta^(a_0)_((1))) tilde covariate(1), event(1), status(1) | treat(0) = a_j, covariate(0)$
+    (for each value of $a_0$, these can be generated independently).
+    Next, for each $a_0 = 0, 1$ and each $a_1 = 0, 1$ where $Delta_((1))^(a_0) = a$, we generate
+    $
+        &(L^(a_0, a_1)(T_((2))^(a_0, a_1)), T_((2))^(a_0, a_1), Delta^(a_0, a_1)_((2))) \
+            &tilde covariate(2), event(2), status(2) | covariate(1) = l_1, treat(1) = a_1, event(1) = t_1, status(1) = s_1, treat(0) = a_0, covariate(0)
+    $
+    where $(l_1, t_1, s_1) = (L^(a_0)(T_((1))^(a_0)),T_((1))^(a_0), Delta^(a_0)_((1)))$
+    for $Delta^(a_0)_((1)) != y$ and $T^(a_0)_((1)) < T$. If $Delta^(a_0)_((1)) = y$, put $(L^(a_0, a_1)(T_((2))^(a_0, a_1)), T_((2))^(a_0, a_1), Delta^(a_0, a_1)_((2))) = (Ø, oo, Ø)$.
+    Continue in this manner.
+    Then, we define $tilde(N)$ by the marked point process
+    $(L^(1, dots, 1)(T_((k))^(1, dots, 1)), 1, T_((k))^(1, dots, 1), Delta^(1, dots, 1)_((k)))_(k in NN)$
+    with initial values in its filtration $(1, covariate(0))$.
+    Next, we construct the observed data process $N$.
+    We can generate the $A$'s independently from all other considered random variables.
+    Generate $treat(0)$ from its conditional distribution given $covariate(0)$.
+    Then, let 
+    $
+        (covariate(1), event(1), status(1)) = (L^(treat(0))(T_((1))^(treat(0))), T_((1))^(treat(0)), Delta^(treat(0))_((1))).
+    $
+    Then, again, generate $treat(1)$ from its conditional distribution given $history(0), event(1), status(1) = a$.
+    Afterwards, let
+    $
+        (covariate(2), event(2), status(2)) = (L^(treat(0), treat(1))(T_((2))^(treat(0), treat(1))), T_((2))^(treat(0), treat(1)), Delta^(treat(0), treat(1))_((2))).
+    $
+    Continue in this manner.
+    By construction, we then have
+    $
+        (tilde(N))_(t in [0, T]) perp treat(k) | history(k-1), event(k), status(k) = a
+    $
+    which suffices for exchangeability because it is stronger. Next, we show consistency.
+    Define
+    $
+        tilde(Y)_t = sum_k bb(1) {T_((k))^(1, dots, 1) <= t, Delta^(1, dots, 1)_((k)) = y}
+    $
+    and
+    $
+        Y_t = sum_k bb(1) {event(k) <= t, status(k) = y}
+    $
+    Now note that
+    $
+        Y_t bb(1) {tau^(g^*) > t} &= sum_k bb(1) {event(k) <= t, status(k) = y} bb(1) {tau^(g^*) > t} \
+            &= sum_k bb(1) {event(k) <= t, status(k) = y, treat(j) = 1, forall j < k} \
+            &= sum_k bb(1) {T_((k))^(1, dots, 1) <= t, Delta^(1, dots, 1)_((k)) = y, treat(j) = 1, forall j < k} \
+            &= sum_k bb(1) {T_((k))^(1, dots,1) <= t, Delta^(1, dots, 1)_((k)) = y} bb(1) {tau^(g^*) > t} \
+            &= tilde(Y)_t bb(1) {tau^(g^*) > t},
+    $
+    as desired.
+] 
+
+== Comparison with Coarsening at Random (CAR) conditions of @onrobinsformula
+Maybe they are the same.
+Let us define the process by $Z (t) = (N^y (t), N^ell (t), L(t), N^a (t), A(t))$.
+Consider also its potential outcome process $tilde(Z) = (tilde(N)^y, tilde(N)^ell, tilde(L), tilde(N)^a, 1)$.
+These are both multivariate cadlag processes.
+Critically, we take $cal(F)_t = sigma(Z (s), s <= t)$
+-- the natural filtration of the observed data process
+and $cal(H)_t = cal(F)_t or sigma(tilde(Z) (dot))$.
+For simplicity, we consider only the static intervention $g^* (history(k-1), event(k)) = 1$ for all $k$.
+
+@onrobinsformula introduces a Coarsening at Random (CAR) condition
+which in our setting can be stated as follows
+$
+    p_(tau^(g^*)) (t | tilde(Z) = tilde(z) ) = h (t, tilde(z)_(dot and t))
+$ <eq:car>
+for some measurable function $h: [0, T] times D_[0, T] (RR^d) -> [0, 1]$,
+where $D_[0, T] (RR^d)$ denotes the space of càdlàg functions from $[0, T]$ to $RR^d$.
+The conditional distributions exist since the sample space is Polish.
+It is assumed in @onrobinsformula that
+$
+    P(tau^(g^*) in dif t | tilde(Z) = tilde(z)) = p_(tau^(g^*)) (t | tilde(Z) = tilde(z)) mu (dif t),
+$ <eq:car2>
+for some sigma-finite measure $mu$ on $[0, T]$
+that does not depend on $tilde(z)$.
+Note that 
+$
+    P(tau^(g^*) <= t | tilde(Z) = tilde(z)) = sum_k P(event(k) <= t, status(k) = a, treat(k) = 0, treat(k-1) = dots = treat(0) = 1 | tilde(Z) = tilde(z))
+$
+as a consequence, we have
+$
+    P(tau^(g^*) in dif t | tilde(Z) = tilde(z)) &= sum_k P(event(k) in dif t, status(k) = a, treat(k) = 0, treat(k-1) = dots = treat(0) = 1 | tilde(Z) = tilde(z)) \
+        &= sum_k P(treat(k) = 0 | event(k) = t, status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
+        &quad times P(event(k) in dif t, status(k) = a | treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
+        &= sum_k P(treat(k) = 0 | event(k) = t, status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
+        &quad times bb(1) (t_k in dif t, delta_k = a). 
+$ <eq:carseq>
+This is because given everything else $event(k) in dif t, status(k) = a$ is a measurable function of $tilde(Z)$
+if deviation has not occured yet. 
+However, due to @eq:carseq, we see that we do, in fact, not
+have @eq:car2 (formal argument missing) if the $t_k$'s do not have a discrete distribution. 
+One may try to relax @eq:car to the Markov kernel 
+$
+    P(tau^(g^*) in dif t | tilde(Z) = tilde(z)) = k_(tilde(z)) (dif t) = k_z^* (dif t)
+$
+depends on $tilde(z)$ only through $z$.
+// What this means is that there is a Markov kernel $k^*$ such that
+// $
+//     P(tau^(g^*) in dif t | tilde(Z) = tilde(z)) = k^*_(z_(dot and tau^(g^*))) (dif t).
+// $
+However, is not clear what the gain of such a condition we are no longer guaranteed a result like Theorem 2.1
+of @onrobinsformula.
+What @eq:carseq suggests is that we work with the following sequential condition:
+$
+    tilde(Z) perp treat(k) | event(k), status(k) = a, cal(F)_(event(k-1))^(a=1),
+$ <eq:sequentialcar>
+where $cal(F)_t^(a=1) = sigma((N^y (s), N^ell (s), L(s), N^a (s), 1), s <= t)$.
+
+From now on, we work with this sequential condition @eq:sequentialcar
+instead of @eq:car.
+
+#theorem[
+    We have that @eq:sequentialcar if and only if $bb(1) {t <= tau^(g^*) } pi_t (1)$,
+    the Radon-Nikodym derivative $pi_t (1)$ of $Lambda^(a, 1)$ with respect to $Lambda^(a)$
+    with respect to the filtration $cal(H)_t$ is $cal(F)_t$-adapted.
+]
+#proof[
+    This Radon-Nikodym derivative has a version given by 
+    $
+        pi_(t) (1) = sum_k bb(1) {event(k-1) < t <= event(k)} P(treat(k) = 1 | history(k-1),  status(k) = a, event(k) = t, tilde(Z)).
+    $
+    This follows by Theorem 4.1.11 of @last1995marked. Therefore, in general,
+    $
+        &bb(1) {t <= tau^(g^*) } pi_t (1) \
+            &= sum_k bb(1) {event(k-1) < t <= event(k)} bb(1) {t <= tau^(g^*)} P(treat(k) = 1 | history(k-1),  status(k) = a, event(k) = t, tilde(Z)) \
+            &= sum_k bb(1) {event(k-1) < t <= event(k)} bb(1) {t <= tau^(g^*)} P(treat(k) = 1 | event(k) = t, status(k) = a, cal(F)_(event(k-1))^(a=1), tilde(Z)).
+    $
+    From this, we see that the if-part follows immediately.
+    For the only if part, we see that
+    $
+        &bb(1) {event(k-1) < t} bb(1) {t <= tau^(g^*) and event(k)} pi_t (1) \
+        &bb(1) {event(k-1) < t <= event(k)} bb(1) {t <= tau^(g^*) } pi_t (1) \
+            &= bb(1) {t <= tau^(g^*) } bb(1) {event(k-1) < t <= event(k)} P(treat(k) = 1 | event(k) = t, status(k) = a, cal(F)_(event(k-1))^(a=1), tilde(Z))
+    $
+    Using that $bb(1) {t <= tau^(g^*) } pi_t (1)$ is $cal(F)_t$-measurable
+    and hence $bb(1) {t <= tau^(g^*) and event(k)} pi_t (1)$ is $cal(F)_(event(k))$-measurable,
+    we have by definition of stopping time $sigma$-algebra that $bb(1) {event(k-1) < t} bb(1) {t <= tau^(g^*) and event(k)} pi_t (1)$
+    is $history(k-1)$-measurable.
+    We conclude that, too, $P(treat(k) = 1 | event(k) = t, status(k) = a, cal(F)_(event(k-1))^(a=1), tilde(Z))$ must be $history(k-1)$-measurable
+    for all $t$ with $event(k-1) < t <= event(k)$ and $t <= tau^(g^*)$.
+    This is all in the support (?).
+]
+
+Note that if one exchangeability in terms of @thm:identifiabilitymartingale holds,
+then both identification formulas are the same i.e.,
+$
+    mean(P) [tilde(Y)_t] = mean(P) [W_t Y_t] = mean(P) [tilde(W)_t Y_t],
+$
+
+#theorem[
+    Consider the static intervention with $g^* (history(k-1), event(k)) = 1$ for all $k$.
+    and $cal(A) = {0, 1}$.
+    Suppose consistency for $tilde(Y)_t$ as in @thm:identifiabilitymartingale.
+    Let $pi^cal(H)_t (1)$, $pi^cal(F)_t (1)$
+    denote the Radon-Nikodym derivatives of $Lambda^(a, 1)$
+    with respect to $Lambda^(a)$
+    in the filtrations $cal(H)_t$ and $cal(F)_t$, respectively.
+    Similarly, let $Lambda^(a, cal(H))$, $Lambda^(a, cal(F))$
+    denote the compensators of $N^a$ in the filtrations $cal(H)_t$
+    and $cal(F)_t$, respectively.
+    Suppose that a version of $pi_s^cal(F))$ exists such that
+    $
+        pi_s^cal(F) (1, omega) < 1
+    $ <eq:nonperfectcompliance>
+    for all $s in [0, T]$ and $omega in Omega^*$ with $P(Omega^*) = 1$.
+    Also, suppose that strong consistency holds for $tilde(N)_t^a$, i.e.,
+    $
+        tilde(N)_dot^a bb(1) {tau^(g^*) >= dot} = N_dot^a bb(1) {tau^(g^*) >= dot} quad P-"a.s."
+    $
+    Let $cal(H)_t$ denote the initial expansion of
+    $cal(F)_t$ with $sigma(tilde(N)_dot^a, tilde(Y)_dot)$.
+    If the compensator of $bb(N)^a$ in the filtration $cal(H)_t$ is 
+    $cal(F)_t$-predictable, then $N^a (dot and tau^(g^*))$
+    is $cal(F)_t$-predictable.
+]
+#proof[
+
+// Then, we have that
+// $
+//     mean(P) [tilde(Y)_t] = mean(P) [W_t Y_t]
+// $
+// by @thm:identifiabilitymartingale if $W_dot$ is a uniformly integrable martingale.
+
+// However, note that
+// $
+//     bb(L)_t^a &= integral_0^t  (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Lambda^(a) (dif s) \
+//         &= integral_0^t  (1-pi_s (1)) bb(1) {s <= tau^(g^*)} N^(a) (dif s).
+// $ <eq_bbL>
+// is a $cal(H)_t$-compensator of $bb(N)^a$.
+// Here, we use that the compensator of $bb(1) {bb(N)_(s-)^a = 0} N^a (dif s)$
+// is $bb(1) {bb(N)_(s-)^a = 0} N^a (dif s)$ itself in the filtration $cal(H)_t$.
+// If $tilde(W)_t = cal(E) (-bb(K)^a)_t$ is such that it is a $P$-$cal(H)_t$-martingale (integrability conditions),
+// then it will be a $P$-$cal(F)_t$-martingale as well,
+// where $bb(K)^a_t = integral_0^t 1/(1 - Delta bb(L)_s^a) dif bb(M)_s^a$,
+// by the stated argument since the compensator of $bb(N)^a$ in $cal(H)_t$
+// is also $cal(F)_t$-adapted.
+// Nonetheless, @eq_bbL in itself almost never be $cal(F)_t$-predictable,
+// leading to possible issues -- also about the existence of such a $bb(L)^a$
+// if treatment compensator is continuous in $cal(F)_t$, then it will almost never be able to the above?
+// Conclude that if this is the case, then exchangeability in Påls setting can never hold.
+
+Note that, under the stated conditions
+$
+        integral_0^dot bb(1) {s <= tau^(g^*)} N^(a) (dif s)
+$
+is a $cal(H)_t$-predictable process.
+Therefore, it is its own compensator in $cal(H)_t$.
+Now note that
+$
+    bb(L)^cal(H)_dot &= integral_0^dot  (1-pi^(cal(H))_s (1)) bb(1) {s <= tau^(g^*)} Lambda^(a, cal(H)) (dif s) \
+        &= integral_0^dot  (1-pi^(cal(H))_s (1)) bb(1) {s <= tau^(g^*)} N^(a) (dif s).
+$
+On the other hand,
+$
+    bb(L)_dot^cal(F) &= integral_0^dot  (1-pi^(cal(F))_s (1)) bb(1) {s <= tau^(g^*)} Lambda^(a, cal(F)) (dif s) 
+$
+Conclude that if $bb(L)^cal(H)$ is indistinguishable from $bb(L)^cal(F)$,
+then
+$
+    (1-pi^(cal(H))_dot (1)) bb(1) {dot <= tau^(g^*)} Delta N^a (dot) = (1-pi^(cal(F))_dot (1)) bb(1) {dot <= tau^(g^*)} Delta Lambda^(a,cal(F)) (dot).
+$
+Therefore,
+$
+    bb(L)^cal(H)_dot = integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} N^(a) (dif s) \
+$
+on a set up to $P$-indistinguishability.
+If this were $cal(F)_t$-predictable, then
+$
+    bb(L)^cal(H)_dot &= integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} N^(a) (dif s) \
+        &= integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} M^(a, cal(F)) (dif s) + integral_0^t  (1-pi^(cal(F))_s (1)) Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} Lambda^(a, cal(F)) (dif s) 
+$
+Conclude that since
+$integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} M^(a, cal(F)) (dif s)$
+is a difference of two non-decreasing processes, and hence of finite variation,
+a local martingale,
+by p. 115 of @protter2005stochastic that 
+$
+    integral_0^dot (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} N^(a) (dif s) = integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} Lambda^(a, cal(F)) (dif s).
+$
+Then, we have that $bb(1) {dot <= tau^(g^*)} Delta Lambda^(a,cal(F)) (T^a_(k)) = -1$ by @eq:nonperfectcompliance
+for all jump times $T_(k)^a$ of $N^a$.
+However, we also have that
+$
+    bb(1) {s <= tau^(g^*)} Delta Lambda^(a,cal(F)) (s) = 0
+$
+whenever $s$ is not a jump time of $N^a$ by @eq:nonperfectcompliance.
+This shows the statement for the discrete part of the compensator.
+For the continuous part, we are now able to conclude from these two parts that
+$
+    integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} lambda^(a, cal(F)) (s) dif s = 0
+$
+from which we conclude that
+$
+        bb(1) {s <= tau^(g^*)} lambda^(a, cal(F)) (s) = 0
+$
+for almost all $s$ with respect to the Lebesgue measure
+    and almost all $omega in Omega^(**)$ with $P(Omega^(**)) = 1$.
+However, these two restrictions exactly mean that $bb(1) {s <= tau^(g^*)} N^a (dif s)$
+is a $cal(F)_t$-predictable process.
+]
+
+This is because
+$
+    bb(L)_t^a = integral_0^t  (1-pi_s (1)) bb(1) {s <= tau^(g^*)} M^(a) (dif s) + integral_0^t  (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Lambda^(a) (dif s).
+$
+which implies under regularity conditions that $bb(1) {s <= tau^(g^*)} N^a (dif s)$
+is a predictable process in $cal(F)_t$.
+Now, we calculate
+$
+    bb(K)_t^a &= -integral_0^t 1/(1 - Delta bb(L)_s^a) dif bb(M)_s^a \
+        &= -integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) dif bb(M)_s^a \
+        &= -integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) dif bb(N)_s^a \
+        &+ integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) dif bb(L)_s^a \
+        &=- integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) dif bb(N)_s^a \
+        &+ integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) (1-pi_s (1)) bb(1) {s <= tau^(g^*)} N^(a) (dif s) \
+        &=- integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) dif bb(N)_s^a \
+        &+ integral_0^t 1/(pi_s (1)) (1-pi_s (1)) bb(1) {s <= tau^(g^*)} N^(a) (dif s) \
+        &= K_t^*
+$
+
+On the other hand, the same argument shows that if the other exchangeability condition holds
+then $pi_s (1) bb(1) {s <= tau^(g^*)}$ can be chosen $cal(F)_t$-adapted,
+since we can pick
+$
+    pi_s (1) = sum_k bb(1) {event(k-1) < s <= event(k)} (1- Delta bb(L)_(event(k-1))^a) //(0 bb(1) {status(k-1) = a, event(k-1) > tau^(g^*)} + (1- Delta bb(L)_(event(k-1))^a) bb(1) {status(k-1) = a, event(k-1) <= tau^(g^*)}).
+$
+By construction, $pi_s (1)$ is the desired Radon-Nikodym derivative with respect to $cal(H)_t$.
+Moreover, it is $cal(F)_t$-adapted since $Delta bb(L)_(event(k-1))^a$ is $cal(F)_(event(k-1))$-measurable.x
+Therefore, again, the weight $W(t)$ is a $P$-$cal(H)_t$-martingale as well
+and $cal(F)_t$-adapted under integrability conditions.
+Therefore, we have that
+$
+    mean(P) [tilde(Y)_t] = mean(P) [W_t Y_t]
+$
+also. Now calculate
+$
+    K_t^* &= integral_0^t bb(1) {s <= tau^(g^*)} (1/(pi_s (1)) - 1) N^(a,1) (dif s) + integral_0^t bb(1) {s <= tau^(g^*)} ( - 1) N^(a,0) (dif s) \
+        &= integral_0^t bb(1) {s <= tau^(g^*)} sum_k bb(1) {event(k-1) < s <= event(k)} (1/(pi_s (1)) - 1) N^(a,1) (dif s) + integral_0^t bb(1) {s <= tau^(g^*)} ( - 1) N^(a,0) (dif s) \
+        &= sum_k integral_(event(k-1) and t)^(event(k) and t) bb(1) {s <= tau^(g^*)} (1/(1-Delta bb(L)_(event(k-1))^a ) - 1) N^(a,1) (dif s) + integral_0^t bb(1) {s <= tau^(g^*)} ( - 1) N^(a,0) (dif s) \
+        &=  sum_k integral_(event(k-1) and t)^(event(k) and t) bb(1) {s <= tau^(g^*)} (Delta bb(L)_(event(k-1))^a)/(1-Delta bb(L)_(event(k-1))^a ) N^(a,1) (dif s) + integral_0^t bb(1) {s <= tau^(g^*)} ( - 1) N^(a,0) (dif s) \
+        &= bb(K)_t^a.
+$
+
+// #theorem[
+// CAR holds if and only if for each $k in bb(N)$
+//     $
+//         tilde(Z) perp treat(k) | event(k), status(k) = a, cal(F)_(event(k-1))^(a=1),
+//     $
+//     where $cal(F)_t^(a=1) = sigma((N^y (s), N^ell (s), L(s), N^a (s), 1), s <= t)$.
+// ]
+// Note that 
+// $
+//     P(tau^(g^*) <= t | tilde(Z) = tilde(z)) = sum_k P(event(k) <= t, status(k) = a, treat(k) = 0, treat(k-1) = dots = treat(0) = 1 | tilde(Z) = tilde(z))
+// $
+// as a consequence, we have
+// $
+//     P(tau^(g^*) in dif t | tilde(Z) = tilde(z)) &= sum_k P(event(k) in dif t, status(k) = a, treat(k) = 0, treat(k-1) = dots = treat(0) = 1 | tilde(Z) = tilde(z)) \
+//         &= sum_k P(treat(k) = 0 | event(k) = t, status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
+//         &quad times P(event(k) in dif t, status(k) = a | treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
+//         &= sum_k P(treat(k) = 0 | event(k) = t, status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
+//         &quad times bb(1) (t_k in dif t, delta_k = a). 
+// $ <eq:carseq>
+// This is because given everything else $event(k) in dif t, status(k) = a$ is a measurable function of $tilde(Z)$
+// if deviation has not occured yet. 
+// Since, under the assumption, we have that,
+// $
+//     &P(treat(k) = 0 | event(k) = t, status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
+//         &= P(treat(k) = 0 | event(k) = t, status(k) = a, cal(F)_(event(k-1))^(a=1) = f_(t_(k-1))^(a=1)) \
+// $
+// then CAR holds using consistency.
+
+// Conversely assume that CAR holds.
+// From @eq:carseq, we have that
+// $
+//     &bb(1) {t_(k-1) < t <= t_k} P(tau^(g^*) in dif t | tilde(Z) = tilde(z)) \
+//         &= P(treat(k) = 0 | event(k) = t, status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
+//         &times bb(1) {t_(k-1) < t <= t_k} bb(1) {t_k in dif t, delta_k = a}.
+// $
+// , where $cal(F)_(event(k-1))^(- "a")$ is the stopping time $sigma$-algebra
+// for the natural filtration without the treatment process $A(t)$.
+// For this one, it suffices
+// that
+// $
+//     treat(k) perp tilde(Z) | event(k), status(k) = a, treat(k-1) = dots = treat(0) = 1, cal(F)_(event(k-1))^("a" = 1)
+// $
+// for each $k$, which is what we were working with $tilde(Y)$ instead of $tilde(Z)$.
+// However, the only thing I needed to use was that $bb(1) {event(k) <= t, status(k) = a}$ is a measurable function of $tilde(Z)$
+// of $treat(k-1) = dots = treat(0) = 1$.
+// Maybe these two are equivalent?
+
+
+
+
+// For given laws of $N$ with a perfect compliance at baseline,
+
+// Consider the simple mark point process $(event(2), treat(1), status(1), event(1), covariate(0))$.
+// We show that there exist settings in which CAR does not hold,
+// but the exchangeability condition of @thm:identifiabilitymartingale does hold.
+// We may generate a potential outcome process $tilde(N)$
+// as in the proof of @thm:existencecounterfactuals
+// with baseline covariate $covariate(0)$. We show that our exchangeability condition holds for the filtration
+// that does not include $covariate(0)$, but CAR does not hold.
+// We choose $P(treat(1) = 1 | event(1), status(1) = a, treat(0) = 0, covariate(0) = 0) = 1/2$
+// which by our construction will also mean that $P(treat(1) = 1 | event(1), status(1) = a, treat(0) = 0, covariate(0) = 1, tilde(N) = tilde(n)) = 1/2$.
+// Need to also construct it such that
+// $
+//     &g^0 (t) = P (event(1) <= t, status(1) = a | tilde(T)_2 = t_2, covariate(0) = 0) = P (event(1) <= t, status(1) = a | tilde(N) = tilde(n), covariate(0) = 0) \
+//         &!= P (event(1) <= t, status(1) = a | tilde(N) = tilde(n), covariate(0) = 1) = P (event(1) <= t, status(1) = a | tilde(T)_2 = t_2, covariate(0) = 1) = g^1 (t)
+// $
+// for example if the distribution of $event(2)$ depends only on $covariate(0), status(k) = a$ and only on $event(1)$ through the relation $event(2) > event(1)$,
+// this will hold I think. Explicitly find this distribution with Bayes formula probably.
+// Then,
+// $
+//     P (tau^(g^*) <= t | tilde(N) = tilde(n) ) &= P (event(1) <= t, status(1) = a, treat(1) = 0 | tilde(N) = tilde(n) ) \
+//         &= mean(P) [P (event(1) <= t, status(1) = a, treat(1) = 0 | tilde(N) = tilde(n), covariate(0))| tilde(N) = tilde(n)] \
+//         &= mean(P) [P(treat(1) = 0 | event(1) <= t, status(1) = a, tilde(N) = tilde(n), covariate(0)) \
+//             &times P (event(1) <= t, status(1) = a | tilde(N) = tilde(n), covariate(0)) | tilde(N) = tilde(n)] \
+//         &= mean(P) [1/2 P (event(1) <= t, status(1) = a | tilde(N) = tilde(n), covariate(0)) | tilde(N) = tilde(n)] \
+//         &= 1/2 P (event(1) <= t, status(1) = a | tilde(N) = tilde(n), covariate(0) = 0) P(covariate(0) = 0 | tilde(N) = tilde(n)) \
+//         &+ 1/2 P (event(1) <= t, status(1) = a | tilde(N) = tilde(n), covariate(0) = 1) (1-P(covariate(0) = 0 | tilde(N) = tilde(n))) \
+    
+// $
+// This shows the desired statement ... just need to come up with some distributions. 
+// In the next example construct it such that
+// $
+//     P (event(1) <= t, status(1) = a, treat(1) = 0 | tilde(N) = tilde(n)) = h (t)
+// $
+// while
+// $
+//     P (event(1) <= t, status(1) = a, treat(1) = 1 | tilde(N) = tilde(n), covariate(0)) != h (t)
+// $
+
+== Comparison between @ryalenPotentialOutcomes and @rytgaardContinuoustimeTargetedMinimum2022
 
 Consider a simple example where $N^a (t) <= 1$ for all $t$,
 and consists of the multivariate counting process $N = (N^y, N^(a,a_0), N^(a,a_1))$.
@@ -441,8 +872,43 @@ $
             &+ bb(1) {status(1) = a, treat(1) = 1, event(2) <= t, status(2) = y}]\
         &= integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) lambda_s^y dif s \
         &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) lambda_s^(a) \
-        &quad times integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \ 
+        &quad times integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
+        &= integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) lambda_s^y dif s \
+        &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) lambda_s^(a) \
+        &quad times (1-exp(- integral_s^t lambda_u^y dif u)) dif s \
+        &= 1- exp(- integral_0^t (lambda_u^y + lambda_u^(a)) dif u) - integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) lambda_s^a dif s \
+        &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) lambda_s^(a) \
+        &quad times (1-exp(- integral_s^t lambda_u^y dif u)) dif s \
+        &= 1- exp(- integral_0^t (lambda_u^y + lambda_u^(a)) dif u) \
+        &- integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) lambda_s^(a) exp(- integral_s^t lambda_u^y dif u) dif s \
+        &=^(!) 1- exp(- integral_0^t (lambda_u^y + lambda_u^(a)) dif u) \
+        &- exp(-integral_0^t lambda_u^y dif u) integral_0^t exp(- integral_0^s (lambda_u^(a)) dif u) lambda_s^(a) dif s \
+        &= 1- exp(- integral_0^t (lambda_u^y + lambda_u^(a)) dif u) \
+        &- exp(-integral_0^t lambda_u^y dif u) (1-exp(- integral_0^t (lambda_u^(a)) dif u)) \
+        &= 1 - exp(- integral_0^t lambda_u^y dif u)
 $
+In (!) use that $lambda^y (u)$ does not depend on $s$ at all (jump time $a$).
+With constant intensities and constant treatment probabilities, this reduces to
+$
+    mean(Q) [Y_t] &= integral_0^t exp(- (lambda^y + lambda^(a)) s) lambda^y dif s \
+        &+ integral_0^t exp(- (lambda^y + lambda^(a)) s) lambda^(a) \
+        &quad times (1-exp(- lambda^y (t-s))) dif s \
+        &= (lambda^y /(lambda^y + lambda^(a))) (1-exp(- (lambda^y + lambda^(a)) t)) \
+        &+ (lambda^(a)/(lambda^y + lambda^(a))) (1-exp(- (lambda^y + lambda^(a)) t)) - lambda^(a) exp(- lambda^y t)/(lambda^a) (1-exp(- lambda^a t)) \
+        &= (1-exp(- (lambda^y + lambda^(a)) t)) - exp(- lambda^y t)(1-exp(- lambda^a t)) \
+        &= 1 - exp(- lambda^y t) 
+$
+Now consider "a going to the Tivoli example" in which
+the visit itself directly affects the probability of dying.
+$
+    mean(Q) [Y_t] &= integral_0^t exp(- (lambda^y + lambda^(a)) s) lambda^y dif s \
+        &+ integral_0^t exp(- (lambda^y + lambda^(a)) s) lambda^(a) \
+        &quad times (1-exp(- lambda^(y,2) (t-s))) dif s \
+        &= (lambda^y /(lambda^y + lambda^(a))) (1-exp(- (lambda^y + lambda^(a)) t)) \
+        &+ (lambda^(a)/(lambda^y + lambda^(a))) (1-exp(- (lambda^y + lambda^(a)) t)) - lambda^(a) exp(- lambda^(y,2) t)/(lambda^a+lambda^y+lambda^(y,2)) (1-exp(- (lambda^a + lambda^y+lambda^(y,2)) t)) \
+        &= 1-exp(- (lambda^y + lambda^(a)) t) - lambda^(a) exp(- lambda^(y,2) t)/(lambda^a+lambda^y-lambda^(y,2)) (1-exp(- (lambda^a + lambda^y-lambda^(y,2)) t))
+$
+
 However, in $tilde(Q)$ (Ryalen), we have
 $
     Lambda^y (dif t) (tilde(Q)) &= (lambda_t^y dif t-0)/(1-0), \
@@ -450,6 +916,7 @@ $
     Lambda^(a,a_1) (dif t) (tilde(Q)) &= (lambda_t^a dif t - (1-pi_(t and tau^(g^*))(a_1)) lambda^a_(t and tau^(g^*)) dif t)/(1-0) = pi_(t and tau^(g^*))(a_1) lambda^a_(t and tau^(g^*)) dif t = pi_(t)(a_1) lambda^a_(t) dif t.
 $
 since $tau^(g^*) = oo$ almost surely in $tilde(Q)$.
+With constant intensities, we get the same as above plugging in $pi lambda^a$ instead of $lambda^a$.
 Therefore,
 $
     mean(tilde(Q)) [Y_t] &= mean(tilde(Q)) [N^y (t)] \
@@ -457,27 +924,162 @@ $
             &+ bb(1) {status(1) = a, treat(1) = 1, event(2) <= t, status(2) = y}]\
         &= integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a)) dif u) lambda_s^y dif s \
         &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a)) dif u) pi_s (a_1) lambda_s^(a) \
-        &quad times integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \ 
+        &quad times integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
+        &= integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a)) dif u) lambda_s^y dif s \
+        &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a)) dif u) pi_s (a_1) lambda_s^(a) \
+        &quad times (1-exp(- integral_s^t lambda_u^y dif u))  dif s \ 
 $
-The difference can be written as
+We now consider a more natural example, where the difference is due to time-varying confounding.
+Påls functional can be written as
 $
-    mean(tilde(Q)) [Y_t] - mean(Q) [Y_t] &= integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a)) dif u) (1 - exp(- integral_0^s (pi_u (a_0) lambda_u^(a)) dif u)) lambda_s^y dif s \
-        &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a)) dif u) (1 - exp(- integral_0^s (pi_u (a_0) lambda_u^(a)) dif u)) (pi_s (a_1) lambda_s^(a) \
-            &quad times integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
-            &- integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) pi_s (a_0) lambda_s^(a)  integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
-            &=integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) (exp(integral_0^s (pi_u (a_0) lambda_u^(a)) dif u) - 1) lambda_s^y dif s \
-        &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) (exp(integral_0^s (pi_u (a_0) lambda_u^(a)) dif u)-1) (pi_s (a_1) lambda_s^(a) \
-            &quad times integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
-            &- integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) pi_s (a_0) lambda_s^(a)  integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
-            &=integral_0^t integral_0^s exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) (exp(integral_0^w (pi_u (a_0) lambda_u^(a) dif u)) pi_w (a_0) lambda_w^(a) dif w) lambda_s^y dif s \
-            &+ integral_0^t integral_0^s exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) (exp(integral_0^w (pi_u (a_0) lambda_u^(a) dif u)) pi_w (a_0) lambda_w^(a) dif w) (pi_s (a_1) lambda_s^(a) \
-            &quad times integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
-                &- integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) pi_s (a_0) lambda_s^(a)  integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
-                &=integral_0^t integral_w^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u)  lambda_s^y dif s exp(integral_0^w (pi_u (a_0) lambda_u^(a) dif u)) pi_w (a_0) lambda_w^(a) dif w \
-                &+ integral_0^t integral_w^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) integral_s^v exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v pi_s (a_1) lambda_s^(a) dif s \
-                &quad times (exp(integral_0^w (pi_u (a_0) lambda_u^(a) dif u)) pi_w (a_0) lambda_w^(a) )  dif w\
-            &- integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) pi_s (a_0) lambda_s^(a)  integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s 
+    &integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) lambda_s^y dif s \
+        &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
+        &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) (lambda_v^y + lambda^ell_v integral_v^t exp(- integral_v^w lambda_u^y (ell_2; v) dif u) lambda^y_w (ell_2; v) dif w) dif v dif s \
+        &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell \
+        &quad times integral_s^t exp(- integral_s^v (lambda_u^y (ell_1; s) + pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))  dif u) \
+        &quad times (lambda_v^y (ell_1 ; s) + pi_v (a_1) (ell_1 ; s) lambda_v^(a) (ell_1 ; s) integral_v^t exp(- integral_v^w lambda_u^y (ell_1 ; s) dif u) lambda^y_w (ell_1; s) dif w) dif v dif s \
+        &=integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) lambda_s^y dif s \
+        &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
+        &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) (lambda_v^y + lambda^ell_v (1- exp(- integral_v^t lambda_u^y (ell_2; v) dif u))) dif v dif s \
+        &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell \
+        &quad times integral_s^t exp(- integral_s^v (lambda_u^y (ell_1; s) + pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))  dif u) \
+        &quad times (lambda_v^y (ell_1 ; s) + pi_v (a_1) (ell_1 ; s) lambda_v^(a) (ell_1 ; s) (1-exp(- integral_v^t lambda_u^y (ell_1 ; s) dif u)) dif v dif s \
 $
+Can we conclude this result does not depend on $pi_t (a_1)$?
+Now, note that
+$
+    &integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) lambda_s^y dif s \
+        &=[- exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u)]_0^t - integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) (pi_s (a_1) lambda_s^(a) + lambda_s^ell) dif s \
+        &= 1 - exp(- integral_0^t (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) - integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) (pi_s (a_1) lambda_s^(a) + lambda_s^ell) dif s \    
+$
+Conclude that the previous is equal to
+$
+    &1 - exp(- integral_0^t (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) \
+        &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) exp(- integral_s^t (lambda_u^y + lambda_u^ell) dif u) dif s \
+        &-integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell exp(- integral_s^t (lambda_u^y (ell_1; s) + pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))) dif s \
+    &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
+        &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) lambda^ell_v exp(- integral_v^t lambda_u^y (ell_2; v) dif u) dif v dif s \
+        &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell \
+        &quad times integral_s^t exp(- integral_s^v (lambda_u^y (ell_1; s) + pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))  dif u) \
+        &quad times pi_v (a_1) (ell_1 ; s) lambda_v^(a) (ell_1 ; s) exp(- integral_v^t lambda_u^y (ell_1 ; s) dif u) dif v dif s \
+    &=1 - exp(- integral_0^t (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) \
+        &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) exp(- integral_s^t (lambda_u^y + lambda_u^ell) dif u) dif s \
+        &-integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell exp(- integral_s^t (lambda_u^y (ell_1; s) + pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))) dif s \
+    &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
+        &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) lambda^ell_v exp(- integral_v^t lambda_u^y (ell_2; v) dif u) dif v dif s \
+        &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell \
+        &quad times exp(-integral_s^t lambda_u^y (ell_1; s) dif u) (1-exp(- integral_s^t (pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))  dif u)) dif s \
+$
+$
+        &1 - exp(- integral_0^t (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) \
+        &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) exp(- integral_s^t (lambda_u^y + lambda_u^ell) dif u) dif s \
+    &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
+        &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) lambda^ell_v exp(- integral_v^t lambda_u^y (ell_2; v) dif u) dif v dif s \
+            &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell exp(-integral_s^t lambda_u^y (ell_1; s) dif u) dif s \
+    &=1 - exp(- integral_0^t (lambda_u^y  + lambda_u^ell ) dif u) \
+    &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
+        &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) lambda^ell_v exp(- integral_v^t lambda_u^y (ell_2; v) dif u) dif v dif s \
+        &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell exp(-integral_s^t lambda_u^y (ell_1; s) dif u) dif s 
+$
+Partiel integration.
+Let there be constant intensities,
+i.e.,
+$
+    lambda_u^y = lambda^(y), \
+    lambda_u^y (ell_i; s) = lambda^(y,*) (ell), \
+    pi_u (a_1) = pi, \
+    lambda_u (a_1) = lambda^(a), \
+    lambda_u^ell = lambda^(ell).
+$
+This simplifies further to:
+$
+    &1 - exp(- (lambda^(y) + lambda^(ell)) t) \
+        &- integral_0^t exp(- (lambda^(y) + pi lambda^(a) + lambda^(ell)) s) pi lambda^(a) \
+        &quad times integral_s^t exp(- (lambda^(y) + lambda^(ell)) (v-s)) lambda^(ell) exp(- lambda^(y,*) (ell) (t-v)) dif v dif s \
+        &- integral_0^t exp(- (lambda^(y) + pi lambda^(a) + lambda^(ell)) s) lambda^(ell) exp(- lambda^(y,*) (ell) (t-s)) dif s \
+        &=1 - exp(- (lambda^(y) + lambda^(ell)) t) \
+        &- integral_0^t exp(- (lambda^(y) + pi lambda^(a) + lambda^(ell)) s) pi lambda^(a) \
+        &quad times exp((lambda^y+ lambda^ell) s) exp(- lambda^(y,*) (ell) (t))  lambda^(ell) integral_s^t exp(- (lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) v)  dif v dif s \
+        &- exp(- lambda^(y,*) (ell) t) lambda^(ell) (1- 1/((lambda^(y) - lambda^(y,*) + pi lambda^(a) + lambda^ell)) exp (-(lambda^(y) - lambda^(y,*) + pi lambda^(a) + lambda^ell))) \
+            &=1 - exp(- (lambda^(y) + lambda^(ell)) t) \
+        &- integral_0^t exp(- (lambda^(y) + pi lambda^(a) + lambda^(ell)) s) pi lambda^(a) \
+        &quad times exp((lambda^y+ lambda^ell) s) exp(- lambda^(y,*) (ell) (t))  lambda^(ell) 1/(lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) (exp(- (lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) s) - exp(- (lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) t))  dif s \
+        &- exp(- lambda^(y,*) (ell) t) lambda^(ell) 1/((lambda^(y) - lambda^(y,*) + pi lambda^(a) + lambda^ell)) (1- exp (-(lambda^(y) - lambda^(y,*) + pi lambda^(a) + lambda^ell))) \
+    
+
+$
+Note that
+$
+    &integral_0^t exp(- (lambda^(y) + pi lambda^(a) + lambda^(ell)) s) pi lambda^(a) \
+        &quad times exp((lambda^y+ lambda^ell) s) exp(- lambda^(y,*) (ell) (t))  lambda^(ell) 1/(lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) (exp(- (lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) s) - exp(- (lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) t))  dif s \
+        &=exp(- lambda^(y,*) (ell) (t)) lambda^(ell) 1/(lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) integral_0^t exp(- pi lambda^(a) s) pi lambda^(a) \
+        &quad times   (exp(- (lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) s) - exp(- (lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) t))  dif s \
+        &=pi lambda^(a) exp(- lambda^(y,*) (ell) (t)) lambda^(ell) 1/(lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) integral_0^t exp(- (lambda^(y) - lambda^(y,*) (ell) + pi lambda^a + lambda^(ell)) s)  \
+        &- pi lambda^(a) exp(- (lambda^(y) + lambda^ell) (t)) lambda^(ell) 1/(lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) integral_0^t exp(-  pi lambda^a s)  \
+        &= pi lambda^(a) exp(- lambda^(y,*) (ell) (t)) lambda^(ell) 1/(lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) 1/((lambda^(y) - lambda^(y,*) (ell) + pi lambda^a + lambda^(ell))) (1- exp(- (lambda^(y) - lambda^(y,*) (ell) + pi lambda^a + lambda^(ell)) t) \
+            &- pi lambda^(a) exp(- (lambda^(y) + lambda^ell) (t)) lambda^(ell) 1/(lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) 1/(pi lambda^a) (1- exp(-  pi lambda^a t)) \
+
+$
+Collecting the terms
+$
+    &1 - exp(- (lambda^(y) + lambda^(ell)) t) \
+        &- integral_0^t exp(- (lambda^(y) + pi lambda^(a) + lambda^(ell)) s) pi lambda^(a) \
+        &quad times integral_s^t exp(- (lambda^(y) + lambda^(ell)) (v-s)) lambda^(ell) exp(- lambda^(y,*) (ell) (t-v)) dif v dif s \
+        &- integral_0^t exp(- (lambda^(y) + pi lambda^(a) + lambda^(ell)) s) lambda^(ell) exp(- lambda^(y,*) (ell) (t-s)) dif s \
+        &=1 - exp(- (lambda^(y) + lambda^(ell)) t) \
+        & quad - pi lambda^(a) exp(- lambda^(y,*) (ell) (t)) lambda^(ell) 1/(lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) 1/((lambda^(y) - lambda^(y,*) (ell) + pi lambda^a + lambda^(ell))) (1- exp(- (lambda^(y) - lambda^(y,*) (ell) + pi lambda^a + lambda^(ell)) t) \
+            &+ exp(- (lambda^(y) + lambda^ell) (t)) lambda^(ell) 1/(lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) (1- exp(-  pi lambda^a t)) \
+            &- exp(- lambda^(y,*) (ell) t) lambda^(ell) 1/((lambda^(y) - lambda^(y,*) + pi lambda^(a) + lambda^ell)) (1- exp (-(lambda^(y) - lambda^(y,*) + pi lambda^(a) + lambda^ell))) \
+            &=1 - exp(- (lambda^(y) + lambda^(ell)) t) (1 - lambda^(ell) 1/(lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) ) \
+            &- exp(- (lambda^(y) + pi lambda^a + lambda^ell) (t)) lambda^(ell) (1/(lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) - 1/((lambda^(y) - lambda^(y,*) + pi lambda^(a) + lambda^ell)) \
+                &quad - pi lambda^(a) 1/(lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) 1/((lambda^(y) - lambda^(y,*) (ell) + pi lambda^a + lambda^(ell)))) \
+            &- exp(- lambda^(y,*) (ell) t) lambda^(ell) 1/((lambda^(y) - lambda^(y,*) + pi lambda^(a) + lambda^ell)) (1 + pi lambda^(a) 1/(lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) ) \
+            &=1 - exp(- (lambda^(y) + lambda^(ell)) t) (1 - lambda^(ell) 1/(lambda^(y) - lambda^(y,*) (ell) + lambda^(ell)) ) \
+            &- exp(- lambda^(y,*) (ell) t) lambda^(ell) 1/((lambda^(y) - lambda^(y,*) + lambda^ell)) 
+
+$
+which is constant in $pi$.
+If $lambda_u^y (ell_1; s) = lambda_u^y (ell_2; v) = lambda_u^y$, then this reduces to
+$
+       &1 - exp(- integral_0^t (lambda_u^y  + lambda_u^ell ) dif u) \
+           &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) (exp(- integral_s^t (lambda_u^y + lambda_u^ell) dif u) - exp(- integral_s^t (lambda_u^y) dif u)) dif s \
+           &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell exp(-integral_s^t lambda_u^y dif u) dif s \
+           &= 1 - exp(- integral_0^t (lambda_u^y  + lambda_u^ell ) dif u) \
+           &+ exp(- integral_0^t lambda_u^y dif u) integral_0^t exp(- integral_0^s (pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) (exp(- integral_s^t (lambda_u^ell) dif u) - 1) dif s \
+           &- exp(- integral_0^t lambda_u^y dif u) integral_0^t exp(- integral_0^s (pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell dif s \
+    &= 1 - exp(- integral_0^t (lambda_u^y  + lambda_u^ell ) dif u) \
+           &+ exp(- integral_0^t lambda_u^y dif u) exp(- integral_0^t lambda_u^ell dif u) integral_0^t exp(- integral_0^s (pi_u (a_1) lambda_u^(a)) dif u) pi_s (a_1) lambda_s^(a) dif s \
+           &- exp(- integral_0^t lambda_u^y dif u) integral_0^t exp(- integral_0^s (pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) (lambda_s^ell + pi_s (a_1) lambda_s^(a)) dif s \
+    &= 1 - exp(- integral_0^t (lambda_u^y  + lambda_u^ell ) dif u) \
+           &+ exp(- integral_0^t lambda_u^y dif u) exp(- integral_0^t lambda_u^ell dif u) (1-exp(- integral_0^t (pi_u (a_1) lambda_u^(a)) dif u)) \
+           &- exp(- integral_0^t lambda_u^y dif u) (1-exp(- integral_0^t (pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) \
+               &=     1 - exp(- integral_0^t (lambda_u^y  + lambda_u^ell ) dif u) \
+           &+ exp(- integral_0^t lambda_u^y dif u) exp(- integral_0^t lambda_u^ell dif u)  \
+           &- exp(- integral_0^t lambda_u^y dif u) \
+
+$
+// The difference can be written as
+// $
+//     mean(tilde(Q)) [Y_t] - mean(Q) [Y_t] &= integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a)) dif u) (1 - exp(- integral_0^s (pi_u (a_0) lambda_u^(a)) dif u)) lambda_s^y dif s \
+//         &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a)) dif u) (1 - exp(- integral_0^s (pi_u (a_0) lambda_u^(a)) dif u)) (pi_s (a_1) lambda_s^(a) \
+//             &quad times integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
+//             &- integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) lambda_s^(a)  integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
+//             &+integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a)) dif u) pi_s (a_1) exp(- integral_0^s (pi_u (a_0) lambda_u^(a)) dif u) lambda_s^(a)  integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
+//         //     &=integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) (exp(integral_0^s (pi_u (a_0) lambda_u^(a)) dif u) - 1) lambda_s^y dif s \
+//         // &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) (exp(integral_0^s (pi_u (a_0) lambda_u^(a)) dif u)-1) (pi_s (a_1) lambda_s^(a) \
+//         //     &quad times integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
+//         //     &- integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) pi_s (a_0) lambda_s^(a)  integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
+//         //     &=integral_0^t integral_0^s exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) (exp(integral_0^w (pi_u (a_0) lambda_u^(a) dif u)) pi_w (a_0) lambda_w^(a) dif w) lambda_s^y dif s \
+//         //     &+ integral_0^t integral_0^s exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) (exp(integral_0^w (pi_u (a_0) lambda_u^(a) dif u)) pi_w (a_0) lambda_w^(a) dif w) (pi_s (a_1) lambda_s^(a) \
+//         //     &quad times integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
+//         //         &- integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) pi_s (a_0) lambda_s^(a)  integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
+//         //         &=integral_0^t integral_w^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u)  lambda_s^y dif s exp(integral_0^w (pi_u (a_0) lambda_u^(a) dif u)) pi_w (a_0) lambda_w^(a) dif w \
+//         //         &+ integral_0^t integral_w^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) integral_s^v exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v pi_s (a_1) lambda_s^(a) dif s \
+//         //         &quad times (exp(integral_0^w (pi_u (a_0) lambda_u^(a) dif u)) pi_w (a_0) lambda_w^(a) )  dif w\
+//         //     &- integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) pi_s (a_0) lambda_s^(a)  integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s 
+// $
+If we could find an example where the above is non-zero, then we would by the construction
+in "existence of counterfactuals" have found an example where Påls exchangeability does not hold and mine does. 
 
 = More general exchangeability conditions
 
@@ -719,13 +1321,13 @@ but only through $h(s, a_1)$ which can be freely chosen.
     Let $K_t^* = K_(t and tau^(g^*))$.
     1. The score operator $S: cal(M)^2 (P) -> cal(M)^2 (Q)$ is given by 
     $
-        &Gamma mapsto Gamma - angle.l Gamma, K^* angle.r^P_(t) \
-            &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (dif angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r_t^P) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif angle.l M^(a, a_j), K^* angle.r_s^P).
+        &Gamma mapsto Gamma - chevron.l Gamma, K^* chevron.r^P_(t) \
+            &quad - integral_0^(t and tau^(g^*)) sum_(j=1)^K pi_s^* ({a_j}) (dif chevron.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  chevron.r_t^P) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif chevron.l M^(a, a_j), K^* chevron.r_s^P).
     $
     2. Let
     $D: cal(M)^2 (P) -> cal(M)^2 (Q)$ be the linear operator defined by
     $
-        Gamma mapsto Gamma - angle.l Gamma, K^* angle.r^P_(t).
+        Gamma mapsto Gamma - chevron.l Gamma, K^* chevron.r^P_(t).
     $
     Then its adjoint $D^*: cal(M)^2 (Q) -> cal(M)^2 (P)$ is given by
     $
@@ -733,15 +1335,15 @@ but only through $h(s, a_1)$ which can be freely chosen.
     $
     The adjoint of the score operator $S^*: cal(M)^2 (Q) -> cal(M)^2 (P)$ is given by
     $
-        Gamma' mapsto D^* Gamma' - integral_0^t bb(1) {tau^(g^*) <= s} sum_j sum_k m_(s,k,j)^* W_(s-) (dif angle.l M^(a, a_j), Gamma' angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s.
+        Gamma' mapsto D^* Gamma' - integral_0^t bb(1) {tau^(g^*) <= s} sum_j sum_k pi_s^* ({a_j}) W_(s-) (dif chevron.l M^(a, a_j), Gamma' chevron.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s.
     $
     or $("Id" - sum_j Y_j^*) (D^*)$ where $Y_j: cal(M)^2 (P) -> cal(M)^2 (P)$ is given by
     $
-        Y_j Gamma = integral_0^(dot and tau^(g^*)) sum_k m_(s,k,j)^* (dif angle.l Gamma, M^(a, a_j) angle.r_s^P - pi_s ({a_j}) (P) dif angle.l Gamma, M^(a) angle.r_s^P) / (dif Lambda^(a, a_j) (t) (P)) M^(a, a_j) (dif s)
+        Y_j Gamma = integral_0^(dot and tau^(g^*)) sum_k pi_s^* ({a_j}) (dif chevron.l Gamma, M^(a, a_j) chevron.r_s^P - pi_s ({a_j}) (P) dif chevron.l Gamma, M^(a) chevron.r_s^P) / (dif Lambda^(a, a_j) (t) (P)) M^(a, a_j) (dif s)
     $
     and its adjoint $Y_j^*: cal(M)^2 (P) -> cal(M)^2 (P)$ is given by
     $
-        Y_j^* Gamma = integral_0^t bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* (dif angle.l M^(a, a_j), Gamma' angle.r_s^P)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s
+        Y_j^* Gamma = integral_0^t bb(1) {tau^(g^*) <= s} sum_k pi_s^* ({a_j}) (dif chevron.l M^(a, a_j), Gamma' chevron.r_s^P)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s
     $
     3. $"ker"(S^*) = {0}$ if $pi_s ({a_j}) (P) > eta$ for all $s in [0, T]$ and $j$ for some $eta > 0$.
     4. $K^* in "ker"(S)$.
@@ -781,114 +1383,107 @@ $
 where $M^a = sum_(j=1)^K M^(a, a_j)$.
 Taking the derivative on both sides gives
 $
-    angle.l Gamma, M^(a, a_j) angle.r_t^P &= (partial_epsilon (pi_t ({a_j}) (P_epsilon)) Lambda^(a) (dif t) (P) + pi_t ({a_j}) (P) dif angle.l Gamma, M^(a) angle.r_t^P)
+    chevron.l Gamma, M^(a, a_j) chevron.r_t^P &= (partial_epsilon (pi_t ({a_j}) (P_epsilon)) Lambda^(a) (dif t) (P) + pi_t ({a_j}) (P) dif chevron.l Gamma, M^(a) chevron.r_t^P)
 $
 so we conclude that
 $
-    partial_epsilon (pi_t ({a_j}) (P_epsilon)) &= (dif angle.l Gamma, M^(a, a_j) angle.r_t^P - pi_t ({a_j}) (P) dif angle.l Gamma, M^(a) angle.r_t^P) / (dif Lambda^(a) (t) (P)) \
-        &= (dif angle.l Gamma, (1-pi_dot ({a_j}) (P)) bullet M^(a, a_j) - pi_dot ({a_j}) (P) bullet sum_(i != j) M^(a, a_i) angle.r_t^P) / (dif Lambda^(a) (t) (P)) \
+    partial_epsilon (pi_t ({a_j}) (P_epsilon)) &= (dif chevron.l Gamma, M^(a, a_j) chevron.r_t^P - pi_t ({a_j}) (P) dif chevron.l Gamma, M^(a) chevron.r_t^P) / (dif Lambda^(a) (t) (P)) \
+        &= (dif chevron.l Gamma, (1-pi_dot ({a_j}) (P)) bullet M^(a, a_j) - pi_dot ({a_j}) (P) bullet sum_(i != j) M^(a, a_i) chevron.r_t^P) / (dif Lambda^(a) (t) (P)) \
 $
-Here, we have used that using that $partial_epsilon Lambda_t (P_epsilon) = angle.l Gamma, M angle.r_t^P$
+Here, we have used that $partial_epsilon Lambda_t (P_epsilon) = chevron.l Gamma, M chevron.r_t^P$
 if $M = N - Lambda (P)$.
 
-Let $m_(s,k,j)^*$ predictable be given by $m_(s,k,j)^* = bb(1) {event(k-1) < s <= event(k)} bb(1) {j = g^*_k (history(k-1), s)}$. With $K_t^* = K_(t and tau^(g*))$, we can take 
 $
-    macron(K)_t &= integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K bb(1) {event(k-1) < s <= event(k)} ((pi^*_(s) ({a_j}))/(pi_(s) ({a_j})) - 1) N^(a, a_j) (dif s) + bb(N)_t^a \
-        &= integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K bb(1) {event(k-1) < s <= event(k)} bb(1) {j != g^*_k (history(k-1), s)} ( - 1) N^(a, a_j) (dif s) + bb(N)_t^a \
-        &quad + integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* ((1)/(pi_(s) ({a_j})) - 1) N^(a, a_j) (dif s) \
-        &= integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* ((1)/(pi_(s) ({a_j})) - 1) N^(a, a_j) (dif s)
+    macron(K)_t &= integral_0^(t and tau^(g^*)) sum_(j=1)^K ((pi^*_(s) ({a_j}))/(pi_(s) ({a_j})) - 1) N^(a, a_j) (dif s) + bb(N)_t^a \
+        &= integral_0^(t and tau^(g^*)) sum_(j=1)^K (1-pi^*_s ({a_j})) (-1) N^(a, a_j) (dif s) + bb(N)_t^a \
+        &quad + integral_0^(t and tau^(g^*)) sum_(j=1)^K pi^*_s ({a_j}) ((1)/(pi_(s) ({a_j})) - 1) N^(a, a_j) (dif s) \
+        &= integral_0^(t and tau^(g^*)) sum_(j=1)^K pi^*_s ({a_j}) ((1)/(pi_(s) ({a_j})) - 1) N^(a, a_j) (dif s) \
 $ <eq:barKrep1>
 This can also be written as
 $
-    macron(K)_t &= integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* ((1)/(pi_(s) ({a_j})) - 1) M^(a, a_j) (dif s) + bb(L)_t^a
+    macron(K)_t &= integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) ((1)/(pi_(s) ({a_j})) - 1) M^(a, a_j) (dif s) + bb(L)_t^a
 $ <eq:barKrep2>
 Calculating the derivative of @eq:barKrep2 gives
 $
-    partial_epsilon macron(K)_t^epsilon &= - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (1)/(pi_(s) ({a_j}) (P)^2) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) M^(a, a_j) (dif s) \
-        &quad - integral_0^(tau and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* ((1)/(pi_(s) ({a_j})) - 1) partial_epsilon (Lambda^(a, a_j) (dif s) (P_epsilon)) + partial_epsilon bb(L)_t^a (P_epsilon) \
-        &=- integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (1)/(pi_(s) ({a_j}) (P)^2) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) M^(a, a_j) (dif s) \
-        &quad - integral_0^(tau and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* ((1)/(pi_(s) ({a_j})) - 1) dif angle.l Gamma, M^(a, a_j) angle.r^P_s + angle.l Gamma, bb(L)^a angle.r^P_t \
-        &= -integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (1)/(pi_(s) ({a_j}) (P)^2) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) M^(a, a_j) (dif s) - angle.l Gamma, K^* angle.r^P_(t),
+    partial_epsilon macron(K)_t^epsilon &= - integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) (1)/(pi_(s) ({a_j}) (P)^2) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) M^(a, a_j) (dif s) \
+        &quad - integral_0^(tau and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) ((1)/(pi_(s) ({a_j})) - 1) partial_epsilon (Lambda^(a, a_j) (dif s) (P_epsilon)) + partial_epsilon bb(L)_t^a (P_epsilon) \
+        &=- integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) (1)/(pi_(s) ({a_j}) (P)^2) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) M^(a, a_j) (dif s) \
+        &quad - integral_0^(tau and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) ((1)/(pi_(s) ({a_j})) - 1) dif chevron.l Gamma, M^(a, a_j) chevron.r^P_s + chevron.l Gamma, bb(L)^a chevron.r^P_t \
+        &= -integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) (1)/(pi_(s) ({a_j}) (P)^2) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) M^(a, a_j) (dif s) - chevron.l Gamma, K^* chevron.r^P_(t),
 $
-again using that $partial_epsilon Lambda_t (P_epsilon) = angle.l Gamma, M angle.r_t^P$
+again using that $partial_epsilon Lambda_t (P_epsilon) = chevron.l Gamma, M chevron.r_t^P$
 if $M = N - Lambda (P)$ is a $P$-martingale.
-On the other hand also calculating it for @eq:barKrep1 gives
+However for @eq:barKrep1, we can also get that 
 $
-    partial_epsilon macron(K)_t^epsilon &= -integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (1)/(pi_(s) ({a_j}) (P)^2) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) N^(a, a_j) (dif s) 
+    partial_epsilon macron(K)_t^epsilon &= -integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) (1)/(pi_(s) ({a_j}) (P)^2) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) N^(a, a_j) (dif s) 
 $
 Also note that
 $
-    (Delta macron(K)^0_s) / (1 + Delta macron(K)^0_s) = sum_(k) sum_(j=1)^K m_(s,k,j)^* (1-pi_(s) ({a_j})) Delta N^(a, a_j) (s)
+    (Delta macron(K)^0_s) / (1 + Delta macron(K)^0_s) =  sum_(j=1)^K pi_s^* ({a_j}) (1-pi_(s) ({a_j})) Delta N^(a, a_j) (s)
 $
+by @eq:barKrep1.
 Thus,
 $
-    sum_(0 < s <= t) (partial_epsilon Delta macron(K)_s^epsilon) (Delta macron(K)^0_s) / (1 + Delta macron(K)^0_s) &= - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) 1/(pi_s ({a_j}))^2 (1-pi_(s) ({a_j})) N^(a, a_j) (dif s) \
-        &=- integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) N^(a, a_j) (dif s) \
-            &= - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) M^(a, a_j) (dif s) \
-        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) Lambda^(a, a_j) (dif s) 
+    sum_(0 < s <= t) (partial_epsilon Delta macron(K)_s^epsilon) (Delta macron(K)^0_s) / (1 + Delta macron(K)^0_s) &= - integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) 1/(pi_s ({a_j}))^2 (1-pi_(s) ({a_j})) N^(a, a_j) (dif s) \
+        &=- integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) N^(a, a_j) (dif s) \
+            &= - integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) M^(a, a_j) (dif s) \
+        &quad - integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) Lambda^(a, a_j) (dif s) 
 $
 Conclude that, if $pi_s ({a_j}) (P) > 0$ for all $s in [0, T]$ and $j$,
 $
     &partial_epsilon macron(K)_t^epsilon - sum_(0 < s <= t) (partial_epsilon Delta macron(K)_s^epsilon) (Delta macron(K)^0_s) / (1 + Delta macron(K)^0_s) \
-        &=- integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (1)/(pi_(s) ({a_j}) (P)^2) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) M^(a, a_j) (dif s)  - angle.l Gamma, K^* angle.r^P_(t) \
-        &quad + integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) M^(a, a_j) (dif s) \
-        &quad + integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) Lambda^(a, a_j) (dif s) \
-        &= - angle.l Gamma, K^* angle.r^P_(t) \
-        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) M^(a, a_j) (dif s) \
-        &quad + integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) Lambda^(a, a_j) (dif s) \
-        &= - angle.l Gamma, K^* angle.r^P_(t) \
-        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (M^(a, a_j) (dif s) - sum_v sum_i m_(s,v)^* (1/(pi_(s) ({a_i}))-1) Lambda^(a, a_i) (dif s)) \
-        &= - angle.l Gamma, K^* angle.r^P_(t) \
-        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (M^(a, a_j) (dif s) - sum_v sum_i (m_(s,v)^* (1/(pi_(s) ({a_i}))-1) \
-            &quad quad - (0/(pi_s ({a_j})) - 1) bb(1) {event(v-1) < s <= event(v)} bb(1) {j != g^*_v (history(v-1), s)} Lambda^(a, a_i) (dif s))\
-        &= - angle.l Gamma, K^* angle.r^P_(t) \
-            &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (M^(a, a_j) (dif s) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
-            &= - angle.l Gamma, K^* angle.r^P_(t) \
-            &quad  - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (dif angle.l Gamma, M^(a, a_j) angle.r_t^P - pi_t ({a_j}) (P) dif angle.l Gamma, M^(a) angle.r_t^P) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif angle.l M^(a, a_j), K^* angle.r_s^P) 
+        &=- integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) (1)/(pi_(s) ({a_j}) (P)^2) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) M^(a, a_j) (dif s)  - chevron.l Gamma, K^* chevron.r^P_(t) \
+        &quad + integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) M^(a, a_j) (dif s) \
+        &quad + integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) Lambda^(a, a_j) (dif s) \
+        &= - chevron.l Gamma, K^* chevron.r^P_(t) \
+        &quad - integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) M^(a, a_j) (dif s) \
+        &quad + integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (1/(pi_(s) ({a_j}))-1) Lambda^(a, a_j) (dif s) \
+        &= - chevron.l Gamma, K^* chevron.r^P_(t) \
+            &quad - integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) (1)/(pi_(s) ({a_j}) (P)) partial_epsilon (pi_(s) ({a_j}) (P_epsilon)) (M^(a, a_j) (dif s) - dif chevron.l M^(a, a_j), K^* chevron.r_s^P) \
+            &= - chevron.l Gamma, K^* chevron.r^P_(t) \
+            &quad  - integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) (dif chevron.l Gamma, M^(a, a_j) chevron.r_t^P - pi_t ({a_j}) (P) dif chevron.l Gamma, M^(a) chevron.r_t^P) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif chevron.l M^(a, a_j), K^* chevron.r_s^P) 
 $ <eq:scoreoperatorfinal>
-Note that $(dif angle.l Gamma, M^(a, a_j) angle.r_t^P - pi_t ({a_j}) (P) dif angle.l Gamma, M^(a) angle.r_t^P) / (dif Lambda^(a, a_j) (t) (P))$
-can be be chosen predictable so that the corresponding term is a (local) martingale
-and that the last two terms in @eq:scoreoperatorfinal can be written as $angle.l Gamma, Z angle.r_t^P$
-for some (local) martingale $Z$ not specified (here).
+// Note that $(dif chevron.l Gamma, M^(a, a_j) chevron.r_t^P - pi_t ({a_j}) (P) dif chevron.l Gamma, M^(a) chevron.r_t^P) / (dif Lambda^(a, a_j) (t) (P))$
+// can be be chosen predictable so that the corresponding term is a (local) martingale.
+
 Conclude that the Score operator $S$ is given by
 $
-    cal(L)^2 (P) in.rev Gamma &mapsto Gamma - angle.l Gamma, K^* angle.r^P_(t) \
-        &quad - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (dif angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r_t^P) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif angle.l M^(a, a_j), K^* angle.r_s^P) in cal(L)^2 (Q)
+    cal(M)^2 (P) in.rev Gamma &mapsto Gamma - chevron.l Gamma, K^* chevron.r^P_(t) \
+        &quad - integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) (dif chevron.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  chevron.r_t^P) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif chevron.l M^(a, a_j), K^* chevron.r_s^P) in cal(M)^2 (Q)
 $ <eq:scoreoperator>
 
-2. Assume that we have found the adjoint operator of $D : cal(L)^2 (P) -> cal(L)^2 (Q)$
+2. Assume that we have found the adjoint operator of $D : cal(M)^2 (P) -> cal(M)^2 (Q)$
 $
-    cal(L)^2 (P) in.rev Gamma &mapsto Gamma - angle.l Gamma, K^* angle.r^Q_(t) in cal(L)^2 (Q) \
+    cal(M)^2 (P) in.rev Gamma &mapsto Gamma - chevron.l Gamma, K^* chevron.r^P_(t) in cal(M)^2 (Q) \
 $
-say $D^* : "Range"(D) subset cal(L)^2 (Q) -> cal(L)^2 (P)$.
-Let $H_j: cal(L)^2 (P) -> cal(L)^2 (Q)$ be given by
+say $D^* : "Range"(D) subset cal(M)^2 (Q) -> cal(M)^2 (P)$.
+Let $H_j: cal(M)^2 (P) -> cal(M)^2 (Q)$ be given by
 $
-    H_j Gamma = integral_0^(t and tau^(g^*)) sum_(k) m_(s,k,j)^* (dif angle.l Gamma, M^(a, a_j) angle.r_t^P - pi_t ({a_j}) (P) dif angle.l Gamma, M^(a) angle.r_t^P) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif angle.l M^(a, a_j), K^* angle.r_s^P)
+    H_j Gamma = integral_0^(t and tau^(g^*))  pi_s^* ({a_j}) (dif chevron.l Gamma, M^(a, a_j) chevron.r_t^P - pi_t ({a_j}) (P) dif chevron.l Gamma, M^(a) chevron.r_t^P) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif chevron.l M^(a, a_j), K^* chevron.r_s^P)
 $
 Then, we have that
 
 $
-    angle.l H_k Gamma, Gamma angle.r_Q &:= mean(Q) [angle.l H_k Gamma, Gamma' angle.r^Q] \
-        &= mean(Q) [angle.l integral_0^(dot and tau^(g^*)) sum_(k) m_(s,k,j)^* (dif angle.l Gamma, M^(a, a_j) angle.r_s^P - pi_s ({a_j}) (P) dif angle.l Gamma, M^(a) angle.r_s^P) / (dif Lambda^(a, a_j) (t) (P)) D M^(a, a_j) (dif s), Gamma' angle.r^Q_s] \
-        &= mean(Q) [angle.l D integral_0^(dot and tau^(g^*)) sum_(k) m_(s,k,j)^* (dif angle.l Gamma, M^(a, a_j) angle.r_s^P - pi_s ({a_j}) (P) dif angle.l Gamma, M^(a) angle.r_s^P) / (dif Lambda^(a, a_j) (t) (P)) M^(a, a_j) (dif s), Gamma' angle.r^Q_s] \
-        &= mean(P) [angle.l integral_0^(dot and tau^(g^*)) sum_(k) m_(s,k,j)^* (dif angle.l Gamma, M^(a, a_j) angle.r_s^P - pi_s ({a_j}) (P) dif angle.l Gamma, M^(a) angle.r_s^P) / (dif Lambda^(a, a_j) (t) (P)) M^(a, a_j) (dif s), D^* Gamma' angle.r^P_s] \
-        &:= mean(P) [angle.l Y_j Gamma, D^* Gamma' angle.r^P_s] \
-        &= angle.l Gamma, Y_j^* D^* Gamma' angle.r_P,
+    chevron.l H_k Gamma, Gamma chevron.r_Q &:= mean(Q) [chevron.l H_k Gamma, Gamma' chevron.r^Q] \
+        &= mean(Q) [chevron.l integral_0^(dot and tau^(g^*))  pi_s^* ({a_j}) (dif chevron.l Gamma, M^(a, a_j) chevron.r_s^P - pi_s ({a_j}) (P) dif chevron.l Gamma, M^(a) chevron.r_s^P) / (dif Lambda^(a, a_j) (t) (P)) D M^(a, a_j) (dif s), Gamma' chevron.r^Q_s] \
+        &= mean(Q) [chevron.l D integral_0^(dot and tau^(g^*))  pi_s^* ({a_j}) (dif chevron.l Gamma, M^(a, a_j) chevron.r_s^P - pi_s ({a_j}) (P) dif chevron.l Gamma, M^(a) chevron.r_s^P) / (dif Lambda^(a, a_j) (t) (P)) M^(a, a_j) (dif s), Gamma' chevron.r^Q_s] \
+        &= mean(P) [chevron.l integral_0^(dot and tau^(g^*))  pi_s^* ({a_j}) (dif chevron.l Gamma, M^(a, a_j) chevron.r_s^P - pi_s ({a_j}) (P) dif chevron.l Gamma, M^(a) chevron.r_s^P) / (dif Lambda^(a, a_j) (t) (P)) M^(a, a_j) (dif s), D^* Gamma' chevron.r^P_s] \
+        &:= mean(P) [chevron.l Y_j Gamma, D^* Gamma' chevron.r^P_s] \
+        &= chevron.l Gamma, Y_j^* D^* Gamma' chevron.r_P,
 $
 so if we have found $D^*$ and $Y_j^*$, we have found the adjoint of $H_j$.
 Here, we let
-$Y_j : cal(L)^2 (P) -> cal(L)^2 (P)$ be given by
+$Y_j : cal(M)^2 (P) -> cal(M)^2 (P)$ be given by
 $
-    Y_j Gamma = integral_0^(dot and tau^(g^*)) sum_k m_(s,k,j)^* (dif angle.l Gamma, M^(a, a_j) angle.r_s^P - pi_s ({a_j}) (P) dif angle.l Gamma, M^(a) angle.r_s^P) / (dif Lambda^(a, a_j) (t) (P)) M^(a, a_j) (dif s)
+    Y_j Gamma = integral_0^(dot and tau^(g^*)) sum_k pi_s^* ({a_j}) (dif chevron.l Gamma, M^(a, a_j) chevron.r_s^P - pi_s ({a_j}) (P) dif chevron.l Gamma, M^(a) chevron.r_s^P) / (dif Lambda^(a, a_j) (t) (P)) M^(a, a_j) (dif s)
 $
 Then, we may calculate directly that
 $
-    angle.l Y_j Gamma, Gamma' angle.r_P &:= mean(P) [angle.l Y_j Gamma, Gamma' angle.r^P] \
-        &= mean(P) [angle.l integral_0^(dot and tau^(g^*)) sum_k m_(s,k,j)^* (dif angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r^P_s) / (dif Lambda^(a, a_j) (s) (P)) dif M^(a, a_j) (s), Gamma' angle.r^P] \
-        &= mean(P) [integral_0^(dot and tau^(g^*)) sum_k m_(s,k,j)^* (dif angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r^P_s) / (dif Lambda^(a, a_j) (s) (P)) dif angle.l M^(a, a_j), Gamma' angle.r_s^P] \
-        &= mean(P) [angle.l Gamma, bb(1) {tau^(g^*) <= dot} sum_k m_(dot,k,j)^* (dif angle.l M^(a, a_j), Gamma' angle.r_dot^P)/(dif Lambda^(a, a_j) (dot) (P)) bullet (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)) angle.r^P] \
-        &= mean(P) [angle.l Gamma, Y_j^* Gamma' angle.r^P]\
-        &= angle.l Gamma, Y_j^* Gamma' angle.r_P,
+    chevron.l Y_j Gamma, Gamma' chevron.r_P &:= mean(P) [chevron.l Y_j Gamma, Gamma' chevron.r^P] \
+        &= mean(P) [chevron.l integral_0^(dot and tau^(g^*)) sum_k pi_s^* ({a_j}) (dif chevron.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  chevron.r^P_s) / (dif Lambda^(a, a_j) (s) (P)) dif M^(a, a_j) (s), Gamma' chevron.r^P] \
+        &= mean(P) [chevron.l Gamma, bb(1) {tau^(g^*) <= dot} sum_k m_(dot,k,j)^* (dif chevron.l M^(a, a_j), Gamma' chevron.r_dot^P)/(dif Lambda^(a, a_j) (dot) (P)) bullet (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)) chevron.r^P] \
+        &= mean(P) [chevron.l Gamma, Y_j^* Gamma' chevron.r^P]\
+        &= chevron.l Gamma, Y_j^* Gamma' chevron.r_P,
 $
 
 Now note that
@@ -902,19 +1497,19 @@ by the arguments in "Projection Notes"
 and integration by parts for semimartingales.
 This composition yields,
 $
-    &integral_0^t bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* (dif angle.l M^(a, a_j), D^* Gamma' angle.r_s^P)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s \
-        &= integral_0^t bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) (dif angle.l M^(a, a_j), Gamma' + [Gamma', K^*] angle.r_s^P)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s
+    &integral_0^t bb(1) {tau^(g^*) <= s} sum_k pi_s^* ({a_j}) (dif chevron.l M^(a, a_j), D^* Gamma' chevron.r_s^P)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s \
+        &= integral_0^t bb(1) {tau^(g^*) <= s} sum_k pi_s^* ({a_j}) W_(s-) (dif chevron.l M^(a, a_j), Gamma' + [Gamma', K^*] chevron.r_s^P)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s
 $
 
 FACT:
 $
-    angle.l X, Y angle.r^Q = angle.l X + [X, K^*], Y angle.r^P = angle.l X, Y + [Y, K^*] angle.r^P,
+    chevron.l X, Y chevron.r^Q = chevron.l X + [X, K^*], Y chevron.r^P = chevron.l X, Y + [Y, K^*] chevron.r^P,
 $
 so it follows that
 $
-    &integral_0^t bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) (dif angle.l M^(a, a_j), Gamma' + [Gamma', K^*] angle.r_s^P)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s \
-        &= integral_0^t bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) (dif angle.l M^(a, a_j), Gamma' angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s \
-        &= integral_0^t bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) (dif angle.l M^(a, a_j), Gamma' angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s.
+    &integral_0^t bb(1) {tau^(g^*) <= s} sum_k pi_s^* ({a_j}) W_(s-) (dif chevron.l M^(a, a_j), Gamma' + [Gamma', K^*] chevron.r_s^P)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s \
+        &= integral_0^t bb(1) {tau^(g^*) <= s} sum_k pi_s^* ({a_j}) W_(s-) (dif chevron.l M^(a, a_j), Gamma' chevron.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s 
+//        &= integral_0^t bb(1) {tau^(g^*) <= s} sum_k pi_s^* ({a_j}) W_(s-) (dif chevron.l M^(a, a_j), Gamma' chevron.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s.
 $
 Note that this operator sends to piecewise constant functions.
 3.
@@ -944,7 +1539,7 @@ $
 where $gamma_x (s)$ is bounded and predictable.
 We now explain how this results in dense range:
 The lemma on p. 173 of @protter2005stochastic shows that any
-$Gamma^* in cal(M)^2 (P)$ can be approximated in $cal(L)^2 (P)$ by a sequence of such processes.
+$Gamma^* in cal(M)^2 (P)$ can be approximated in $cal(M)^2 (P)$ by a sequence of such processes.
 
 //We show that $sum_j Y_j^*$ is a contraction; this then follows
 //by a fixed-point theorem.
@@ -953,14 +1548,14 @@ $Gamma^* in cal(M)^2 (P)$ can be approximated in $cal(L)^2 (P)$ by a sequence of
 //By Fredholms alternative, this will imply injectivity under certain regularity conditions. Alternatively,
 //can try to show the same for $-(sum_j Y_j - "Id")$.
 
-We will need to find the $angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_t^P$ term.
+We will need to find the $chevron.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) chevron.r_t^P$ term.
 $
-    angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_t^P &=  integral_0^(t) sum_x h_x (s) dif angle.l M^(x), M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_s^P \
+    chevron.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) chevron.r_t^P &=  integral_0^(t) sum_x h_x (s) dif chevron.l M^(x), M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) chevron.r_s^P \
 $
 Now note that
 $
-    angle.l M^(x), M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_s^P &= Lambda_s^(*,x,j) - integral_0^s Delta angle.l M^x angle.r_s dif Lambda^(a,a_j) (s) + integral_0^s pi_s ({a_j}) (P) Delta angle.l M^x angle.r_s dif Lambda^(a) (s) \
-        &= Lambda_s^(*,x,a_j) - integral_0^s Delta angle.l M^x angle.r_s pi_s ({a_j}) (P) dif Lambda^(a) (s) + integral_0^s pi_s ({a_j}) (P) Delta angle.l M^x angle.r_s dif Lambda^(a) (s) \
+    chevron.l M^(x), M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) chevron.r_s^P &= Lambda_s^(*,x,j) - integral_0^s Delta chevron.l M^x chevron.r_s dif Lambda^(a,a_j) (s) + integral_0^s pi_s ({a_j}) (P) Delta chevron.l M^x chevron.r_s dif Lambda^(a) (s) \
+        &= Lambda_s^(*,x,a_j) - integral_0^s Delta chevron.l M^x chevron.r_s pi_s ({a_j}) (P) dif Lambda^(a) (s) + integral_0^s pi_s ({a_j}) (P) Delta chevron.l M^x chevron.r_s dif Lambda^(a) (s) \
         &= Lambda_s^(*,x,a_j)
 $
 where $Lambda^(*,x,a_j)$ is the compensator of $integral_0^t Delta N^x_s dif N^(a,a_j) (s) - integral_0^t pi_s ({a_j}) (P) Delta N^(x) (s)) dif N^a_s$.
@@ -980,8 +1575,8 @@ $
 where the second properties works by properties of Radon-Nikodym derivatives and positivity.
 Now, we have that
 $
-    Y_j Gamma - Gamma &= integral_0^(dot and tau^(g^*)) sum_j sum_k m_(s,k,j)^* (dif angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r^P_s) / (dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) )_s - integral_0^dot sum_x gamma_x (s) M^(x) (dif s) \
-        &= integral_0^(dot and tau^(g^*)) sum_j sum_k m_(s,k,j)^* sum_(x in cal(A)) gamma_x (s) (bb(1) {a_j= x} - pi_s ({x}) (P))dif M_s^(a, a_j) - integral_0^dot sum_x gamma_x (s) M^(x) (dif s) \
+    Y_j Gamma - Gamma &= integral_0^(dot and tau^(g^*)) sum_j sum_k pi_s^* ({a_j}) (dif chevron.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  chevron.r^P_s) / (dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) )_s - integral_0^dot sum_x gamma_x (s) M^(x) (dif s) \
+        &= integral_0^(dot and tau^(g^*)) sum_j sum_k pi_s^* ({a_j}) sum_(x in cal(A)) gamma_x (s) (bb(1) {a_j= x} - pi_s ({x}) (P))dif M_s^(a, a_j) - integral_0^dot sum_x gamma_x (s) M^(x) (dif s) \
 $
 Whenever $x in.not cal(A)$, we can choose $gamma_x (s) = - gamma^*_x (s)$.
 Otherwise, we may pick
@@ -1000,44 +1595,44 @@ which is bounded by assumption and predictable.
 // Note that
 // $
 //     (sum_j D Y_j) (sum_i Y_i^* D^* Gamma) &= sum_j sum_i D Y_j Y_i^* D^* Gamma \
-//         &= sum_j sum_i integral_0^(dot and tau^(g^*)) sum_k m_(s,k,j)^* (dif angle.l Y_i^* D^* Gamma, M^(a, a_j) - pi_s ({a_j}) (P) bullet M^(a)  angle.r_s^P) / (dif Lambda^(a, a_j) (t) (P)) \
-//         &times dif (M^(a, a_j) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
-//         &= sum_j sum_i integral_0^(dot and tau^(g^*)) sum_k m_(s,k,j)^* \
-//         &times (bb(1) {tau^(g^*) <= s} sum_k m_(s,k,i)^* W_(s-) (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a), M^(a, a_i) - pi_dot ({a_i}) (P) bullet M^(a) angle.r_s) / (dif Lambda^(a, a_j) (t) (P)) \
-//         &= sum_j integral_0^(dot and tau^(g^*)) W_(s-) sum_k m_(s,k,j)^* (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) (dif angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_s) / (dif Lambda^(a, a_j) (t) (P)) \
-//         &times dif (M^(a, a_j) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
+//         &= sum_j sum_i integral_0^(dot and tau^(g^*)) sum_k pi_s^* ({a_j}) (dif chevron.l Y_i^* D^* Gamma, M^(a, a_j) - pi_s ({a_j}) (P) bullet M^(a)  chevron.r_s^P) / (dif Lambda^(a, a_j) (t) (P)) \
+//         &times dif (M^(a, a_j) - dif chevron.l M^(a, a_j), K^* chevron.r_s^P) \
+//         &= sum_j sum_i integral_0^(dot and tau^(g^*)) sum_k pi_s^* ({a_j}) \
+//         &times (bb(1) {tau^(g^*) <= s} sum_k m_(s,k,i)^* W_(s-) (dif chevron.l M^(a, a_j), Gamma chevron.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif chevron.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a), M^(a, a_i) - pi_dot ({a_i}) (P) bullet M^(a) chevron.r_s) / (dif Lambda^(a, a_j) (t) (P)) \
+//         &= sum_j integral_0^(dot and tau^(g^*)) W_(s-) sum_k pi_s^* ({a_j}) (dif chevron.l M^(a, a_j), Gamma chevron.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) (dif chevron.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) chevron.r_s) / (dif Lambda^(a, a_j) (t) (P)) \
+//         &times dif (M^(a, a_j) - dif chevron.l M^(a, a_j), K^* chevron.r_s^P) \
 // $
 // and
 // $
-//     D sum_j Y_j^* D^* Gamma &= D sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s \
-//         &= sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (D (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)))_s \
-//         &= sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) \
-//         &times (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) - angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a), K^* angle.r^P)_s \
+//     D sum_j Y_j^* D^* Gamma &= D sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k pi_s^* ({a_j}) W_(s-) (dif chevron.l M^(a, a_j), Gamma chevron.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s \
+//         &= sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k pi_s^* ({a_j}) W_(s-) (dif chevron.l M^(a, a_j), Gamma chevron.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (D (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)))_s \
+//         &= sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k pi_s^* ({a_j}) W_(s-) \
+//         &times (dif chevron.l M^(a, a_j), Gamma chevron.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) - chevron.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a), K^* chevron.r^P)_s \
 // $
-// //         &= sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) \
-// //         &times (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) - angle.l M^(a, a_j), K^* angle.r^P)_s \
+// //         &= sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k pi_s^* ({a_j}) W_(s-) \
+// //         &times (dif chevron.l M^(a, a_j), Gamma chevron.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) - chevron.l M^(a, a_j), K^* chevron.r^P)_s \
 // // $
 // // Here, we use that
 // // $
-// //     angle.l - pi_dot ({a_j}) (P) bullet M^(a), K^* angle.r^P_t &= integral_0^(t and tau^(g^*)) sum_i (pi_s ({a_i}) - pi_s^* ({a_i}) dif angle.l M^(a, a_j), M^(a, a_i) angle.r_s^P \
+// //     chevron.l - pi_dot ({a_j}) (P) bullet M^(a), K^* chevron.r^P_t &= integral_0^(t and tau^(g^*)) sum_i (pi_s ({a_i}) - pi_s^* ({a_i}) dif chevron.l M^(a, a_j), M^(a, a_i) chevron.r_s^P \
 // //         &= 0
 // // $
 // Finally, note that
 // $
-//     sum_j D Y_j D^* Gamma &= integral_0^(t and tau^(g^*)) W_(s-) sum_(k) sum_(j=1)^K m_(s,k,j)^* (dif angle.l Gamma + [Gamma, K^*], M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r_t^P) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
-//         & integral_0^(t and tau^(g^*)) W_(s-) sum_(k) sum_(j=1)^K m_(s,k,j)^* (dif angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r_t^Q) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif angle.l M^(a, a_j), K^* angle.r_s^P)
+//     sum_j D Y_j D^* Gamma &= integral_0^(t and tau^(g^*)) W_(s-)  sum_(j=1)^K pi_s^* ({a_j}) (dif chevron.l Gamma + [Gamma, K^*], M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  chevron.r_t^P) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif chevron.l M^(a, a_j), K^* chevron.r_s^P) \
+//         & integral_0^(t and tau^(g^*)) W_(s-)  sum_(j=1)^K pi_s^* ({a_j}) (dif chevron.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  chevron.r_t^Q) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif chevron.l M^(a, a_j), K^* chevron.r_s^P)
 // $
 // Thus, we find
 // $
-//     S^* S Gamma &= sum_j integral_0^(dot and tau^(g^*)) W_(s-) sum_k m_(s,k,j)^* \
-//         &quad times ((dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) ((dif angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_s) / (dif Lambda^(a, a_j) (t) (P)) -1) - (dif angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r_t^Q) / (dif Lambda^(a, a_j) (t) (P))) \
-//         &quad times dif (M^(a, a_j) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
-//         &+sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-) pi_s ({a_j}) (P)  (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a) - angle.l M^(a), K^* angle.r^P)_s \
+//     S^* S Gamma &= sum_j integral_0^(dot and tau^(g^*)) W_(s-) sum_k pi_s^* ({a_j}) \
+//         &quad times ((dif chevron.l M^(a, a_j), Gamma chevron.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) ((dif chevron.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) chevron.r_s) / (dif Lambda^(a, a_j) (t) (P)) -1) - (dif chevron.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  chevron.r_t^Q) / (dif Lambda^(a, a_j) (t) (P))) \
+//         &quad times dif (M^(a, a_j) - dif chevron.l M^(a, a_j), K^* chevron.r_s^P) \
+//         &+sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k pi_s^* ({a_j}) W_(s-) pi_s ({a_j}) (P)  (dif chevron.l M^(a, a_j), Gamma chevron.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a) - chevron.l M^(a), K^* chevron.r^P)_s \
 //         &+ Gamma_0 + integral_0^dot macron(W)_s dif Gamma_s \
-//     &= sum_j integral_0^(dot and tau^(g^*)) W_(s-) sum_k m_(s,k,j)^* \
-//         &quad times ((dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) ((dif angle.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r^P_s) / (dif Lambda^(a, a_j) (t) (P)) -1) - (dif angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r_t^Q) / (dif Lambda^(a, a_j) (t) (P))) \
-//         &quad times dif (M^(a, a_j) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
-//         &+sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k m_(s,k,j)^* W_(s-)  (dif angle.l M^(a, a_j), Gamma angle.r_s^Q)/(dif Lambda^(a) (s) (P)) dif (M^(a) - angle.l M^(a), K^* angle.r^P)_s \
+//     &= sum_j integral_0^(dot and tau^(g^*)) W_(s-) sum_k pi_s^* ({a_j}) \
+//         &quad times ((dif chevron.l M^(a, a_j), Gamma chevron.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) ((dif chevron.l M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) chevron.r^P_s) / (dif Lambda^(a, a_j) (t) (P)) -1) - (dif chevron.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  chevron.r_t^Q) / (dif Lambda^(a, a_j) (t) (P))) \
+//         &quad times dif (M^(a, a_j) - dif chevron.l M^(a, a_j), K^* chevron.r_s^P) \
+//         &+sum_j integral_0^(dot and tau^(g^*)) bb(1) {tau^(g^*) <= s} sum_k pi_s^* ({a_j}) W_(s-)  (dif chevron.l M^(a, a_j), Gamma chevron.r_s^Q)/(dif Lambda^(a) (s) (P)) dif (M^(a) - chevron.l M^(a), K^* chevron.r^P)_s \
 //         &+ Gamma_0 + integral_0^dot macron(W)_s dif Gamma_s
 // $
 
@@ -1047,10 +1642,10 @@ which is bounded by assumption and predictable.
 
 4.
 
-To this end, we will need to calculate $angle.l K^* angle.r^P_t$ and $angle.l K^*, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_t^P$.
+To this end, we will need to calculate $chevron.l K^* chevron.r^P_t$ and $chevron.l K^*, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) chevron.r_t^P$.
 
 $
-    angle.l K^* angle.r^P_t &= integral_0^(t and tau^(g^*)) sum_i sum_j ( (pi^*_s ({a_j})) / (pi_s ({a_j})) - 1)((pi_s^* ({a_i}))/(pi_s ({a_i})) - 1) dif angle.l M^(a, a_i), M^(a, a_j) angle.r_s^P \
+    chevron.l K^* chevron.r^P_t &= integral_0^(t and tau^(g^*)) sum_i sum_j ( (pi^*_s ({a_j})) / (pi_s ({a_j})) - 1)((pi_s^* ({a_i}))/(pi_s ({a_i})) - 1) dif chevron.l M^(a, a_i), M^(a, a_j) chevron.r_s^P \
         &= integral_0^(t and tau^(g^*)) sum_i sum_j ( (pi^*_s ({a_j})) / (pi_s ({a_j})) - 1)((pi_s^* ({a_i}))/(pi_s ({a_i})) - 1) (bb(1) {i=j}- Delta Lambda^(a,a_i)) dif Lambda^(a, a_j) (s) \
         &= integral_0^(t and tau^(g^*)) sum_j ( (pi^*_s ({a_j})) / (pi_s ({a_j})) - 1)^2 dif Lambda^(a, a_j) (s) \
         &quad - integral_0^(t and tau^(g^*)) sum_i sum_j ( (pi^*_s ({a_j})) / (pi_s ({a_j})) - 1)((pi_s^* ({a_i}))/(pi_s ({a_i})) - 1) Delta Lambda^(a,a_i) dif Lambda^(a, a_j) (s) \
@@ -1064,32 +1659,32 @@ $
 $
 For the next calculation, we have that
 $
-    angle.l K^*, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_t^P &= integral_0^(t and tau^(g^*)) sum_i ( (pi^*_s ({a_i})) / (pi_s ({a_i})) - 1)  dif angle.l M^(a, a_i), M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) angle.r_s^P \
+    chevron.l K^*, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) chevron.r_t^P &= integral_0^(t and tau^(g^*)) sum_i ( (pi^*_s ({a_i})) / (pi_s ({a_i})) - 1)  dif chevron.l M^(a, a_i), M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a) chevron.r_s^P \
         &= integral_0^(t and tau^(g^*)) sum_i ( (pi^*_s ({a_i})) / (pi_s ({a_i})) - 1)  (bb(1) {i=j}- pi_s ({a_i}) (P)) dif Lambda^(a, a_j) (s).
 $
 by the previous calculations. Therefore, it holds that
 $
-    &integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (dif angle.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  angle.r_t^P) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
-        &= integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^*  sum_i ( (pi^*_s ({a_i})) / (pi_s ({a_i})) - 1)  (bb(1) {i=j}- pi_s ({a_i}) (P)) (M^(a, a_j) (dif s) - dif angle.l M^(a, a_j), K^* angle.r_s^P) \
-        &= integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^*  sum_i ( (pi^*_s ({a_i})) / (pi_s ({a_i})) - 1)  (bb(1) {i=j}- pi_s ({a_i}) (P)) \
-        &quad times (M^(a, a_j) (dif s) - (sum_v (pi^*_s ({a_v})) / (pi_s ({a_v})) - 1) dif angle.l M^(a, a_j), M^(a, v) angle.r_s^P) \
-        &= integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^*  sum_i ( (pi^*_s ({a_i})) / (pi_s ({a_i})) - 1)  (bb(1) {i=j}- pi_s ({a_i}) (P)) \
+    &integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) (dif chevron.l Gamma, M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a)  chevron.r_t^P) / (dif Lambda^(a, a_j) (t) (P)) (M^(a, a_j) (dif s) - dif chevron.l M^(a, a_j), K^* chevron.r_s^P) \
+        &= integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j})  sum_i ( (pi^*_s ({a_i})) / (pi_s ({a_i})) - 1)  (bb(1) {i=j}- pi_s ({a_i}) (P)) (M^(a, a_j) (dif s) - dif chevron.l M^(a, a_j), K^* chevron.r_s^P) \
+        &= integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j})  sum_i ( (pi^*_s ({a_i})) / (pi_s ({a_i})) - 1)  (bb(1) {i=j}- pi_s ({a_i}) (P)) \
+        &quad times (M^(a, a_j) (dif s) - (sum_v (pi^*_s ({a_v})) / (pi_s ({a_v})) - 1) dif chevron.l M^(a, a_j), M^(a, v) chevron.r_s^P) \
+        &= integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j})  sum_i ( (pi^*_s ({a_i})) / (pi_s ({a_i})) - 1)  (bb(1) {i=j}- pi_s ({a_i}) (P)) \
         &quad times (M^(a, a_j) (dif s) - (sum_v (pi^*_s ({a_v})) / (pi_s ({a_v})) - 1) pi_(s) ({a_v}) (bb(1) {j=v}- pi ({a_j} Delta Lambda^(a)) dif Lambda^(a) (s))) \
-        &= integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^*  sum_i ( (pi^*_s ({a_i})) / (pi_s ({a_i})) - 1)  (bb(1) {i=j}- pi_s ({a_i}) (P)) \
+        &= integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j})  sum_i ( (pi^*_s ({a_i})) / (pi_s ({a_i})) - 1)  (bb(1) {i=j}- pi_s ({a_i}) (P)) \
         &quad times (M^(a, a_j) (dif s) - (sum_v (pi^*_s ({a_v})) / (pi_s ({a_v})) - 1) pi_(s) ({a_v}) bb(1) {j=v} dif Lambda^(a) (s)) \
-        &= integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^*  sum_i ( (pi^*_s ({a_i})) / (pi_s ({a_i})) - 1)  (bb(1) {i=j}- pi_s ({a_i}) (P)) \
+        &= integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j})  sum_i ( (pi^*_s ({a_i})) / (pi_s ({a_i})) - 1)  (bb(1) {i=j}- pi_s ({a_i}) (P)) \
         &quad times (M^(a, a_j) (dif s) - ((pi^*_s ({a_j})) / (pi_s ({a_j})) - 1) pi_(s) ({a_j}) dif Lambda^(a) (s)) \
-    &= integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^*  sum_i ( (pi^*_s ({a_i})) / (pi_s ({a_i})) - 1)  (bb(1) {i=j}- pi_s ({a_i}) (P)) \
+    &= integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j})  sum_i ( (pi^*_s ({a_i})) / (pi_s ({a_i})) - 1)  (bb(1) {i=j}- pi_s ({a_i}) (P)) \
         &quad times (M^(a, a_j) (dif s) - (pi^*_s ({a_j}) - pi_(s) ({a_j}))  dif Lambda^(a) (s)) \
-     &= integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* (1) / (pi_s ({a_j}))  (1- pi_s ({a_i}) (P)) \
+     &= integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) (1) / (pi_s ({a_j}))  (1- pi_s ({a_i}) (P)) \
         &quad times (N^(a, a_j) (dif s) - pi^*_s ({a_j})  dif Lambda^(a) (s)) \
-        &- integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^*  sum_i  (bb(1) {i=j}- pi_s ({a_i}) (P)) \
+        &- integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j})  sum_i  (bb(1) {i=j}- pi_s ({a_i}) (P)) \
         &quad times (N^(a, a_j) (dif s) - pi^*_s ({a_j})  dif Lambda^(a) (s)) \
-        &= integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K m_(s,k,j)^* ((1) / (pi_s ({a_j})) - 1) (N^(a, a_j) (dif s) - 1)  dif Lambda^(a) (s))
+        &= integral_0^(t and tau^(g^*))  sum_(j=1)^K pi_s^* ({a_j}) ((1) / (pi_s ({a_j})) - 1) (N^(a, a_j) (dif s) - 1)  dif Lambda^(a) (s))
 $
 This we find the score operator is given by evaluated at $K^*$ by combining the results, 
 $
-    - integral_0^(t and tau^(g^*)) sum_(k) sum_(j=1)^K bb(1) {event(k-1) < s <= event(k)} bb(1) {j != g^*_k (history(k-1), s)} N^(a, a_j) (dif s) \
+    - integral_0^(t and tau^(g^*))  sum_(j=1)^K bb(1) {event(k-1) < s <= event(k)} bb(1) {j != g^*_k (history(k-1), s)} N^(a, a_j) (dif s) \
 $
 which is zero $Q$-a.s.
 
@@ -1103,56 +1698,51 @@ Now, we see that
 $
     S^* zeta_T &= W_T (P) (Y_T - mean(P) [tilde(Y)_T]) \
         &- integral_0^(T) zeta_(s -) W (s -) dif K^*_s \
-        &- integral_0^t bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^* (dif angle.l M^(a, a_j), D^* I_P nu (Y) angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s \
+        &- integral_0^T bb(1) {s <= tau^(g^*)} sum_j pi_s^* ({a_j}) (dif chevron.l M^(a, a_j), mean(P) [W_T (P) Y_T | cal(F)_(dot)] -  E_P [tilde(Y)] chevron.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s \
         &= W_T (P) Y_T - (W_T (P) - integral_0^(T) W (s -) dif K^*_s) mean(P) [tilde(Y)_T]  \
-        &- integral_0^T bb(1) {tau^(g^*) <= s} mean(P) [W_T (P) Y_T | cal(F)_(t -)] sum_j ( (pi^*_s ({a_j})) / (pi_s ({a_j})) - 1) dif N^(a, a_j) (s) \
-        &- integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  (dif angle.l M^(a, a_j), mean(P) [W_T (P) Y_T | cal(F)_(dot)] - integral_0^t mean(P) [W_T (P) Y_T | cal(F)_(u-)] dif K_u^* angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) \
-        &times dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s \
-        &= W_T (P) Y_T - mean(P) [tilde(Y)_T]  \
-        &- integral_0^T bb(1) {tau^(g^*) <= s} mean(P) [W_T (P) Y_T | cal(F)_(t -)] sum_j ( (pi^*_s ({a_j})) / (pi_s ({a_j})) - 1) dif N^(a, a_j) (s) \
-        &- integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  (dif angle.l M^(a, a_j), mean(P) [W_T (P) Y_T | cal(F)_(dot)] angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) \
-        &times dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s \
-        &+ integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  mean(P) [W_T (P) Y_T | cal(F)_(s-)] (dif angle.l M^(a, a_j), K^* angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) \
-        &times dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s \
-                    &= W_T (P) Y_T - mean(P) [tilde(Y)_T]  \
-        &- integral_0^T bb(1) {tau^(g^*) <= s} mean(P) [W_T (P) Y_T | cal(F)_(t -)] sum_j ( (pi^*_s ({a_j})) / (pi_s ({a_j})) - 1) dif N^(a, a_j) (s) \
-        &- integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  (dif angle.l M^(a, a_j), mean(P) [W_T (P) Y_T | cal(F)_(dot)] angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) \
-        &times dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s \
-        &+ integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  mean(P) [W_T (P) Y_T | cal(F)_(s-)] (dif angle.l M^(a, a_j), K^* angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) \
-        &times dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s \
-     &= W_T (P) Y_T - mean(P) [tilde(Y)_T]  \
-        &- integral_0^T bb(1) {tau^(g^*) <= s} mean(P) [W_T (P) Y_T | cal(F)_(t -)] sum_j ( (pi^*_s ({a_j})) / (pi_s ({a_j})) - 1) dif N^(a, a_j) (s) \
-        &- integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  (dif angle.l M^(a, a_j), mean(P) [W_T (P) Y_T | cal(F)_(dot)] angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s \
-        &+ integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  mean(P) [W_T (P) Y_T | cal(F)_(s-)] sum_i ((pi^*_s ({a_i}))/(pi_s ({a_i}))-1) (bb(1) {i = j} - pi_s ({a_i}) Delta Lambda^a (s)) \
-        &times dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s \
-
-$
-
-This is also equal to
-$
+        &- integral_0^(T) mean(Q) [Y_T | cal(F)_(s-)] W (s -) dif K^*_s \
+        &- integral_0^T bb(1) {s<=tau^(g^*)} sum_j pi_s^* ({a_j}) (dif chevron.l M^(a, a_j), mean(P) [W_T (P) Y_T | cal(F)_(dot)] chevron.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s \
     &= W_T (P) Y_T - mean(P) [tilde(Y)_T]  \
-        &- integral_0^T bb(1) {tau^(g^*) <= s} mean(P) [W_T (P) Y_T | cal(F)_(t -)] sum_j ( (pi^*_s ({a_j})) / (pi_s ({a_j})) - 1) dif N^(a, a_j) (s) \
-        &- integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  (dif angle.l M^(a, a_j), mean(P) [W_T (P) Y_T | cal(F)_(dot)] angle.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s \
-        &+ integral_0^T bb(1) {tau^(g^*) <= s} sum_k sum_j m_(s,k,j)^*  mean(P) [W_T (P) Y_T | cal(F)_(s-)] ((pi^*_s ({a_j}))/(pi_s ({a_j}))-1) \
-        &times dif (N^(a, a_j) - pi_dot ({a_j}) (P) bullet N^(a))_s
+        &- integral_0^(T) mean(Q) [Y_T | cal(F)_(s)] W (s -) dif K^*_s \
+        &+ [mean(Q) [Y_T | cal(F)_(dot)], K^*]_T \
+    &- integral_0^T bb(1) {s<=tau^(g^*)} sum_j pi_s^* ({a_j}) (dif chevron.l M^(a, a_j), mean(P) [W_T (P) Y_T | cal(F)_(dot)] chevron.r_s^Q)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s \
+        &= W_T (P) Y_T - mean(P) [tilde(Y)_T]  \
+        &- integral_0^(T) mean(Q) [Y_T | cal(F)_(s)] W (s -) dif K^*_s \
+        &+ integral_0^T sum_(j=1)^K ((pi_s^* ({a_j}))/(pi_s ({a_j})) -1) dif [mean(P) [W_T Y_T | cal(F)_(dot)], M^(a,a_j)]_s \
+        &- integral_0^T bb(1) {s<=tau^(g^*)} sum_j pi_s^* ({a_j}) (dif chevron.l M^(a, a_j), mean(P) [W_T (P) Y_T | cal(F)_(dot)] chevron.r_s^P)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s \
+        &- integral_0^T bb(1) {s<=tau^(g^*)} sum_j pi_s^* ({a_j}) (dif chevron.l M^(a, a_j), [mean(P) [W_T (P) Y_T | cal(F)_(dot)], K^*]  chevron.r_s^P)/(dif Lambda^(a, a_j) (s) (P)) dif (M^(a, a_j) - pi_dot ({a_j}) (P) bullet M^(a))_s \
+
 $
+
 The integrators can be replaced with their corresponding martingales.
 
 @sequentialRegressionOhlendorff suggested the EIF:
+$
+    &W_T (P) Y_T - E_P [tilde(Y)_T] \
+        &- integral_0^T W(s -) mean(Q) [Y_T | cal(F)_(s)] sum_j (pi_s^* ({a_j})) / (pi_s ({a_j}))   N^(a,a_j) (dif s) + integral_0^T W(s -) mean(Q) [Y_T | cal(F)^g_(s)] N^a (dif s) \
+        &=  W_T (P) Y_T - E_P [tilde(Y)_T] \
+        &- integral_0^T W(s -) mean(Q) [Y_T | cal(F)_(s)] sum_j (pi_s^* ({a_j})) / (pi_s ({a_j}))   N^(a,a_j) (dif s) + integral_0^T W(s -) mean(Q) [Y_T | cal(F)^g_(s)] N^a (dif s) \
+        &- integral_0^T W(s -) mean(Q) [Y_T | cal(F)_(s)] N^ell (dif s) + integral_0^T W(s -) mean(Q) [Y_T | cal(F)_(s)] N^ell (dif s) \
+        &=  - E_P [tilde(Y)_T] \
+        &- integral_0^T W(s -) mean(Q) [Y_T | cal(F)_(s)] sum_j (pi_s^* ({a_j})) / (pi_s ({a_j}))   N^(a,a_j) (dif s) + integral_0^T W(s -) mean(Q) [Y_T | cal(F)^g_(s)] N^a (dif s) \
+        &- integral_0^T W(s -) mean(Q) [Y_T | cal(F)_(s)] N^ell (dif s) + integral_0^T W(s -) mean(Q) [Y_T | cal(F)_(s)] N^ell (dif s) \
+        &+ integral_0^T W(s -) N^y (dif s) \
+        &= mean(Q) [Y_t | cal(F)_0] - E_P [tilde(Y)_T] \
+        &- integral_0^T W(s -) mean(Q) [Y_T | cal(F)_(s)] sum_j (pi_s^* ({a_j})) / (pi_s ({a_j}))   N^(a,a_j) (dif s) + integral_0^T W(s -) mean(Q) [Y_T | cal(F)^g_(s)] N^a (dif s) \
+        &- integral_0^T W(s -) mean(Q) [Y_T | cal(F)_(s)] N^ell (dif s) + integral_0^T W(s -) mean(Q) [Y_T | cal(F)_(s)] N^ell (dif s) \
+        &+ integral_0^T W(s -) N^y (dif s) - mean(Q) [Y_t | cal(F)_0] 
+$
+The latter function is a rewriting of the one in @sequentialRegressionOhlendorff,
+while the first is suggested by projecting onto the propensity tangent space. 
+Here, $cal(F)_s^g$ denotes the natural filtration, generated by observed data
+with the treatment decisions specified by the treatment regime $g^*$.
 
+We can write
 $
-    &integral_0^T W (s -) (( mean(P) [W_T (P) Y_T | cal(F)^g_(s)] - mean(P) [W_T (P) Y_T | cal(F)^g_(s-)]) dif macron(N)_s \
-        &+mean(P) [W_T (P) Y_T | cal(F)^g_0] - E_P [tilde(Y)_T] \
+    &-integral_0^T W(s -) mean(Q) [Y_T | cal(F)_(s)] sum_j (pi_s^* ({a_j})) / (pi_s ({a_j}))   N^(a,a_j) (dif s) + integral_0^T W(s -) mean(Q) [Y_T | cal(F)^g_(s)] N^a (dif s) \
+        &= -integral_0^T W(s -) mean(Q) [Y_T | cal(F)_(s)] sum_j ((pi_s^* ({a_j})) / (pi_s ({a_j})) - 1)   N^(a,a_j) (dif s) + integral_0^T W(s -) mean(Q) [Y_T | cal(F)^g_(s)] N^a (dif s) \
+        &- integral_0^T W(s -) mean(Q) [Y_T | cal(F)_(s)] N^a (dif s)
 $
-Here
-$
-    cal(F)^g_t = cal(F)_0 or sigma((N^a (s), g^*(s), N^ell (s), L(s), N^y (s)): s <= t)
-$
-where
-$
-    g^* (s) = sum_k bb(1) {event(k-1) <= s < event(k)} (bb(1) {status(k-1) = a} g^*_(k-1) (history(k-2), event(k-1)) + bb(1) {status(k-1) != a} g^(*) (s -))
-$
-
 
 == Comparisons of the positivity assumptions in @ryalenPotentialOutcomes
 
