@@ -1570,8 +1570,8 @@ $
 in alignment with @eq:weightprocess
 with perfect compliance at time zero. 
 We verify that our efficient influence function is the same as @rytgaardContinuoustimeTargetedMinimum2022
-in the case with absolutely continuous compensators.
-For simplicity, we also assume that $covariate(k) = covariate(k-1)$ ($covariatecensored(k) = covariatecensored(k-1)$)
+under their assumptions of orthogonal martingales. 
+To align with @rytgaardContinuoustimeTargetedMinimum2022, we also assume that $covariate(k) = covariate(k-1)$ ($covariatecensored(k) = covariatecensored(k-1)$)
 whenever $status(k) = a$ ($statuscensored(k) = a$).
 The efficient influence function of @rytgaardContinuoustimeTargetedMinimum2022
 is given in Theorem 1 of @rytgaardContinuoustimeTargetedMinimum2022 in our notation by
@@ -1588,9 +1588,8 @@ We note, for instance, for $x= ell$ that
 $
     &mean(P^(G^*)) [N_y (tau) | Delta N^x (t) = 1, cal(F)_(t-)] \
         &=sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)}mean(P^(G^*)) [N_y (tau) | event(k) = t, status(k) = x, history(k-1)] \
-        &= sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} mean(P) [Qbar(k) (tau) | event(k) =t, status(k) = x, history(k-1)],
+        &= sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} mean(P) [Qbar(k) (tau) | event(k) =t, status(k) = x, history(k-1)].
 $ <eq:rytgaardproof1>
-where we apply the law of iterated expectation. 
 Similarly, we may find that
 $
     mean(P^(G^*)) [N_y (tau) | Delta N^y (t) = 1, cal(F)_(t-)] = 1, \
@@ -1606,64 +1605,72 @@ $
         &quad + sum_(k=1)^(K-1) bb(1) {event(k-1) < t <= event(k)} (mean(P^(G^*)) [N_y (tau) | L(event(k)), event(k) = t, status(k) = ell, history(k-1)]-mean(P^(G^*)) [N_y (tau) | event(k) = t, status(k) = ell, history(k-1)]) \
         &= sum_(k=1)^(K-1) bb(1) {event(k-1) < t <= event(k)} bb(1) {event(k) < tau, status(k) = ell}  (Qbar(k) (tau) - mean(P) [Qbar(k) (tau) | event(k) = t , status(k) = ell, history(k-1)]).
 $ <eq:rytgaardproof3>
-Next, note that
+Next, note that under the integral
 $
     &mean(P^(G^*)) [N_y (tau) | Delta N^x (t) = 0, cal(F)_(t-)] \
         &=sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} mean(P^(G^*)) [N_y (tau) | (event(k) > t or event(k) = t, status(k) != x), history(k-1)] \
+        &=sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} (mean(P^(G^*)) [N_y (tau) bb(1) {event(k) > t} | history(k-1)] + mean(P^(G^*)) [N_y (tau) bb(1) {event(k) = t, status(k) != x} | history(k-1)])/((mean(P^(G^*)) [bb(1) {event(k) > t} | history(k-1)] + mean(P^(G^*)) [bb(1) {event(k) = t, status(k) != x} | history(k-1)])) \
         &=^(**)sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} mean(P^(G^*)) [N_y (tau) | event(k) > t, history(k-1)] \
         &=sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} (mean(P^(G^*)) [N_y (tau) bb(1) { event(k) > t} |history(k-1)])/(mean(P^(G^*)) [bb(1) { event(k) > t } | history(k-1)]) \
         &=sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} (Qbar(k-1) (tau, history(k-1)) - Qbar(k-1) (t, history(k-1)))/(S (t | history(k-1))),
 $ <eq:rytgaardproof4>
-where in $(**)$, we use that the event $(event(k) = t, status(k) != x)$ has probability zero.
+where in $(**)$, we use that 
+$
+    &integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} (mean(P^(G^*)) [N_y (tau) bb(1) {event(k) > t} | history(k-1)] + mean(P^(G^*)) [N_y (tau) bb(1) {event(k) = t, status(k) != x} | history(k-1)])/((mean(P^(G^*)) [bb(1) {event(k) > t} | history(k-1)] + mean(P^(G^*)) [bb(1) {event(k) = t, status(k) != x} | history(k-1)])) tilde(M)^x (dif t) \
+        &= integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} mean(P^(G^*)) [N_y (tau) | event(k) > t, history(k-1)] tilde(M)^x (dif t).
+$
+This follows because of the orthogonality of the martingales (using that if one of the two terms with $status(k) != x$ was greater than zero, then $tilde(N)^x$ would not be able to jump at time $t$
+with probability > 0).
 Let $B_(k-1) (u) = (Qbar(k-1)(tau) -Qbar(k-1)(u)) 1/( S (u | historycensored(k-1)))$.
 Combining @eq:rytgaardproof1, @eq:rytgaardproof2, @eq:rytgaardproof3, and @eq:rytgaardproof4 with @eq:rytgaardeif, we find that the efficient influence function can also be written as:
 $
     phi_tau^*(P) &=sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1))) bb(1) {statuscensored(k-1) in {ell, a}, eventcensored(k-1) < tau} \
-        &[integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) (Qbar(k) (covariatecensored(k), 1, a, historycensored(k-1))- B_(k-1) (u)) tilde(M)^(a) (d u) \
-            &quad+integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) (mean(P) [Qbar(k) (tau) | event(k) =u , status(k) = ell, history(k-1)] - B_(k-1) (u)) tilde(M)^(ell) (d u) \
-            &quad+integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) (1 - B_(k-1) (u)) tilde(M)^(y) (d u) +integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1)))(0 - B_(k-1) (u)) tilde(M)^(d) (d u) \
-            &quad+  1/(tilde(S)^c (eventcensored(k) | historycensored(k-1))) bb(1) (eventcensored(k) < tau, statuscensored(k) = ell, k < K) ( Qbar(k) (tau) - mean(P) [Qbar(k) (tau) | eventcensored(k), status(k) = ell, history(k-1)] )]\
+        &[integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u- | historycensored(k-1))) (Qbar(k) (covariatecensored(k), 1, a, historycensored(k-1))- B_(k-1) (u)) tilde(M)^(a) (d u) \
+            &quad+integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u- | historycensored(k-1))) (mean(P) [Qbar(k) (tau) | event(k) =u , status(k) = ell, history(k-1)] - B_(k-1) (u)) tilde(M)^(ell) (d u) \
+            &quad+integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u- | historycensored(k-1))) (1 - B_(k-1) (u)) tilde(M)^(y) (d u) +integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u- | historycensored(k-1)))(0 - B_(k-1) (u)) tilde(M)^(d) (d u) \
+            &quad+  1/(tilde(S)^c (eventcensored(k)- | historycensored(k-1))) bb(1) (eventcensored(k) < tau, statuscensored(k) = ell, k < K) ( Qbar(k) (tau) - mean(P) [Qbar(k) (tau) | eventcensored(k), status(k) = ell, history(k-1)] )]\
         &+ Qbar(0) (tau, 1, covariate(0))- Psi_tau^g (P) \
         &= sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1))) bb(1) {statuscensored(k-1) in {ell, a}, eventcensored(k-1) < tau} [ \
-            &quad-integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) Qbar(k) (1, covariatecensored(k-1), u, a, historycensored(k-1))  lambda^a_k (u , historycensored(k-1)) dif u \
-            &quad-integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) mean(P) [Qbar(k) (tau) | eventcensored(k) =s , status(k) = ell, historycensored(k-1)] lambda_k^(ell) (u , historycensored(k-1)) dif u \
-            &quad-integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) (1) lambda_k^(y) (u , historycensored(k-1)) dif u -integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1)))(0) lambda_k^(d) (u , historycensored(k-1)) dif u \
-            &quad -integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) B_(k-1) (u) M^bullet (dif u) + macron(Z)^a_(k,tau) (tau) + integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) B_(k-1) (u) tilde(M)^c ( d u)] \
+            &quad-integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u- | historycensored(k-1))) Qbar(k) (1, covariatecensored(k-1), u, a, historycensored(k-1))  Lambda^a_k (dif u , historycensored(k-1))  \
+            &quad-integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u- | historycensored(k-1))) mean(P) [Qbar(k) (tau) | eventcensored(k) =s , status(k) = ell, historycensored(k-1)] Lambda_k^(ell) (dif u , historycensored(k-1))  \
+            &quad-integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u- | historycensored(k-1))) (1) Lambda_k^(y) (dif u , historycensored(k-1))  -integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u- | historycensored(k-1)))(0) Lambda_k^(d) (dif u , historycensored(k-1))  \
+            &quad -integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) B_(k-1) (u) M^bullet (dif u) + macron(Z)^a_(k,tau) (tau) \
+            &+ integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) (Qbar(k-1)(tau) -Qbar(k-1)(u)) 1/( S (u- | historycensored(k-1))) tilde(M)^c ( d u)] \
         &+ Qbar(0) (tau, 1, covariate(0)) - Psi_tau^g (P),
 $ <eq:rytgaard55>
-where $M^bullet (t) = sum_(x=a,ell,d,y,c) tilde(M)^x (t)$ and $lambda_k^bullet (s , historycensored(k-1)) = sum_(x=a,ell,d,y,c) lambda^x_k (s , historycensored(k-1))$.
+where $M^bullet (t) = sum_(x=a,ell,d,y,c) tilde(M)^x (t)$ and $Lambda_k^bullet (s , historycensored(k-1)) = sum_(x=a,ell,d,y,c) Lambda^x_k (s , historycensored(k-1))$.
+In the second equality, we apply orthogonality of martingales again to conclude that we can replace the $u$'s with $u-$ in all the relevant places. 
 Now note that 
 $
     & integral_(eventcensored(k - 1))^(tau and eventcensored(k)) (Qbar(k-1)(tau) - Qbar(k-1)(u)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u | historycensored(k-1))) M^bullet (dif u) \
         &=(Qbar(k-1)(tau) - Qbar(k-1)(eventcensored(k))) 1/(tilde(S)^c (eventcensored(k) | historycensored(k-1)) S (eventcensored(k) | historycensored(k-1))) bb(1){eventcensored(k) <= tau} \
-        &quad-Qbar(k-1)(tau) integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u | historycensored(k-1))) lambda_k^bullet (u , historycensored(k-1)) dif u \
-        &quad+ integral_(eventcensored(k-1))^(tau and eventcensored(k)) (Qbar(k-1)(u))/(tilde(S)^c (u | historycensored(k-1)) S (u | historycensored(k-1))) lambda_k^bullet (u , historycensored(k-1)) dif u.
+        &quad-Qbar(k-1)(tau) integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u | historycensored(k-1))) Lambda_k^bullet (dif u , historycensored(k-1))  \
+        &quad+ integral_(eventcensored(k-1))^(tau and eventcensored(k)) (Qbar(k-1)(u))/(tilde(S)^c (u | historycensored(k-1)) S (u | historycensored(k-1))) Lambda_k^bullet (dif u , historycensored(k-1)) .
 $ <eq:rytgaard5>
 Let us calculate the first integral of @eq:rytgaard5. We have,
 $
-    & Qbar(k-1)(tau) integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u | historycensored(k-1))) lambda_k^bullet (u , historycensored(k-1)) dif u  \
+    & Qbar(k-1)(tau) integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u | historycensored(k-1))) Lambda_k^bullet (dif u , historycensored(k-1))   \
         &= Qbar(k-1)(tau) (1/(tilde(S)^c (eventcensored(k) and tau | historycensored(k-1)) S (eventcensored(k) and tau | historycensored(k-1)))-1),
 $ <eq:rytgaard6>
 where the last line holds by the Duhamel equation (2.6.5) of @andersenStatisticalModelsBased1993.
 The second integral of @eq:rytgaard5 is equal to
 $
-    &integral_(eventcensored(k-1))^(tau and eventcensored(k)) (Qbar(k-1)(u))/(tilde(S)^c (u | historycensored(k-1)) S (u | historycensored(k-1))) lambda_k^bullet (u , historycensored(k-1)) dif u \
-        &= integral_(eventcensored(k-1))^(tau and eventcensored(k)) [integral_(0)^(u) S(s | historycensored(k-1)) Qbar(k) (1, covariate(k-1), s, a, historycensored(k-1)) lambda_k^a (s , historycensored(k-1)) dif s \
-            &quad +  integral_(0)^(u) S(s | historycensored(k-1)) mean(P) [Qbar(k) (tau) | event(k) =s , status(k) = ell, history(k-1)] lambda_k^ell (s , historycensored(k-1)) dif s \
-            &quad +  integral_(0)^(u) S(s | historycensored(k-1)) lambda_k^y (s , historycensored(k-1)) dif s ]  times 1/(tilde(S)^c (u | historycensored(k-1)) S (u | historycensored(k-1))) lambda_k^bullet (u , historycensored(k-1)) dif u \
-        &= integral_(eventcensored(k-1))^(tau and eventcensored(k)) integral_(s)^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u | historycensored(k-1))) lambda_k^bullet (u , historycensored(k-1)) dif u \
-        &quad times [ S(s | historycensored(k-1)) Qbar(k) (1, covariate(k-1), s, a, historycensored(k-1)) lambda_k^a (s , historycensored(k-1))  \
-            &quad quad +   S(s | historycensored(k-1)) mean(P) [Qbar(k) (tau) | event(k) =s , status(k) = ell, history(k-1)] lambda_k^ell (s , historycensored(k-1))  \
-            &quad quad +   S(s | historycensored(k-1)) lambda_k^y (s , historycensored(k-1)) ] dif s \
+    &integral_(eventcensored(k-1))^(tau and eventcensored(k)) (Qbar(k-1)(u))/(tilde(S)^c (u | historycensored(k-1)) S (u | historycensored(k-1))) Lambda_k^bullet (u , historycensored(k-1))  \
+        &= integral_(eventcensored(k-1))^(tau and eventcensored(k)) [integral_(eventcensored(k-1))^(u) S(s- | historycensored(k-1)) Qbar(k) (1, covariate(k-1), s, a, historycensored(k-1)) Lambda_k^a (dif s , historycensored(k-1)) \
+            &quad +  integral_(eventcensored(k-1))^(u) S(s- | historycensored(k-1)) mean(P) [Qbar(k) (tau) | event(k) =s , status(k) = ell, history(k-1)] Lambda_k^ell (dif s , historycensored(k-1)) \
+            &quad +  integral_(eventcensored(k-1))^(u) S(s- | historycensored(k-1)) Lambda_k^y (s , historycensored(k-1)) dif s ]  times 1/(tilde(S)^c (u | historycensored(k-1)) S (u | historycensored(k-1))) Lambda_k^bullet (dif u , historycensored(k-1))  \
+        &= integral_(eventcensored(k-1))^(tau and eventcensored(k)) integral_([s, tau and eventcensored(k)]) 1/(tilde(S)^c (u | historycensored(k-1)) S (u | historycensored(k-1))) Lambda_k^bullet (dif u , historycensored(k-1))  \
+        &quad times [ S(s- | historycensored(k-1)) Qbar(k) (1, covariate(k-1), s, a, historycensored(k-1)) Lambda_k^a (dif s , historycensored(k-1))  \
+            &quad quad +   S(s- | historycensored(k-1)) mean(P) [Qbar(k) (tau) | event(k) =s , status(k) = ell, history(k-1)] Lambda_k^ell (dif s , historycensored(k-1))  \
+            &quad quad +   S(s- | historycensored(k-1)) Lambda_k^y (dif s , historycensored(k-1)) ]  \
         &=^((*)) 1/(tilde(S)^c (tau and eventcensored(k) | historycensored(k-1)) S (tau and eventcensored(k) | historycensored(k-1))) Qbar(k-1) (tau and eventcensored(k)) \
-        &-integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/ (tilde(S)^c (s | historycensored(k-1)))  [  Qbar(k) (1, covariate(k-1), s, a, historycensored(k-1)) lambda_k^a (s , historycensored(k-1))  \
-            &quad quad +  mean(P) [Qbar(k) (tau) | event(k) =s , status(k) = ell, history(k-1)] lambda_k^ell (s , historycensored(k-1))  \
-            &quad quad +  lambda_k^y (s , historycensored(k-1)) ] dif s.
+        &-integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/ (tilde(S)^c (s- | historycensored(k-1)))  [  Qbar(k) (1, covariate(k-1), s, a, historycensored(k-1)) Lambda_k^a (dif s , historycensored(k-1))  \
+            &quad quad +  mean(P) [Qbar(k) (tau) | event(k) =s , status(k) = ell, history(k-1)] Lambda_k^ell (dif s , historycensored(k-1)) +  Lambda_k^y (dif s , historycensored(k-1)) ].
 $ <eq:rytgaard7>
 In $(*)$, we use that
 $
-    & integral_(s)^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u | historycensored(k-1))) lambda^bullet_k (u , historycensored(k-1)) dif u \
-        &=  1/(tilde(S)^c (tau and eventcensored(k) | historycensored(k-1)) S (tau and eventcensored(k) | historycensored(k-1))) - 1/(tilde(S)^c (s | historycensored(k-1)) S (s | historycensored(k-1))),
+    & integral_([s,tau and eventcensored(k)]) 1/(tilde(S)^c (u | historycensored(k-1)) S (u | historycensored(k-1))) Lambda^bullet_k (u , historycensored(k-1)) \
+        &=  1/(tilde(S)^c (tau and eventcensored(k) | historycensored(k-1)) S (tau and eventcensored(k) | historycensored(k-1))) - 1/(tilde(S)^c (s- | historycensored(k-1)) S (s- | historycensored(k-1))),
 $
 which, again, follows by the Duhamel equation.
 Thus, we find by @eq:rytgaard5 @eq:rytgaard6, @eq:rytgaard7
@@ -1672,12 +1679,10 @@ $
         &=(Qbar(k-1)(tau) - Qbar(k-1)(eventcensored(k))) 1/(tilde(S)^c (eventcensored(k) | historycensored(k-1)) S (eventcensored(k) | historycensored(k-1))) bb(1){eventcensored(k) <= tau} \
         &-Qbar(k-1)(tau) (1/(tilde(S)^c (eventcensored(k) and tau | historycensored(k-1)) S (eventcensored(k) and tau | historycensored(k-1)))-1) \
         &quad times 1/(tilde(S)^c (tau and eventcensored(k) | historycensored(k-1)) S (tau and eventcensored(k) | historycensored(k-1))) Qbar(k-1) (tau and eventcensored(k)) \
-        &-integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/ (tilde(S)^c (s | historycensored(k-1)))  [  Qbar(k) (1, covariate(k-1), s, a, historycensored(k-1)) lambda_k^a (s , historycensored(k-1))  \
-            &quad quad +  mean(P) [Qbar(k) (tau) | event(k) =s , status(k) = ell, history(k-1)] lambda_k^ell (s , historycensored(k-1))  \
-            &quad quad +  lambda_k^y (s , historycensored(k-1)) ] dif s \
-        &=-integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/ (tilde(S)^c (s | historycensored(k-1)))  [  Qbar(k) (1, covariate(k-1), s, a, historycensored(k-1)) lambda_k^a (s , historycensored(k-1))  \
-            &quad quad +  mean(P) [Qbar(k) (tau) | event(k) =s , status(k) = ell, history(k-1)] lambda_k^ell (s , historycensored(k-1))  \
-            &quad quad +  lambda_k^y (s , historycensored(k-1)) ] dif s  +Qbar(k-1)(tau).
+        &-integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/ (tilde(S)^c (s- | historycensored(k-1)))  [  Qbar(k) (1, covariate(k-1), s, a, historycensored(k-1)) Lambda_k^a (dif s , historycensored(k-1))  \
+            &quad quad +  mean(P) [Qbar(k) (tau) | event(k) =s , status(k) = ell, history(k-1)] Lambda_k^ell (dif s , historycensored(k-1))  +  Lambda_k^y (dif s , historycensored(k-1)) ]  \
+        &=-integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/ (tilde(S)^c (s- | historycensored(k-1)))  [  Qbar(k) (1, covariate(k-1), s, a, historycensored(k-1)) Lambda_k^a (dif s , historycensored(k-1))  \
+            &quad quad +  mean(P) [Qbar(k) (tau) | event(k) =s , status(k) = ell, history(k-1)] Lambda_k^ell (dif s , historycensored(k-1))  +  Lambda_k^y (dif s , historycensored(k-1)) ]   +Qbar(k-1)(tau).
 $
 This now shows that @eq:rytgaard55 is equal to @eq:eif.
 
