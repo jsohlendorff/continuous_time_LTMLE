@@ -1588,14 +1588,9 @@ We note, for instance, for $x= ell$ that
 $
     &mean(P^(G^*)) [N_y (tau) | Delta N^x (t) = 1, cal(F)_(t-)] \
         &=sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)}mean(P^(G^*)) [N_y (tau) | event(k) = t, status(k) = x, history(k-1)] \
-        &= sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} lim_(epsilon -> 0) mean(P^(G^*)) [N_y (tau) | event(k) in (t, t+epsilon), status(k) = x, history(k-1)] \
-        &= sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} lim_(epsilon -> 0) (mean(P^(G^*)) [N_y (tau) bb(1) { event(k) in (t, t+epsilon), status(k) = x} | history(k-1)]) / (mean(P^(G^*)) [bb(1) { event(k) in (t, t+epsilon), status(k) = x} | history(k-1)]) \
-        &= sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} \
-        &qquad lim_(epsilon -> 0) (mean(P^(G^*)) [mean(P^(G^*)) [Qbar(k) (tau) | event(k), status(k) = x, history(k-1)] bb(1) {event(k) < tau} bb(1) { event(k) in (t, t+epsilon), status(k) = x} | history(k-1)]) / (mean(P^(G^*)) [bb(1) { event(k) in (t, t+epsilon), status(k) = x} | history(k-1)]) \
-        &=^(*) sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} (mean(P) [Qbar(k) (tau) | event(k) =t, status(k) = x, history(k-1)] S (t| history(k-1)) lambda^x_k (t , history(k-1))) /(S (t| history(k-1)) lambda^x_k (t , history(k-1))) \
         &= sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} mean(P) [Qbar(k) (tau) | event(k) =t, status(k) = x, history(k-1)],
 $ <eq:rytgaardproof1>
-where we, in $(*)$, apply dominated convergence.
+where we apply the law of iterated expectation. 
 Similarly, we may find that
 $
     mean(P^(G^*)) [N_y (tau) | Delta N^y (t) = 1, cal(F)_(t-)] = 1, \
@@ -1624,7 +1619,7 @@ Let $B_(k-1) (u) = (Qbar(k-1)(tau) -Qbar(k-1)(u)) 1/( S (u | historycensored(k-1
 Combining @eq:rytgaardproof1, @eq:rytgaardproof2, @eq:rytgaardproof3, and @eq:rytgaardproof4 with @eq:rytgaardeif, we find that the efficient influence function can also be written as:
 $
     phi_tau^*(P) &=sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1))) bb(1) {statuscensored(k-1) in {ell, a}, eventcensored(k-1) < tau} \
-        &[integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) (Qbar(k) (tau, 1, u, a, historycensored(k-1))- B_(k-1) (u)) tilde(M)^(a) (d u) \
+        &[integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) (Qbar(k) (covariatecensored(k), 1, a, historycensored(k-1))- B_(k-1) (u)) tilde(M)^(a) (d u) \
             &quad+integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) (mean(P) [Qbar(k) (tau) | event(k) =u , status(k) = ell, history(k-1)] - B_(k-1) (u)) tilde(M)^(ell) (d u) \
             &quad+integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1))) (1 - B_(k-1) (u)) tilde(M)^(y) (d u) +integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u | historycensored(k-1)))(0 - B_(k-1) (u)) tilde(M)^(d) (d u) \
             &quad+  1/(tilde(S)^c (eventcensored(k) | historycensored(k-1))) bb(1) (eventcensored(k) < tau, statuscensored(k) = ell, k < K) ( Qbar(k) (tau) - mean(P) [Qbar(k) (tau) | eventcensored(k), status(k) = ell, history(k-1)] )]\
