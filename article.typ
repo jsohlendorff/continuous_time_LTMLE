@@ -1583,6 +1583,14 @@ $
         &+ integral_0^tau W^g (t -) (1 - mean(P^(G^*)) [N_y (tau) | Delta N^y (t) = 0, cal(F)_(t-)]) tilde(M)^y (dif t) \
         &+integral_0^tau W^g (t -) (0 - mean(P^(G^*)) [N_y (tau) | Delta N^d (t) = 0, cal(F)_(t-)]) tilde(M)^d (dif t).
 $ <eq:rytgaardeif>
+In @eq:rytgaardeif, it is not evident if many of the integrals are well-defined.
+$mean(P^(G^*)) [N_y (tau) | Delta N^x (t) = 0, cal(F)_(t-)]$
+can be understood as a ratio of two predictable projections (Corollary 2.2.3 of @last1995marked).
+$mean(P^(G^*)) [N_y (tau) | Delta N^x (t) = 1, cal(F)_(t-)]$ however may be problematic;
+it can be defined almost surely for each $t$, but we need to actually define it as a process for
+each element in the sample space. In the following, we ignore these difficulties and continue as if the integrals
+are actually well-defined. 
+
 Here, $tilde(M)^x$ denotes the observed martingales with respect to the observed filtration.
 We note, for instance, for $x= ell$ that
 $
