@@ -304,6 +304,9 @@ Now let $(event(k))_k$ denote the ordered event times of $N$.
 The main outcome of interest is the counterfactual outcome process
 $tilde(Y) := tilde(N)^y$;
 and we wish to identify $mean(P) [tilde(Y)_t]$.
+Also note that this definition aligns closely
+with the definition of potential outcomes in discrete time
+based on structural equations (@richardson2013single).
 
 //It has been discussed in discrete time (@RobinsLongitudinal2001)
 //that the g-formula is unique; however, as we shall
@@ -378,46 +381,57 @@ If _all_ of the following conditions hold:
 - *Consistency*: $tilde(Y)_(dot) bb(1) {tau^(g^*) > dot} = Y_(dot) bb(1) {tau^(g^*) > dot} quad P-"a.s."$
 - *Exchangeability*:
   Define $cal(H)_t := cal(F)_t or sigma(tilde(Y))$.
-  Let $Lambda^(a, a_j) (dif t) = pi_t ({a_j}) Lambda^(a) (dif t)$ denote the $P$-$cal(F)_t$-compensator of $N^(a, a_j)$ and $Lambda^(a,a_j)_H (dif t) = pi_t^H ({a_j}) Lambda^(a)_H (dif t)$ denote the $P$-$cal(H)_t$-compensator of $N^(a, a_j)$. $pi$ is indistinguishable from $pi^H$,
-  that is for all $j in {1, dots, k}$ $P(pi_t ({a_j}) = pi_t^H ({a_j}), forall t in [0, T]) = 1$.
+  Let $Lambda^(a, a_j) (dif t) = pi_t ({a_j}) Lambda^(a) (dif t)$ denote the $P$-$cal(F)_t$-compensator of $N^(a, a_j)$ and $Lambda^(a,a_j)_H (dif t) = pi_t^H ({a_j}) Lambda^(a)_H (dif t)$ denote the $P$-$cal(H)_t$-compensator of $N^(a, a_j)$. 
+  We have for all $j in {1, dots, k}$ and $m in bb(N)$ that $pi_(event(m)) ({a_j}) = pi_(event(m))^H ({a_j})$ $P$-a.s.
 
 - *Positivity*: 
   $
       W (t) := product_(j = 1)^(N_t) (product_(i=1)^(k) ((pi^*_(event(j)) ({a_i}; history(j-1))) / (pi_(event(j)) ({a_i}; history(j-1))))^(bb(1) {treat(k) = a_i}))^(bb(1) {status(j) = a}) 
   $ <eq:rytgaard>
-  is a uniformly integrable $P$-$cal(F)_t$-martingale.
+  is uniformly integrable.
   
-  Furthermore, assume that $K(t) = integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) M^(a, a_j) (dif s)$
-  is a $P$-$cal(F)_t$-martingale and that $K$ is a process of *locally integrable variation*, meaning that $mean(P) [integral_0^t |d K(s)| ] < oo$ for all $t > 0$.
+  Furthermore, let $K^H (t) = integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi^H_s ({a_j})) - 1) M_H^(a, a_j) (dif s)$
+  is a $P$-$cal(H)_t$-martingale and that $K^H$ is a process of *locally integrable variation*, meaning that $mean(P) [integral_0^t |d K^H (s)| ] < oo$ for all $t > 0$
+  and, moreover, that $mean(P) [integral_0^t W(s-) |dif K_s^H| ] < oo$ for $t>0$.
 
+  Let
+  $
+  K_t &= integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) M^(a, a_j) (dif s)
+  $
 Then,
 $
     mean(P) [tilde(Y)_t] = mean(P) [Y_t W (t)]
 $
-    and $W (t) = cal(E) (K)_t$ is a uniformly integrable $P$-$cal(F)_t$-martingale, where $cal(E)$ denotes the Doléans-Dade exponential (@protter2005stochastic).
+    and $W (t) = cal(E) (K)_t$ is a uniformly integrable $P$-$cal(F)_t$-martingale, where $cal(E)$ denotes the Doléans-Dade exponential (@protter2005stochastic),
+    and $K=K^H$.
 ] <thm:identifiabilitymartingale>
 
 #proof[
     We shall use that the likelihood ratio solves a specific stochastic differential equation.
-    To this end, note that
+    First, we have that
     $
-        W(t) &= cal(E) (sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s))_t \
-            &=^((*)) cal(E) (sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s) - sum_(j=1)^(k) (pi_s^* ({a_j}) - pi_s ({a_j})) Lambda^(a) (dif s))_t \
-            &= cal(E) (sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s) - sum_(j=1)^(k) ((pi_s^* ({a_j})) / (pi_s ({a_j})) - 1) Lambda^(a, a_j) (dif s))_t \
-            &= cal(E) (sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) M^(a, a_j) (dif s))_t.
+        K_t &= integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) M^(a, a_j) (dif s) \
+            &= integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s) - sum_(j=1)^(k) ((pi_s^* ({a_j})) / (pi_s ({a_j})) - 1) Lambda^(a, a_j) (dif s) \
+            &= integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s) - sum_(j=1)^(k) (pi_s^* ({a_j}) - pi_s ({a_j})) Lambda^(a) (dif s) \
+            &= integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s).
     $
-    In $(*)$, we use that $sum_(j=1)^k pi_s ({a_j}) = sum_(j=1)^k pi_s^* ({a_j}) = 1$.
+    This shows that $W (t) = cal(E) (K)_t$.
+    By exchangeability and the last equality, we also have that $K_t = integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi^H_s ({a_j})) - 1) M_H^(a, a_j) (dif s)$,
+    where $M_(cal(H))^(a,a_j) = N^(a,a_j) - Lambda_(cal(H))^(a,a_j)$ and $Lambda_(cal(H))^(a,a_j)$ denotes the $P$-$cal(H)_t$ compensator
+    of $N^(a,a_j)$.
         
     Thus, by properties of the product integral (e.g., Theorem II.6.1 of @andersenStatisticalModelsBased1993),
     $
-        W(t) = 1 + integral_0^t W(s -) sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) M^(a, a_j) (dif s).
+         W(t) = 1 + integral_0^t W(s -) dif K_s 
     $ <eq:sde>
-    We have that
-    $
-        zeta_t := integral_0^t W(s -) sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) M^(a, a_j) (dif s)
-    $ is a zero mean $P$-$cal(H)_t$-martingale by positivity.
-    From this, we see that $integral_0^t tilde(Y)_(t) zeta (dif s)$ is also a uniformly integrable $P$-$cal(H)_t$-martingale
-    by Theorem 2.1.42 of @last1995marked.
+    From this, it follows by Theorem 2.1.42 of @last1995marked that $W(t)$ is a $P$-$cal(H)_t$ martingale.
+    However, by exchangeability, it also $cal(F)_t$-measurable and hence a $P$-$cal(F)_t$ martingale.  
+    // We have that
+    // $
+    //     zeta_t := integral_0^t W(s -) sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) M^(a, a_j) (dif s)
+    // $ is a zero mean $P$-$cal(H)_t$-martingale by positivity.
+    // From this, we see that $integral_0^t tilde(Y)_(t) zeta (dif s)$ is also a uniformly integrable $P$-$cal(H)_t$-martingale
+    // by Theorem 2.1.42 of @last1995marked.
     This implies that
     $
         mean(P) [Y_t W (t)] &= mean(P) [Y_t bb(1) {tau^(g^*) > t} W(t)]  \
@@ -433,6 +447,14 @@ $
 Note that in the proof, it suffices that $W(t)$ is uniformly bounded because
 then it will also be a $P$-$cal(H)_t$-martingale
 since it is a local, bounded $P$-$cal(H)_t$-martingale.
+Note that a more general alternative to the above conditions is simply
+to assume that $(W(t))_t$ is a uniformly martingale on both filtrations $cal(F)_t$ and $cal(H)_t$.
+
+// *NOTE:* Would be very nice for positivity stated in terms of $K$ only.
+// Note that assuming that $K$ is uniformly integrable and a $P$-$cal(F)_t$ martingale
+// implies that it is of class D with respect to $cal(F)_t$. If we also had that it was of class D
+// with respect to $cal(H)_t$, then we could state positivity for the observed data, but not the unobserved data.
+// Maybe it would be possible to do something directly with the event times.
 
 In @rytgaardContinuoustimeTargetedMinimum2022,
 both an exchangeability condition and a
@@ -493,16 +515,16 @@ and using that the stochastic exponential solves a specific stochastic different
     For $x=ell$ the argument is the same.
 ]
 
-= Comparisons with @ryalenPotentialOutcomes
+= Comparison with @ryalenPotentialOutcomes
 
-It is also natural to ask oneself: how does
+It is natural to ask oneself: how does
 our conditions
 relate to the ones of @ryalenPotentialOutcomes?
 The condition of consistency is the same.
 However, the exchangeability condition and
 the positivity condition are different in general.
-We present slightly strengthened versions of the conditions
-as these are easier to compare.
+We compare exclusively the exchangeability conditions
+as the positivity condition is not really interesting. 
 Let $bb(N)_t^a = bb(1) {tau^(g^*) <= t}$
 and let $bb(L)_t$ denote its $P$-$cal(F)_t$-compensator.
 
@@ -510,17 +532,50 @@ and let $bb(L)_t$ denote its $P$-$cal(F)_t$-compensator.
   Define $cal(H)_t := cal(F)_t or sigma(tilde(Y))$.
   The $P$-$cal(F)_t$ compensator for $bb(N)^a$ is also the $P$-$cal(H)_t$ compensator.
 
-- *Positivity*:
-  $
-      tilde(W) (t) := (cal(E) (-bb(N)^a))_t / (cal(E) (-bb(L)^a))_t = cal(E) (tilde(K))_t
-  $
-  is uniformly integrable, where $tilde(K)_t = integral_0^t 1/(1- Delta bb(L)^a_s ) (bb(N)^a (dif s) - bb(L)^a (dif s))$.
-  Furthermore, $tilde(K)$ is a process of *locally integrable variation*
-  and a $P$-$cal(F)_t$-martingale. 
+Let $tilde(W) (t) := (cal(E) (-bb(N)^a)_t) / (cal(E) (-bb(L)^a)_t) = cal(E) (bb(K)^a)_t$
+and $tilde(Q) := tilde(W) (T) dot P$,
+where $bb(K)^a_t = - integral_0^t 1/(1- Delta bb(L)^a_s ) (bb(N)^a (dif s) - bb(L)^a (dif s))$.
+If additionally positivity as described in @ryalenPotentialOutcomes holds,
+then
+$
+    mean(P) [tilde(Y)_t] = mean(P) [tilde(W) (t) Y_t].
+$ <eq:ryalenIdentification>
 
-== Example
+== A different intervention yielding the same identification formula as @ryalenPotentialOutcomes
 
-=== Example with no time-varying confounding and one treatment event showing that the identification formulas may be different
+Suppose that we observe the multivariate counting process
+$N = (N^y, N^d, N^(ell, l_1), dots, N^(ell, l_j), N^(a,a_1), N^(a,a_0))$.
+If we are interested in the effect of staying on treatment $a_1$,
+which prevents $N^(a,a_0)$-events. Note is a predictable intervention; however, the
+intervention that is formulated previously is an optional intervention, in general. 
+With canonical compensators, we see that for the potential outcome process for this intervention
+$
+    tilde(Lambda)^(x) (dif t) &= dot(Lambda)^(x) (tilde(N)', dif t), x in.not {a_0, a_1} \
+    tilde(Lambda)^(a_1) (dif t) &= pi_t (tilde(N)', {a_1}) dot(Lambda)^(x) (tilde(N)', dif t) \
+    tilde(Lambda)^(a_0) (dif t) &= 0
+$
+However, because $pi_t (tilde(N)', {a_1}) != 1$, it may not be generally be the case
+that $mean(P) [tilde(Y)_t] = mean(P) [tilde(Y)'_t]$. @ryalenPotentialOutcomes gives conditions
+under which there exists such a potential outcome process; for instance if $chevron.l M^(a_0), M^(x) chevron.r^P_s = 0$
+for $x!= a_0$.
+On the other hand, note that $tau^(g^*) = inf {t > 0 | N^(a_1) != N^(a_1) + N^(a_0) or N^(a_0) != 0} = inf {t>0 |N^(a_1) != 0}$.
+Thus, this implies that the identification formulae for $mean(P) [tilde(Y)_t]$ and
+$mean(P) [tilde(Y)'_t]$.
+However, as we shall see, these need not be the same even under the orthogonal martingales assumption.
+Therefore, there will be situations in which the exchangeability condition can fail.
+
+// Intuitively, I think this one is more related to coarsening at random with censoring
+
+// - *Positivity*:
+//   $
+//       tilde(W) (t) := (cal(E) (-bb(N)^a)_t) / (cal(E) (-bb(L)^a)_t) = cal(E) (bb(K)^a)_t
+//   $
+//   is uniformly integrable, where $bb(K)^a_t = - integral_0^t 1/(1- Delta bb(L)^a_s ) (bb(N)^a (dif s) - bb(L)^a (dif s))$.
+//   Furthermore, $bb(K)^a$ is a process of *locally integrable variation*
+//   and a $P$-$cal(F)_t$-martingale. 
+
+
+== Example with no time-varying confounding and one treatment event showing that the identification formulas may be different
 #figure(diagram(spacing: (9mm, 12mm), debug: false, node-stroke: 0.5pt, node-inset: 10pt, label-size: 7pt, {
     let msm_function(offset: (0,0), scale_text: 70%) = {
         let (novisit, treat_visit, treat_visit_2, death) = (
@@ -558,61 +613,83 @@ $
     Lambda^(a,a_j) (dif t) (P) &= bb(1) {t <= event(1)} pi_t (a_j) lambda_t^a dif t, j=0,1.
 $
 with respect to its natural filtration. 
-In $P$, note that
-$
-    mean(P) [Y_t] &= mean(P) [N^y (t)] \
-        &= mean(P) [bb(1) {event(1) <= t, status(1) = y} + bb(1) {status(1) = a, treat(1) = 1, event(2) <= t, status(2) = y} + bb(1) {status(1) = a, treat(1) = 0, event(2) <= t, status(2) = y}]\
-        &= integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) lambda_s^y dif s \
-        &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) pi_s ({a_1}) lambda_s^(a) integral_s^t exp(- integral_s^v lambda_u^y ) dif u) lambda_v^y dif v dif s \
-        &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) (1-pi_s ({a_1}))lambda_s^(a,a_0) integral_s^t exp(- integral_s^v lambda_u^y ) dif u) lambda_v^y dif v dif s \
-$
+// In $P$, note that
+// $
+//     mean(P) [Y_t] &= mean(P) [N^y (t)] \
+//         &= mean(P) [bb(1) {event(1) <= t, status(1) = y} + bb(1) {status(1) = a, treat(1) = 1, event(2) <= t, status(2) = y} + bb(1) {status(1) = a, treat(1) = 0, event(2) <= t, status(2) = y}]\
+//         &= integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) lambda_s^y dif s \
+//         &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) pi_s ({a_1}) lambda_s^(a) integral_s^t exp(- integral_s^v lambda_u^y ) dif u) lambda_v^y dif v dif s \
+//         &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) (1-pi_s ({a_1}))lambda_s^(a,a_0) integral_s^t exp(- integral_s^v lambda_u^y ) dif u) lambda_v^y dif v dif s \
+// $
 
 Then, in $Q$ (defined in @thm:gformula), we have
 $
-    Lambda^y (dif t) (Q) &= lambda_t^y dif t, \
-    Lambda^(a,a_0) (dif t) (Q) &= 0, \
-    Lambda^(a,a_1) (dif t) (Q) &= lambda_t^a dif t.
+    Lambda^y (dif t) (Q) &= Lambda^y (dif t) (P), \
+    Lambda^(a,a_0) (dif t) (Q) &= 0 dif t, \
+    Lambda^(a,a_1) (dif t) (Q) &= Lambda^a (dif t) (P)
 $
 However, in $tilde(Q)$ (the change of measure in @ryalenPotentialOutcomes), we have
 $
-    Lambda^y (dif t) (tilde(Q)) &= (lambda_t^y dif t-0)/(1-0), \
-    Lambda^(a,a_0) (dif t) (tilde(Q)) &= (0-0)/(1-0) \
-    Lambda^(a,a_1) (dif t) (tilde(Q)) &= (lambda_t^a dif t - (1-pi_(t and tau^(g^*))(a_1)) lambda^a_(t and tau^(g^*)) dif t)/(1-0) = pi_(t and tau^(g^*))(a_1) lambda^a_(t and tau^(g^*)) dif t = pi_(t)(a_1) lambda^a_(t) dif t.
+    Lambda^y (dif t) (tilde(Q)) &= Lambda^y (dif t) (P) \ //(lambda_t^y dif t-0)/(1-0), \
+    Lambda^(a,a_0) (dif t) (tilde(Q)) &= 0 dif t, \ //(0-0)/(1-0) \
+    Lambda^(a,a_1) (dif t) (tilde(Q)) &= pi_t ({a_1}; P) Lambda^a (dif t) (P)//(lambda_t^a dif t - (1-pi_(t and tau^(g^*))(a_1)) lambda^a_(t and tau^(g^*)) dif t)/(1-0) = pi_(t and tau^(g^*))(a_1) lambda^a_(t and tau^(g^*)) dif t = pi_(t)(a_1) lambda^a_(t) dif t.
 $
 since $tau^(g^*) = oo$ almost surely in $tilde(Q)$.
-Therefore, if we can show that $mean(tilde(Q)) [Y_t]$
-does not depend on the Radon-Nikodym derivative $pi_t (dif x)$, the two identification formulae will coincide.
+
+First, we show that the identification formulae are the same 
+
+=== Example showing the identification formulae are the same under a local independence condition
+Suppose that $lambda_t^y (1, s) = lambda^y_t$ for $s < t$ (in $P$).
+Then, $mean(Q) [Y_t] = mean(tilde(Q)) [Y_t]$.
+If we can show that $mean(tilde(Q)) [Y_t]$
+does not depend on the Radon-Nikodym derivative $pi_t ({a_1})$, the two identification formulae will coincide.
 Thus,
 $
     mean(tilde(Q)) [Y_t] &= mean(tilde(Q)) [N^y (t)] \
         &= mean(tilde(Q)) [bb(1) {event(1) <= t, status(1) = y} + bb(1) {status(1) = a, treat(1) = 1, event(2) <= t, status(2) = y}]\
-        &= integral_0^t exp(- integral_0^s (lambda_u^y + pi_(u)(a_1) lambda_u^(a)) dif u) lambda_s^y dif s + integral_0^t exp(- integral_0^s (lambda_u^y + pi_(u)(a_1) lambda_u^(a)) dif u) pi_(s)(a_1) lambda_s^(a) integral_s^t exp(- integral_s^v lambda_u^y dif u) lambda_v^y dif v dif s \
-        &= integral_0^t exp(- integral_0^s (lambda_u^y + pi_(u)(a_1) lambda_u^(a) dif u)) lambda_s^y dif s + integral_0^t exp(- integral_0^s (lambda_u^y + pi_(u)(a_1) lambda_u^(a)) dif u) pi_(s)(a_1) lambda_s^(a) (1-exp(- integral_s^t lambda_u^y dif u)) dif s \
+        &= integral_0^t exp(- integral_0^s (lambda_u^y + pi_(u)(a_1) lambda_u^(a)) dif u) lambda_s^y dif s + integral_0^t exp(- integral_0^s (lambda_u^y + pi_(u)(a_1) lambda_u^(a)) dif u) pi_(s)(a_1) lambda_s^(a) integral_s^t exp(- integral_s^v lambda_u^y (1, s) dif u) lambda_v^y (1, s) dif v dif s \
+        &= integral_0^t exp(- integral_0^s (lambda_u^y + pi_(u)(a_1) lambda_u^(a) dif u)) lambda_s^y dif s + integral_0^t exp(- integral_0^s (lambda_u^y + pi_(u)(a_1) lambda_u^(a)) dif u) pi_(s)(a_1) lambda_s^(a) (1-exp(- integral_s^t lambda_u^y (1, s) dif u)) dif s \
         &= 1- exp(- integral_0^t (lambda_u^y + pi_(u)(a_1) lambda_u^(a)) dif u) - integral_0^t exp(- integral_0^s (lambda_u^y +pi_(u)(a_1) lambda_u^(a)) dif u) pi_(s)(a_1) lambda_s^a dif s \
-        &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_(u)(a_1) lambda_u^(a)) dif u) pi_(s)(a_1) lambda_s^(a)  (1-exp(- integral_s^t lambda_u^y dif u)) dif s \
-        &= 1- exp(- integral_0^t (lambda_u^y + pi_(u)(a_1) lambda_u^(a)) dif u) - integral_0^t exp(- integral_0^s (lambda_u^y + pi_(u)(a_1) lambda_u^(a)) dif u) pi_(s)(a_1) lambda_s^(a) exp(- integral_s^t lambda_u^y dif u) dif s \
-        &=^(!) 1- exp(- integral_0^t (lambda_u^y + pi_(u)(a_1) lambda_u^(a)) dif u) - exp(-integral_0^t lambda_u^y dif u) integral_0^t exp(- integral_0^s (pi_(u)(a_1) lambda_u^(a)) dif u) pi_(s)(a_1) lambda_s^(a) dif s \
+        &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_(u)(a_1) lambda_u^(a)) dif u) pi_(s)(a_1) lambda_s^(a)  (1-exp(- integral_s^t lambda_u^y (1, s) dif u)) dif s \
+        &= 1- exp(- integral_0^t (lambda_u^y + pi_(u)(a_1) lambda_u^(a)) dif u) - integral_0^t exp(- integral_0^s (lambda_u^y + pi_(u)(a_1) lambda_u^(a)) dif u) pi_(s)(a_1) lambda_s^(a) exp(- integral_s^t lambda_u^y (1, s) dif u) dif s \
+        &=^((!)) 1- exp(- integral_0^t (lambda_u^y + pi_(u)(a_1) lambda_u^(a)) dif u) - exp(-integral_0^t lambda_u^y dif u) integral_0^t exp(- integral_0^s (pi_(u)(a_1) lambda_u^(a)) dif u) pi_(s)(a_1) lambda_s^(a) dif s \
         &= 1- exp(- integral_0^t (lambda_u^y + pi_(u)(a_1) lambda_u^(a)) dif u) - exp(-integral_0^t lambda_u^y dif u) (1-exp(- integral_0^t lambda_u^(a) pi_(u)(a_1) dif u)) \
         &= 1 - exp(- integral_0^t lambda_u^y dif u)
+$ <eq:examplediff>
+In (!), we apply the stated local independence condition. 
+
+=== Example showing the identification formulae are different
+In the observed data, take
 $
-In (!) use that $lambda^y (u)$ does not depend on $s$ at all (jump time $a$)
-when transitioning to a treated state by assumption. 
-// With constant intensities and constant treatment probabilities, this reduces to
-// $
-//     mean(Q) [Y_t] &= integral_0^t exp(- (lambda^y + lambda^(a)) s) lambda^y dif s + integral_0^t exp(- (lambda^y + lambda^(a)) s) lambda^(a) (1-exp(- lambda^y (t-s))) dif s \
-//         &= (lambda^y /(lambda^y + lambda^(a))) (1-exp(- (lambda^y + lambda^(a)) t)) + (lambda^(a)/(lambda^y + lambda^(a))) (1-exp(- (lambda^y + lambda^(a)) t)) - lambda^(a) exp(- lambda^y t)/(lambda^a) (1-exp(- lambda^a t)) \
-//         &= (1-exp(- (lambda^y + lambda^(a)) t)) - exp(- lambda^y t)(1-exp(- lambda^a t)) \
-//         &= 1 - exp(- lambda^y t) 
-// $
-Now consider "a going to the Tivoli example" in which
-the visit itself directly affects the probability of dying.
+    pi_t ({a_1}) &= pi in (0,1), \
+    lambda_t^y &= lambda^y \
+    lambda_t^a &= lambda^a \
+    lambda^y_t (1, s) &= lambda^(y,2) != lambda^y
 $
-    mean(Q) [Y_t] &= integral_0^t exp(- (lambda^y + lambda^(a)) s) lambda^y dif s + integral_0^t exp(- (lambda^y + lambda^(a)) s) lambda^(a) (1-exp(- lambda^(y,2) (t-s))) dif s \
-        &= (lambda^y /(lambda^y + lambda^(a))) (1-exp(- (lambda^y + lambda^(a)) t)) \
-        &+ (lambda^(a)/(lambda^y + lambda^(a))) (1-exp(- (lambda^y + lambda^(a)) t)) - lambda^(a) exp(- lambda^(y,2) t)/(lambda^a+lambda^y+lambda^(y,2)) (1-exp(- (lambda^a + lambda^y+lambda^(y,2)) t)) \
+and further pick them so that $lambda^a+lambda^y-lambda^(y,2) != 0$.
+Then, we have from the fourth last equality of @eq:examplediff,
+$
+    mean(Q) [Y_t] &= 1-exp(- (lambda^y + lambda^(a)) t) - integral_0^t exp(- (lambda^y + lambda^(a)) s) lambda^(a) exp(- lambda^(y,2) (t-s)) dif s \
         &= 1-exp(- (lambda^y + lambda^(a)) t) - lambda^(a) exp(- lambda^(y,2) t)/(lambda^a+lambda^y-lambda^(y,2)) (1-exp(- (lambda^a + lambda^y-lambda^(y,2)) t))
 $
-Replacing $lambda^(a)$ with $pi lambda^(a)$ yields an identification formula, which is generally different.
+Replacing $lambda^(a)$ with $pi lambda^(a)$ yields $mean(tilde(Q)) [Y_t]$, i.e.,
+$
+    mean(tilde(Q)) [Y_t] = 1-exp(- (lambda^y + pi lambda^(a)) t) - pi lambda^(a) exp(- lambda^(y,2) t)/(pi lambda^a+lambda^y-lambda^(y,2)) (1-exp(- (pi lambda^a + lambda^y-lambda^(y,2)) t))
+$
+Taking
+$
+    pi &= lambda^a = 0.5 \
+    lambda^y &= 0.2 \
+    lambda^(y,2) &= 0.8
+$
+with $t=3$, we have
+$
+    mean(Q) [Y_t] = 1-exp(-(0.2+0.5) 3)-0.5 exp(-(0.8)3)/(0.5+0.2-0.8)(1-exp(-(0.5+0.2-0.8)3)) approx 0.72
+$
+while
+$
+    mean(tilde(Q)) [Y_t] = 1-exp(-(0.2+0.5 times 0.5) 3)-0.5 times 0.5 exp(-(0.8)3)/(0.5 times 0.5+0.2-0.8)(1-exp(-(0.5 times 0.5+0.2-0.8)3)) approx 0.62
+$
 
 // Therefore,
 // $
@@ -627,91 +704,91 @@ Replacing $lambda^(a)$ with $pi lambda^(a)$ yields an identification formula, wh
 //         &quad times (1-exp(- integral_s^t lambda_u^y dif u))  dif s \ 
 // $
 
-=== Example with time-varying confounding
-We now consider a more natural example, where the difference is due to time-varying confounding.
-Suppose that $(N^y, N^(a,a_0), N^(a,a_1), N^ell)$ has compensator
-$
-    Lambda^y (dif t) (P) &= lambda_t^y dif t, \
-    Lambda^ell (dif t) (P) &= lambda_t^ell dif t, \
-    Lambda^(a,a_j) (dif t) (P) &= pi_t (a_j) lambda_t^a dif t, j=0,1.
-$
-Påls functional can be written as
-$
-    &integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) lambda_s^y dif s \
-        &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
-        &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) (lambda_v^y + lambda^ell_v integral_v^t exp(- integral_v^w lambda_u^y (ell_2; v) dif u) lambda^y_w (ell_2; v) dif w) dif v dif s \
-        &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell \
-        &quad times integral_s^t exp(- integral_s^v (lambda_u^y (ell_1; s) + pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))  dif u) \
-        &quad times (lambda_v^y (ell_1 ; s) + pi_v (a_1) (ell_1 ; s) lambda_v^(a) (ell_1 ; s) integral_v^t exp(- integral_v^w lambda_u^y (ell_1 ; s) dif u) lambda^y_w (ell_1; s) dif w) dif v dif s \
-        &=integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) lambda_s^y dif s \
-        &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
-        &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) (lambda_v^y + lambda^ell_v (1- exp(- integral_v^t lambda_u^y (ell_2; v) dif u))) dif v dif s \
-        &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell \
-        &quad times integral_s^t exp(- integral_s^v (lambda_u^y (ell_1; s) + pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))  dif u) \
-        &quad times (lambda_v^y (ell_1 ; s) + pi_v (a_1) (ell_1 ; s) lambda_v^(a) (ell_1 ; s) (1-exp(- integral_v^t lambda_u^y (ell_1 ; s) dif u)) dif v dif s \
-$
-Can we conclude this result does not depend on $pi_t (a_1)$?
-Now, note that
-$
-    &integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) lambda_s^y dif s \
-        &=[- exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u)]_0^t - integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) (pi_s (a_1) lambda_s^(a) + lambda_s^ell) dif s \
-        &= 1 - exp(- integral_0^t (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) - integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) (pi_s (a_1) lambda_s^(a) + lambda_s^ell) dif s \    
-$
-Conclude that the previous is equal to
-$
-    &1 - exp(- integral_0^t (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) \
-        &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) exp(- integral_s^t (lambda_u^y + lambda_u^ell) dif u) dif s \
-        &-integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell exp(- integral_s^t (lambda_u^y (ell_1; s) + pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))) dif s \
-    &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
-        &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) lambda^ell_v exp(- integral_v^t lambda_u^y (ell_2; v) dif u) dif v dif s \
-        &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell \
-        &quad times integral_s^t exp(- integral_s^v (lambda_u^y (ell_1; s) + pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))  dif u) \
-        &quad times pi_v (a_1) (ell_1 ; s) lambda_v^(a) (ell_1 ; s) exp(- integral_v^t lambda_u^y (ell_1 ; s) dif u) dif v dif s \
-    &=1 - exp(- integral_0^t (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) \
-        &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) exp(- integral_s^t (lambda_u^y + lambda_u^ell) dif u) dif s \
-        &-integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell exp(- integral_s^t (lambda_u^y (ell_1; s) + pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))) dif s \
-    &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
-        &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) lambda^ell_v exp(- integral_v^t lambda_u^y (ell_2; v) dif u) dif v dif s \
-        &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell \
-        &quad times exp(-integral_s^t lambda_u^y (ell_1; s) dif u) (1-exp(- integral_s^t (pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))  dif u)) dif s \
-$
-$
-        &1 - exp(- integral_0^t (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) \
-        &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) exp(- integral_s^t (lambda_u^y + lambda_u^ell) dif u) dif s \
-    &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
-        &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) lambda^ell_v exp(- integral_v^t lambda_u^y (ell_2; v) dif u) dif v dif s \
-            &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell exp(-integral_s^t lambda_u^y (ell_1; s) dif u) dif s \
-    &=1 - exp(- integral_0^t (lambda_u^y  + lambda_u^ell ) dif u) \
-    &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
-        &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) lambda^ell_v exp(- integral_v^t lambda_u^y (ell_2; v) dif u) dif v dif s \
-        &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell exp(-integral_s^t lambda_u^y (ell_1; s) dif u) dif s 
-$
-We now apply integration by parts to the last two terms.
-Let $h(v, s) = exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) lambda^ell_v exp(- integral_v^t lambda_u^y (ell_2; v) dif u)$.
+// === Example with time-varying confounding
+// We now consider a more natural example, where the difference is due to time-varying confounding.
+// Suppose that $(N^y, N^(a,a_0), N^(a,a_1), N^ell)$ has compensator
+// $
+//     Lambda^y (dif t) (P) &= lambda_t^y dif t, \
+//     Lambda^ell (dif t) (P) &= lambda_t^ell dif t, \
+//     Lambda^(a,a_j) (dif t) (P) &= pi_t (a_j) lambda_t^a dif t, j=0,1.
+// $
+// Påls functional can be written as
+// $
+//     &integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) lambda_s^y dif s \
+//         &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
+//         &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) (lambda_v^y + lambda^ell_v integral_v^t exp(- integral_v^w lambda_u^y (ell_2; v) dif u) lambda^y_w (ell_2; v) dif w) dif v dif s \
+//         &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell \
+//         &quad times integral_s^t exp(- integral_s^v (lambda_u^y (ell_1; s) + pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))  dif u) \
+//         &quad times (lambda_v^y (ell_1 ; s) + pi_v (a_1) (ell_1 ; s) lambda_v^(a) (ell_1 ; s) integral_v^t exp(- integral_v^w lambda_u^y (ell_1 ; s) dif u) lambda^y_w (ell_1; s) dif w) dif v dif s \
+//         &=integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) lambda_s^y dif s \
+//         &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
+//         &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) (lambda_v^y + lambda^ell_v (1- exp(- integral_v^t lambda_u^y (ell_2; v) dif u))) dif v dif s \
+//         &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell \
+//         &quad times integral_s^t exp(- integral_s^v (lambda_u^y (ell_1; s) + pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))  dif u) \
+//         &quad times (lambda_v^y (ell_1 ; s) + pi_v (a_1) (ell_1 ; s) lambda_v^(a) (ell_1 ; s) (1-exp(- integral_v^t lambda_u^y (ell_1 ; s) dif u)) dif v dif s \
+// $
+// Can we conclude this result does not depend on $pi_t (a_1)$?
+// Now, note that
+// $
+//     &integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) lambda_s^y dif s \
+//         &=[- exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u)]_0^t - integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) (pi_s (a_1) lambda_s^(a) + lambda_s^ell) dif s \
+//         &= 1 - exp(- integral_0^t (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) - integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) (pi_s (a_1) lambda_s^(a) + lambda_s^ell) dif s \    
+// $
+// Conclude that the previous is equal to
+// $
+//     &1 - exp(- integral_0^t (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) \
+//         &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) exp(- integral_s^t (lambda_u^y + lambda_u^ell) dif u) dif s \
+//         &-integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell exp(- integral_s^t (lambda_u^y (ell_1; s) + pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))) dif s \
+//     &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
+//         &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) lambda^ell_v exp(- integral_v^t lambda_u^y (ell_2; v) dif u) dif v dif s \
+//         &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell \
+//         &quad times integral_s^t exp(- integral_s^v (lambda_u^y (ell_1; s) + pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))  dif u) \
+//         &quad times pi_v (a_1) (ell_1 ; s) lambda_v^(a) (ell_1 ; s) exp(- integral_v^t lambda_u^y (ell_1 ; s) dif u) dif v dif s \
+//     &=1 - exp(- integral_0^t (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) \
+//         &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) exp(- integral_s^t (lambda_u^y + lambda_u^ell) dif u) dif s \
+//         &-integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell exp(- integral_s^t (lambda_u^y (ell_1; s) + pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))) dif s \
+//     &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
+//         &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) lambda^ell_v exp(- integral_v^t lambda_u^y (ell_2; v) dif u) dif v dif s \
+//         &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell \
+//         &quad times exp(-integral_s^t lambda_u^y (ell_1; s) dif u) (1-exp(- integral_s^t (pi_u (a_1) (ell_1; s) lambda_u^a (ell_1 ; s))  dif u)) dif s \
+// $
+// $
+//         &1 - exp(- integral_0^t (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell ) dif u) \
+//         &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) exp(- integral_s^t (lambda_u^y + lambda_u^ell) dif u) dif s \
+//     &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
+//         &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) lambda^ell_v exp(- integral_v^t lambda_u^y (ell_2; v) dif u) dif v dif s \
+//             &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell exp(-integral_s^t lambda_u^y (ell_1; s) dif u) dif s \
+//     &=1 - exp(- integral_0^t (lambda_u^y  + lambda_u^ell ) dif u) \
+//     &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) \
+//         &quad times integral_s^t exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) lambda^ell_v exp(- integral_v^t lambda_u^y (ell_2; v) dif u) dif v dif s \
+//         &- integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda_s^ell exp(-integral_s^t lambda_u^y (ell_1; s) dif u) dif s 
+// $
+// We now apply integration by parts to the last two terms.
+// Let $h(v, s) = exp(- integral_s^v (lambda_u^y + lambda_u^ell) dif u) lambda^ell_v exp(- integral_v^t lambda_u^y (ell_2; v) dif u)$.
 
-Obtain
-$
-    &integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) integral_s^t h(v,s) dif v dif s \
-        &=[- exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) integral_s^t h(v,s) dif v]^(s=t)_(s=0) \
-        &- integral_0^t (- exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) (partial)/(partial s) integral_s^t h(v,s) dif v) dif s \
-        &- integral_0^t ((lambda_s^y + lambda_s^ell) exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) integral_s^t h(v,s) dif v) dif s \
-        &= integral_0^t h(v,s) dif v + integral_0^t (exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) (partial)/(partial s) integral_s^t h(v,s) dif v) dif s \
-        &- integral_0^t ((lambda_s^y + lambda_s^ell) exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) integral_s^t h(v,s) dif v) dif s \
-                &= integral_0^t h(v,s) dif v - integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) h(s,s) dif s \
-        &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) integral_s^t (partial)/(partial s) h(v,s) dif v dif s \
-        &- integral_0^t ((lambda_s^y + lambda_s^ell) exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) integral_s^t h(v,s) dif v) dif s \
-        &= integral_0^t h(v,s) dif v - integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda^ell_v exp(- integral_s^t lambda_u^y (ell_2; s) dif u) dif s \
-        &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) integral_s^t (partial)/(partial s) h(v,s) dif v dif s \
-        &- integral_0^t ((lambda_s^y + lambda_s^ell) exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) integral_s^t h(v,s) dif v) dif s \
-        &= integral_0^t h(v,s) dif v - integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda^ell_v exp(- integral_s^t lambda_u^y (ell_2; s) dif u) dif s \
-$
-Since it is assumed that $lambda_u^y (ell_2; s) = lambda_u^y (ell_1; s)$,
-we finally have that
-$
-    1 - exp(- integral_0^t (lambda_u^y  + lambda_u^ell ) dif u) - integral_0^t h(v,s) dif v
-$
-which does not depend on $pi_t (a_1)$.
-These conclusions should generalize and work under an orthogonal martingales assumption. 
+// Obtain
+// $
+//     &integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) pi_s (a_1) lambda_s^(a) integral_s^t h(v,s) dif v dif s \
+//         &=[- exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) integral_s^t h(v,s) dif v]^(s=t)_(s=0) \
+//         &- integral_0^t (- exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) (partial)/(partial s) integral_s^t h(v,s) dif v) dif s \
+//         &- integral_0^t ((lambda_s^y + lambda_s^ell) exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) integral_s^t h(v,s) dif v) dif s \
+//         &= integral_0^t h(v,s) dif v + integral_0^t (exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) (partial)/(partial s) integral_s^t h(v,s) dif v) dif s \
+//         &- integral_0^t ((lambda_s^y + lambda_s^ell) exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) integral_s^t h(v,s) dif v) dif s \
+//                 &= integral_0^t h(v,s) dif v - integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) h(s,s) dif s \
+//         &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) integral_s^t (partial)/(partial s) h(v,s) dif v dif s \
+//         &- integral_0^t ((lambda_s^y + lambda_s^ell) exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) integral_s^t h(v,s) dif v) dif s \
+//         &= integral_0^t h(v,s) dif v - integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda^ell_v exp(- integral_s^t lambda_u^y (ell_2; s) dif u) dif s \
+//         &+ integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) integral_s^t (partial)/(partial s) h(v,s) dif v dif s \
+//         &- integral_0^t ((lambda_s^y + lambda_s^ell) exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) integral_s^t h(v,s) dif v) dif s \
+//         &= integral_0^t h(v,s) dif v - integral_0^t exp(- integral_0^s (lambda_u^y + pi_u (a_1) lambda_u^(a) + lambda_u^ell) dif u) lambda^ell_v exp(- integral_s^t lambda_u^y (ell_2; s) dif u) dif s \
+// $
+// Since it is assumed that $lambda_u^y (ell_2; s) = lambda_u^y (ell_1; s)$,
+// we finally have that
+// $
+//     1 - exp(- integral_0^t (lambda_u^y  + lambda_u^ell ) dif u) - integral_0^t h(v,s) dif v
+// $
+// which does not depend on $pi_t (a_1)$.
+// These conclusions should generalize and work under an orthogonal martingales assumption. 
 
 == More general argument (sketch)
 
@@ -720,15 +797,15 @@ from $P$ via @thm:gformula and Lemma ? in @ryalenPotentialOutcomes. Here,
 we see that $Q$ and $tilde(Q)$ agree on the canonical compensator for every component that is not
 a treatment component. We can now induce measures $Q'$ and $tilde(Q)'$ restricting
 the measures to every other component than the treatment component (can be done explicitly)
-and consider its smaller generated natural of the new marked point process.
+and consider its smaller generated natural filtration of the new marked point process.
 Under a local independence statement, the compensators under smaller filtration and the big
 filtration are the same. However, this means that the canonical compensators in $Q'$
-and $tilde(Q)'$ will be the same and hence the distribution of $(Y)$ will be the same
+and $tilde(Q)'$ will be the same and hence the distribution of $(Y_t)_(t in [0, T])$ will be the same
 in the two induced measures and hence in the original probability measures.
 
-This same argument can be applied to see that the distribution of $tilde(Y)$ (my situation) and
-$tilde(Y)'$ (in the situation where the treatment process consists of intervening on one component of treatment (if there is $N^(a,a_1)$ and $N^(a,a_0)$, then we are intervene on the second on but not the first)
-will be the same.
+// This same argument can be applied to see that the distribution of $tilde(Y)$ (my situation) and
+// $tilde(Y)'$ (in the situation where the treatment process consists of intervening on one component of treatment (if there is $N^(a,a_1)$ and $N^(a,a_0)$, then we are intervene on the second on but not the first)
+// will be the same.
 
 = Variations of the sequential exchangeability criteria yielding the same identification formula 
 
