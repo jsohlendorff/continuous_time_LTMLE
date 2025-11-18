@@ -46,7 +46,7 @@
 
 // Set up Arkheion template (arXiv-like Typst template)
 #show: arkheion.with(
-    title: "Identification and Estimation of Causal Effects under Treatment-Assigned Interventions in Continuous Time",
+    title: "Identification and Estimation of Causal Effects under Treatment-Assigned-At-Visit Interventions in Continuous Time",
     authors: (
         (name: "Johan S. Ohlendorff", email: "johan.ohlendorff@sund.ku.dk", affiliation: "University of Copenhagen", orcid: "0009-0006-8794-6641"),
         (name: "Pål Ryalen", email: "pal.ryalen@medisin.uio.no", affiliation: "University of Oslo", orcid: "0000-0002-3236-6782"),
@@ -125,23 +125,28 @@ We define $N^a (t)$ and $N^ell (t)$ as the number of treatment and covariate vis
 and let $A(t)$ and $L(t)$ denote the measurements and treatment decision at time $t$.
 The outcome, $Y_t$ is typically a function of the patient’s 
 history up to time $t$, $Y_t=sigma(L(dot and t), N^ell (dot and t))$
-or it may consist of a separate component such as a primary event. 
+or it may consist of a separate component such as a primary event, say $Y_t = N^y$.
 
 To illustrate this further, consider a randomized trial.  A common scenario is that patients 
 receive treatment at each doctor’s visit. However, in real-world practice, patients may 
 experience adverse effects, leading the doctor to discontinue treatment. We’re interested in 
 understanding what would have happened *had* the patient continued to receive treatment. We 
 represent this counterfactual outcome as $tilde(Y)_t$.  Therefore, we wish to 
-estimate $bb(E) [tilde(Y)_t]$.  Crucially, this counterfactual outcome is often not 
+estimate $bb(E) [tilde(Y)_t]$.  However, this counterfactual outcome is not 
 observed directly for all subjects, presenting a key challenge.
 
 = Notation and setup
 
 Let $(Omega, cal(F), P)$ be a measure space.
 We assume that all measurements are assumed to take place 
-over a time interval $[0, T]$.
+over a time interval $[0, T]$
+where $t=0$ denotes baseline and $T>0$ denotes the time to end-of-study.
 First, we formulate the setting of 
 @rytgaardContinuoustimeTargetedMinimum2022.
+We observe trajectories of the process
+$zeta(t) = (N^a (t), A (t), N^ell (t), L (t), N^y (t), N^d (t))$,
+where $zeta(t)$ is a multivariate jump process on $[0, T]$.
+
 We have $Delta L(t) != 0$ only if $Delta N^ell (t) != 0$
 and $Delta A(t) != 0$ only if $Delta N^a (t) != 0$.
 To simplify things a bit, we suppose that
@@ -154,23 +159,28 @@ $
     cal(L) &= {l_1, dots, l_(d_l)} subset.eq RR^k.
 $
 This means that all considered processes are jump processes. 
-It is implicitly assumed that $(N^y, N^a, N^ell)$
+It is implicitly assumed that $(N^d, N^y, N^a, N^ell)$
 forms a multivariate counting process (@andersenStatisticalModelsBased1993).
 Importantly, we also make the assumption of no explosion of $N$
-which entails that  $P(N_T^y + N_T^a + N_T^ell < oo) = 1$.
+which is that $P(sum_(x=a,ell,d, y) N^x (T) < oo) = 1$.
 // In the first sections, we will be interested in identification and
 // thus not explicitly state anything about the statistical model $cal(M) = {P_theta : theta in Theta}$,
 // but only work with the true data-generating measure $P$.
 Now we can let, for $n >= 1$
 $
-    T_((n)) = inf {t > T_((n-1)) : N_t^y + N_t^a + N_t^ell > n} "with" T_((0)) := 0.
+    T_((n)) = inf {t > T_((n-1)) : N^y (t) + N^a (t) + N^ell (t) > n} "with" T_((0)) := 0.
 $
+(as is convention with point processes, we let $T_((n)) = oo$ if
+$T_((n)) > T$).
 These values are possibly infinite; then we can let
 $
     Z_((n)) := (N^y (T_((n))), N^a (T_((n))), N^ell (T_((n))), A(T_((n))), L(T_((n)))).
 $
-Then, the marked point process given by $(T_((n)), Z_((n)))_(n >= 1)$ generates
-the same natural filtration as the process $zeta (t) := (N^y (t), N^a (t), N^ell (t), L (t), A (t))$ (Theorem 2.5.8 of @last1995marked).
+Then, the marked point process given by $Phi = (T_((n)), Z_((n)))_(n >= 1)$ generates
+the same natural filtration as the process $zeta (t)$ (Theorem 2.5.10 of @last1995marked),
+that is $cal(F)_t = sigma((L(0), A(0)), Phi_t) = sigma(zeta(s), s <= t)$
+#footnote[As make the assumption of no explosions, the _minimal_ jump process and the jump process are not different
+    ensuring a unique measurable correspondence between the jump process and marked point process since the visitation counting process are included in $zeta$ (Theorem 2.5.10-2.5.11 of @last1995marked)].
 Intuitively, this means that the information obtained from the multivariate
 jump process is the same as that obtained from the marked point process at time $t$.
 Importantly, we shall work within a so-called canonical setting
@@ -182,34 +192,57 @@ $
 $
 Let $Lambda^(a, a_j) (t)$ denote the $P$-$cal(F)_t$-compensator of $N^(a, a_j)$
 and $Lambda^a (t) = sum_(j=1)^k Lambda^(a, a_j) (t)$ denote the total $P$-$cal(F)_t$-compensator of $N^a$.
-By ???, we can find kernels $pi_t (dif x)$
+By @thm:canonicalversion, we can find kernels $pi_t (dif x)$
 such that
 $
     Lambda^(a, a_j) (dif t) = pi_t ({a_j}) Lambda^a (dif t).
-$
+$ <eq:pi>
 
 #lemma[
-    A version of $pi_t ({a_j})$ is given by
+    Let $cal(F)_t$ denote the natural filtration of $Phi$.
+    Let $status(k) = x$ if $Delta N^x (event(k)) = 1$.
+    Then, the kernel $pi_t$ from ... to ... can be chosen as 
     $
-        pi_t ({a_j}) = sum_k bb(1) {event(k-1) < t <= event(k)) P(treat(k) = a_j | event(k), status(k) = a, history(k-1))
-    $
-    and identically satisfies
+        pi_t ({a_j}) = sum_k bb(1) {event(k-1) < t <= event(k)) P(treat(k) = a_j | event(k), status(k) = a, history(k-1)) 
+    $ <eq:piversion>
+    Any kernel $pi_t$ from ... to ... fulfilling @eq:pi identically satisfies
     $
         pi_(event(k)) ({a_j}) = P(treat(k) = a_j | event(k), status(k) = a, history(k-1))
     $
-    $P$-a.s. where $status(k) = x$ if $Delta N^x (event(k)) = 1$.
+    $P$-a.s. whenever $event(k) < oo$.
     
 ] <thm:canonicalversion>
 #proof[
+    Let further $macron(Phi) = (T_((n)), macron(Z)_((n)))_(n >= 1)$ be a marked point process given by
+    $
+        macron(Z)_n = (status(n), treat(n), covariate(n)).
+    $
+    Then, since there is a measurable bijection $macron(Phi)$ and $Phi$,
+    we have that $cal(F)_t = sigma((L(0), A(0)), macron(Phi)_t)$.
     According to Theorem 4.1.11 (ii) of @last1995marked, we have
     $
-        Lambda (dif (t, z)) = sum_(k=1)^oo bb(1) {event(k-1) < t <= event(k)) (P((event(k), Z_((k))) in dif (t, z) | history(k-1)))/(P(event(k) >= t | history(k-1)))
+        &Lambda (dif (t, z)) \
+            &= sum_(k=1)^oo bb(1) {event(k-1) < t <= event(k)) (P((event(k), macron(Z)_((k))) in dif (t, delta, a, l) | history(k-1)))/(P(event(k) >= t | history(k-1))) \
+            &= sum_(k=1)^oo bb(1) {event(k-1) < t <= event(k)) P((treat(k), covariate(k)) in dif (a, l) | event(k) = t, status(k) = delta, history(k-1)) (P((event(k), status(k)) in dif (t, delta)  | history(k-1)))/(P(event(k) >= t | history(k-1))) \
+            &= sum_(k=1)^oo bb(1) {event(k-1) < t <= event(k)) {P(treat(k) in dif a | event(k) = t, status(k) = a, history(k-1)) delta_(covariate(k-1)) (dif l) bb(1) {delta = a} \
+            &+ P(covariate(k) in dif l | event(k) = t, status(k) = ell, history(k-1)) delta_(treat(k-1)) (dif a) bb(1) {delta = ell} + delta_(treat(k-1),covariate(k-1)) (dif (a, l)) bb(1) {delta = y}} (P((event(k), status(k)) in dif (t, delta)  | history(k-1)))/(P(event(k) >= t | history(k-1)))\
     $
     is the $P$-$cal(F)_t$ compensator associated with the point process $(T_((n)), Z_((n)))_(n >= 1)$,
-    where $cal(F)_t$ is its natural filtration. Now evaluate this in
-    sets of the form ... to be completed. 
-]
+    where $cal(F)_t$ is its natural filtration. Thus @eq:piversion follows. 
 
+    Now use this with Theorem 4.3.2  of @last1995marked. Then, we have (almost surely)
+    $
+        &P(status(k) in dif delta| event(k), history(k-1)) {P(treat(k) in dif a | event(k), status(k) = a, history(k-1)) delta_(covariate(k-1)) (dif l) bb(1) {delta = a} \
+            &+ P(covariate(k) in dif l | event(k), status(k) = ell, history(k-1)) delta_(treat(k-1)) (dif a) bb(1) {delta = ell} }\
+            &= kappa(event(k), dif (delta, a, ell)) = kappa^*_(delta) (event(k), dif (a, ell)) kappa_m (event(k), dif delta)
+    $
+    $P$ almost surely, where $kappa$ is the canonical mark
+    and we decompose the canonical mark into its components. 
+    We find that $kappa_m (event(k), dif delta) = P(status(k) in dif delta| event(k), history(k-1))$
+    and therefore that $integral_({a} times dif a times cal(L)) kappa^*_(delta) (event(k), dif (a, ell)) = P(treat(k) in dif a | event(k), status(k) = a, history(k-1))$
+    up to null sets. 
+]
+        
 // or alternatively, we can work with the random measure
 // $
 //     N^a (dif t times dif x) := sum_(j=1)^k  delta_(A (t)) (dif x) N^(a) (dif t)
@@ -424,7 +457,7 @@ and using that the stochastic exponential solves a specific stochastic different
     Under positivity, then
     1. The $Q$-$cal(F)_t$ compensator of $N^a (dif t times dif x)$ is $pi^*_t (dif x) Lambda_P^a (dif t)$.
     2. The $Q$-$cal(F)_t$ compensator of $N^x$ is $Lambda_P^x$ for $x in {y, ell}$. // addition should be zero; by Jacods formula for likelihood ratios
-]
+] <thm:gformula>
 
 #proof[
     First note that for a local $cal(F)_t$-martingale $X$ in $P$, we have
@@ -487,10 +520,8 @@ and let $bb(L)_t$ denote its $P$-$cal(F)_t$-compensator.
 
 == Example
 
-NOTE: These examples should use the canonical compensator
-
-=== Example with no time-varying confounding and one treatment event
-#figure(diagram(spacing: (5mm, 4.5mm), debug: false, node-stroke: 0.5pt, node-inset: 10pt, label-size: 7pt, {
+=== Example with no time-varying confounding and one treatment event showing that the identification formulas may be different
+#figure(diagram(spacing: (9mm, 12mm), debug: false, node-stroke: 0.5pt, node-inset: 10pt, label-size: 7pt, {
     let msm_function(offset: (0,0), scale_text: 70%) = {
         let (novisit, treat_visit, treat_visit_2, death) = (
             nt.add((0,0),offset)
@@ -502,12 +533,12 @@ NOTE: These examples should use the canonical compensator
     node(treat_visit, [#scale(scale_text)[patient visit (1) \ stay on treatment]])
         node(treat_visit_2, [#scale(scale_text)[patient visit (2) \ drop treatment]])
         node(death, [#scale(scale_text)[Death (3)]])
-    edgemsm(novisit, treat_visit, [$h^(01) (t)$])
-    edgemsm(novisit, treat_visit_2, [$h^(02) (t)$])
+    edgemsm(novisit, treat_visit, [$pi_t (a_1) lambda_t^a$])
+    edgemsm(novisit, treat_visit_2, [$(1-pi_t (a_1)) lambda_t^a$])
     
-    edgemsm(novisit, death, [$h^(03) (t)$])
-    edgemsm(treat_visit, death, [$h^(13) (s, t)$])
-    edgemsm(treat_visit_2, death, [$h^(23) (s, t)$])
+    edgemsm(novisit, death, [$lambda_t^y$])
+    edgemsm(treat_visit, death, [$lambda_t^y (a_1, s)$])
+    edgemsm(treat_visit_2, death, [$lambda_t^y (a_0, s)$])
     }
 
     msm_function(offset: (0,0), scale_text: 70%)
@@ -519,30 +550,30 @@ NOTE: These examples should use the canonical compensator
 <fig:multi-state>
 
 Consider a simple example where $N^a (t) <= 1$ for all $t$,
-and consists of the multivariate counting process $N = (N^y, N^(a,a_0), N^(a,a_1))$.
+we observe $N = (N^y, N^(a,a_0), N^(a,a_1))$, and that people are assigned treatment at $t=0$ as in a randomized trial. 
 We consider the intervention $pi^*_t (a_1) = 1$ for all $t$.
 Suppose that $(N^y, N^(a,a_0), N^(a,a_1))$ has compensator
 $
-    Lambda^y (dif t) (P) &= lambda_t^y dif t, \
-    Lambda^(a,a_j) (dif t) (P) &= pi_t (a_j) lambda_t^a dif t, j=0,1.
+    Lambda^y (dif t) (P) &= bb(1) {t <= event(1)} lambda_t^y dif t + bb(1) {event(1) < t <= event(2)} lambda_t^y (treat(1), event(1)) dif t, \
+    Lambda^(a,a_j) (dif t) (P) &= bb(1) {t <= event(1)} pi_t (a_j) lambda_t^a dif t, j=0,1.
 $
-with respect to $cal(F)_t$ in $P$.
+with respect to its natural filtration. 
 In $P$, note that
 $
     mean(P) [Y_t] &= mean(P) [N^y (t)] \
         &= mean(P) [bb(1) {event(1) <= t, status(1) = y} + bb(1) {status(1) = a, treat(1) = 1, event(2) <= t, status(2) = y} + bb(1) {status(1) = a, treat(1) = 0, event(2) <= t, status(2) = y}]\
-        &= integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a,a_1) + lambda_u^(a,a_0)) dif u) lambda_s^y dif s \
-        &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a,a_1) + lambda_u^(a,a_0)) dif u) lambda_s^(a,a_1) integral_s^t exp(- integral_s^v lambda_u^y ) dif u) lambda_v^y dif v dif s \
-        &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a,a_1) + lambda_u^(a,a_0)) dif u) lambda_s^(a,a_0) integral_s^t exp(- integral_s^v lambda_u^y ) dif u) lambda_v^y dif v dif s \
+        &= integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) lambda_s^y dif s \
+        &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) pi_s ({a_1}) lambda_s^(a) integral_s^t exp(- integral_s^v lambda_u^y ) dif u) lambda_v^y dif v dif s \
+        &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) (1-pi_s ({a_1}))lambda_s^(a,a_0) integral_s^t exp(- integral_s^v lambda_u^y ) dif u) lambda_v^y dif v dif s \
 $
 
-Then, in $Q$, we have
+Then, in $Q$ (defined in @thm:gformula), we have
 $
     Lambda^y (dif t) (Q) &= lambda_t^y dif t, \
     Lambda^(a,a_0) (dif t) (Q) &= 0, \
     Lambda^(a,a_1) (dif t) (Q) &= lambda_t^a dif t.
 $
-However, in $tilde(Q)$ (Ryalen), we have
+However, in $tilde(Q)$ (the change of measure in @ryalenPotentialOutcomes), we have
 $
     Lambda^y (dif t) (tilde(Q)) &= (lambda_t^y dif t-0)/(1-0), \
     Lambda^(a,a_0) (dif t) (tilde(Q)) &= (0-0)/(1-0) \
@@ -550,7 +581,7 @@ $
 $
 since $tau^(g^*) = oo$ almost surely in $tilde(Q)$.
 Therefore, if we can show that $mean(tilde(Q)) [Y_t]$
-does not depend on $pi$, the two identification formulae will coincide.
+does not depend on the Radon-Nikodym derivative $pi_t (dif x)$, the two identification formulae will coincide.
 Thus,
 $
     mean(tilde(Q)) [Y_t] &= mean(tilde(Q)) [N^y (t)] \
@@ -681,6 +712,23 @@ $
 $
 which does not depend on $pi_t (a_1)$.
 These conclusions should generalize and work under an orthogonal martingales assumption. 
+
+== More general argument (sketch)
+
+One can get the canonical compensators from the two measures $Q$ and $tilde(Q)$
+from $P$ via @thm:gformula and Lemma ? in @ryalenPotentialOutcomes. Here,
+we see that $Q$ and $tilde(Q)$ agree on the canonical compensator for every component that is not
+a treatment component. We can now induce measures $Q'$ and $tilde(Q)'$ restricting
+the measures to every other component than the treatment component (can be done explicitly)
+and consider its smaller generated natural of the new marked point process.
+Under a local independence statement, the compensators under smaller filtration and the big
+filtration are the same. However, this means that the canonical compensators in $Q'$
+and $tilde(Q)'$ will be the same and hence the distribution of $(Y)$ will be the same
+in the two induced measures and hence in the original probability measures.
+
+This same argument can be applied to see that the distribution of $tilde(Y)$ (my situation) and
+$tilde(Y)'$ (in the situation where the treatment process consists of intervening on one component of treatment (if there is $N^(a,a_1)$ and $N^(a,a_0)$, then we are intervene on the second on but not the first)
+will be the same.
 
 = Variations of the sequential exchangeability criteria yielding the same identification formula 
 
@@ -1576,7 +1624,12 @@ the data at hand. We explore several potential interventions that could be relev
 discussed in this article. For example, if using the same type of data, we could treat the first 
 deviation time as a censoring time, when a static intervention where the patient remains 
 on treatment at each visit is used. Incorporating the visitation times as a time-varying covariate would 
-likely yield an analysis similar to the one presented here.  Alternatively, a stochastic 
+likely yield an analysis similar to the one presented here.
+This would yield identification formulas that are identical to the one
+presented in @ryalenPotentialOutcomes, but for a potentially different target
+parameter, but would require that the total compensator such that the compensator has no discrete points.
+
+Alternatively, a stochastic 
 intervention could be considered, where both the timing of visits and the decisions surrounding 
 them are intervened upon, so that the timing of visitation events is the same as in the observational data.
 However, such interventions may be difficult to incorporate into a potential outcomes framework.
