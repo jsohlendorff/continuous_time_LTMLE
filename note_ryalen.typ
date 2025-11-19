@@ -828,8 +828,9 @@ so we actually have that $mean(Q) [Y_t] = mean(P) [tilde(Y)_t]$, but $mean(tilde
 
 == More general argument (sketch)
 #theorem[
-    Suppose that $N^(a,a_j) arrow.r.struck N^x (dot and tau^(g^*))$ for
-    every component $x!= a,a_1, dots, a,a_k$ and $j in {1, dots, k}$.
+    Suppose that $(N^(a,a_1), dots, N^(a,a_j)) arrow.r.struck N^(-a) (dot and tau^(g^*))$ (local independence understood in terms of the compensator).
+    Here, $N^(-a)$ denotes is every other counting process that is not a treatment counting process.
+
     Then,
     $
         mean(tilde(Q)) [Y_t] = mean(Q) [Y_t]
