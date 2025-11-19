@@ -12,7 +12,7 @@
 - [x] Construction of counterfactuals
 - [x] Equivalence with sequential criteria
 - [x] Full vs partial sequential exchangeability. 
-- [~] Comparison of the identifying functionals (@ryalenPotentialOutcomes and @rytgaardContinuoustimeTargetedMinimum2022).
+- [x] Comparison of the identifying functionals (@ryalenPotentialOutcomes and @rytgaardContinuoustimeTargetedMinimum2022).
 - [~] Uniqueness of identifying formula (Works with more than two treatment levels?)
 - [~] Right-censoring (Need EIF under right-censoring + construction of counterfactuals?)
 - [~] Comparison with CAR
@@ -181,6 +181,14 @@ the same natural filtration as the process $zeta (t)$ (Theorem 2.5.10 of @last19
 that is $cal(F)_t = sigma((L(0), A(0)), Phi_t) = sigma(zeta(s), s <= t)$
 #footnote[As make the assumption of no explosions, the _minimal_ jump process and the jump process are not different
     ensuring a unique measurable correspondence between the jump process and marked point process since the visitation counting process are included in $zeta$ (Theorem 2.5.10-2.5.11 of @last1995marked)].
+Let further $status(k)$ be given by $status(k) = x$ if $Delta N^x (event(k)) = 1$ (with the empty mark if $event(k) = oo$. Let
+$macron(Phi) = (T_((n)), macron(Z)_((n)))_(n >= 1)$ be a marked point process given by
+    $
+        macron(Z)_n = (status(n), treat(n), covariate(n)).
+    $
+    Then, since there is a measurable bijection $macron(Phi)$ and $Phi$,
+we have that $cal(F)_t = sigma((L(0), A(0)), macron(Phi)_t)$,
+and we can work with $macron(Phi)$ instead of $Phi$.
 Intuitively, this means that the information obtained from the multivariate
 jump process is the same as that obtained from the marked point process at time $t$.
 Importantly, we shall work within a so-called canonical setting
@@ -188,7 +196,7 @@ which allows us to write down explicit formulae for the compensators
 in terms of the mark and event time distributions (@last1995marked).
 We can let $N^(a,a_j)$ be given by
 $
-    N^(a, a_j) (t) := sum_k bb(1) {T_((k)) <= t, A(T_((k))) = a_j}
+    N^(a, a_j) (t) := sum_k bb(1) {T_((k)) <= t, status(k) = a, A(T_((k))) = a_j}
 $
 Let $Lambda^(a, a_j) (t)$ denote the $P$-$cal(F)_t$-compensator of $N^(a, a_j)$
 and $Lambda^a (t) = sum_(j=1)^k Lambda^(a, a_j) (t)$ denote the total $P$-$cal(F)_t$-compensator of $N^a$.
@@ -199,48 +207,49 @@ $
 $ <eq:pi>
 
 #lemma[
-    Let $cal(F)_t$ denote the natural filtration of $Phi$.
-    Let $status(k) = x$ if $Delta N^x (event(k)) = 1$.
-    Then, the kernel $pi_t$ from ... to ... can be chosen as 
+    Let $cal(F)_t$ denote the natural filtration of $macron(Phi)$.
+    Then, the (predictable) stochastic kernel $pi$ from $cal(A) times cal(L) times N_({a,y,ell,d} times cal(A) times cal(L)) times RR^+$ to $cal(A)$
     $
-        pi_t ({a_j}) = sum_k bb(1) {event(k-1) < t <= event(k)) P(treat(k) = a_j | event(k), status(k) = a, history(k-1)) 
+        pi (a(0), l(0), macron(phi), t, {a_j}) = sum_k bb(1) {rho_(k-1) (macron(phi)) < t <= rho_(k) (macron(phi))) P(treat(k) = a_j | event(k) = t, status(k) = a, history(k-1) = macron(phi)^(k-1)) 
     $ <eq:piversion>
-    Any kernel $pi_t$ from ... to ... fulfilling @eq:pi identically satisfies
+    satisfies @eq:pi where $macron(phi)^(k)$ simply consists of the random variables $(covariate(0), treat(0), dots, covariate(k), treat(k), status(k), event(k))$.
+    Any kernel $pi$ from $cal(A) times cal(L) times N_({a,y,ell,d} times cal(A) times cal(L)) times RR^+$ to $cal(A)$ fulfilling @eq:pi identically satisfies
     $
-        pi_(event(k)) ({a_j}) = P(treat(k) = a_j | event(k), status(k) = a, history(k-1))
+        pi (treat(0), covariate(0), macron(Phi), event(k), {a_j}) = P(treat(k) = a_j | event(k), status(k) = a, history(k-1))
     $
     $P$-a.s. whenever $event(k) < oo$.
     
 ] <thm:canonicalversion>
 #proof[
-    Let further $macron(Phi) = (T_((n)), macron(Z)_((n)))_(n >= 1)$ be a marked point process given by
+    Note that
     $
-        macron(Z)_n = (status(n), treat(n), covariate(n)).
+        mu_k (dif (t, delta, a, l)) &:= (P((event(k), macron(Z)_((k))) in dif (t, delta, a, l) | history(k-1)))/(P(event(k) >= t | history(k-1))) \
+            &=P((treat(k), covariate(k)) in dif (a, l) | event(k) = t, status(k) = delta, history(k-1)) (P((event(k), status(k)) in dif (t, delta)  | history(k-1)))/(P(event(k) >= t | history(k-1))) \
+            &={P(treat(k) in dif a | event(k) = t, status(k) = a, history(k-1)) delta_(covariate(k-1)) (dif l) bb(1) {delta = a} \
+            &quad + P(covariate(k) in dif l | event(k) = t, status(k) = ell, history(k-1)) delta_(treat(k-1)) (dif a) bb(1) {delta = ell} \
+            &quad + delta_(treat(k-1),covariate(k-1)) (dif (a, l)) bb(1) {delta = y}} (P((event(k), status(k)) in dif (t, delta)  | history(k-1)))/(P(event(k) >= t | history(k-1)))
     $
-    Then, since there is a measurable bijection $macron(Phi)$ and $Phi$,
-    we have that $cal(F)_t = sigma((L(0), A(0)), macron(Phi)_t)$.
     According to Theorem 4.1.11 (ii) of @last1995marked, we have
     $
-        &Lambda (dif (t, z)) \
-            &= sum_(k=1)^oo bb(1) {event(k-1) < t <= event(k)) (P((event(k), macron(Z)_((k))) in dif (t, delta, a, l) | history(k-1)))/(P(event(k) >= t | history(k-1))) \
-            &= sum_(k=1)^oo bb(1) {event(k-1) < t <= event(k)) P((treat(k), covariate(k)) in dif (a, l) | event(k) = t, status(k) = delta, history(k-1)) (P((event(k), status(k)) in dif (t, delta)  | history(k-1)))/(P(event(k) >= t | history(k-1))) \
-            &= sum_(k=1)^oo bb(1) {event(k-1) < t <= event(k)) {P(treat(k) in dif a | event(k) = t, status(k) = a, history(k-1)) delta_(covariate(k-1)) (dif l) bb(1) {delta = a} \
-            &+ P(covariate(k) in dif l | event(k) = t, status(k) = ell, history(k-1)) delta_(treat(k-1)) (dif a) bb(1) {delta = ell} + delta_(treat(k-1),covariate(k-1)) (dif (a, l)) bb(1) {delta = y}} (P((event(k), status(k)) in dif (t, delta)  | history(k-1)))/(P(event(k) >= t | history(k-1)))\
+        Lambda (dif (t, delta, a, l)) = sum_(k=1)^oo bb(1) {event(k-1) < t <= event(k)) mu_k (dif (t, delta, a, l))
     $
-    is the $P$-$cal(F)_t$ compensator associated with the point process $(T_((n)), Z_((n)))_(n >= 1)$,
-    where $cal(F)_t$ is its natural filtration. Thus @eq:piversion follows. 
+    is the $P$-$cal(F)_t$ compensator associated with the point process $macron(Phi)$.
+    From this, we obtain versions of the compensators on the right-hand side and the left hand side of @eq:pi
+    integrating over sets of the form $(0,t] times {a} times {a_j} times cal(L)$ and
+    $(0,t] times {a} times cal(A) times cal(L)$. Thus we obtain the first desired statement. 
 
-    Now use this with Theorem 4.3.2  of @last1995marked. Then, we have (almost surely)
+    *NOTE:* Fix notation.
+    Now use this with Theorem 4.3.2 of @last1995marked. Then, we have (almost surely)
     $
         &P(status(k) in dif delta| event(k), history(k-1)) {P(treat(k) in dif a | event(k), status(k) = a, history(k-1)) delta_(covariate(k-1)) (dif l) bb(1) {delta = a} \
-            &+ P(covariate(k) in dif l | event(k), status(k) = ell, history(k-1)) delta_(treat(k-1)) (dif a) bb(1) {delta = ell} }\
-            &= kappa(event(k), dif (delta, a, ell)) = kappa^*_(delta) (event(k), dif (a, ell)) kappa_m (event(k), dif delta)
-    $
-    $P$ almost surely, where $kappa$ is the canonical mark
-    and we decompose the canonical mark into its components. 
-    We find that $kappa_m (event(k), dif delta) = P(status(k) in dif delta| event(k), history(k-1))$
-    and therefore that $integral_({a} times dif a times cal(L)) kappa^*_(delta) (event(k), dif (a, ell)) = P(treat(k) in dif a | event(k), status(k) = a, history(k-1))$
-    up to null sets. 
+            &+ P(covariate(k) in dif l | event(k), status(k) = ell, history(k-1)) delta_(treat(k-1)) (dif a) bb(1) {delta = ell} + delta_(treat(k-1),covariate(k-1)) (dif (a, l)) bb(1) {delta = y}}\
+            &= kappa(event(k), dif (delta, a, ell))\
+            &=kappa_Delta (event(k), dif delta) {pi^' (event(k), delta, dif a) delta_(covariate(k-1)) (dif l) bb(1) {delta = a} \
+            &+ kappa_L (event(k), delta, dif ell) delta_(treat(k-1)) (dif a) bb(1) {delta = ell} + delta_(treat(k-1),covariate(k-1)) (dif (a, l)) bb(1) {delta = y}}
+    $ <eq:proofpi>
+    The last equality comes from considering the various cases with a discrete mark space.
+    We see that again $pi^' (t, delta, dif a)$ satisfies @eq:pi again. However, by explicitly
+    integrating out various sets of @eq:proofpi, we get that $pi^' (t, delta, dif a) = P(treat(k) in dif a | event(k), status(k) = a, history(k-1))$.
 ]
         
 // or alternatively, we can work with the random measure
@@ -254,6 +263,7 @@ $ <eq:pi>
 
 = Identification of the counterfactual mean outcome
 
+Now, we let Now let $N^a (dif t times dif x) = sum_(x in cal(A)) delta_(x) (dif x) N^(a,a_j) (dif t)$.
 We are interested in the outcome process $Y$ under an intervention $g^*$
 which we denote by $tilde(Y)$.
 Importantly, the intervention is defined as a static/dynamic intervention
@@ -276,11 +286,11 @@ $
 $
 where $Lambda^a (dif t)$ is the $P$-$cal(F)_t$-compensator of $N^a (dif t times cal(A))$ --
 also deemed the total $P$-$cal(F)_t$-compensator of $N^a$.
-What this means is that
-$
-    N^a ((0, t] times dif x) - Lambda^a ((0, t]) times dif x)
-$
-is a local $P$-$cal(F)_t$-martingale.
+// What this means is that
+// $
+//     N^a ((0, t] times dif x) - Lambda^a ((0, t]) times dif x)
+// $
+// is a local $P$-$cal(F)_t$-martingale.
 We shall write similar notations for the other components of $N$.
 Let $scr(L)$ denote the $P$-$cal(F)_t$-canonical compensator of $N^(g^*)$.
 However, $N^a$ generally has the compensator $Lambda^(a) (dif t times dif x) = pi_t (dif x) Lambda^a (dif t)$.
@@ -290,14 +300,14 @@ $
 $
 
 #definition[
-    Let $cal(tilde(F))_t := sigma(tilde(N)^y (dif s), tilde(N)^a (dif s times {x}), tilde(N)^ell (dif s times {y}) | s in (0, t], x in cal(A), y in cal(L))$.
-    Let $Lambda$ denote the canonical $P$-$cal(F)_t$-compensator of $N$.
+    Let $cal(tilde(F))_t := sigma(tilde(N)^d ((0,s]), tilde(N)^y ((0,s]), tilde(N)^a ((0,s] times {x}), tilde(N)^ell ((0,s] times {y}) | s in (0, t], x in cal(A), y in cal(L))$.
+    Let $dot(Lambda)$ denote the canonical $P$-$cal(F)_t$-compensator of $N$.
 
     A multivariate random measure $tilde(N) = (tilde(N)^y, tilde(N)^a, tilde(N)^ell)$
     is a *counterfactual random measure* under the intervention $g^*$
     if it satisfies the following conditions.
     1. $tilde(N)^a$ has compensator $scr(L) (tilde(N))$ with respect to $cal(tilde(F))_t$.
-    2. $tilde(N)^x$, has the same compensator $Lambda (tilde(N))$ with respect to $cal(tilde(F))_t$ for $x in {y, ell}$.
+    2. $tilde(N)^x$, has the same compensator $dot(Lambda)^x (tilde(N))$ with respect to $cal(tilde(F))_t$ for $x in {y, ell, d}$.
 ]
 
 Now let $(event(k))_k$ denote the ordered event times of $N$.
@@ -314,8 +324,6 @@ based on structural equations (@richardson2013single).
 //Specifically this may relate to conditional distributions
 //in this setting not being uniquely defined.
 
-Let $N^(a, x) (t) := N^a ((0, t] times {x})$ for $x in cal(A)$ and $M^(a, x) (t) := N^(a, x) (t) - Lambda^(a, x) (t)$.
-Note that @eq:rytgaard is the same likelihood ratio as in @rytgaardContinuoustimeTargetedMinimum2022.
 //We also assume that we work with a version of the compensator
 //such that $Lambda ({t} times {y, a} times {1, 0}) < oo$ for all $t > 0$.
 //We may generally also work with a compensator $Lambda$ that fulfills conditions (10.1.11)-(10.1.13) of @last1995marked.
@@ -327,11 +335,91 @@ Note that @eq:rytgaard is the same likelihood ratio as in @rytgaardContinuoustim
 // but why is integral_0^t tilde(Y)_(t) zeta (dif s) a martingale (generally a martingale)
 
 // CAR is stronger than exchangeability => likelihood factorizes, but we do not need it to.
-Note that alternatively, we can also require strong consistency.
-What strong consistency dictates is that $tilde(Y)_(dot and tau^(g^*)) = Y_(dot and tau^(g^*))$ $P$-a.s.
-The subtle difference is that the strict inequality is replaced by a weak one. 
-An illustration of strong consistency is presented in the figure below
-for a recurrent event outcome below. 
+
+Now we come to a martingale result providing identification.
+
+#theorem[
+If _all_ of the following conditions hold:
+- *Consistency*: $tilde(Y)_(dot) bb(1) {tau^(g^*) > dot} = Y_(dot) bb(1) {tau^(g^*) > dot} quad P-"a.s."$
+- *Exchangeability*:
+  Define $cal(H)_t := cal(F)_t or sigma(tilde(Y))$.
+  Let $Lambda^(a, a_j) (dif t) = pi_t ({a_j}) Lambda^(a) (dif t)$ denote the $P$-$cal(F)_t$-compensator of $N^(a, a_j)$ and $Lambda^(a,a_j)_H (dif t) = pi_t^H ({a_j}) Lambda^(a)_H (dif t)$ denote the $P$-$cal(H)_t$-compensator of $N^(a, a_j)$,
+  and that $pi_t^H ({a_j})$ can be chosen cadlag and $cal(H)_t$-predictable.We have for all $j in {1, dots, k}$ and $m in bb(N)$ that $pi_(event(m)) ({a_j}) = pi_(event(m))^H ({a_j})$ $P$-a.s.
+
+- *Positivity*: 
+  $
+      W (t) := product_(j = 1)^(N_t) (product_(i=1)^(k) ((pi^*_(event(j)) ({a_i}; history(j-1))) / (pi_(event(j)) ({a_i}; history(j-1))))^(bb(1) {treat(k) = a_i}))^(bb(1) {status(j) = a}) 
+  $ <eq:rytgaard>
+  is uniformly integrable $P$-$cal(F)_t$ martingale. 
+  
+  // Furthermore, let $K^H (t) = integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi^H_s ({a_j})) - 1) M_H^(a, a_j) (dif s)$
+  // is a $P$-$cal(H)_t$-martingale and that $K^H$ is a process of *locally integrable variation*, meaning that $mean(P) [integral_0^t |d K^H (s)| ] < oo$ for all $t > 0$
+  // and, moreover, that $mean(P) [integral_0^t W(s-) |dif K_s^H| ] < oo$ for $t>0$.
+
+Further, let
+$
+K_t &= integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) M^(a, a_j) (dif s)
+$
+Then,
+$
+    mean(P) [tilde(Y)_t] = mean(P) [Y_t W (t)]
+$
+    and $W (t) = cal(E) (K)_t$ is a uniformly integrable $P$-$cal(F)_t$-martingale, where $cal(E)$ denotes the Doléans-Dade exponential (@protter2005stochastic).
+] <thm:identifiabilitymartingale>
+
+#proof[
+    We shall use that the likelihood ratio solves a specific stochastic differential equation.
+    First, we have that
+    $
+        K_t &= integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) M^(a, a_j) (dif s) \
+            &= integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s) - sum_(j=1)^(k) ((pi_s^* ({a_j})) / (pi_s ({a_j})) - 1) Lambda^(a, a_j) (dif s) \
+            &= integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s) - sum_(j=1)^(k) (pi_s^* ({a_j}) - pi_s ({a_j})) Lambda^(a) (dif s) \
+            &= integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s).
+    $
+    This shows that $W (t) = cal(E) (K)_t$.
+    By exchangeability and the last equality, we also have that $K_t = integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi^H_s ({a_j})) - 1) M_(cal(H))^(a, a_j) (dif s)$,
+    where $M_(cal(H))^(a,a_j) = N^(a,a_j) - Lambda_(cal(H))^(a,a_j)$ and $Lambda_(cal(H))^(a,a_j)$ denotes the $P$-$cal(H)_t$ compensator
+    of $N^(a,a_j)$. Thus, since we can choose $pi_t^H ({a_j})$ to be $cal(H)_t$-predictable and locally bounded (by Lemma 7.3.20 of @cohen2015stochastic), we see that generally $K_t$ is a local $P$-$cal(H)_t$-martingale. 
+    Since $W$ is a uniformly integrable martingale on $[0, T]$, we have that
+    $
+        mean(P) [W(T)] = mean(P) [W(0)] = mean(P) [1] = 1
+    $
+    by Theorem 10.3.2 of @last1995marked.
+    Hence, by Theorem 15.3.2 of @cohen2015stochastic, we have that $W$ is a $P$-$cal(H)_t$ martingale. 
+    
+    // We have that
+    // $
+    //     zeta_t := integral_0^t W(s -) sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) M^(a, a_j) (dif s)
+    // $ is a zero mean $P$-$cal(H)_t$-martingale by positivity.
+    // From this, we see that $integral_0^t tilde(Y)_(t) zeta (dif s)$ is also a uniformly integrable $P$-$cal(H)_t$-martingale
+    // by Theorem 2.1.42 of @last1995marked.
+    This implies that
+    $
+        mean(P) [Y_t W (t)] &= mean(P) [Y_t bb(1) {tau^(g^*) > t} W(t)]  \
+            &=^((**)) mean(P) [tilde(Y)_t bb(1) {tau^(g^*) > t} W (t)] \
+            &= mean(P) [tilde(Y)_t W (t)] \
+            &= mean(P) [tilde(Y)_t mean(P) [W(t) | cal(H)_0]] \
+            &= mean(P) [tilde(Y)_t W (0)] \
+            &= mean(P) [tilde(Y)_t] 
+    $
+    where in $(**)$ we used consistency.
+]
+
+We note some things here.
+- First that @eq:rytgaard is the same likelihood ratio as in @rytgaardContinuoustimeTargetedMinimum2022.
+- Also note that the Radon-Nikodym derivative is uniquely given by the second part of @thm:canonicalversion, so
+  that if $pi'$ and $pi$ are the corresponding Radon-Nikodym derivatives of @thm:canonicalversion,
+  then @eq:rytgaard obtained from either will be indistinguishable from each other. 
+- Also note that in the proof, it suffices that $W$ is uniformly bounded because
+  then it will also be a $P$-$cal(H)_t$-martingale
+  since it is a local, bounded $P$-$cal(H)_t$-martingale.
+- Note that a more general alternative to the above conditions is simply
+  to assume that $W$ is a uniformly martingale on both filtrations $cal(F)_t$ and $cal(H)_t$.
+- Note that alternatively, we can also require strong consistency.
+  What strong consistency dictates is that $tilde(Y)_(dot and tau^(g^*)) = Y_(dot and tau^(g^*))$ $P$-a.s.
+  The subtle difference is that the strict inequality is replaced by a weak one. 
+  An illustration of strong consistency is presented in the figure below
+  for a recurrent event outcome below. 
 #figure(cetz.canvas(length: 1cm, {
     import cetz.draw: *
 
@@ -375,81 +463,6 @@ for a recurrent event outcome below.
     In this case, the treatment is beneficial for the user, as it would have prevented another recurrent event from happening. 
 ]) <fig:potentialoutcome>
 
-
-#theorem[
-If _all_ of the following conditions hold:
-- *Consistency*: $tilde(Y)_(dot) bb(1) {tau^(g^*) > dot} = Y_(dot) bb(1) {tau^(g^*) > dot} quad P-"a.s."$
-- *Exchangeability*:
-  Define $cal(H)_t := cal(F)_t or sigma(tilde(Y))$.
-  Let $Lambda^(a, a_j) (dif t) = pi_t ({a_j}) Lambda^(a) (dif t)$ denote the $P$-$cal(F)_t$-compensator of $N^(a, a_j)$ and $Lambda^(a,a_j)_H (dif t) = pi_t^H ({a_j}) Lambda^(a)_H (dif t)$ denote the $P$-$cal(H)_t$-compensator of $N^(a, a_j)$. 
-  We have for all $j in {1, dots, k}$ and $m in bb(N)$ that $pi_(event(m)) ({a_j}) = pi_(event(m))^H ({a_j})$ $P$-a.s.
-
-- *Positivity*: 
-  $
-      W (t) := product_(j = 1)^(N_t) (product_(i=1)^(k) ((pi^*_(event(j)) ({a_i}; history(j-1))) / (pi_(event(j)) ({a_i}; history(j-1))))^(bb(1) {treat(k) = a_i}))^(bb(1) {status(j) = a}) 
-  $ <eq:rytgaard>
-  is uniformly integrable.
-  
-  Furthermore, let $K^H (t) = integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi^H_s ({a_j})) - 1) M_H^(a, a_j) (dif s)$
-  is a $P$-$cal(H)_t$-martingale and that $K^H$ is a process of *locally integrable variation*, meaning that $mean(P) [integral_0^t |d K^H (s)| ] < oo$ for all $t > 0$
-  and, moreover, that $mean(P) [integral_0^t W(s-) |dif K_s^H| ] < oo$ for $t>0$.
-
-  Let
-  $
-  K_t &= integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) M^(a, a_j) (dif s)
-  $
-Then,
-$
-    mean(P) [tilde(Y)_t] = mean(P) [Y_t W (t)]
-$
-    and $W (t) = cal(E) (K)_t$ is a uniformly integrable $P$-$cal(F)_t$-martingale, where $cal(E)$ denotes the Doléans-Dade exponential (@protter2005stochastic),
-    and $K=K^H$.
-] <thm:identifiabilitymartingale>
-
-#proof[
-    We shall use that the likelihood ratio solves a specific stochastic differential equation.
-    First, we have that
-    $
-        K_t &= integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) M^(a, a_j) (dif s) \
-            &= integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s) - sum_(j=1)^(k) ((pi_s^* ({a_j})) / (pi_s ({a_j})) - 1) Lambda^(a, a_j) (dif s) \
-            &= integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s) - sum_(j=1)^(k) (pi_s^* ({a_j}) - pi_s ({a_j})) Lambda^(a) (dif s) \
-            &= integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) N^(a, a_j) (dif s).
-    $
-    This shows that $W (t) = cal(E) (K)_t$.
-    By exchangeability and the last equality, we also have that $K_t = integral_0^t sum_(j=1)^k ((pi_s^* ({a_j}))/(pi^H_s ({a_j})) - 1) M_H^(a, a_j) (dif s)$,
-    where $M_(cal(H))^(a,a_j) = N^(a,a_j) - Lambda_(cal(H))^(a,a_j)$ and $Lambda_(cal(H))^(a,a_j)$ denotes the $P$-$cal(H)_t$ compensator
-    of $N^(a,a_j)$.
-        
-    Thus, by properties of the product integral (e.g., Theorem II.6.1 of @andersenStatisticalModelsBased1993),
-    $
-         W(t) = 1 + integral_0^t W(s -) dif K_s 
-    $ <eq:sde>
-    From this, it follows by Theorem 2.1.42 of @last1995marked that $W(t)$ is a $P$-$cal(H)_t$ martingale.
-    However, by exchangeability, it also $cal(F)_t$-measurable and hence a $P$-$cal(F)_t$ martingale.  
-    // We have that
-    // $
-    //     zeta_t := integral_0^t W(s -) sum_(j=1)^k ((pi_s^* ({a_j}))/(pi_s ({a_j})) - 1) M^(a, a_j) (dif s)
-    // $ is a zero mean $P$-$cal(H)_t$-martingale by positivity.
-    // From this, we see that $integral_0^t tilde(Y)_(t) zeta (dif s)$ is also a uniformly integrable $P$-$cal(H)_t$-martingale
-    // by Theorem 2.1.42 of @last1995marked.
-    This implies that
-    $
-        mean(P) [Y_t W (t)] &= mean(P) [Y_t bb(1) {tau^(g^*) > t} W(t)]  \
-            &=^((**)) mean(P) [tilde(Y)_t bb(1) {tau^(g^*) > t} W (t)] \
-            &= mean(P) [tilde(Y)_t W (t)] \
-            &= mean(P) [tilde(Y)_t mean(P) [W(t) | cal(H)_0]] \
-            &= mean(P) [tilde(Y)_t W (0)] \
-            &= mean(P) [tilde(Y)_t] 
-    $
-    where in $(**)$ we used consistency.
-]
-
-Note that in the proof, it suffices that $W(t)$ is uniformly bounded because
-then it will also be a $P$-$cal(H)_t$-martingale
-since it is a local, bounded $P$-$cal(H)_t$-martingale.
-Note that a more general alternative to the above conditions is simply
-to assume that $(W(t))_t$ is a uniformly martingale on both filtrations $cal(F)_t$ and $cal(H)_t$.
-
 // *NOTE:* Would be very nice for positivity stated in terms of $K$ only.
 // Note that assuming that $K$ is uniformly integrable and a $P$-$cal(F)_t$ martingale
 // implies that it is of class D with respect to $cal(F)_t$. If we also had that it was of class D
@@ -473,12 +486,13 @@ due to their factorization of the likelihood. This is because
 $cal(E) (X) cal(E) (Y) = cal(E) (X + Y)$ if and only if $[X, Y] = 0$.
 This can be seen by applying Theorem 38, p. 130 of @protter2005stochastic
 and using that the stochastic exponential solves a specific stochastic differential equation.
+We do not provide a more concise statement here.
 
 #theorem("g-formula")[
     Let, further, $Q = W(T) dot P$ denote the probability measure defined by the likelihood ratio $W(T)$ given in @eq:rytgaard.
     Under positivity, then
-    1. The $Q$-$cal(F)_t$ compensator of $N^a (dif t times dif x)$ is $pi^*_t (dif x) Lambda_P^a (dif t)$.
-    2. The $Q$-$cal(F)_t$ compensator of $N^x$ is $Lambda_P^x$ for $x in {y, ell}$. // addition should be zero; by Jacods formula for likelihood ratios
+    1. The $Q$-$cal(F)_t$ compensator of $N^a (dif t times dif x)$ is $pi^*_t (dif x) Lambda^a (dif t)$.
+    2. The $Q$-$cal(F)_t$ compensator of $N^x$ is $Lambda^x$ for $x in {y, ell}$. // addition should be zero; by Jacods formula for likelihood ratios
 ] <thm:gformula>
 
 #proof[
@@ -492,22 +506,22 @@ and using that the stochastic exponential solves a specific stochastic different
     $ 
     With $X= M^(a, x)$, we find
     $
-        chevron.l K, M^(a, x) chevron.r_t^P &= integral_0^t sum_j ((pi_s^* (a_j))/(pi_s (a_j)) - 1) dif chevron.l M_P^(a, a_j), M_P^(a, x) chevron.r_s^P \
-            &= integral_0^t ((pi_s^* (x))/(pi_s (x)) - 1) dif chevron.l M_P^(a, x) chevron.r_s^P + sum_(j != x) integral_0^t ((pi_s^* (a_j))/(pi_s (a_j)) - 1) dif chevron.l M_P^(a, a_j), M_P^(a, x) chevron.r_s^P \
-            &= integral_0^t ((pi_s^* (x))/(pi_s (x)) - 1) pi_s (x) Lambda_P^a (dif s)  - integral_0^t ((pi_s^* (x))/(pi_s (x)) - 1) Delta (pi (x) Lambda_P^a)_s pi_s (x) Lambda_P^a (dif s) \
-            &quad - sum_(j!= x) integral_0^t ((pi_s^* (a_j))/(pi_s (a_j)) - 1) Delta (pi (x) Lambda_P^a)_s pi_s (a_j) Lambda_P^a (dif s) \
-            &= integral_0^t (pi_s^* (x) - pi_s (x)) Lambda_P^a (dif s)  - sum_(j) integral_0^t (pi_s^* (a_j) - pi_s (a_j)) Delta (pi (x) Lambda_P^a)_s Lambda_P^a (dif s) \
-            &= integral_0^t (pi_s^* (x) - pi_s (x)) Lambda_P^a (dif s).
+        chevron.l K, M^(a, x) chevron.r_t^P &= integral_0^t sum_j ((pi_s^* (a_j))/(pi_s (a_j)) - 1) dif chevron.l M^(a, a_j), M^(a, x) chevron.r_s^P \
+            &= integral_0^t ((pi_s^* (x))/(pi_s (x)) - 1) dif chevron.l M^(a, x) chevron.r_s^P + sum_(j != x) integral_0^t ((pi_s^* (a_j))/(pi_s (a_j)) - 1) dif chevron.l M^(a, a_j), M^(a, x) chevron.r_s^P \
+            &= integral_0^t ((pi_s^* (x))/(pi_s (x)) - 1) pi_s (x) Lambda^a (dif s)  - integral_0^t ((pi_s^* (x))/(pi_s (x)) - 1) Delta (pi (x) Lambda^a)_s pi_s (x) Lambda^a (dif s) \
+            &quad - sum_(j!= x) integral_0^t ((pi_s^* (a_j))/(pi_s (a_j)) - 1) Delta (pi (x) Lambda^a)_s pi_s (a_j) Lambda^a (dif s) \
+            &= integral_0^t (pi_s^* (x) - pi_s (x)) Lambda^a (dif s)  - sum_(j) integral_0^t (pi_s^* (a_j) - pi_s (a_j)) Delta (pi (x) Lambda^a)_s Lambda^a (dif s) \
+            &= integral_0^t (pi_s^* (x) - pi_s (x)) Lambda^a (dif s).
     $ <eq:girsanova>
     Girsanov's theorem (Theorem 41, p. 136 of @protter2005stochastic)
     together with @eq:girsanov1 and @eq:girsanova
     gives that 
     $
-        N^a (dif t times dif x) - pi_t (dif x) Lambda_P^a (dif t) - (pi_t^* (dif x) - pi_t (dif x)) Lambda_P^a (dif t) = N^a (dif t times dif x) - pi_t^* (dif x) Lambda_P^a (dif t)
+        N^a (dif t times dif x) - pi_t (dif x) Lambda^a (dif t) - (pi_t^* (dif x) - pi_t (dif x)) Lambda^a (dif t) = N^a (dif t times dif x) - pi_t^* (dif x) Lambda^a (dif t)
     $
     is a $Q$-$cal(F)_t$-local martingale. The second statement follows by noting that
     $
-        [M^(y), K]_t &= integral_0^t Delta N_t^y sum_j ((pi_s^* (a_j))/(pi_s (a_j)) - 1) N^(a, a_j) (dif s) - integral_0^t Delta Lambda_P^y (s) sum_j ((pi_s^* (a_j))/(pi_s (a_j)) - 1) M^(a, a_j) (dif s) \
+        [M^(y), K]_t &= integral_0^t Delta N_t^y sum_j ((pi_s^* (a_j))/(pi_s (a_j)) - 1) N^(a, a_j) (dif s) - integral_0^t Delta Lambda^y (s) sum_j ((pi_s^* (a_j))/(pi_s (a_j)) - 1) M^(a, a_j) (dif s) \
     $
     where we apply the trick with adding and subtracting the treatment compensators in the second term.
     The first term is zero because no two counting processes jump at the same time.
@@ -523,10 +537,18 @@ relate to the ones of @ryalenPotentialOutcomes?
 The condition of consistency is the same.
 However, the exchangeability condition and
 the positivity condition are different in general.
-We compare exclusively the exchangeability conditions
-as the positivity condition is not really interesting. 
-Let $bb(N)_t^a = bb(1) {tau^(g^*) <= t}$
+// We compare exclusively the exchangeability conditions
+// as the positivity condition is not really interesting.
+The overall point of the present subsection is to argue that
+the identification formula in @ryalenPotentialOutcomes cannot generally
+identify the causal estimand, but that there is, in general,
+a different causal interpretation behind that identification formula.
+Moreover, we argue that under structural, albeit unrestrictive assumptions,
+the two causal estimands are the same.
+
+First, let $bb(N)_t^a = bb(1) {tau^(g^*) <= t}$
 and let $bb(L)_t$ denote its $P$-$cal(F)_t$-compensator.
+Then, exchangeability in @ryalenPotentialOutcomes is that 
 
 - *Exchangeability*: 
   Define $cal(H)_t := cal(F)_t or sigma(tilde(Y))$.
@@ -543,26 +565,35 @@ $ <eq:ryalenIdentification>
 
 == A different intervention yielding the same identification formula as @ryalenPotentialOutcomes
 
-Suppose that we observe the multivariate counting process
-$N = (N^y, N^d, N^(ell, l_1), dots, N^(ell, l_j), N^(a,a_1), N^(a,a_0))$.
-If we are interested in the effect of staying on treatment $a_1$,
-which prevents $N^(a,a_0)$-events. Note is a predictable intervention; however, the
+Suppose that we represent $N$ as the multivariate counting process
+$N = (N^y, N^d, N^(ell,l_1), dots, N^(ell,l_(d_l)), N^(a,a_1), N^(a,a_0))$,
+where, for simplicity, we take $cal(A) = {a_0,a_1}$.
+We are interested in the effect of staying on treatment $a_1$,
+which prevents $N^(a,a_0)$-events.
+From a philosophical point of view there is a difference in actually constitutes complete data can be different.
+The intervention we have discussed earlier would include _all_ treatment visitation times
+as complete data. This intervention, however, would only include the treatment visitation times
+where treatment $a_1$ is assigned to the patient. 
+
+This is a predictable intervention; however, the
 intervention that is formulated previously is an optional intervention, in general. 
 With canonical compensators, we see that for the potential outcome process for this intervention
 $
-    tilde(Lambda)^(x) (dif t) &= dot(Lambda)^(x) (tilde(N)', dif t), x in.not {a_0, a_1} \
-    tilde(Lambda)^(a_1) (dif t) &= pi_t (tilde(N)', {a_1}) dot(Lambda)^(x) (tilde(N)', dif t) \
-    tilde(Lambda)^(a_0) (dif t) &= 0
+    tilde(Lambda)^(x) (dif t) &= dot(Lambda)^(x) (tilde(N)') (dif t), x != a,a_0, a,a_1 \
+    tilde(Lambda)^(a,a_1) (dif t) &= pi_t (tilde(N)', {a_1}) dot(Lambda)^(a) (tilde(N)') (dif t) \
+    tilde(Lambda)^(a,a_0) (dif t) &= 0 
 $
-However, because $pi_t (tilde(N)', {a_1}) != 1$, it may not be generally be the case
+However, because $pi_t (tilde(N)', {a_1}) != 1$, it is not guaranteed
 that $mean(P) [tilde(Y)_t] = mean(P) [tilde(Y)'_t]$. @ryalenPotentialOutcomes gives conditions
 under which there exists such a potential outcome process; for instance if $chevron.l M^(a_0), M^(x) chevron.r^P_s = 0$
-for $x!= a_0$.
-On the other hand, note that $tau^(g^*) = inf {t > 0 | N^(a_1) != N^(a_1) + N^(a_0) or N^(a_0) != 0} = inf {t>0 |N^(a_1) != 0}$.
-Thus, this implies that the identification formulae for $mean(P) [tilde(Y)_t]$ and
-$mean(P) [tilde(Y)'_t]$.
-However, as we shall see, these need not be the same even under the orthogonal martingales assumption.
-Therefore, there will be situations in which the exchangeability condition can fail.
+for $x!= a,a_0$ in this situation.
+On the other hand, note that $tau^(g^*) = inf {t > 0 | N^(a,a_1) (t) != N^(a,a_1) (t) + N^(a,a_0) (t) or N^(a, a_0) (t) != 0} = inf {t>0 |N^(a,a_1) (t) != 0}$.
+Thus, the identification formulae for $mean(P) [tilde(Y)_t]$ and
+$mean(P) [tilde(Y)'_t]$ are actually the same for two _different_ interventions;
+and the exchangeability conditions are the same -- we replace $tilde(Y)$ with $tilde(Y)'$ here. 
+//However, as we shall see, these need not be the same even under the orthogonal martingales assumption.
+We argue that there are situations for observed in which the exchangeability condition for $tilde(Y)$ can fail,
+but as we have argued this cannot occur for $tilde(Y)'$ under the assumption of orthogonal martingales.
 
 // Intuitively, I think this one is more related to coarsening at random with censoring
 
@@ -612,7 +643,10 @@ $
     Lambda^y (dif t) (P) &= bb(1) {t <= event(1)} lambda_t^y dif t + bb(1) {event(1) < t <= event(2)} lambda_t^y (treat(1), event(1)) dif t, \
     Lambda^(a,a_j) (dif t) (P) &= bb(1) {t <= event(1)} pi_t (a_j) lambda_t^a dif t, j=0,1.
 $
-with respect to its natural filtration. 
+with respect to its natural filtration.
+Is it then possible to construct a potential outcome fulfilling consistency and exchangeability
+in the sense of @ryalenPotentialOutcomes such that $mean(P) [tilde(Y)_t] = mean(P) [tilde(W) (t) Y_t]$
+and when is it possible?
 // In $P$, note that
 // $
 //     mean(P) [Y_t] &= mean(P) [N^y (t)] \
@@ -622,7 +656,7 @@ with respect to its natural filtration.
 //         &+ integral_0^t exp(- integral_0^s (lambda_u^y + lambda_u^(a)) dif u) (1-pi_s ({a_1}))lambda_s^(a,a_0) integral_s^t exp(- integral_s^v lambda_u^y ) dif u) lambda_v^y dif v dif s \
 // $
 
-Then, in $Q$ (defined in @thm:gformula), we have
+First note that in in $Q$ (defined in @thm:gformula), we have
 $
     Lambda^y (dif t) (Q) &= Lambda^y (dif t) (P), \
     Lambda^(a,a_0) (dif t) (Q) &= 0 dif t, \
@@ -636,13 +670,12 @@ $
 $
 since $tau^(g^*) = oo$ almost surely in $tilde(Q)$.
 
-First, we show that the identification formulae are the same 
+First, we identify when one can do this in this example.
 
 === Example showing the identification formulae are the same under a local independence condition
 Suppose that $lambda_t^y (1, s) = lambda^y_t$ for $s < t$ (in $P$).
-Then, $mean(Q) [Y_t] = mean(tilde(Q)) [Y_t]$.
-If we can show that $mean(tilde(Q)) [Y_t]$
-does not depend on the Radon-Nikodym derivative $pi_t ({a_1})$, the two identification formulae will coincide.
+Then, we show $mean(Q) [Y_t] = mean(tilde(Q)) [Y_t]$ by showing that $mean(tilde(Q)) [Y_t]$
+does not depend on the Radon-Nikodym derivative $pi_t ({a_1})$.
 Thus,
 $
     mean(tilde(Q)) [Y_t] &= mean(tilde(Q)) [N^y (t)] \
@@ -656,7 +689,7 @@ $
         &= 1- exp(- integral_0^t (lambda_u^y + pi_(u)(a_1) lambda_u^(a)) dif u) - exp(-integral_0^t lambda_u^y dif u) (1-exp(- integral_0^t lambda_u^(a) pi_(u)(a_1) dif u)) \
         &= 1 - exp(- integral_0^t lambda_u^y dif u)
 $ <eq:examplediff>
-In (!), we apply the stated local independence condition. 
+In (!), we apply the stated local independence condition.
 
 === Example showing the identification formulae are different
 In the observed data, take
@@ -690,6 +723,9 @@ while
 $
     mean(tilde(Q)) [Y_t] = 1-exp(-(0.2+0.5 times 0.5) 3)-0.5 times 0.5 exp(-(0.8)3)/(0.5 times 0.5+0.2-0.8)(1-exp(-(0.5 times 0.5+0.2-0.8)3)) approx 0.62
 $
+However by the argument in @section:construct, we can construct the potential outcome process $tilde(Y)$
+fulfilling consistency and exchangeability as in @thm:identifiabilitymartingale,
+so we actually have that $mean(Q) [Y_t] = mean(P) [tilde(Y)_t]$, but $mean(tilde(Q)) [Y_t] != mean(P) [tilde(Y)_t]$.
 
 // Therefore,
 // $
@@ -791,21 +827,193 @@ $
 // These conclusions should generalize and work under an orthogonal martingales assumption. 
 
 == More general argument (sketch)
-
+#theorem[
+    Suppose that $N^(a,a_j) arrow.r.struck N^x (dot and tau^(g^*))$ for
+    every component $x!= a,a_1, dots, a,a_k$ and $j in {1, dots, k}$.
+    Then,
+    $
+        mean(tilde(Q)) [Y_t] = mean(Q) [Y_t]
+    $
+]
+#proof[
 One can get the canonical compensators from the two measures $Q$ and $tilde(Q)$
 from $P$ via @thm:gformula and Lemma ? in @ryalenPotentialOutcomes. Here,
 we see that $Q$ and $tilde(Q)$ agree on the canonical compensator for every component that is not
 a treatment component. We can now induce measures $Q'$ and $tilde(Q)'$ restricting
 the measures to every other component than the treatment component (can be done explicitly)
 and consider its smaller generated natural filtration of the new marked point process.
-Under a local independence statement, the compensators under smaller filtration and the big
+Under a local independence statement, the compensators under smaller filtration and the original
 filtration are the same. However, this means that the canonical compensators in $Q'$
 and $tilde(Q)'$ will be the same and hence the distribution of $(Y_t)_(t in [0, T])$ will be the same
 in the two induced measures and hence in the original probability measures.
+]
+// Does $N^x -|> N^y$ when $N^x$ predictable always hold?
 
-// This same argument can be applied to see that the distribution of $tilde(Y)$ (my situation) and
-// $tilde(Y)'$ (in the situation where the treatment process consists of intervening on one component of treatment (if there is $N^(a,a_1)$ and $N^(a,a_0)$, then we are intervene on the second on but not the first)
-// will be the same.
+// == ???
+
+// Note that if one exchangeability in terms of @thm:identifiabilitymartingale holds,
+// then both identification formulas are the same i.e.,
+// $
+//     mean(P) [tilde(Y)_t] = mean(P) [W_t Y_t] = mean(P) [tilde(W)_t Y_t],
+// $
+
+// #theorem[
+//     Consider the static intervention with $g^* (history(k-1), event(k)) = 1$ for all $k$.
+//     and $cal(A) = {0, 1}$.
+//     Suppose consistency for $tilde(Y)_t$ as in @thm:identifiabilitymartingale.
+//     Let $pi^cal(H)_t (1)$, $pi^cal(F)_t (1)$
+//     denote the Radon-Nikodym derivatives of $Lambda^(a, 1)$
+//     with respect to $Lambda^(a)$
+//     in the filtrations $cal(H)_t$ and $cal(F)_t$, respectively.
+//     Similarly, let $Lambda^(a, cal(H))$, $Lambda^(a, cal(F))$
+//     denote the compensators of $N^a$ in the filtrations $cal(H)_t$
+//     and $cal(F)_t$, respectively.
+//     Suppose that a version of $pi_s^cal(F))$ exists such that
+//     $
+//         pi_s^cal(F) (1, omega) < 1
+//     $ <eq:nonperfectcompliance>
+//     for all $s in [0, T]$ and $omega in Omega^*$ with $P(Omega^*) = 1$.
+//     Also, suppose that strong consistency holds for $tilde(N)_t^a$, i.e.,
+//     $
+//         tilde(N)_dot^a bb(1) {tau^(g^*) >= dot} = N_dot^a bb(1) {tau^(g^*) >= dot} quad P-"a.s."
+//     $
+//     Let $cal(H)_t$ denote the initial expansion of
+//     $cal(F)_t$ with $sigma(tilde(N)_dot^a, tilde(Y)_dot)$.
+//     If the compensator of $bb(N)^a$ in the filtration $cal(H)_t$ is 
+//     $cal(F)_t$-predictable, then $N^a (dot and tau^(g^*))$
+//     is $cal(F)_t$-predictable. 
+// ]
+// #proof[
+
+// // Then, we have that
+// // $
+// //     mean(P) [tilde(Y)_t] = mean(P) [W_t Y_t]
+// // $
+// // by @thm:identifiabilitymartingale if $W_dot$ is a uniformly integrable martingale.
+
+// // However, note that
+// // $
+// //     bb(L)_t^a &= integral_0^t  (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Lambda^(a) (dif s) \
+// //         &= integral_0^t  (1-pi_s (1)) bb(1) {s <= tau^(g^*)} N^(a) (dif s).
+// // $ <eq_bbL>
+// // is a $cal(H)_t$-compensator of $bb(N)^a$.
+// // Here, we use that the compensator of $bb(1) {bb(N)_(s-)^a = 0} N^a (dif s)$
+// // is $bb(1) {bb(N)_(s-)^a = 0} N^a (dif s)$ itself in the filtration $cal(H)_t$.
+// // If $tilde(W)_t = cal(E) (-bb(K)^a)_t$ is such that it is a $P$-$cal(H)_t$-martingale (integrability conditions),
+// // then it will be a $P$-$cal(F)_t$-martingale as well,
+// // where $bb(K)^a_t = integral_0^t 1/(1 - Delta bb(L)_s^a) dif bb(M)_s^a$,
+// // by the stated argument since the compensator of $bb(N)^a$ in $cal(H)_t$
+// // is also $cal(F)_t$-adapted.
+// // Nonetheless, @eq_bbL in itself almost never be $cal(F)_t$-predictable,
+// // leading to possible issues -- also about the existence of such a $bb(L)^a$
+// // if treatment compensator is continuous in $cal(F)_t$, then it will almost never be able to the above?
+// // Conclude that if this is the case, then exchangeability in Påls setting can never hold.
+
+// Note that, under the stated conditions
+// $
+//         integral_0^dot bb(1) {s <= tau^(g^*)} N^(a) (dif s)
+// $
+// is a $cal(H)_t$-predictable process.
+// Therefore, it is its own compensator in $cal(H)_t$.
+// Now note that
+// $
+//     bb(L)^cal(H)_dot &= integral_0^dot  (1-pi^(cal(H))_s (1)) bb(1) {s <= tau^(g^*)} Lambda^(a, cal(H)) (dif s) \
+//         &= integral_0^dot  (1-pi^(cal(H))_s (1)) bb(1) {s <= tau^(g^*)} N^(a) (dif s).
+// $
+// On the other hand,
+// $
+//     bb(L)_dot^cal(F) &= integral_0^dot  (1-pi^(cal(F))_s (1)) bb(1) {s <= tau^(g^*)} Lambda^(a, cal(F)) (dif s) 
+// $
+// Conclude that if $bb(L)^cal(H)$ is indistinguishable from $bb(L)^cal(F)$,
+// then
+// $
+//     (1-pi^(cal(H))_dot (1)) bb(1) {dot <= tau^(g^*)} Delta N^a (dot) = (1-pi^(cal(F))_dot (1)) bb(1) {dot <= tau^(g^*)} Delta Lambda^(a,cal(F)) (dot).
+// $
+// Therefore,
+// $
+//     bb(L)^cal(H)_dot = integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} N^(a) (dif s) \
+// $
+// on a set up to $P$-indistinguishability.
+// If this were $cal(F)_t$-predictable, then
+// $
+//     bb(L)^cal(H)_dot &= integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} N^(a) (dif s) \
+//         &= integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} M^(a, cal(F)) (dif s) + integral_0^t  (1-pi^(cal(F))_s (1)) Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} Lambda^(a, cal(F)) (dif s) 
+// $
+// Conclude that since
+// $integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} M^(a, cal(F)) (dif s)$
+// is a difference of two non-decreasing processes, and hence of finite variation,
+// a local martingale,
+// by p. 115 of @protter2005stochastic that 
+// $
+//     integral_0^dot (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} N^(a) (dif s) = integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} Lambda^(a, cal(F)) (dif s).
+// $
+// Then, we have that $bb(1) {dot <= tau^(g^*)} Delta Lambda^(a,cal(F)) (T^a_(k)) = -1$ by @eq:nonperfectcompliance
+// for all jump times $T_(k)^a$ of $N^a$.
+// However, we also have that
+// $
+//     bb(1) {s <= tau^(g^*)} Delta Lambda^(a,cal(F)) (s) = 0
+// $
+// whenever $s$ is not a jump time of $N^a$ by @eq:nonperfectcompliance.
+// This shows the statement for the discrete part of the compensator.
+// For the continuous part, we are now able to conclude from these two parts that
+// $
+//     integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} lambda^(a, cal(F)) (s) dif s = 0
+// $
+// from which we conclude that
+// $
+//         bb(1) {s <= tau^(g^*)} lambda^(a, cal(F)) (s) = 0
+// $
+// for almost all $s$ with respect to the Lebesgue measure
+//     and almost all $omega in Omega^(**)$ with $P(Omega^(**)) = 1$.
+// However, these two restrictions exactly mean that $bb(1) {s <= tau^(g^*)} N^a (dif s)$
+// is a $cal(F)_t$-predictable process.
+// ]
+
+// // This is because
+// // $
+// //     bb(L)_t^a = integral_0^t  (1-pi_s (1)) bb(1) {s <= tau^(g^*)} M^(a) (dif s) + integral_0^t  (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Lambda^(a) (dif s).
+// // $
+// // which implies under regularity conditions that $bb(1) {s <= tau^(g^*)} N^a (dif s)$
+// // is a predictable process in $cal(F)_t$.
+// // Now, we calculate
+// // $
+// //     bb(K)_t^a &= -integral_0^t 1/(1 - Delta bb(L)_s^a) dif bb(M)_s^a \
+// //         &= -integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) dif bb(M)_s^a \
+// //         &= -integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) dif bb(N)_s^a \
+// //         &+ integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) dif bb(L)_s^a \
+// //         &=- integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) dif bb(N)_s^a \
+// //         &+ integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) (1-pi_s (1)) bb(1) {s <= tau^(g^*)} N^(a) (dif s) \
+// //         &=- integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) dif bb(N)_s^a \
+// //         &+ integral_0^t 1/(pi_s (1)) (1-pi_s (1)) bb(1) {s <= tau^(g^*)} N^(a) (dif s) \
+// //         &= K_t^*
+// // $
+
+// // On the other hand, the same argument shows that if the other exchangeability condition holds
+// // then $pi_s (1) bb(1) {s <= tau^(g^*)}$ can be chosen $cal(F)_t$-adapted,
+// // since we can pick
+// // $
+// //     pi_s (1) = sum_k bb(1) {event(k-1) < s <= event(k)} (1- Delta bb(L)_(event(k-1))^a) //(0 bb(1) {status(k-1) = a, event(k-1) > tau^(g^*)} + (1- Delta bb(L)_(event(k-1))^a) bb(1) {status(k-1) = a, event(k-1) <= tau^(g^*)}).
+// // $
+// // By construction, $pi_s (1)$ is the desired Radon-Nikodym derivative with respect to $cal(H)_t$.
+// // Moreover, it is $cal(F)_t$-adapted since $Delta bb(L)_(event(k-1))^a$ is $cal(F)_(event(k-1))$-measurable.x
+// // Therefore, again, the weight $W(t)$ is a $P$-$cal(H)_t$-martingale as well
+// // and $cal(F)_t$-adapted under integrability conditions.
+// // Therefore, we have that
+// // $
+// //     mean(P) [tilde(Y)_t] = mean(P) [W_t Y_t]
+// // $
+// // also. Now calculate
+// // $
+// //     K_t^* &= integral_0^t bb(1) {s <= tau^(g^*)} (1/(pi_s (1)) - 1) N^(a,1) (dif s) + integral_0^t bb(1) {s <= tau^(g^*)} ( - 1) N^(a,0) (dif s) \
+// //         &= integral_0^t bb(1) {s <= tau^(g^*)} sum_k bb(1) {event(k-1) < s <= event(k)} (1/(pi_s (1)) - 1) N^(a,1) (dif s) + integral_0^t bb(1) {s <= tau^(g^*)} ( - 1) N^(a,0) (dif s) \
+// //         &= sum_k integral_(event(k-1) and t)^(event(k) and t) bb(1) {s <= tau^(g^*)} (1/(1-Delta bb(L)_(event(k-1))^a ) - 1) N^(a,1) (dif s) + integral_0^t bb(1) {s <= tau^(g^*)} ( - 1) N^(a,0) (dif s) \
+// //         &=  sum_k integral_(event(k-1) and t)^(event(k) and t) bb(1) {s <= tau^(g^*)} (Delta bb(L)_(event(k-1))^a)/(1-Delta bb(L)_(event(k-1))^a ) N^(a,1) (dif s) + integral_0^t bb(1) {s <= tau^(g^*)} ( - 1) N^(a,0) (dif s) \
+// //         &= bb(K)_t^a.
+// // $
+
+// // This same argument can be applied to see that the distribution of $tilde(Y)$ (my situation) and
+// // $tilde(Y)'$ (in the situation where the treatment process consists of intervening on one component of treatment (if there is $N^(a,a_1)$ and $N^(a,a_0)$, then we are intervene on the second on but not the first)
+// // will be the same.
 
 = Variations of the sequential exchangeability criteria yielding the same identification formula 
 
@@ -864,7 +1072,7 @@ in the two induced measures and hence in the original probability measures.
     However, it is possible to construct the distribution of the second event times in this way. For example we can let $tilde(Delta)_2$ be independent of $treat(1)$ and $L$,
     then let $tilde(T)_2$ be dependent on $A$ and $L$ given $tilde(Delta)_2 = d$, but not given $tilde(Delta)_2=y$.
 
-== Sequential criterion
+== Sequential criteria
 
 We now provide a sequential representation
 of the exchangeability condition.
@@ -872,9 +1080,12 @@ It aligns closely with the postulated exchangeability condition
 in @rytgaardContinuoustimeTargetedMinimum2022;
 however, notably on the conditioning set, we include
 the $k$'th event time, which is not included in @rytgaardContinuoustimeTargetedMinimum2022.
-We conclude that if we have independent marking for the treatment
-process, the condition in @rytgaardContinuoustimeTargetedMinimum2022
-is sufficient for causal identification. 
+The sequential condition is a bit unusual in the sense that
+we do not condition on the strict history.
+We also provide an equivalent statement for the martingale condition.
+// We conclude that if we have independent marking for the treatment
+// process, the condition in @rytgaardContinuoustimeTargetedMinimum2022
+// is sufficient for causal identification. 
 
 #theorem[
     Suppose consistency and positivity holds as in @thm:identifiabilitymartingale.
@@ -885,7 +1096,7 @@ is sufficient for causal identification.
     for all $t in [0, T]$, if for $k in bb(N)$
     and $t in [0, T]$ it holds that
     $
-        tilde(Y)_t perp bb(1) {treat(k) = g^* (history(k-1), event(k))} | cal(F)^(g^*)_(event(k-1)), event(k) <= t, Delta N^a (event(k)) = 1,
+        tilde(Y)_t perp bb(1) {treat(k) = g^* (history(k-1), event(k))} | cal(F)^(g^*)_(event(k-1)), event(k) <= t, status(k) = a,
     $
     where
     $
@@ -910,14 +1121,16 @@ is sufficient for causal identification.
         &sum_(m=0)^(oo) mean(P) [integral W_(s-) bb(1) {event(m) < s < event(m+1) and t} dif K_s tilde(Y)_t] \
             &= sum_(m=0)^(oo) mean(P) [W_(event(m)) bb(1) {event(m) < t} ((bb(1) {treat(m) = g_m^* (history(m), event(m+1))}) / (pi_(event(m)) ({g_m^* (history(m), event(m+1))}))- 1) N^(a, a_j) (event(m+1) and t) tilde(Y)_t] \
             &= sum_(m=0)^(oo) mean(P) [W_(event(m)) bb(1) {event(m) < t} N^(a, a_j) (event(m+1) and t) \
-                &quad times mean(P) [((bb(1) {treat(m) = g_m^* (history(m), event(m+1))}) / (pi_(event(m)) ({g_m^* (history(m-1), event(m))}))- 1) tilde(Y)_t | history(m), event(m+1) <= tau, Delta N^a (event(k)) = 1]] \
+                &quad times mean(P) [((bb(1) {treat(m) = g_m^* (history(m), event(m+1))}) / (pi_(event(m)) ({g_m^* (history(m-1), event(m))}))- 1) tilde(Y)_t | history(m), event(m+1) <= t, status(k) = a]] \
             &= sum_(m=0)^(oo) mean(P) [W_(event(m)) bb(1) {event(m) < t} N^(a, a_j) (event(m+1) and t) \
-                &quad times mean(P) [((bb(1) {treat(m) = g_m^* (history(m), event(m+1))}) / (pi_(event(m)) ({g_m^* (history(m-1), event(m))}))- 1) | history(m), event(m+1) <=, Delta N^a (event(k)) = 1] \
-                &quad times mean(P) [tilde(Y)_t | history(m), event(m+1) <= tau, Delta N^a (event(k)) = 1]] \
+                &quad times mean(P) [((bb(1) {treat(m) = g_m^* (history(m), event(m+1))}) / (pi_(event(m)) ({g_m^* (history(m-1), event(m))}))- 1) | history(m), event(m+1) <=, status(k) = a] \
+                &quad times mean(P) [tilde(Y)_t | history(m), event(m+1) <= t, status(k) = a]] \
                         &= sum_(m=0)^(oo) mean(P) [W_(event(m)) bb(1) {event(m) < t} N^(a, a_j) (event(m+1) and t) \
-                            &quad times mean(P) [mean(P) [((bb(1) {treat(m) = g_m^* (history(m), event(m+1))}) / (pi_(event(m)) ({g_m^* (history(m-1), event(m))}))- 1) | history(m), event(m+1), status(m+1)=a  | history(m), event(m+1) <= tau, Delta N^a (event(k)) = 1] \
-                &quad times mean(P) [tilde(Y)_t | history(m), event(m+1) <= tau, Delta N^a (event(k)) = 1]] \
-                    &= sum_(m=0)^(oo) mean(P) [W_(event(m)) bb(1) {event(m) < t} N^(a, a_j) (event(m+1) and t) times (1- 1) mean(P) [tilde(Y)_t | history(m), event(m+1) <= tau, Delta N^a (event(k)) = 1]] \
+                            &quad times mean(P) [
+                                mean(P) [((bb(1) {treat(m) = g_m^* (history(m), event(m+1))}) / (pi_(event(m)) ({g_m^* (history(m-1), event(m))}))- 1) | history(m), event(m+1), status(m+1)=a] \
+                                    &quad quad | history(m), event(m+1) <= t, status(k) = a] \
+                &quad times mean(P) [tilde(Y)_t | history(m), event(m+1) <= t, status(k) = a]] \
+                    &= sum_(m=0)^(oo) mean(P) [W_(event(m)) bb(1) {event(m) < t} N^(a, a_j) (event(m+1) and t) times (1- 1) mean(P) [tilde(Y)_t | history(m), event(m+1) <= t, status(k) = a]] \
             &= 0.
     $
 ]
@@ -925,64 +1138,41 @@ is sufficient for causal identification.
 Now we compare a sequential criterion to the full exchangebility statement. 
 
 #theorem[
-    Suppose that consistency holds
-    and positivity holds, i.e., $W$ is uniformly integrable.
-    Then,
+    Note that 
     $
-        (tilde(Y)_t)_(t in [0, T]) perp bb(1) {treat(k) = g^* (history(k-1), event(k))} | cal(F)^(g^*)_(event(k-1)), event(k), Delta N^a (event(k)) = 1,
+        (tilde(Y)_t)_(t in [0, T]) perp bb(1) {treat(k) = g^* (history(k-1), event(k))} | cal(F)^(g^*)_(event(k-1)), event(k), status(k) = a,
     $
-    for all $k in bb(N)$ if and only if $W(t)$ is $P$-$cal(F)_t$-measurable. 
+    for all $k in bb(N)$ if and only if $W(t)$ is $cal(F)_t$-measurable. 
 ]
 #proof[
-    Suppose that the sequential condition holds.
-    Then, note that we can pick the Radon-Nikodym derivative for $cal(H)_t$ such that
-    $
-        pi_t ({a_j}) = sum_k bb(1) {event(k-1) < t <= event(k)} P(treat(k) = a_j | history(k-1), event(k), status(k) = a, (tilde(Y)_t)_(t in [0, T]))
-    $
-    Therefore,
-    $
-        (pi^*_t ({a_j})) / (pi_t ({a_j})) = sum_k bb(1) {event(k-1) < t <= event(k)} (bb(1) {g^* (history(k-1), event(k)) = a_j}) / P(treat(k) = a_j | history(k-1), event(k), status(k) = a, (tilde(Y)_t)_(t in [0, T]))
-    $
-    Noting that also $W (t) = W (t) bb(1) {tau^(g^*) > t}$.
-    Therefore, each of the terms in the product expansion of $W(t)$
-    can really be written in terms
-    of $cal(F)^(g^*)_(event(k-1))$ instead of $history(k-1)$, i.e., in $W(t)$, we have
-    $
-        (pi^*_t ({a_j})) / (pi_t ({a_j})) = sum_k bb(1) {event(k-1) < t <= event(k)} (bb(1) {g^* (history(k-1), event(k)) = a_j}) / P(treat(k) = a_j | cal(F)^(g^*)_(event(k-1)), event(k), status(k) = a, (tilde(Y)_t)_(t in [0, T]))
-    $
-    However, by the sequential condition,
-    this is also
-    $
-        (pi^*_t ({a_j})) / (pi_t ({a_j})) = sum_k bb(1) {event(k-1) < t <= event(k)} (bb(1) {g^* (history(k-1), event(k)) = a_j}) / P(treat(k) = a_j | cal(F)^(g^*)_(event(k-1)), event(k), status(k) = a)
-    $
-    which makes $W(t)$ $cal(F)_t$-measurable.
+    "If": Follows from the previous result.
+    
     Conversely, suppose that $W(t)$ is $cal(F)_t$-measurable.
-    Then, we have $W(event(k)) / W(event(k-1)) bb(1) {tau^(g^*) > event(k-1), event(k-1) < oo}$ is $cal(F)_(event(k))$-measurable.
-    However, this is equal to $((bb(1) {treat(k) = g^* (history(k-1), event(k))})
-    /(P(treat(k) = g^* (history(k-1), event(k)) | history(k-1), event(k), status(k) = a, (tilde(Y)_t)_(t in [0, T]))))^(bb(1) {status(k+1) = a} $
-    is $cal(F)_(event(k))$-measurable.
-    Conclude that
+    Then, we have
     $
-        bb(1) {treat(k) = g^* (history(k-1), event(k)), status(k) = a} 1/P(treat(k) = g^* (history(k-1), event(k)) | history(k-1), event(k), status(k) = a, (tilde(Y)_t)_(t in [0, T]))
+        &W(event(k)) / W(event(k-1)) bb(1) {tau^(g^*) > event(k-1), event(k-1) < oo} \
+            &= ((bb(1) {treat(k) = g^* (history(k-1), event(k))})
+            /(P(treat(k) = g^* (history(k-1), event(k)) | history(k-1), event(k), status(k) = a, (tilde(Y)_t)_(t in [0, T]))))^(bb(1) {status(k+1) = a}) bb(1) {tau^(g^*) > event(k-1), event(k-1) < oo}
+    $ is $history(k)$-measurable.
     $
-    is $cal(F)_(event(k))$-measurable.
-    This means that there is a measurable function $f$ such that
+        &bb(1) {treat(k) = g^* (history(k-1), event(k)), status(k) = a} \
+            &quad times 1/P(treat(k) = g^* (history(k-1), event(k)) | history(k-1), event(k), status(k) = a, (tilde(Y)_t)_(t in [0, T])) bb(1) {tau^(g^*) > event(k-1), event(k-1) < oo} \
+        &= bb(1) {treat(k) = g^* (history(k-1), event(k)), status(k) = a} W(event(k)) / W(event(k-1)) bb(1) {tau^(g^*) > event(k-1), event(k-1) < oo} \
+            &=^((*)) f_k (event(k), status(k), treat(k), covariate(k), dots, treat(0), covariate(0)) \
+            &= bb(1) {treat(k) = g^* (history(k-1), event(k)), status(k) = a} f_k (event(k), a, g^* (history(k-1), event(k)), covariate(k), dots, treat(0), covariate(0)) \
     $
-        &bb(1) {treat(k) = g^* (history(k-1), event(k)), status(k) = a} 1/P(treat(k) = g^* (history(k-1), event(k)) | history(k-1), event(k), status(k) = a, (tilde(Y)_t)_(t in [0, T]))\
-            &= f(event(k), status(k), treat(k), covariate(k), dots, treat(0), covariate(0)) \
-            &= bb(1) {treat(k) = g^* (history(k-1), event(k)), status(k) = a} f (event(k), status(k), treat(k), covariate(k), dots, treat(0), covariate(0)) \
-            &=bb(1) {treat(k) = g^* (history(k-1), event(k)), status(k) = a} f (event(k), a, g^* (history(k-1), event(k)), covariate(k), dots, treat(0), covariate(0)) \
-    $
+    In $(*)$, we use that that the previous line is $history(k)$-measurable. 
     Take the conditional expectation on both sides to conclude that
     $
         P(treat(k) = g^* (history(k-1), event(k)) | history(k-1), event(k), status(k) = a, (tilde(Y)_t)_(t in [0, T]))
     $
-    is $cal(F)_(event(k))$-measurable whenever the probability is non-zero.
+    is $sigma(history(k-1),event(k))$-measurable whenever the probability is non-zero
+    and the Doob-Dynkin lemma. 
     This suffices for the sequential condition.
     //Note: Are versions adapted here? Yes because the kernel must be equal to the probabilities at the stopping times 
 ]
 
-= On the existence of counterfactual processes fulfilling consistency and exchangeability
+= On the existence of counterfactual processes fulfilling consistency and exchangeability <section:construct>
 
 It is natural to ask oneself whether there exist counterfactual processes
 for any given law of $N$ such that consistency and exchangeability holds,
@@ -1068,303 +1258,6 @@ as they cannot be ruled out by the observed data law of $N$.
     as desired.
 ]
 
-= Comparison with Coarsening at Random (CAR) conditions of @onrobinsformula
-
-NOTE: Need to add to explicitly add likelihood factorization to compare with the factorization of rytgaard.
-
-Let us define the process by $Z (t) = (N^y (t), N^ell (t), L(t), N^a (t))$.
-Consider also its potential outcome process $tilde(Z) = (tilde(N)^y, tilde(N)^ell, tilde(L), tilde(N)^a)$.
-These are both multivariate cadlag processes.
-Critically, we take $cal(F)_t = sigma(Z (s), s <= t)$
--- the natural filtration of the observed data process
-and $cal(H)_t = cal(F)_t or sigma(tilde(Z) (dot))$.
-
-Let $R$ denote the conditional distribution of $tau^(g^*)$ given $tilde(Z)$
-(the conditional distributions exist since the sample space is Polish).
-Before continuing, we discuss how this distribution is defined
-and how it relates to our intervention.
-First given the full process and hence the visitation times, the subject can only deviate
-at the visitation times.
-We now generate the process $A$. Let $A(0)=a_0$
-and let $A(t) = a_0$ for $t < T_1$.
-For each visitation time, i.e., $T_k$ with $Delta_k = a$, a new random variable
-$A(T_k)$ is drawn based on the history up to that point, conditional on
-$sigma(A(dot and T_(k-1)), tilde(Z))$.
-Then, we put $A(t) = A(T_k)$ for $event(k) <= t < event(k+1)$.
-Now let, $k^* := inf {k | status(k) = a, treat(k) != g^* (event(k), history(k-1))}$.
-Then, $tau^(g^*) = event(k^*)$.
-The coarsened data consists of $X=(tau^(g^*), tilde(Z)_(dot and tau^(g^*)))$.
-For any finite $t>0$, this means that
-$
-    P(tau^(g^*) in dif t | tilde(Z) = tilde(z)) &= sum_k P(event(k) in dif t, status(k) = a, treat(k) = 0, treat(k-1) = dots = treat(0) = 1 | tilde(Z) = tilde(z)) \
-        &= sum_k P(treat(k) != g^* (event(k), history(k-1)) | event(k) = t, status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
-        &quad times product_(j=1)^(k-1) (1- P(treat(j) = 0 | status(j) = a, treat(j-1) = dots = treat(0) = 1, tilde(Z) = tilde(z))) \
-        &quad times P(event(k) in dif t, status(k) = a | treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
-        &= sum_k P(treat(k) != g^* (event(k), history(k-1)) | event(k) = t, status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
-        &quad times product_(j=1)^(k-1) (1- P(treat(j) = 0 | event(j), status(j) = a, treat(j-1) = dots = treat(0) = 1, tilde(Z) = tilde(z))) \
-        &quad times bb(1) (tilde(t)_k in dif t, tilde(delta)_k = a). 
-$ <eq:carseq>
-(We allow the product to be empty, if the person dies before getting a visitation time).
-Here, we use $tilde(t)_k$ and $tilde(delta)$ to denote the observed event times.
-Let $k(tilde(z))$ denote the number of treatment event times in the observed sample.
-Then, we also have that
-$
-    P(tau^(g^*) = oo | tilde(Z) = tilde(z)) = 1-sum_(j=1)^(k(tilde(z))) P(tau^(g^*) = t |  tilde(Z) = tilde(z))
-$
-
-In @onrobinsformula, it is assumed 
-that
-$
-    P(tau^(g^*) in dif t | tilde(Z) = tilde(z)) = p_(tau^(g^*)) (t | tilde(Z) = tilde(z)) mu (dif t),
-$ <eq:car2>
-for some $sigma$-finite measure $mu$ on $[0, oo]$.
-(Note that we allow infinite values of $tau^(g^*)$,
-corresponding to no treatment deviation).
-They introduce a Coarsening at Random (CAR) condition
-which in our setting can be stated as follows
-$
-    p_(tau^(g^*)) (t | tilde(Z) = tilde(z)) = h (t, tilde(z)_(dot and t))
-$ <eq:car>
-for some measurable function $h: [0, oo] times D_[0, oo) (RR^d) -> [0, 1]$,
-where $D_[0, oo) (RR^d)$ denotes the space of càdlàg functions from $[0, oo)$ to $RR^d$.
-
-Notably,
-this choice of $mu$ may not depend on $tilde(z)$. This
-is a problem as can be seen from the following proposition.
-
-#theorem[
-    Suppose that the treatment event times have discrete support,
-    that is there is countable set $A$, including infinity, such that
-    $P(event(k) in A, status(k) = a) = 1$.
-    Then $mu$ can be taken to be the counting measure
-    on $A$.
-    Suppose that treatment event times are totally inacessible.
-    Then, there exists no such $mu$.
-]
-
-#proof[
-    The first statement is obvious. On the other hand, note that
-    $nu := P(tau^(g^*) in dif t | tilde(Z))$ is a random measure. Its distribution is therefore determined
-    by the Campbell measure $C_nu$.
-    This means that for all measurable functions $h$ that
-    $
-        &mean(P) [integral h(s) nu (dif s)] \
-            &=mean(P) [sum_(k) bb(1) {tilde(status(k)) = a} P(treat(k) != g^* (event(k), history(k-1)) | event(k), status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
-                &times h(tilde(event(k)))] \
-            &=mean(P) [integral h (s) p_(tau^(g^*)) (s | tilde(z)) mu (dif s)] \
-            &=integral mean(P) [h (s) p_(tau^(g^*)) (s | tilde(z))] mu (dif s) \
-    $
-    Take $h(s) = bb(1) {tilde(status(k)) = a, tilde(event(k)) = s}$.
-    By total inacesibility, we have that $mean(P) [h (s) p_(tau^(g^*)) (s | tilde(z))] = 0$.
-    On the other hand, this is equal to
-    $
-        mean(P) [bb(1) {tilde(status(k)) = a} P(treat(k) != g^* (event(k), history(k-1)) | event(k), status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z))]
-    $,
-    which would imply that $bb(1) {tilde(status(k)) = a} P(treat(k) != g^* (event(k), history(k-1)) | event(k), status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z))$
-    is almost surely equal to zero.
-    This is generally almost equal to zero if there is probability > 0 for an event of type $a$ for the $k$'th event and
-    2. non-degenerate treatment probabilities (the second is i.e., a positivity condition).
-    We can ignore the first requirement suppose that there is a least one such $k$.
-]
-
-What @eq:carseq suggests is that we work with the following sequential condition:
-$
-    tilde(Z) perp bb(1) {treat(k) = g^*(event(k), history(k-1)) | event(k), status(k) = a, cal(F)^(g^*)_(event(k-1)),
-$ <eq:sequentialcar>
-so that @eq:carseq depends on observed data only.
-
-One may try to relax @eq:car to the Markov kernel 
-$
-    P(tau^(g^*) = t | tilde(Z) = tilde(z)) = h (t, tilde(z)_(dot and t))
-$
-However, we are no longer guaranteed a result like Theorem 2.1
-of @onrobinsformula or Theorem 25.40 of @vaart1998, without formally having to rederive it.
-Let us just do this as it is not too difficult.
-
-#theorem[
-    Suppose that the distribution of $R$ is restricted by CAR and only CAR.
-    Then $cal(P)^dot$ is dense in $L_2 (P)$.
-]
-
-#proof[
-    Exactly the same as Theorem 25.40 in @vaart1998, but bound everything
-    and consider specific submodels $Q^t = (1+t h) Q^0$, with $h$ bounded.
-    First consider $R$,
-    Submodels $R_t$ of $R$ are given by
-    $
-        sum_k bb(1) {status(k)=a} r_(t, k) (...) delta_(event(k))
-    $
-    Then,
-    $
-        integral sum_k ((((1+t h (x)) r_(t,k))^(1/2) - (r)^(1/2))/t - 1/2 (h (x) + a (y)) r)^2 P ... bb(1) {status(k) =a} delta_(event(k)) (dif t^a) dif Q^0 ->0
-    $
-    Add and subtract $(r_(t,k))^(1/2)/t$.
-    NOTE: Subtle details about dominated convergence here?
-    If we restricted to uniformly bounded "densities", then we would probably also get the result about every
-    score being on a certain form. 
-    Use also the argument to see that the scores for $R$ are functions of $X$ only...    
-]
-
-Note that if one exchangeability in terms of @thm:identifiabilitymartingale holds,
-then both identification formulas are the same i.e.,
-$
-    mean(P) [tilde(Y)_t] = mean(P) [W_t Y_t] = mean(P) [tilde(W)_t Y_t],
-$
-
-#theorem[
-    Consider the static intervention with $g^* (history(k-1), event(k)) = 1$ for all $k$.
-    and $cal(A) = {0, 1}$.
-    Suppose consistency for $tilde(Y)_t$ as in @thm:identifiabilitymartingale.
-    Let $pi^cal(H)_t (1)$, $pi^cal(F)_t (1)$
-    denote the Radon-Nikodym derivatives of $Lambda^(a, 1)$
-    with respect to $Lambda^(a)$
-    in the filtrations $cal(H)_t$ and $cal(F)_t$, respectively.
-    Similarly, let $Lambda^(a, cal(H))$, $Lambda^(a, cal(F))$
-    denote the compensators of $N^a$ in the filtrations $cal(H)_t$
-    and $cal(F)_t$, respectively.
-    Suppose that a version of $pi_s^cal(F))$ exists such that
-    $
-        pi_s^cal(F) (1, omega) < 1
-    $ <eq:nonperfectcompliance>
-    for all $s in [0, T]$ and $omega in Omega^*$ with $P(Omega^*) = 1$.
-    Also, suppose that strong consistency holds for $tilde(N)_t^a$, i.e.,
-    $
-        tilde(N)_dot^a bb(1) {tau^(g^*) >= dot} = N_dot^a bb(1) {tau^(g^*) >= dot} quad P-"a.s."
-    $
-    Let $cal(H)_t$ denote the initial expansion of
-    $cal(F)_t$ with $sigma(tilde(N)_dot^a, tilde(Y)_dot)$.
-    If the compensator of $bb(N)^a$ in the filtration $cal(H)_t$ is 
-    $cal(F)_t$-predictable, then $N^a (dot and tau^(g^*))$
-    is $cal(F)_t$-predictable. 
-]
-#proof[
-
-// Then, we have that
-// $
-//     mean(P) [tilde(Y)_t] = mean(P) [W_t Y_t]
-// $
-// by @thm:identifiabilitymartingale if $W_dot$ is a uniformly integrable martingale.
-
-// However, note that
-// $
-//     bb(L)_t^a &= integral_0^t  (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Lambda^(a) (dif s) \
-//         &= integral_0^t  (1-pi_s (1)) bb(1) {s <= tau^(g^*)} N^(a) (dif s).
-// $ <eq_bbL>
-// is a $cal(H)_t$-compensator of $bb(N)^a$.
-// Here, we use that the compensator of $bb(1) {bb(N)_(s-)^a = 0} N^a (dif s)$
-// is $bb(1) {bb(N)_(s-)^a = 0} N^a (dif s)$ itself in the filtration $cal(H)_t$.
-// If $tilde(W)_t = cal(E) (-bb(K)^a)_t$ is such that it is a $P$-$cal(H)_t$-martingale (integrability conditions),
-// then it will be a $P$-$cal(F)_t$-martingale as well,
-// where $bb(K)^a_t = integral_0^t 1/(1 - Delta bb(L)_s^a) dif bb(M)_s^a$,
-// by the stated argument since the compensator of $bb(N)^a$ in $cal(H)_t$
-// is also $cal(F)_t$-adapted.
-// Nonetheless, @eq_bbL in itself almost never be $cal(F)_t$-predictable,
-// leading to possible issues -- also about the existence of such a $bb(L)^a$
-// if treatment compensator is continuous in $cal(F)_t$, then it will almost never be able to the above?
-// Conclude that if this is the case, then exchangeability in Påls setting can never hold.
-
-Note that, under the stated conditions
-$
-        integral_0^dot bb(1) {s <= tau^(g^*)} N^(a) (dif s)
-$
-is a $cal(H)_t$-predictable process.
-Therefore, it is its own compensator in $cal(H)_t$.
-Now note that
-$
-    bb(L)^cal(H)_dot &= integral_0^dot  (1-pi^(cal(H))_s (1)) bb(1) {s <= tau^(g^*)} Lambda^(a, cal(H)) (dif s) \
-        &= integral_0^dot  (1-pi^(cal(H))_s (1)) bb(1) {s <= tau^(g^*)} N^(a) (dif s).
-$
-On the other hand,
-$
-    bb(L)_dot^cal(F) &= integral_0^dot  (1-pi^(cal(F))_s (1)) bb(1) {s <= tau^(g^*)} Lambda^(a, cal(F)) (dif s) 
-$
-Conclude that if $bb(L)^cal(H)$ is indistinguishable from $bb(L)^cal(F)$,
-then
-$
-    (1-pi^(cal(H))_dot (1)) bb(1) {dot <= tau^(g^*)} Delta N^a (dot) = (1-pi^(cal(F))_dot (1)) bb(1) {dot <= tau^(g^*)} Delta Lambda^(a,cal(F)) (dot).
-$
-Therefore,
-$
-    bb(L)^cal(H)_dot = integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} N^(a) (dif s) \
-$
-on a set up to $P$-indistinguishability.
-If this were $cal(F)_t$-predictable, then
-$
-    bb(L)^cal(H)_dot &= integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} N^(a) (dif s) \
-        &= integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} M^(a, cal(F)) (dif s) + integral_0^t  (1-pi^(cal(F))_s (1)) Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} Lambda^(a, cal(F)) (dif s) 
-$
-Conclude that since
-$integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} M^(a, cal(F)) (dif s)$
-is a difference of two non-decreasing processes, and hence of finite variation,
-a local martingale,
-by p. 115 of @protter2005stochastic that 
-$
-    integral_0^dot (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} N^(a) (dif s) = integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} Lambda^(a, cal(F)) (dif s).
-$
-Then, we have that $bb(1) {dot <= tau^(g^*)} Delta Lambda^(a,cal(F)) (T^a_(k)) = -1$ by @eq:nonperfectcompliance
-for all jump times $T_(k)^a$ of $N^a$.
-However, we also have that
-$
-    bb(1) {s <= tau^(g^*)} Delta Lambda^(a,cal(F)) (s) = 0
-$
-whenever $s$ is not a jump time of $N^a$ by @eq:nonperfectcompliance.
-This shows the statement for the discrete part of the compensator.
-For the continuous part, we are now able to conclude from these two parts that
-$
-    integral_0^dot  (1-pi^(cal(F))_s (1))  Delta Lambda^(a,cal(F)) (s) bb(1) {s <= tau^(g^*)} lambda^(a, cal(F)) (s) dif s = 0
-$
-from which we conclude that
-$
-        bb(1) {s <= tau^(g^*)} lambda^(a, cal(F)) (s) = 0
-$
-for almost all $s$ with respect to the Lebesgue measure
-    and almost all $omega in Omega^(**)$ with $P(Omega^(**)) = 1$.
-However, these two restrictions exactly mean that $bb(1) {s <= tau^(g^*)} N^a (dif s)$
-is a $cal(F)_t$-predictable process.
-]
-
-This is because
-$
-    bb(L)_t^a = integral_0^t  (1-pi_s (1)) bb(1) {s <= tau^(g^*)} M^(a) (dif s) + integral_0^t  (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Lambda^(a) (dif s).
-$
-which implies under regularity conditions that $bb(1) {s <= tau^(g^*)} N^a (dif s)$
-is a predictable process in $cal(F)_t$.
-Now, we calculate
-$
-    bb(K)_t^a &= -integral_0^t 1/(1 - Delta bb(L)_s^a) dif bb(M)_s^a \
-        &= -integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) dif bb(M)_s^a \
-        &= -integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) dif bb(N)_s^a \
-        &+ integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) dif bb(L)_s^a \
-        &=- integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) dif bb(N)_s^a \
-        &+ integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) (1-pi_s (1)) bb(1) {s <= tau^(g^*)} N^(a) (dif s) \
-        &=- integral_0^t 1/(1- (1-pi_s (1)) bb(1) {s <= tau^(g^*)} Delta N^a (s)) dif bb(N)_s^a \
-        &+ integral_0^t 1/(pi_s (1)) (1-pi_s (1)) bb(1) {s <= tau^(g^*)} N^(a) (dif s) \
-        &= K_t^*
-$
-
-On the other hand, the same argument shows that if the other exchangeability condition holds
-then $pi_s (1) bb(1) {s <= tau^(g^*)}$ can be chosen $cal(F)_t$-adapted,
-since we can pick
-$
-    pi_s (1) = sum_k bb(1) {event(k-1) < s <= event(k)} (1- Delta bb(L)_(event(k-1))^a) //(0 bb(1) {status(k-1) = a, event(k-1) > tau^(g^*)} + (1- Delta bb(L)_(event(k-1))^a) bb(1) {status(k-1) = a, event(k-1) <= tau^(g^*)}).
-$
-By construction, $pi_s (1)$ is the desired Radon-Nikodym derivative with respect to $cal(H)_t$.
-Moreover, it is $cal(F)_t$-adapted since $Delta bb(L)_(event(k-1))^a$ is $cal(F)_(event(k-1))$-measurable.x
-Therefore, again, the weight $W(t)$ is a $P$-$cal(H)_t$-martingale as well
-and $cal(F)_t$-adapted under integrability conditions.
-Therefore, we have that
-$
-    mean(P) [tilde(Y)_t] = mean(P) [W_t Y_t]
-$
-also. Now calculate
-$
-    K_t^* &= integral_0^t bb(1) {s <= tau^(g^*)} (1/(pi_s (1)) - 1) N^(a,1) (dif s) + integral_0^t bb(1) {s <= tau^(g^*)} ( - 1) N^(a,0) (dif s) \
-        &= integral_0^t bb(1) {s <= tau^(g^*)} sum_k bb(1) {event(k-1) < s <= event(k)} (1/(pi_s (1)) - 1) N^(a,1) (dif s) + integral_0^t bb(1) {s <= tau^(g^*)} ( - 1) N^(a,0) (dif s) \
-        &= sum_k integral_(event(k-1) and t)^(event(k) and t) bb(1) {s <= tau^(g^*)} (1/(1-Delta bb(L)_(event(k-1))^a ) - 1) N^(a,1) (dif s) + integral_0^t bb(1) {s <= tau^(g^*)} ( - 1) N^(a,0) (dif s) \
-        &=  sum_k integral_(event(k-1) and t)^(event(k) and t) bb(1) {s <= tau^(g^*)} (Delta bb(L)_(event(k-1))^a)/(1-Delta bb(L)_(event(k-1))^a ) N^(a,1) (dif s) + integral_0^t bb(1) {s <= tau^(g^*)} ( - 1) N^(a,0) (dif s) \
-        &= bb(K)_t^a.
-$
-
 = Right-censoring
 Now suppose that in addition to the processes we observe, we also observe a component $N^c (t)$
 which counts whether or not the subject has dropped out of the study at time $t$.
@@ -1390,8 +1283,8 @@ This now yields the following g-formula.
 #theorem("g-formula")[
     Let, further, $Q = W(T) dot P$ denote the probability measure defined by the likelihood ratio $W(T)$ given in @eq:generalW.
     Under positivity, then
-    1. The $Q$-$cal(F)_t$ compensator of $N^a (dif t times dif x)$ is $pi^*_t (dif x) Lambda_P^a (dif t)$.
-    2. The $Q$-$cal(F)_t$ compensator of $N^x$ is $Lambda_P^x$ for $x in {y, ell_1, dots, ell_k}$.
+    1. The $Q$-$cal(F)_t$ compensator of $N^a (dif t times dif x)$ is $pi^*_t (dif x) Lambda^a (dif t)$.
+    2. The $Q$-$cal(F)_t$ compensator of $N^x$ is $Lambda^x$ for $x in {y, ell_1, dots, ell_k}$.
     3. The $Q$-$cal(F)_t$ compensator of $N^c$ is $0$.
 ]
 
@@ -1499,6 +1392,31 @@ $
     $
 ] 
 
+
+= Discussion
+
+When applying data analysis in practical scenarios, a key question remains: how best to analyze 
+the data at hand. We explore several potential interventions that could be relevant to those 
+discussed in this article. For example, if using the same type of data, we could treat the first 
+deviation time as a censoring time, when a static intervention where the patient remains 
+on treatment at each visit is used. Incorporating the visitation times as a time-varying covariate would 
+likely yield an analysis similar to the one presented here.
+This would yield identification formulas that are identical to the one
+presented in @ryalenPotentialOutcomes, but for a potentially different target
+parameter, but would require that the total compensator such that the compensator has no discrete points.
+
+Alternatively, a stochastic 
+intervention could be considered, where both the timing of visits and the decisions surrounding 
+them are intervened upon, so that the timing of visitation events is the same as in the observational data.
+However, such interventions may be difficult to incorporate into a potential outcomes framework.
+Finally, a simpler approach would be to entirely prevent patients from visiting the doctor, effectively eliminating any 
+possibility of deviation from protocol.
+//stoc int reflects ... scaling the intensity
+
+In addition, a significant advantage of this approach, compared to 
+preventative interventions, is the potential to model dynamic treatment regimes,
+providing alternative means of analysis to the general ones in @ryalenPotentialOutcomes. 
+
 = Uniqueness
 
 // If there are two solutions (mine and theirs), they may be an infinite number of solutions
@@ -1552,7 +1470,8 @@ should be placed on treatment and not anything else.
             &=integral_0^t sum_(x in A) (pi_s (x) tilde(h) (s,x) + pi_s^* (x) (tilde(h) (s, x)-1) )N^x (dif s) - integral_0^t sum_(x in A) tilde(h) (s, x) Lambda^x (dif s) \
             &=integral_0^t sum_(x in A) ((pi_s (x) + pi_s^* (x)) tilde(h) (s, x) - pi_s^* (x) ) M^x (dif s) - integral_0^t sum_(x in A) (tilde(h) (s, x) (1 - pi_s (x)  -pi_s^* (x)) + pi_s^*(x)) Lambda^x (dif s) \
     $
-    Does not quite work. Give up for now ...  When there is more than two treatment options, this does not work?
+    Does not quite work there is more than two treatment options.
+    Problem is that there is an indicator for which part deviated, which is not in general predictable.     
 ]
 
 #theorem[
@@ -1694,29 +1613,142 @@ Interestingly, this means that the stochastic exponential $cal(E) (K^(h))_t$ wil
 but only through $h(s, a_1)$ which can be freely chosen.
 ]
 
-= Discussion
+= Comparison with Coarsening at Random (CAR) conditions of @onrobinsformula
 
-When applying data analysis in practical scenarios, a key question remains: how best to analyze 
-the data at hand. We explore several potential interventions that could be relevant to those 
-discussed in this article. For example, if using the same type of data, we could treat the first 
-deviation time as a censoring time, when a static intervention where the patient remains 
-on treatment at each visit is used. Incorporating the visitation times as a time-varying covariate would 
-likely yield an analysis similar to the one presented here.
-This would yield identification formulas that are identical to the one
-presented in @ryalenPotentialOutcomes, but for a potentially different target
-parameter, but would require that the total compensator such that the compensator has no discrete points.
+NOTE: Need to add to explicitly add likelihood factorization to compare with the factorization of rytgaard.
 
-Alternatively, a stochastic 
-intervention could be considered, where both the timing of visits and the decisions surrounding 
-them are intervened upon, so that the timing of visitation events is the same as in the observational data.
-However, such interventions may be difficult to incorporate into a potential outcomes framework.
-Finally, a simpler approach would be to entirely prevent patients from visiting the doctor, effectively eliminating any 
-possibility of deviation from protocol.
-//stoc int reflects ... scaling the intensity
+Let us define the process by $Z (t) = (N^y (t), N^ell (t), L(t), N^a (t))$.
+Consider also its potential outcome process $tilde(Z) = (tilde(N)^y, tilde(N)^ell, tilde(L), tilde(N)^a)$.
+These are both multivariate cadlag processes.
+Critically, we take $cal(F)_t = sigma(Z (s), s <= t)$
+-- the natural filtration of the observed data process
+and $cal(H)_t = cal(F)_t or sigma(tilde(Z) (dot))$.
 
-In addition, a significant advantage of this approach, compared to 
-preventative interventions, is the potential to model dynamic treatment regimes,
-providing alternative means of analysis to the general ones in @ryalenPotentialOutcomes. 
+Let $R$ denote the conditional distribution of $tau^(g^*)$ given $tilde(Z)$
+(the conditional distributions exist since the sample space is Polish).
+Before continuing, we discuss how this distribution is defined
+and how it relates to our intervention.
+First given the full process and hence the visitation times, the subject can only deviate
+at the visitation times.
+We now generate the process $A$. Let $A(0)=a_0$
+and let $A(t) = a_0$ for $t < T_1$.
+For each visitation time, i.e., $T_k$ with $Delta_k = a$, a new random variable
+$A(T_k)$ is drawn based on the history up to that point, conditional on
+$sigma(A(dot and T_(k-1)), tilde(Z))$.
+Then, we put $A(t) = A(T_k)$ for $event(k) <= t < event(k+1)$.
+Now let, $k^* := inf {k | status(k) = a, treat(k) != g^* (event(k), history(k-1))}$.
+Then, $tau^(g^*) = event(k^*)$.
+The coarsened data consists of $X=(tau^(g^*), tilde(Z)_(dot and tau^(g^*)))$.
+For any finite $t>0$, this means that
+$
+    P(tau^(g^*) in dif t | tilde(Z) = tilde(z)) &= sum_k P(event(k) in dif t, status(k) = a, treat(k) = 0, treat(k-1) = dots = treat(0) = 1 | tilde(Z) = tilde(z)) \
+        &= sum_k P(treat(k) != g^* (event(k), history(k-1)) | event(k) = t, status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
+        &quad times product_(j=1)^(k-1) (1- P(treat(j) = 0 | status(j) = a, treat(j-1) = dots = treat(0) = 1, tilde(Z) = tilde(z))) \
+        &quad times P(event(k) in dif t, status(k) = a | treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
+        &= sum_k P(treat(k) != g^* (event(k), history(k-1)) | event(k) = t, status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
+        &quad times product_(j=1)^(k-1) (1- P(treat(j) = 0 | event(j), status(j) = a, treat(j-1) = dots = treat(0) = 1, tilde(Z) = tilde(z))) \
+        &quad times bb(1) (tilde(t)_k in dif t, tilde(delta)_k = a). 
+$ <eq:carseq>
+(We allow the product to be empty, if the person dies before getting a visitation time).
+Here, we use $tilde(t)_k$ and $tilde(delta)$ to denote the observed event times.
+Let $k(tilde(z))$ denote the number of treatment event times in the observed sample.
+Then, we also have that
+$
+    P(tau^(g^*) = oo | tilde(Z) = tilde(z)) = 1-sum_(j=1)^(k(tilde(z))) P(tau^(g^*) = t |  tilde(Z) = tilde(z))
+$
+
+In @onrobinsformula, it is assumed 
+that
+$
+    P(tau^(g^*) in dif t | tilde(Z) = tilde(z)) = p_(tau^(g^*)) (t | tilde(Z) = tilde(z)) mu (dif t),
+$ <eq:car2>
+for some $sigma$-finite measure $mu$ on $[0, oo]$.
+(Note that we allow infinite values of $tau^(g^*)$,
+corresponding to no treatment deviation).
+They introduce a Coarsening at Random (CAR) condition
+which in our setting can be stated as follows
+$
+    p_(tau^(g^*)) (t | tilde(Z) = tilde(z)) = h (t, tilde(z)_(dot and t))
+$ <eq:car>
+for some measurable function $h: [0, oo] times D_[0, oo) (RR^d) -> [0, 1]$,
+where $D_[0, oo) (RR^d)$ denotes the space of càdlàg functions from $[0, oo)$ to $RR^d$.
+
+Notably,
+this choice of $mu$ may not depend on $tilde(z)$. This
+is a problem as can be seen from the following proposition.
+
+#theorem[
+    Suppose that the treatment event times have discrete support,
+    that is there is countable set $A$, including infinity, such that
+    $P(event(k) in A, status(k) = a) = 1$.
+    Then $mu$ can be taken to be the counting measure
+    on $A$.
+    Suppose that treatment event times are totally inacessible.
+    Then, there exists no such $mu$.
+]
+
+#proof[
+    The first statement is obvious. On the other hand, note that
+    $nu := P(tau^(g^*) in dif t | tilde(Z))$ is a random measure. Its distribution is therefore determined
+    by the Campbell measure $C_nu$.
+    This means that for all measurable functions $h$ that
+    $
+        &mean(P) [integral h(s) nu (dif s)] \
+            &=mean(P) [sum_(k) bb(1) {tilde(status(k)) = a} P(treat(k) != g^* (event(k), history(k-1)) | event(k), status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
+                &times h(tilde(event(k)))] \
+            &=mean(P) [integral h (s) p_(tau^(g^*)) (s | tilde(z)) mu (dif s)] \
+            &=integral mean(P) [h (s) p_(tau^(g^*)) (s | tilde(z))] mu (dif s) \
+    $
+    Take $h(s) = bb(1) {tilde(status(k)) = a, tilde(event(k)) = s}$.
+    By total inacesibility, we have that $mean(P) [h (s) p_(tau^(g^*)) (s | tilde(z))] = 0$.
+    On the other hand, this is equal to
+    $
+        mean(P) [bb(1) {tilde(status(k)) = a} P(treat(k) != g^* (event(k), history(k-1)) | event(k), status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z))]
+    $,
+    which would imply that $bb(1) {tilde(status(k)) = a} P(treat(k) != g^* (event(k), history(k-1)) | event(k), status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z))$
+    is almost surely equal to zero.
+    This is generally almost equal to zero if there is probability > 0 for an event of type $a$ for the $k$'th event and
+    2. non-degenerate treatment probabilities (the second is i.e., a positivity condition).
+    We can ignore the first requirement suppose that there is a least one such $k$.
+]
+
+What @eq:carseq suggests is that we work with the following sequential condition:
+$
+    tilde(Z) perp bb(1) {treat(k) = g^*(event(k), history(k-1)) | event(k), status(k) = a, cal(F)^(g^*)_(event(k-1)),
+$ <eq:sequentialcar>
+so that @eq:carseq depends on observed data only.
+
+One may try to relax @eq:car to the Markov kernel 
+$
+    P(tau^(g^*) = t | tilde(Z) = tilde(z)) = h (t, tilde(z)_(dot and t))
+$
+However, we are no longer guaranteed a result like Theorem 2.1
+of @onrobinsformula or Theorem 25.40 of @vaart1998, without formally having to rederive it.
+Let us just do this as it is not too difficult.
+
+#theorem[
+    Suppose that the distribution of $R$ is restricted by CAR and only CAR.
+    Then $cal(P)^dot$ is dense in $L_2 (P)$.
+]
+
+#proof[
+    Exactly the same as Theorem 25.40 in @vaart1998, but bound everything
+    and consider specific submodels $Q^t = (1+t h) Q^0$, with $h$ bounded.
+    First consider $R$,
+    Submodels $R_t$ of $R$ are given by
+    $
+        sum_k bb(1) {status(k)=a} r_(t, k) (...) delta_(event(k))
+    $
+    Then,
+    $
+        integral sum_k ((((1+t h (x)) r_(t,k))^(1/2) - (r)^(1/2))/t - 1/2 (h (x) + a (y)) r)^2 P ... bb(1) {status(k) =a} delta_(event(k)) (dif t^a) dif Q^0 ->0
+    $
+    Add and subtract $(r_(t,k))^(1/2)/t$.
+    NOTE: Subtle details about dominated convergence here?
+    If we restricted to uniformly bounded "densities", then we would probably also get the result about every
+    score being on a certain form. 
+    Use also the argument to see that the scores for $R$ are functions of $X$ only...    
+]
 
 // Note: Let us consider whether or not the potential outcome process exists.
 // Using orthogonality, use latent variables C_k and (T_k, Delta_k) to get observed data.
