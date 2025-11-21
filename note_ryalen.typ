@@ -1629,14 +1629,14 @@ and using properties of Lebesgue integrals. Continue in this manner for $S=event
 
 = Comparison with Coarsening at Random (CAR) conditions of @onrobinsformula
 
-NOTE: Need to add to explicitly add likelihood factorization to compare with the factorization of rytgaard.
+// NOTE: Need to add to explicitly add likelihood factorization to compare with the factorization of rytgaard.
 
 Let us define the process by $Z (t) = (N^y (t), N^ell (t), L(t), N^a (t))$.
 Consider also its potential outcome process $tilde(Z) = (tilde(N)^y, tilde(N)^ell, tilde(L), tilde(N)^a)$.
 These are both multivariate cadlag processes.
 Critically, we take $cal(F)_t = sigma(Z (s), s <= t)$
 -- the natural filtration of the observed data process
-and $cal(H)_t = cal(F)_t or sigma(tilde(Z) (dot))$.
+and $cal(H)_t = cal(F)_t or sigma(tilde(Z))$.
 
 Let $R$ denote the conditional distribution of $tau^(g^*)$ given $tilde(Z)$
 (the conditional distributions exist since the sample space is Polish).
@@ -1653,13 +1653,14 @@ Then, we put $A(t) = A(T_k)$ for $event(k) <= t < event(k+1)$.
 Now let, $k^* := inf {k | status(k) = a, treat(k) != g^* (event(k), history(k-1))}$.
 Then, $tau^(g^*) = event(k^*)$.
 The coarsened data consists of $X=(tau^(g^*), tilde(Z)_(dot and tau^(g^*)))$.
+Let us apply the shorthand notation $g_k^* = g_(k)^* (history(k-1), event(k))$.
 For any finite $t>0$, this means that
 $
-    P(tau^(g^*) in dif t | tilde(Z) = tilde(z)) &= sum_k P(event(k) in dif t, status(k) = a, treat(k) = 0, treat(k-1) = dots = treat(0) = 1 | tilde(Z) = tilde(z)) \
-        &= sum_k P(treat(k) != g^* (event(k), history(k-1)) | event(k) = t, status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
+    P(tau^(g^*) in dif t | tilde(Z) = tilde(z)) &= sum_k P(event(k) in dif t, status(k) = a, treat(k) = 0, treat(k-1) = g_(k-1)^(*), dots, treat(0) = g_(0)^(*) | tilde(Z) = tilde(z)) \
+        &= sum_k P(treat(k) != g^* (event(k), history(k-1)) | event(k) = t, status(k) = a, treat(k-1) = g_(k-1)^(*), dots, treat(0) = g_(0)^(*), tilde(Z) = tilde(z)) \
         &quad times product_(j=1)^(k-1) (1- P(treat(j) = 0 | status(j) = a, treat(j-1) = dots = treat(0) = 1, tilde(Z) = tilde(z))) \
-        &quad times P(event(k) in dif t, status(k) = a | treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
-        &= sum_k P(treat(k) != g^* (event(k), history(k-1)) | event(k) = t, status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
+        &quad times P(event(k) in dif t, status(k) = a | treat(k-1) = g_(k-1)^(*), dots, treat(0) = g_(0)^(*), tilde(Z) = tilde(z)) \
+        &= sum_k P(treat(k) != g^* (event(k), history(k-1)) | event(k) = t, status(k) = a, treat(k-1) = g_(k-1)^(*), dots, treat(0) = g_(0)^(*), tilde(Z) = tilde(z)) \
         &quad times product_(j=1)^(k-1) (1- P(treat(j) = 0 | event(j), status(j) = a, treat(j-1) = dots = treat(0) = 1, tilde(Z) = tilde(z))) \
         &quad times bb(1) (tilde(t)_k in dif t, tilde(delta)_k = a). 
 $ <eq:carseq>
@@ -1687,43 +1688,56 @@ $ <eq:car>
 for some measurable function $h: [0, oo] times D_[0, oo) (RR^d) -> [0, 1]$,
 where $D_[0, oo) (RR^d)$ denotes the space of càdlàg functions from $[0, oo)$ to $RR^d$.
 
-Notably,
-this choice of $mu$ may not depend on $tilde(z)$. This
-is a problem as can be seen from the following proposition.
+Notably, this choice of $mu$ may not depend on $tilde(z)$. This
+is a problem for continuous-time causal inference as can be seen from the following proposition
+whenever there exists an intensity for the total treatment process. 
 
-#theorem[
+#lemma[
+    Suppose that $P(exists k: status(k) = a) > 0$ and $mean(P) [P(treat(k) != g^* (event(k), history(k-1)) | event(k), status(k) = a, treat(k-1) = g_(k-1)^(*), dots, treat(0) = g_(0)^(*), tilde(Z))] > 0$
+    for all $k in NN$.
+    
     Suppose that the treatment event times have discrete support,
-    that is there is countable set $A$, including infinity, such that
-    $P(event(k) in A, status(k) = a) = 1$.
+    that is there is countable set $oo in cal(S)$, such that
+    $P(event(k) in cal(S), status(k) = a) = 1$ for every $k in NN$.
     Then $mu$ can be taken to be the counting measure
-    on $A$.
-    Suppose that treatment event times are totally inacessible.
-    Then, there exists no such $mu$.
+    on $cal(S)$.
+
+    Now suppose that treatment event times are totally inaccessible.
+    Then, there exists no such $sigma$-finite $mu$.
 ]
 
 #proof[
-    The first statement is obvious. On the other hand, note that
-    $nu := P(tau^(g^*) in dif t | tilde(Z))$ is a random measure. Its distribution is therefore determined
-    by the Campbell measure $C_nu$.
-    This means that for all measurable functions $h$ that
+    The first statement is easy to see holds true since
     $
-        &mean(P) [integral h(s) nu (dif s)] \
-            &=mean(P) [sum_(k) bb(1) {tilde(status(k)) = a} P(treat(k) != g^* (event(k), history(k-1)) | event(k), status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)) \
-                &times h(tilde(event(k)))] \
-            &=mean(P) [integral h (s) p_(tau^(g^*)) (s | tilde(z)) mu (dif s)] \
-            &=integral mean(P) [h (s) p_(tau^(g^*)) (s | tilde(z))] mu (dif s) \
+        &P(tau^(g^*) in dif t | tilde(Z)) \
+            &= sum_k P(treat(k) != g^* (event(k), history(k-1)) | event(k) = t, status(k) = a, treat(k-1) = g_(k-1)^(*), dots, treat(0) = g_(0)^(*), tilde(Z) = tilde(z)) \
+            &#h(0.5cm) times product_(j=1)^(k-1) (1- P(treat(j) = 0 | event(j), status(j) = a, treat(j-1) = dots = treat(0) = 1, tilde(Z) = tilde(z))) bb(1) (tilde(T)_k = t, tilde(Delta)_k = a) sum_(x in cal(S)) delta_(x) (dif t).
     $
-    Take $h(s) = bb(1) {tilde(status(k)) = a, tilde(event(k)) = s}$.
-    By total inacesibility, we have that $mean(P) [h (s) p_(tau^(g^*)) (s | tilde(z))] = 0$.
-    On the other hand, this is equal to
+    
+    On the other hand, note that
+    $nu (dif t) := P(tau^(g^*) in dif t | tilde(Z))$ is a random measure. Its distribution is therefore determined
+    by the Campbell measure $C_nu$ (Lemma 3.1.2 of @last1995marked). Its Campbell measure is $sigma$-finite
+    because $nu$ is a conditional probability measure. 
+    This means that for all measurable (integrable) functions $h$ (which is allowed to depend on $omega in Omega$) that
     $
-        mean(P) [bb(1) {tilde(status(k)) = a} P(treat(k) != g^* (event(k), history(k-1)) | event(k), status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z) = tilde(z))]
-    $,
-    which would imply that $bb(1) {tilde(status(k)) = a} P(treat(k) != g^* (event(k), history(k-1)) | event(k), status(k) = a, treat(k-1) = dots = treat(0) = 1, tilde(Z))$
-    is almost surely equal to zero.
-    This is generally almost equal to zero if there is probability > 0 for an event of type $a$ for the $k$'th event and
-    2. non-degenerate treatment probabilities (the second is i.e., a positivity condition).
-    We can ignore the first requirement suppose that there is a least one such $k$.
+        mean(P) [integral h(s) nu (dif s | tilde(Z))]  
+            // &=mean(P) [sum_(k) bb(1) {tilde(Delta)_k = a} P(treat(k) != g^* (event(k), history(k-1)) | event(k), status(k) = a, treat(k-1) = g_(k-1)^(*), dots, treat(0) = g_(0)^(*), tilde(Z) = tilde(z)) \
+            //     &times h(tilde(T)_k)] \
+            &=mean(P) [integral h (s) p_(tau^(g^*)) (s | tilde(Z)) mu (dif s)] \
+            &=integral mean(P) [h (s) p_(tau^(g^*)) (s | tilde(Z))] mu (dif s) \
+    $
+    by Fubini's theorem.
+    
+    Take $h(s) = bb(1) {tilde(Delta)_k = a, tilde(T)_k = s}$.
+    By total inacesibility, we have that $mean(P) [h (s) p_(tau^(g^*)) (s | tilde(z))] = 0$
+    and so $integral mean(P) [h (s) p_(tau^(g^*)) (s | tilde(Z))] mu (dif s) = 0$.
+    
+    On the other hand, the following should also be equal to zero
+    $
+        &mean(P) [integral h(s) nu (dif s | tilde(Z))] \
+            &= mean(P) [bb(1) {tilde(Delta)_k = a} P(treat(k) != g^* (event(k), history(k-1)) | event(k), status(k) = a, treat(k-1) = g_(k-1)^(*), dots, treat(0) = g_(0)^(*), tilde(Z) = tilde(z))]
+    $
+    But this cannot be by our initial assumption.
 ]
 
 What @eq:carseq suggests is that we work with the following sequential condition:
@@ -1732,13 +1746,15 @@ $
 $ <eq:sequentialcar>
 so that @eq:carseq depends on observed data only.
 
-One may try to relax @eq:car to the Markov kernel 
-$
-    P(tau^(g^*) = t | tilde(Z) = tilde(z)) = h (t, tilde(z)_(dot and t))
-$
-However, we are no longer guaranteed a result like Theorem 2.1
-of @onrobinsformula or Theorem 25.40 of @vaart1998, without formally having to rederive it.
-Let us just do this as it is not too difficult.
+// One may try to relax @eq:car to the Markov kernel 
+// $
+//     P(tau^(g^*) = t | tilde(Z) = tilde(z)) = h (t, tilde(z)_(dot and t))
+// $
+// However, we are no longer guaranteed a result like Theorem 2.1
+// of @onrobinsformula or Theorem 25.40 of @vaart1998, without formally having to rederive it.
+// Let us just do this as it is not too difficult.
+
+Now, we arrive at a classical result about CAR. 
 
 #theorem[
     Suppose that the distribution of $R$ is restricted by CAR and only CAR.
@@ -1772,7 +1788,12 @@ Let us just do this as it is not too difficult.
 
 When applying data analysis in practical scenarios, a key question remains: how best to analyze 
 the data at hand. We explore several potential interventions that could be relevant to those 
-discussed in this article.
+discussed in this article. For example, with the intervention we have defined
+a subject may only be allowed to deviate at the visitation times, but this may not be realistic
+due to non-compliers. But discrete-time methods also cannot take into account in the analysis
+if the person defies outside of the discrete time grid. 
+In this case, one should consider the intervention we discussed
+earlier in the setting of @ryalenPotentialOutcomes. 
 // For example, if using the same type of data, we could treat the first 
 // deviation time as a censoring time, when a static intervention where the patient remains 
 // on treatment at each visit is used. Incorporating the visitation times as a time-varying covariate would 
@@ -1794,5 +1815,3 @@ preventative interventions, is the potential to model dynamic treatment regimes,
 providing alternative means of analysis to the general ones in @ryalenPotentialOutcomes. 
 
 #bibliography("references/ref.bib",style: "apa")
-
-
