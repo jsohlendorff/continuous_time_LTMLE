@@ -1315,6 +1315,8 @@ This now yields the following g-formula.
     which shows the $N^c$'s compensator under $Q$ is zero. 
 ]
 
+*NOTE:* Construction of counterfactuals here and efficient influence function?
+
 = More general exchangeability conditions
 
 We now consider more general exchangeability conditions.
@@ -1658,10 +1660,10 @@ For any finite $t>0$, this means that
 $
     P(tau^(g^*) in dif t | tilde(Z) = tilde(z)) &= sum_k P(event(k) in dif t, status(k) = a, treat(k) = 0, treat(k-1) = g_(k-1)^(*), dots, treat(0) = g_(0)^(*) | tilde(Z) = tilde(z)) \
         &= sum_k P(treat(k) != g^* (event(k), history(k-1)) | event(k) = t, status(k) = a, treat(k-1) = g_(k-1)^(*), dots, treat(0) = g_(0)^(*), tilde(Z) = tilde(z)) \
-        &quad times product_(j=1)^(k-1) (1- P(treat(j) = 0 | status(j) = a, treat(j-1) = dots = treat(0) = 1, tilde(Z) = tilde(z))) \
+        &quad times product_(j=1)^(k-1) (1- P(treat(j) = 0 | status(j) = a, treat(j-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)))^(bb(1) {tilde(delta)_j = a}) \
         &quad times P(event(k) in dif t, status(k) = a | treat(k-1) = g_(k-1)^(*), dots, treat(0) = g_(0)^(*), tilde(Z) = tilde(z)) \
         &= sum_k P(treat(k) != g^* (event(k), history(k-1)) | event(k) = t, status(k) = a, treat(k-1) = g_(k-1)^(*), dots, treat(0) = g_(0)^(*), tilde(Z) = tilde(z)) \
-        &quad times product_(j=1)^(k-1) (1- P(treat(j) = 0 | event(j), status(j) = a, treat(j-1) = dots = treat(0) = 1, tilde(Z) = tilde(z))) \
+        &quad times product_(j=1)^(k-1) (1- P(treat(j) = 0 | event(j), status(j) = a, treat(j-1) = dots = treat(0) = 1, tilde(Z) = tilde(z)))^(bb(1) {tilde(delta)_j = a}) \
         &quad times bb(1) (tilde(t)_k in dif t, tilde(delta)_k = a). 
 $ <eq:carseq>
 (We allow the product to be empty, if the person dies before getting a visitation time).
@@ -1693,8 +1695,7 @@ is a problem for continuous-time causal inference as can be seen from the follow
 whenever there exists an intensity for the total treatment process. 
 
 #lemma[
-    Suppose that $P(exists k: status(k) = a) > 0$ and $mean(P) [P(treat(k) != g^* (event(k), history(k-1)) | event(k), status(k) = a, treat(k-1) = g_(k-1)^(*), dots, treat(0) = g_(0)^(*), tilde(Z))] > 0$
-    for all $k in NN$.
+    Suppose that $P(exists k: status(k) = a) > 0$ and $mean(P) [sum_k P(treat(k) != g^* (event(k), history(k-1)) | event(k), status(k) = a, treat(k-1) = g_(k-1)^(*), dots, treat(0) = g_(0)^(*), tilde(Z) = tilde(z))] > 0$.
     
     Suppose that the treatment event times have discrete support,
     that is there is countable set $oo in cal(S)$, such that
@@ -1728,16 +1729,18 @@ whenever there exists an intensity for the total treatment process.
     $
     by Fubini's theorem.
     
-    Take $h(s) = bb(1) {tilde(Delta)_k = a, tilde(T)_k = s}$.
+    Take $h(s) = sum_k bb(1) {tilde(Delta)_k = a, tilde(T)_k = s}$.
+    //Then $h(s)$ is uniformly bounded by 1 on $(0, oo)$,
+    //and so it is integrable. 
     By total inacesibility, we have that $mean(P) [h (s) p_(tau^(g^*)) (s | tilde(z))] = 0$
     and so $integral mean(P) [h (s) p_(tau^(g^*)) (s | tilde(Z))] mu (dif s) = 0$.
     
-    On the other hand, the following should also be equal to zero
+    On the other hand, we have by our initial assumption
     $
         &mean(P) [integral h(s) nu (dif s | tilde(Z))] \
-            &= mean(P) [bb(1) {tilde(Delta)_k = a} P(treat(k) != g^* (event(k), history(k-1)) | event(k), status(k) = a, treat(k-1) = g_(k-1)^(*), dots, treat(0) = g_(0)^(*), tilde(Z) = tilde(z))]
+            &= mean(P) [sum_k bb(1) {tilde(Delta)_k = a} \
+                &#h(1cm) times P(treat(k) != g^* (event(k), history(k-1)) | event(k), status(k) = a, treat(k-1) = g_(k-1)^(*), dots, treat(0) = g_(0)^(*), tilde(Z) = tilde(z))] > 0.
     $
-    But this cannot be by our initial assumption.
 ]
 
 What @eq:carseq suggests is that we work with the following sequential condition:
@@ -1793,7 +1796,10 @@ a subject may only be allowed to deviate at the visitation times, but this may n
 due to non-compliers. But discrete-time methods also cannot take into account in the analysis
 if the person defies outside of the discrete time grid. 
 In this case, one should consider the intervention we discussed
-earlier in the setting of @ryalenPotentialOutcomes. 
+earlier in the setting of @ryalenPotentialOutcomes.
+It should also be noted that the intervention that we have discussed
+may not always be feasible for real data, as real data may not actually
+contain the treatment visitation times. 
 // For example, if using the same type of data, we could treat the first 
 // deviation time as a censoring time, when a static intervention where the patient remains 
 // on treatment at each visit is used. Incorporating the visitation times as a time-varying covariate would 
