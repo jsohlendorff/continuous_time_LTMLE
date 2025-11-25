@@ -574,7 +574,7 @@ $N = (N^y, N^d, N^(ell,l_1), dots, N^(ell,l_(d_l)), N^(a,a_1), N^(a,a_0))$,
 where, for simplicity, we take $cal(A) = {a_0,a_1}$.
 We are interested in the effect of staying on treatment $a_1$,
 which prevents $N^(a,a_0)$-events.
-From a philosophical point of view there is a difference in actually constitutes complete data can be different.
+From a philosophical point of view, there is a difference in what actually constitutes complete data.
 The intervention we have discussed earlier would include _all_ treatment visitation times
 as complete data. This intervention, however, would only include the treatment visitation times
 where treatment $a_1$ is assigned to the patient. 
@@ -597,7 +597,8 @@ $mean(P) [tilde(Y)'_t]$ are actually the same for two _different_ interventions;
 and the exchangeability conditions are the same -- we replace $tilde(Y)$ with $tilde(Y)'$ here. 
 //However, as we shall see, these need not be the same even under the orthogonal martingales assumption.
 We argue that there are situations for observed in which the exchangeability condition for $tilde(Y)$ can fail,
-but as we have argued this cannot occur for $tilde(Y)'$ under the assumption of orthogonal martingales.
+but as we have argued this cannot occur for $tilde(Y)'$ under the assumption of orthogonal martingales
+which will be the case if the total treatment process has an intensity.
 
 // Intuitively, I think this one is more related to coarsening at random with censoring
 
@@ -858,7 +859,6 @@ in the two induced measures and hence in the original probability measures.
 
 Another example where they are the same is when the total treatment process
 is $cal(F)_t$-predictable:
-Now, we calculate
 $
     bb(K)_t^a &= -integral_0^t 1/(1 - Delta bb(L)_s^a) dif (bb(N)_s^a - bb(L)^a_s) \
         &= -integral_0^(t and tau^(g^*)) sum_(x in cal(A)) (1-pi^*_s (x)) 1/(1 - sum_(y in cal(A)) (1-pi^*_s (y)) pi_s (y)) (N^(x) (dif s) - pi_s (x) macron(N)^a (dif s)) \
@@ -872,6 +872,8 @@ $
         &= K_t^*
 $
 
+*NOTE:* We can also similarly compare with the intervention that prevents _all_ treatment events.
+Under the discussed local independence condition, the identification formula will be the same as the other two. 
 
 // Does $N^x -|> N^y$ when $N^x$ predictable always hold? No
 
@@ -1818,6 +1820,11 @@ possibility of deviation from protocol.
 
 In addition, a significant advantage of this approach, compared to 
 preventative interventions, is the potential to model dynamic treatment regimes,
-providing alternative means of analysis to the general ones in @ryalenPotentialOutcomes. 
+as the strategy discussed earlier (_only_ prevent $a_0$ in the framework of @ryalenPotentialOutcomes) is not generalizable
+to the dynamic treatment regime.
+It should also be noted that a similar setup to ours is given in @ryalenPotentialOutcomes
+in which the treatment decisions are followed through strictly after they have been made,
+which naturally reflects the fact that treatment succeeds measurement of the covariates
+as it does in discrete time. 
 
 #bibliography("references/ref.bib",style: "apa")
