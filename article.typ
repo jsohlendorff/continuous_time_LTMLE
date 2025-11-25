@@ -18,19 +18,19 @@
             the absolute risk that an outcome event occurs before a given time
             horizon $tau$ under prespecified treatment regimens. Most of the
             existing estimators based on observational data require a projection
-        onto a discretized time scale (@Rose2011). We consider a recently developed continuous-time approach to
-        causal inference in this setting (@rytgaardContinuoustimeTargetedMinimum2022), 
+            onto a discretized time scale (@Rose2011). We consider a recently developed continuous-time approach to
+            causal inference in this setting (@rytgaardContinuoustimeTargetedMinimum2022), 
             which theoretically allows preservation of the precise event timing on a
             subject level. Working on a continuous-time scale may improve the
             predictive accuracy and reduce the loss of information. However,
             continuous-time extensions of the standard estimators comes at the cost
-            of increased computational burden. We will discuss a new
-            sequential regression type estimator for the continuous-time framework
+            of increased computational burden. We provide a new estimator based on
+            sequential regressions for the continuous-time framework
             which estimates the nuisance parameter models by backtracking through
             the number of events. This estimator significantly reduces the
             computational complexity and allows for efficient, single-step targeting
-            using machine learning methods from survival analysis and point
-            processes, enabling robust continuous-time causal effect estimation.
+            using standard machine learning methods from survival analysis,
+            enabling robust continuous-time causal effect estimation.
     ],
     keywords: ("continuous-time causal inference", "electronic health records", "survival analysis", "iterative conditional expectations estimator"),
 )
@@ -66,8 +66,8 @@ As a result, researchers frequently turn to observational data as an alternative
 Even in RCTs, challenges such as treatment noncompliance and time-varying confounding — due to factors like side effects or disease progression — can complicate causal inference.
 
 Marginal structural models (MSMs), introduced by @robins1986, are a widely used approach for estimating causal effects from observational data, particularly in the presence of time-varying confounding and treatment.
-Discrete-time MSMs typically require that data be recorded on a discrete time scale.//, capturing all relevant information available to the clinician at each treatment decision point and for the outcome.
-Longitudinal Targeted Maximum Likelihood Estimation (LTMLE) (@ltmle) is often used for estimating causal effects in discrete time.
+Then, once the target parameter has been specified, Longitudinal Targeted Maximum Likelihood Estimation (LTMLE) (@ltmle) can estimate these causal effects.
+These discrete-time MSMs require that data be recorded on a discrete time scale.
 
 However, many real-world datasets — such as health registries — are collected in continuous time, with patient characteristics updated at irregular, subject-specific times.
 These datasets often include detailed, timestamped information on events and biomarkers, such as drug purchases, hospital visits, and laboratory results.
@@ -109,7 +109,7 @@ Earlier work on continuous-time methods for causal inference in event history an
 @roysland2011martingale developed identification criteria using a martingale framework based on local independence graphs,
 enabling causal effect estimation in continuous time via a change of measure. We shall likewise employ a change of measure to define the target parameter.
 
-Most of the existing literature on continuous-time causal inference have been concerned theoretical identification formulas
+Most of the existing literature on continuous-time causal inference have been concerned with theoretical identification formulas.
 In contrast, our work focuses on deriving a feasible, efficient, and debiased estimator.
 In this sense, our work is related to @shirakawaContinuousTime; however, they restrict attention to a specific type of nuisance parameter estimator and use a discrete-time approximation of the efficient influence function.
 Our method is agnostic to the type of nuisance parameter estimator used and relies on the exact continuous-time efficient influence function.
@@ -137,8 +137,8 @@ emulating a diabetes trial.
     Let $P^(G^*)$ denote the interventional probability measure.
     That is, given $mean(P^(G^*))[Y | history(k)]$,
     we regress back to $mean(P^(G^*))[Y | history(k-1)]$.
-    The key difference is that we employ $history(k)$ here
-    instead of the filtration $cal(F)_(t_(r))$ which turns out to have a simpler representation.
+    //The key difference is that we employ $history(k)$ here
+    //instead of the filtration $cal(F)_(t_(r))$ which turns out to have a simpler representation.
 ],) <fig:eventgrid>
 
 = Setting and Notation <section:setting>
@@ -158,7 +158,7 @@ where $A(t)$ denotes the treatment at time $t>=0$ as contrasts are often of inte
 
 The time-varying confounders $L(t)$ at time $t>0$ are assumed
 to take values in a finite subset $cal(L) subset RR^m$,
-so that $L(t) in cal(L)$ for all $t >= 0$.
+so that $L(t) in cal(L)$ for all $t >= 0$ with probability 1.
 We assume that the stochastic processes $(L(t))_(t>=0)$ and $(A(t))_(t>=0)$ are càdlàg (right-continuous with left limits),
 jump processes.
 Furthermore, we require that the times at which the treatment and covariate values may change 
@@ -170,7 +170,8 @@ $N^ell$ determines when only the covariate values may change, but not the treatm
 //Note that we allow, for practical reasons, some of the covariate values to change at the same time as the treatment values.
 //This can occur if registrations occur only on a daily level if, for example, a patient visits the doctor,
 //gets a blood test, and receives a treatment all on the same day.
-This means that we can practically assume that $Delta N^a Delta N^ell equiv 0$.
+This means that we can practically assume that $Delta N^a Delta N^ell equiv 0$, i.e.,
+that there are no common jumps between $N^a$ and $N^ell$.
 For technical reasons and ease of notation, we shall assume that the number of jumps at time $tauend$
 for the processes $L$ and $A$ satisfies $N^a (tauend)+ N^ell (tauend) <= K - 1$ $P$-a.s. for some $K >= 1$.
 Let further $(N^y (t))_(t>=0)$ and $(N^d (t))_(t>=0)$
@@ -203,9 +204,9 @@ where $delta_x$ denotes the Dirac measure on $(RR_+ times ({a, ell, y, d, c} tim
 It follows that the filtration $(cal(F)_t)_(t>=0)$ is the natural filtration of the random measure $N$ (e.g., Theorem 2.5.10 of @last1995marked)
 under a no explosion assumption, i.e., that the number of jumps in $[0, tauend]$ is finite $P$-a.s.
 Thus, the random measure $N$ carries the same information as the stochastic process $(alpha(t))_(t>=0)$.
-This will be critical for dealing with right-censoring.
+This point is important for dealing with right-censoring.
 
-We work with the natural filtration $(cal(F)_t)_(t>=0)$ generated by the random measure $N$.
+We work with the natural filtration $(cal(F)_t)_(t>=0)$ generated by the random measure $N$
 within the so-called canonical setting for technical reasons (@last1995marked, Section 2.2).
 This is needed to ensure that the compensators can be explicitly written via by the regular conditional distributions of the jump times and marks
 but also to ensure that $history(k) = sigma(event(k), status(k), treat(k-1), covariate(k-1)) or history(k-1)$
@@ -308,11 +309,7 @@ $ <eq:weightprocess>
 // Should be N_(t-)?
 
 where $N_t = sum_k bb(1) {event(k) <= t}$ is random variable denoting the number of events up to time $t$.
-We define the measure $P^(G^*)$ by
-$
-    (dif P^(G^*))/(dif P) = W^g (tauend), 
-$ <eq:likelihoodratio>
-which represents the interventional world in which the doctor assigns treatments according to the probability
+We define the measure $P^(G^*)$ by $(dif P^(G^*))/(dif P) = W^g (tauend)$, which represents the interventional world in which the doctor assigns treatments according to the probability
 measure $pi_k^*$ for $𝑘 = 0, dots, 𝐾 − 1$.
 Our target parameter is the mean interventional cumulative incidence function at time $tau$ under $P^(G^*)$, which can by identified through the formula
 $
@@ -339,7 +336,7 @@ If we do not want to limit ourselves to $K$ events, we can interpret
 the target parameter $Psi_tau^(g) (P)$ as
 the counterfactual cumulative incidence function of the event of interest $y$ at time $tau$,
 when the intervention enforces treatment as part of the $K-1$ first events.
-We denote this target parameter by $Psi_tau^(g, K)$ and return to this interpretation later in @section:efficientinference.
+We denote this target parameter by $Psi_tau^(g, K) (P)$ and return to this interpretation later in @section:efficientinference.
 
 // Consider the general sequence of events ${(event(k), status(k), treat(k), covariate(k))}_k$
 // which is now allowed to include more than $K$ events in total.
@@ -402,8 +399,8 @@ as we need those definitions later for the efficient influence function.
     The proof is given in the Appendix (@section:proofice).
 ] 
 
-Throughout the, we will use the notation $Qbar(k) (u)$ to denote the value of $Qbar(k) (u, treat(k), H_(k))$ and $Qbar(k)$ to denote $Qbar(k) (tau, treat(k), H_(k))$.
-$Qbar(k)$ represents the counterfactual probability of the primary event occuring at or before time $tau$
+Throughout the article, we will use the notation $Qbar(k) (u)$ to denote the value of $Qbar(k) (u, treat(k), H_(k))$ and $Qbar(k)$ to denote $Qbar(k) (tau, treat(k), H_(k))$.
+Note that $Qbar(k)$ represents the counterfactual probability of the primary event occuring at or before time $tau$
 given the history up to and including the $k$'th event, among the people who are at risk of the event before time $tau$ after $k$ events.
 @eq:ice then suggests that we can estimate $Qbar(k-1)$ via $Qbar(k)$:
 For each individual in the sample, we calculate the integrand in @eq:ice depending on their value of $event(k)$ and $status(k)$,
@@ -415,6 +412,8 @@ Note that here, we only set the current value of $treat(k)$ to 1,
 instead of replacing all prior values with 1. The latter is certainly closer
 to the original iterative conditional expectation estimator (@bangandrobins2005), and mathematically equivalent, but computationally more demanding.
 @sofrygin2019targeted demonstrated this in the discrete-time setting.
+//This is also the case in continuous-time;
+//however, we will refrain from showing this here. 
 
 // e.g., E[ h(X, Y) | Y=1] = E[ h(X, 1) | Y=1]
 
@@ -425,7 +424,7 @@ Let $C>0$ denote the right-censoring time
 at which we stop observing the multivariate jump process
 $alpha$. Let $N^c$ be the censoring process
 given by $N^c (t) = bb(1) {C <= t}$.
-In @section:estimand, we proposed an estimation strategy based on fitting a sequence of iterated regressions backword in time for each event.
+In @section:estimand, we proposed an estimation strategy based on fitting a sequence of iterated regressions backward in time for each event.
 When the data is subject to right-censoring, standard regression techniques cannot immediately be applied.
 To handle this, we use inverse probability of censoring weights. 
 Our algorithm is presented in @alg:iceipcw and we later present the assumptions necessary for validity of the ICE-IPCW estimator
@@ -433,13 +432,13 @@ in @section:validity.
 To do so, we first need additional notation.
 
 In the remainder of the paper,
-we will assume that $C != event(k)$ for all $k$ with probability 1.
+we will assume that $Delta N^c Delta N^x equiv 0$ for $x in {y,d,a,ell}$.
 We now let $(eventcensored(k), statuscensored(k), treatcensored(k), covariatecensored(k))$ for $k=1, dots, K$ be the observed data given by 
 $
     eventcensored(k) &= cases(event(k) "if" C > event(k), C "if" C <= event(k) "and" event(k-1) > C, oo "otherwise") \
-    statuscensored(k) &= cases(status(k) "if" C > event(k), "c" "if" C <= event(k) "and" statuscensored(k-1) != c, Ø "otherwise") \
-    treatcensored(k) &= cases(treat(k)"if" C > event(k), A(C) "if" statuscensored(k-1) = c, Ø "otherwise") \
-    covariatecensored(k) &= cases(covariate(k) "if" C > event(k), L(C) "if" statuscensored(k-1) = c, Ø "otherwise")
+    statuscensored(k) &= cases(status(k) "if" C > event(k), "c" "if" C <= event(k) "and" event(k-1) > C, Ø "otherwise") \
+    treatcensored(k) &= cases(treat(k)"if" C > event(k), A(C) "if" statuscensored(k) = c, Ø "otherwise") \
+    covariatecensored(k) &= cases(covariate(k) "if" C > event(k), L(C) "if" statuscensored(k) = c, Ø "otherwise")
 $ 
 for $k = 1, dots, K$,
 and $historycensored(k)$ is given by
@@ -456,7 +455,7 @@ Define $cumhazardcensored(k, c, dif t)$ as the cause-specific hazard measure for
 that is $bb(1) {t > 0} (P (eventcensored(k) in dif t, statuscensored(k) = c | historycensored(k-1)))(P(eventcensored(k) >= t | historycensored(k-1)))^(-1)$
 and the corresponding conditional censoring survival functions $tilde(S)^c (t | historycensored(k-1)) = prodint(s, event(k-1), t) (1 - cumhazardcensored(k, c, dif s))$,
 where $product_(s in (0, t])$ is the product integral over the interval $(0, t]$ (@gill1990survey).
-Alost let $tilde(M)^c (t) = tilde(N)^c (t) - tilde(Lambda)^c (t)$ where $tilde(N)^c (t) = bb(1) {C <= t, T^e > t} = sum_(k=1)^K bb(1) {eventcensored(k) <= t, statuscensored(k) = c}$ is the censoring counting process,
+Also let $tilde(M)^c (t) = tilde(N)^c (t) - tilde(Lambda)^c (t)$ where $tilde(N)^c (t) = bb(1) {C <= t, T^e > t} = sum_(k=1)^K bb(1) {eventcensored(k) <= t, statuscensored(k) = c}$ is the censoring counting process,
 $tilde(Lambda)^c (t) = sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} tilde(Lambda)_k^c (t, historycensored(k-1))$ is the censoring compensator
 and $S (t | history(k-1)) = product_(s in (0, t]) (1 - sum_(x=a,ell,y,d) Lambda_k^x (dif s, history(k-1)))$
 is the overall (uncensored) survival function for the $k$'th event given $history(k-1)$.
@@ -469,7 +468,7 @@ We also recommend that the model should also be chosen such that the predictions
 #algorithm("ICE-IPCW procedure")[
     
     Input: Observed data $tilde(O)_i$, $i = 1, dots, n$, estimator of the censoring compensator $hat(Lambda)^c$, time horizon $tau < tauend$,
-    and $K-1$.
+    and $K$.
     
     Output: ICE-IPCW estimator $hat(Psi)_n$ of $Psi_tau^g (P)$.
     
@@ -546,9 +545,11 @@ $macron(cal(F))_t = sigma(beta(s and C and T^e) | s <= t) or cal(F)_0$.
 We posit an independent censoring condition (1. in @thm:iceipcw) that enables the use of regression techniques similar to those that may be found the literature based on independent censoring (@andersenStatisticalModelsBased1993; Definition III.2.1)
 or local independence conditions (@roeysland2024; Definition 4).
 //A simple, sufficient condition for this to hold is e.g., that $C perp history(K)$.
-Note that 2. is a slight strengthening of the orthogonal martingale condition.
-Note that this condition can be relaxed by applying the generalized Trotter formula (@gill1994),
-but is not further considered here. 
+Note that 2. is a slight strengthening of the fact that the martingales $tilde(M)^c$ and $M^x$
+are orthogonal for $x in {a,ell,d,y}$.
+//$Delta tilde(Lambda)^c Delta Lambda^x equiv 0$.
+// Note that this condition can be relaxed by applying the generalized Trotter formula (@gill1994),
+// but is not further considered here. 
 For example if the compensator of the (observed) censoring
 process is absolutely continuous with respect to the Lebesgue measure,
 then 2. of @thm:iceipcw is satisfied.
@@ -560,6 +561,7 @@ ensuring that the conditional expectations are well-defined.
 #theorem[
     If
     1. The $P$-$cal(F)_t$-compensator $Lambda$ of $N$ (@eq:randommeasure) is also the $P$-$cal(F)^"full"_t$ compensator of $N$.//, that is $N(t) - Lambda(t)$ is a (local) $P$-$cal(F)^"full"_t$ martingale and a (local) $P$-$cal(F)_t$ martingale.
+    // Formulate this in a different way?
     2. $Delta tilde(Lambda)_(k)^c (dot, historycensored(k-1)) Delta cumhazard(k, x, dot) equiv 0$ for $x in {a, ell, y, d}$ and $k in {1, dots, K}$.
     3. $tilde(S)^c (t | historycensored(k-1)) > eta$ for all $t in (0, tau]$ and $k in {1, dots, K}$ $P$-a.s. for some $eta > 0$.
     
@@ -573,9 +575,10 @@ ensuring that the conditional expectations are well-defined.
     $ <eq:pseudooutcomeipcw>
     Then with $h_k = (a_k, l_k, t_k, d_k, dots, a_0, l_0)$,
     $
-        bb(1) {d_(1) in {a, ell}, dots, d_(k) in {a, ell}} Qbar(k) (u, a_k, h_k) = mean(P) [macron(Z)^a_(k+1, tau) (u) | treatcensored(k) = a_k, macron(H)_(k) = h_k].
+        bb(1) {d_(1) in {a, ell}, dots, d_(k) in {a, ell}} Qbar(k) (u, a_k, h_k) = mean(P) [macron(Z)^a_(k+1, tau) (u) | treatcensored(k) = a_k, macron(H)_(k) = h_k],
     $ <eq:iceipcw>
-    Hence $Psi_tau^g (P)$ is identifiable from the observed data, where i.e., $macron(H)_k = (covariatecensored(k), treatcensored(k-1), eventcensored(k-1), statuscensored(k-1), dots, treat(0), covariate(0))$ is the history up to and including the $k$'th event.
+    where $macron(H)_k = (covariatecensored(k), treatcensored(k-1), eventcensored(k-1), statuscensored(k-1), dots, treat(0), covariate(0))$ is the history up to and including the $k$'th event.
+    Hence, $Psi_tau^g (P)$ is identifiable from the observed data.
 ] <thm:iceipcw>
 
 #proof[
@@ -617,10 +620,8 @@ We also provide an algorithm for the one-step estimator in the uncensored situat
 or to obtain conservative inference when censoring is present (@alg:onestepsimple).
 Alternatively,
 we may use the algorithm in @alg:one-stepgeneral of @section:algorithmgeneral to obtain valid
-non-conservative inference although this estimator is not further considered here.
-In the rest of this work, we do not consider the estimation
-of the censoring martingale further due to the computational difficulties and
-leave this as a future research topic.
+non-conservative inference although this estimator is not further here.
+We leave non-conservative inference and doubly robust estimation in right-censored settings as a future research topic.
 //However, we do not formally obtain inference if flexible machine learning methods
 //are applied to estimate the nuisance parameters.
 //If censoring is present, one may not apply flexible machine learning methods
@@ -638,8 +639,8 @@ A key feature of our approach is that the efficient influence function is expres
 This representation is computationally simpler, as it avoids the need to estimate multiple martingale terms.
 For a detailed comparison, we refer the reader to the appendix, where we show that our efficient influence function
 simplifies to the same as the one derived by @rytgaardContinuoustimeTargetedMinimum2022
-(@section:compareif) when the compensators are absolutely continuous with respect to the Lebesgue measure
-and under the assumption that $Delta L (t) = 0$ whenever $Delta N^a (t) = 1$.
+(@section:compareif) under the assumption that $Delta L (t) = 0$ whenever $Delta N^a (t) = 1$
+and the assumption of orthogonal martingales (which was assumed in @rytgaardContinuoustimeTargetedMinimum2022).
 
 #theorem("Efficient influence function")[
     Suppose that there is a universal constant $C^* > 0$
@@ -648,19 +649,19 @@ and under the assumption that $Delta L (t) = 0$ whenever $Delta N^a (t) = 1$.
 
     Define
     $
-        phi_tau^(*, "discrete") (P) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1)))   \
-            & quad times bb(1) {statuscensored(k-1) in {ell, a}, eventcensored(k-1) < tau} (macron(Z)^a_(k,tau) (tau)- Qbar(k-1) (tau)) \
-            & quad +  Qbar(0) (tau, 1, covariate(0)) - Psi_tau^g (P)
+        phi_tau^(*, d) (P) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1)))   \
+            &#h(1.5cm) times bb(1) {statuscensored(k-1) in {ell, a}, eventcensored(k-1) < tau} (macron(Z)^a_(k,tau) (tau)- Qbar(k-1) (tau)) \
+            &#h(0.5cm) +  Qbar(0) (tau, 1, covariate(0)) - Psi_tau^g (P)
     $ <eq:eifdiscrete>
     and
     $
-        phi_tau^(*, "MGc") (P) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1))) \
-            &integral_((eventcensored(k - 1), tau)) bb(1) {s <= eventcensored(k)} (Qbar(k-1) (tau)-Qbar(k-1) (u)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u- | historycensored(k-1))) tilde(M)^c (dif u)
+        phi_tau^(*, tilde(M)^c) (P) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1))) \
+            &#h(0.5cm) integral_((eventcensored(k - 1), tau)) bb(1) {s <= eventcensored(k)} (Qbar(k-1) (tau)-Qbar(k-1) (u)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u- | historycensored(k-1))) tilde(M)^c (dif u)
     $ <eq:eifMG>
     The Gateaux derivative of $Psi_tau^g$ at $P in cal(M)$ in the direction of the Dirac measure $delta_(tilde(O))$
     is then given by
     #text(size: 7.5pt)[$
-        phi_tau^* (P) &=  phi_tau^(*, "MGc") (P) + phi_tau^(*, "discrete") (P).
+        phi_tau^* (P) &=  phi_tau^(*, tilde(M)^c) (P) + phi_tau^(*, d) (P).
     $<eq:eif>]
 ] <thm:eif>
 
@@ -668,7 +669,7 @@ and under the assumption that $Delta L (t) = 0$ whenever $Delta N^a (t) = 1$.
 
 #algorithm("Debiased ICE-IPCW estimator (simple)")[
     Input: Observed data $tilde(O)_i$, $i = 1, dots, n$, time horizon $tau < tauend$,
-    and $K-1$.  Estimators of the propensity score $hat(pi)_0$, $hat(pi)_k$ for $k = 1, dots, K-1$
+    and $K$.  Estimators of the propensity score $hat(pi)_0$, $hat(pi)_k$ for $k = 1, dots, K-1$
     and the censoring compensator $hat(Lambda)^c$.
     
     Output: One-step estimator $hat(Psi)_n$ of $Psi_tau^g (P)$; estimate of influence function $phi_tau^* (tilde(O); hat(P))$.
@@ -676,15 +677,15 @@ and under the assumption that $Delta L (t) = 0$ whenever $Delta N^a (t) = 1$.
     1. Compute the ICE-IPCW estimator $hat(Psi)^0_n$ and obtain estimators of $Qbar(k)$ for $k = 0, dots, K-1$
     using @alg:iceipcw.
     
-    2. Let $hat(Q)_k$ and $hat(S)^c (dot | historycensored(k-1))$ be the estimates obtained in @alg:iceipcw. Use @eq:eifdiscrete
-    based on these estimates and the estimates of $pi_k$ to obtain the estimates $phi^(*, "discrete") (tilde(O)_i; hat(P))$ for $i = 1, dots, n$.
+    2. Let $hat(Q)_k$ and $hat(S)^c (dot | historycensored(k-1))$ be the estimates obtained in @alg:iceipcw. Compute @eq:eifdiscrete
+    using these estimates and $hat(pi)_k$ to obtain estimates of $phi^(*, d) (tilde(O)_i; hat(P))$ for $i = 1, dots, n$.
     
     3. Compute the one-step estimator
     $
-           hat(Psi)_n = hat(Psi)^0_n + 1/n sum_(i=1)^n phi_tau^(*,"discrete") (tilde(O)_i; hat(P)).
+           hat(Psi)_n = hat(Psi)^0_n + 1/n sum_(i=1)^n phi_tau^(*,d) (tilde(O)_i; hat(P)).
     $
        
-    4. Return $hat(Psi)_n$ and $phi_tau^(*,"discrete") (tilde(O_i); hat(P))$ for $i = 1, dots, n$.
+    4. Return $hat(Psi)_n$ and $phi_tau^(*,d) (tilde(O_i); hat(P))$ for $i = 1, dots, n$.
 ] <alg:onestepsimple>
 
 
@@ -697,7 +698,9 @@ We show in @thm:adaptive that we can adaptively select $K$ based on the observed
 For instance, we may pick $K^*=k$ such that $k$ is the largest integer such that
 there are at least 40 observations fulfilling that $eventcensored(k-1) < tau$.
 Doing so will ensure that we will not have to estimate the terms in @eq:eif
-and @eq:iceipcw for which there is very little data. 
+and @eq:iceipcw for which there is very little data.
+// NOTE: can we add statuscensored(k-1) in {a,ell} in addition to eventcensored(k-1) < tau
+// which is what we would normally do?
 
 #theorem[Adaptive selection of $K$][
     Let $Psi_tau^(g, k^*) (P) = mean(P) [tilde(N)^y (tau) W^g (tau and eventcensored(k^*))]$ for $k^* in bb(N)$
@@ -1840,7 +1843,7 @@ as $n -> oo$, so that 1 holds. A similar conclusion holds for 2, so the proof is
     
     Output: One-step estimator $hat(Psi)_n$ of $Psi_tau^g (P)$; estimate of influence function $phi_tau^* (tilde(O); hat(P))$.
     1. Compute the ICE-IPCW estimator $hat(Psi)^0_n$ and obtain estimators of $Qbar(k)$ for $k = 0, dots, K-1$.
-    2. Obtain estimates of $phi_tau^(*,"discrete") (tilde(O)_i; hat(P))$ for $i = 1, dots, n$ via @alg:onestepsimple.
+    2. Obtain estimates of $phi_tau^(*,d) (tilde(O)_i; hat(P))$ for $i = 1, dots, n$ via @alg:onestepsimple.
     3. For $k = K - 1, dots, 1$:
 
        a. Estimate $Qbar(k-1) (u)$ for $u = t_1, dots, t_(m-1)$ where $0 < t_1 < dots < t_m = tau$
@@ -1879,9 +1882,9 @@ as $n -> oo$, so that 1 holds. A similar conclusion holds for 2, so the proof is
           (Only need to compute this for the individuals with $eventcensored(k-1) < tau$ and $statuscensored(k-1) in {a, ell}$
           who have followed the treatment regime up to $k-1$ events, i.e., $treatcensored(j) = 1$ for $j < k$)
         - Plug in the estimates in @eq:eifMG of the martingale term, and the propensity scores $hat(pi)_k$ and censoring weights $hat(S)^c$
-          to obtain estimates of $phi_tau^(*, "MGc") (tilde(O)_i; hat(P))$ for $i = 1, dots, n$.
+          to obtain estimates of $phi_tau^(*, tilde(M)^c) (tilde(O)_i; hat(P))$ for $i = 1, dots, n$.
  
-    4. Compute an estimate $phi_tau^* (tilde(O)_i; hat(P)) = phi_tau^(*,"MGc") (tilde(O)_i; hat(P)) + phi_tau^(*,"discrete") (tilde(O)_i; hat(P))$ for $i = 1, dots, n$.
+    4. Compute an estimate $phi_tau^* (tilde(O)_i; hat(P)) = phi_tau^(*,tilde(M)^c) (tilde(O)_i; hat(P)) + phi_tau^(*,d) (tilde(O)_i; hat(P))$ for $i = 1, dots, n$.
     5. Compute the one-step estimator
        $
            hat(Psi)_n = hat(Psi)^0_n + 1/n sum_(i=1)^n phi_tau^(*) (tilde(O)_i; hat(P)).
