@@ -364,9 +364,9 @@ as we need those definitions later for the efficient influence function.
     but excluding the $k$'th treatment values for $k > 0$. Let $H_0 = covariate(0)$.
     Let $Qbar(K): (u, a_k, h_k) mapsto 0$ and recursively define for $k = K-1, dots, 1$,
     $
-        Z^a_(k+1, tau) (u) &= bb(1) {event(k+1) <= u, event(k+1) < tau, status(k+1) = ell) Qbar(k+1) (tau, treat(k), H_(k+1)) \
-            &qquad+ bb(1) {event(k+1) <= u, event(k+1) < tau, status(k+1) = a) Qbar(k+1) (tau, 1, H_(k+1)) \
-            &qquad + bb(1) {event(k+1) <= u, status(k+1) = y), 
+        Z^a_(k+1, tau) (u) &= bb(1) {event(k+1) <= u, event(k+1) < tau, status(k+1) = ell} Qbar(k+1) (tau, treat(k), H_(k+1)) \
+            &qquad+ bb(1) {event(k+1) <= u, event(k+1) < tau, status(k+1) = a} Qbar(k+1) (tau, 1, H_(k+1)) \
+            &qquad + bb(1) {event(k+1) <= u, status(k+1) = y}, 
     $ 
     and
     $
@@ -712,8 +712,9 @@ $
     hat(Psi)_n - Psi_tau^(g, K_(n c)) (P) = (bb(P)_n - P) phi_tau^(*, K_(n c)) (dot; P) + o_P (n^(-1/2)),
 $ <eq:adaptive>
 where $phi_tau^(*, k^*) (dot; P)$ is the efficient influence function for the target parameter $Psi_tau^(g, k^*) (P)$.
-A result like this may be shown using empirical process conditions
-as demonstrated in Theorem 3 of @hubbard2016statistical.
+Here we use the term data-adaptive target parameter and data-adaptive inference in the sense of @hubbard2016statistical.
+//A result like this may be shown using empirical process conditions
+//as demonstrated in //Theorem 3 of @hubbard2016statistical.
 Then as @thm:adaptive shows, we actually obtain inference for the original parameter of interest
 if the total number of events is bounded. 
 
@@ -1155,9 +1156,6 @@ and the variables in the history are highly correlated.
 This may yield issues with regression-based methods. If we adopt a TMLE approach, we may be able to use collaborative TMLE (@van2010collaborative)
 to deal with these issues. 
 
-//NOTE: Include alternative with two-step pseudo-outcomes pseud-outcome; then regression
-//NOTE: Pseudo-TMLE
-
 //Another alternative method for inference within the TMLE framework is to use temporal difference learning to avoid iterative estimation of $Qbar(k)$ altogether (@shirakawaLongitudinalTargetedMinimum2024)
 //by appropriately extending it to the continuous-time setting;
 //however, we can no longer apply just _any_ machine learning method.
@@ -1184,7 +1182,7 @@ $
 $ <eq:iterativeProof>
 for $k = 0, dots, K - 1$ by backwards induction: 
 
-_Base case_: We consider case $k = K-1$.
+_Base case_: We consider the case $k = K-1$.
 First note that 
 $
     Z_(K, tau)^a (u) = bb(1) {event(K) <= u, status(K) = y},
@@ -1199,7 +1197,7 @@ $
     &mean(P) [W_(K-1,K) bb(1) {event(K) <= tau, status(j) = y} | treat(K-1), H_(K-1)] \
         &= mean(P) [bb(1) {event(K) <= tau, status(j) = y} | treat(K-1), H_(K-1)] \
         &= mean(P) [Z_(K, tau)^a (tau) | treat(K-1), H_(K-1)], \
-        &= Qbar(K-1) (tau, treat(K-1), H_(K-1).
+        &= Qbar(K-1) (tau, treat(K-1), H_(K-1)).
 $
     
 _Inductive step_: Assume that the claim holds for $k+1$. Now, we first note that
@@ -1227,9 +1225,10 @@ $
         &=^((b)) mean(P) [bb(1) {event(k+1) <= tau, status(k+1) = y} W_(k,k+1)| treat(k), H_k] \
         &quad + mean(P) [bb(1) {event(k+1) < tau, status(k+1) in {a, ell}} sum_(j=k+2)^K W_(k,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k), H_k] \
         &= mean(P) (bb(1) {event(k+1) <= tau, status(k+1) = y} W_(k,k+1) \
-            &#h(0.5cm)+ bb(1) {event(k+1) < tau, status(k+1) in {a, ell}} \
-            &#h(1cm) times mean(P) [W_(k,k+1) mean(P) [sum_(j=k+2)^K W_(k+1,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k+1), H_(k+1)]  | event(k+1), status(k+1), treat(k), H_k] | treat(k), H_k) \
-        &= mean(P) (bb(1) {event(k+1) <= tau, status(k+1) = y} \
+            &#h(0.25cm)+ bb(1) {event(k+1) < tau, status(k+1) in {a, ell}} \
+            &#h(0.5cm) times mean(P) [W_(k,k+1) mean(P) [sum_(j=k+2)^K W_(k+1,j) bb(1) {event(j) <= tau, status(j) = y} | treat(k+1), H_(k+1)]\
+                &#h(8cm)  | event(k+1), status(k+1), treat(k), H_k] | treat(k), H_k) \
+        &=^(#text[@eq:proofThm1]) mean(P) (bb(1) {event(k+1) <= tau, status(k+1) = y} \
             &#h(0.5cm)+ bb(1) {event(k+1) < tau, status(k+1) = a} \
             &#h(1cm) times mean(P) [W_(k,k+1) Qbar(k+1) (tau, treat(k+1), H_(k+1)) | event(k+1), status(k+1), treat(k), H_k] \
             &#h(0.5cm)+ bb(1) {event(k+1) < tau, status(k+1) = ell} \
