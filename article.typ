@@ -6,7 +6,7 @@
 #set cite(form: "prose")
 #show ref: it => [#text(fill: blue)[#it]]
 #show: arkheion.with(
-    title: "A Sequential Regression Approach for Efficient Continuous-Time Causal Inference",
+    title: "Sequential Regressions for Efficient Continuous-Time Causal Inference with Treatment-Assigned-At-Visit Interventions",
     authors: (
         (name: "Johan S. Ohlendorff", email: "johan.ohlendorff@sund.ku.dk", affiliation: "University of Copenhagen", orcid: "0009-0006-8794-6641"),
         (name: "Anders Munch", email: "a.munch@sund.ku.dk", affiliation: "University of Copenhagen", orcid: "0000-0003-4625-1465"),
@@ -83,9 +83,6 @@ To this end, we propose an inverse probability of censoring iterative conditiona
 iteratively updates nuisance parameters
 by regressing back through the history. Both
 methods extend the original discrete-time iterative regression method introduced by @bangandrobins2005.
-A key advantage of using iterative regressions is that the resulting estimator will be
-less sensitive to/near practical positivity violations
-compared to inverse probability of treatment weighting (IPW) estimators.
 
 A key innovation in our method is that these updates are performed by indexing backwards through the number of events rather than through calendar time.
 This allows us to apply standard regression techniques to estimate nuisance parameters.
@@ -667,7 +664,7 @@ and the assumption of orthogonal martingales (which was assumed in @rytgaardCont
 
 #proof[The proof is given in the Appendix (@section:proofeif).]
 
-#algorithm("Debiased ICE-IPCW estimator (simple)")[
+#algorithm("Debiased ICE-IPCW estimator (conservative)")[
     Input: Observed data $tilde(O)_i$, $i = 1, dots, n$, time horizon $tau < tauend$,
     and $K$.  Estimators of the propensity score $hat(pi)_0$, $hat(pi)_k$ for $k = 1, dots, K-1$
     and the censoring compensator $hat(Lambda)^c$.
@@ -689,38 +686,46 @@ and the assumption of orthogonal martingales (which was assumed in @rytgaardCont
 ] <alg:onestepsimple>
 
 
-In practice, we may not know the maximum number of events $K_"lim"$ that can occur.
+We may not know the maximum number of events that can occur a priori. 
 Furthermore, the maximal number of events may be enormous
 and it may be difficult to estimate $Qbar(k)$ for large $k$
 due to the limited number of observations
-with many events.
-We show in @thm:adaptive that we can adaptively select $K$ based on the observed data.
-For instance, we may pick $K^*=k$ such that $k$ is the largest integer such that
-there are at least 40 observations fulfilling that $eventcensored(k-1) < tau$.
-Doing so will ensure that we will not have to estimate the terms in @eq:eif
-and @eq:iceipcw for which there is very little data.
+with many events. We shall show that we can data-adaptively
+choose this number such that we get valid inference
+for the original target estimand. 
+
+Let $Psi_tau^(g, k^*) (P) = mean(P) [N^y (tau) W^g (tau and event(k^*))]$ for $k^* in bb(N)$
+denote the target parameter when we only intervene up to the $k^*$'th event,
+that is among the $k^*$ first events, if the patient visits the doctor,
+the doctor enforces treatment, but not after $k^*$'th event.
+The theory developed thus far describes this parameter with $k^* = K - 1$.
+Let $N_(tau-) = sum_(k) bb(1) {event(k) < tau, status(k) in {a,ell}}$ and
+$tilde(N)_(tau-) = sum_(k) bb(1) {event(k) < tau, status(k) in {a,ell}, event(k) < C}$
+be the number of non-terminal events before time $tau$ in
+the uncensored and censored data, respectively.
+Also let $K_(n c) = max_(v : sum_(i=1)^n bb(1) {tilde(N)_(tau-, i) >= v} > c)$
+denote the maximum number of events with at least $c$ people at risk,
+where $tilde(N)_(tau-, i)$ denotes $tilde(N)_(tau-)$ for subject $i$.
+Suppose that we have the decomposition of the
+estimator $hat(Psi)_n$ of $Psi_tau^(g, K_(n c)) (P)$, such that
+$
+    hat(Psi)_n - Psi_tau^(g, K_(n c)) (P) = (bb(P)_n - P) phi_tau^(*, K_(n c)) (dot; P) + o_P (n^(-1/2)),
+$ <eq:adaptive>
+where $phi_tau^(*, k^*) (dot; P)$ is the efficient influence function for the target parameter $Psi_tau^(g, k^*) (P)$.
+A result like this may be shown using empirical process conditions
+as demonstrated in Theorem 3 of @hubbard2016statistical.
+Then as @thm:adaptive shows, we actually obtain inference for the original parameter of interest
+if the total number of events is bounded. 
+
 // NOTE: can we add statuscensored(k-1) in {a,ell} in addition to eventcensored(k-1) < tau
-// which is what we would normally do?
+// which is what we would normally do? Not sure if this actually matters 
 
 #theorem[Adaptive selection of $K$][
-    Let $Psi_tau^(g, k^*) (P) = mean(P) [tilde(N)^y (tau) W^g (tau and eventcensored(k^*))]$ for $k^* in bb(N)$
-    denote the target parameter when we only intervene up to the $k^*$'th event.
 // Anders comment: Is there something missing here? Has the parameter
 // Psi_tau^(g, K_(n c)) been defined?
-// In general, I find a bit difficult to digest this theorem. How is the estimator \hat\Psi_n defined in relation to k and K_{nc}? 
-    Let $N_tau = sum_(k) bb(1) {event(k) <= tau}$
-    and $tilde(N)_tau = N_(tau and C)$ be the number of events before time $tau$ in the uncensored and censored data, respectively.
-    Let $K_(n c) = max_(v : sum_(i=1)^n bb(1) {tilde(N)_(tau, i) (tau) >= v} > c)$
-    denote the maximum number of events with at
-    least $c$ people at risk.
-    Suppose that we have the decomposition of the
-    estimator $hat(Psi)_n$ of $Psi_tau^(g, K_(n c)) (P)$, such that
-    $
-        hat(Psi)_n - Psi_tau^(g, K_(n c)) (P) = (bb(P)_n - P) phi_tau^(*, K_(n c)) (dot; P) + o_P (n^(-1/2)),
-    $
-    where $bb(P)_n$ is the empirical measure and $phi_tau^(*, k^*) (dot; P)$ is the efficient influence function for the target parameter $Psi_tau^(g, k^*) (P)$.
-    Suppose that there is a number $K_"lim" in bb(N)$, such that $P(N_tau = K_"lim") > 0$,
-    but $P(N_(tau) > K_"lim") = 0$ and that $P(tilde(N)_tau = K_"lim") > 0$.
+    // In general, I find a bit difficult to digest this theorem. How is the estimator \hat\Psi_n defined in relation to k and K_{nc}?
+    Suppose that @eq:adaptive holds and that there is a number $K_"lim" in bb(N)$, such that $P(N_(tau-) = K_"lim") > 0$,
+    but $P(N_(tau-) > K_"lim") = 0$ and that $P(tilde(N)_(tau-) = K_"lim") > 0$.
     Then, the estimator $hat(Psi)_n$ satisfies
     $
         hat(Psi)_n - Psi_tau^(g, K_"lim") (P) = (bb(P)_n - P) phi_tau^(*, K_"lim") (dot; P) + o_P (n^(-1/2)).
@@ -738,7 +743,7 @@ and @eq:iceipcw for which there is very little data.
 // other estimators could be moved to suppl. We should discuss this
 // with Thomas.
 
-We consider a simulation study to evaluate the performance of our ICE-IPCW estimator
+We conduct a simulation study to evaluate the performance of our ICE-IPCW estimator
 and its debiased version. Overall, the purpose of the simulation study is to
 establish that our estimating procedure provides valid inference with varying degrees of confounding.
 
@@ -801,7 +806,7 @@ is multiplicative, depending on age, and reflects the fact
 that a patient, who has had a stroke, is expected to visit the doctor
 within the near future.
 
-In the uncensored setting (i.e., $lambda_c = 0$),
+In the uncensored setting ($lambda_c = 0$),
 we vary the treatment effect on the outcome
 corresponding to $beta^y_A >0$, $beta^y_A = 0$, and $beta^y_A < 0$
 and the effect of stroke on the outcome $beta^y_L > 0$, $beta^y_L = 0$, and $beta^y_L < 0$.
@@ -1041,7 +1046,7 @@ The other with SGLT2 inhibitors is defined analogously.
 // subject which have more than 20 events within 3.5 years? If not, we
 // could say that we are estimating sustained treatment without
 // reference to this thing about "the first 20 registrations".
-We are interested on the effect of enforcing treatment for the 20 first events/registrations
+We are interested on the effect of enforcing treatment 
 and the outcome of interest is all-cause mortality
 within 1260 days (approximately 3.5 years). For computational reasons,
 we enforce treatment for the first 20 events/registrations.
@@ -1098,21 +1103,38 @@ and provided inference for the target parameter using the efficient influence fu
 However, we have not addressed the issue of model misspecification,
 which is likely to occur in practice as we have not proposed flexible intensity estimators
 for both the censoring intensity and the propensity scores.
+
 There are a few available options for flexible intensity estimation.
 For instance, neural networks (see @liguoriModelingEventsInteractions2023 for an overview),
 forest based methods (@weissForestBasedPointProcess2013) and gradient boosting
 (@ishwaranBoosting).
 Other choices include flexible parametric models/highly adaptive LASSO
 using piecewise constant intensity models where the likelihood is based on Poisson regression (e.g., @rytgaardContinuoustimeTargetedMinimum2022).
+Another possibility is to learn the intensities sequentially tracing
+back through the number of events, and using standard survival methods
+at each event point. We consider this possibility in future work.
+
+We also applied a simple logistic regression model for the propensity scores.
+However, an alternative in the absolutely continuous case is to estimate the intensities of the counting processors $N^(a, 1)$ and
+$N^(a)$, counting the number of times that the doctor has prescribed treatment and
+the number of times the patient has visited the doctor, respectively,
+and calculating the ratio of the two (estimated) intensities.
+
 Additionally, future work should thoroughly investigate how
 one should model the iterative regressions of the pseudo-outcomes
 since they include people observed at different times
 and include event times as a regression covariate.
-We stress, however, that any regression method may be used.
+We stress, however, that any regression method may be used for this.
+
+To obtain valid inference, we could have also opted to estimate the
+inverse probability weights weighted with the outcome and regressed that on $history(k)$.
+However, a key advantage of using iterative regressions is that the resulting estimator will be
+less sensitive to/near practical positivity violations
+compared to inverse probability of treatment weighting (IPW) estimators.
 
 We could have also opted to use the TMLE framework (@laanTargetedMaximumLikelihood2006) in lieu 
 of a one-step estimator. Here, we can use an iterative TMLE procedure
-for the $Qbar(k)$'s where we undersmooth the estimation of the censoring compensator
+for $Qbar(k)$ where we undersmooth the estimation of the censoring compensator
 to avoid estimating the censoring martingale term.
 This will then yield conservative but valid inference when the censoring distribution is flexibly estimated.
 
@@ -1133,19 +1155,8 @@ and the variables in the history are highly correlated.
 This may yield issues with regression-based methods. If we adopt a TMLE approach, we may be able to use collaborative TMLE (@van2010collaborative)
 to deal with these issues. 
 
-We also did not concern ourselves with the estimation of the compensators here
-and the propensity scores.
-In this article, we used a simple logistic regression model for the propensity scores.
-However, an alternative is to estimate the compensators of the counting processors $N^(a 1)$ and
-$N^(a)$, counting the number of times that the doctor has prescribed treatment and
-the number of times the patient has visited the doctor, respectively,
-and calculating the ratio of the two (estimated) intensities
-in the absolutely continuous case.
-We only considered the first of these options.
-The latter choice, however, makes traditional intensity modeling methods applicable.
-Another possibility is to learn the intensities sequentially regressing
-the $k$'th event and mark on the history with the $(k-1)$'th event.
-We consider this possibility in future work. 
+//NOTE: Include alternative with two-step pseudo-outcomes pseud-outcome; then regression
+//NOTE: Pseudo-TMLE
 
 //Another alternative method for inference within the TMLE framework is to use temporal difference learning to avoid iterative estimation of $Qbar(k)$ altogether (@shirakawaLongitudinalTargetedMinimum2024)
 //by appropriately extending it to the continuous-time setting;
@@ -1799,28 +1810,31 @@ $ <eq:proofAdaptive>
 
 To do so, we now show that $P(K_(n c) != K_"lim") -> 0$.
 First define
-$K_n = max_i tilde(N)_(tau i)$.
-Then, we can certainly write that
+$K_n = max_i tilde(N)_(tau-, i)$.
+Then, we can certainly write that $K_(n c) -  K_"lim" = K_(n c) - K_n + K_n - K_"lim"$
+so that $P(K_(n c) = K_"lim") >= P(K_(n c) = K_n, K_n = K_"lim")$
+whence
 $
-    K_(n c) -  K_"lim" = K_(n c) - K_n + K_n - K_"lim",
+    P(K_(n c) != K_"lim") <= P(K_(n c) != K_n) + P(K_n != K_"lim").
 $ <eq:Knlim>
 By independence and definition of $K_n$, we have
 $
-    P(K_n != K_"lim") =^((a)) P(K_n < K_"lim") = P(tilde(N)_tau < K_"lim")^n -> 0.
+    P(K_n != K_"lim") = P(K_n < K_"lim") + P(K_n > K_"lim") =^((a)) P(K_n < K_"lim") = P(tilde(N)_(tau -) < K_"lim")^n ->^((b)) 0.
 $ <eq:Kn>
-In $(a)$, we use that $N_t >= tilde(N)_t$ and the fact that $P(N_tau > K_"lim")=0$.
+In $(a)$, we use that $N_(tau -) >= tilde(N)_(tau -)$ and the fact that $P(N_(tau -) > K_"lim")=0$.
+In $(b)$, we use that $P(tilde(N)_(tau -) < K_"lim") < 1$ by the assumptions stated in the theorem.
 We now show that $P(K_(n c) < K_n) -> 0$ as $n -> oo$,
 which will show that $P(K_(n c) != K_"lim") -> 0$ as $n -> oo$ by @eq:Knlim
 and @eq:Kn.
 We have, 
 $
-    P( K_(n c) != K_n) = P( union_(v=1)^(K_"lim") (sum_(i=1)^n bb(1) {tilde(N)_(tau, i) >= v} <= c))
-        &<= sum_(v=1)^(K_"lim") P( sum_(i=1)^n bb(1) {tilde(N)_(tau, i) >= v} <= c) -> 0
+    P( K_(n c) != K_n) = P( union_(v=1)^(K_"lim") (sum_(i=1)^n bb(1) {tilde(N)_(tau-, i) >= v} <= c))
+        &<= sum_(v=1)^(K_"lim") P( sum_(i=1)^n bb(1) {tilde(N)_(tau-, i) >= v} <= c) -> 0
 $
-as $n -> oo$. Here, we use that $sum_(i=1)^n bb(1) {tilde(N)_(tau, i) >= v}$ diverges almost surely to $oo$. Too see this, note that $sum_(i=1)^n bb(1) {N_(tau i) >= v}$ is almost surely monotone
-in $n$, and $sum_(i=1)^n P(tilde(N)_(tau, i) >= v) = n P(tilde(N)_tau >= v) -> oo$.
-From this and Kolmogorov's three series theorem, we conclude that $sum_(i=1)^n bb(1) {tilde(N)_(tau i) >= v} -> oo$
-almost surely as $n -> oo$ and that $sum_(i=1)^n bb(1) {tilde(N)_(tau i) >= v} <= c$ has probability tending to zero as $n -> oo$ as desired.
+as $n -> oo$. Here, we use that $sum_(i=1)^n bb(1) {tilde(N)_(tau-, i) >= v}$ diverges almost surely to $oo$. Too see this, note that $sum_(i=1)^n bb(1) {tilde(N)_(tau-, i) >= v}$ is almost surely monotone
+in $n$, and $sum_(i=1)^n P(tilde(N)_(tau-, i) >= v) = n P(tilde(N)_(tau-) >= v) -> oo$.
+From this and Kolmogorov's three series theorem, we conclude that $sum_(i=1)^n bb(1) {tilde(N)_(tau-, i) >= v} -> oo$
+almost surely as $n -> oo$ and that $sum_(i=1)^n bb(1) {tilde(N)_(tau-, i) >= v} <= c$ has probability tending to zero as $n -> oo$ as desired.
 
 Returning to showing 1 and 2, we now have that
 $
@@ -1836,9 +1850,9 @@ as $n -> oo$, so that 1 holds. A similar conclusion holds for 2, so the proof is
 
 == One-step procedure (the general case) <section:algorithmgeneral>
 
-#algorithm("Debiased ICE-IPCW estimator (general)")[
+#algorithm("Debiased ICE-IPCW estimator (non-conservative)")[
     Input: Observed data $tilde(O)_i$, $i = 1, dots, n$, time horizon $tau < tauend$,
-    and $K-1$.  Estimators of the propensity score $hat(pi)_0$, $hat(pi)_k$ for $k = 1, dots, K-1$
+    and $K$.  Estimators of the propensity score $hat(pi)_0$, $hat(pi)_k$ for $k = 1, dots, K-1$
     and the censoring compensator $hat(Lambda)^c$. Estimates of $hat(S) (dot | historycensored(k-1)) = product_(s in (eventcensored(k-1), eventcensored(k))) (1 - sum_(x=a,ell,d,y) cumhazard(k,x,dif s))$.
     
     Output: One-step estimator $hat(Psi)_n$ of $Psi_tau^g (P)$; estimate of influence function $phi_tau^* (tilde(O); hat(P))$.
@@ -1871,16 +1885,16 @@ as $n -> oo$, so that 1 holds. A similar conclusion holds for 2, so the proof is
           $
               bb(1) {eventcensored(k) <= tau, statuscensored(k) = c} (Qbar(k-1) (tau)-Qbar(k-1) (eventcensored(k))) 1/(hat(S)^c (eventcensored(k) | historycensored(k-1)) hat(S) (eventcensored(k)- | historycensored(k-1)))
           $
-          where we find an estimate of $Qbar(k-1) (eventcensored(k))$ by using the $u in {t_1, dots, t_m}$ closest to it. 
-          (Only need to compute this for the individuals with $eventcensored(k-1) < tau$ and $statuscensored(k-1) in {a, ell}$
-          who have followed the treatment regime up to $k-1$ events, i.e., $treatcensored(j) = 1$ for $j < k$)
+          where we estimate $Qbar(k-1) (eventcensored(k))$ as $Qbar(k-1) (u)$ with $u = min_(t in {t_1,dots,t_m}) |t-eventcensored(k)|$.
+          //(Only need to compute this for the individuals with $eventcensored(k-1) < tau$ and $statuscensored(k-1) in {a, ell}$
+          //who have followed the treatment regime up to $k-1$ events, i.e., $treatcensored(j) = 1$ for $j < k$)
         - Obtain estimates of the compensator term for each observation $i = 1, dots, n$
           $
               &sum_(j=1)^m bb(1) {eventcensored(k - 1) < t_j <= eventcensored(k) and tau} (Qbar(k-1) (tau)-Qbar(k-1) (t_j)) 1/(tilde(S)^c (t_j | historycensored(k-1)) S (t_j- | historycensored(k-1))) \
                   &quad times (cumhazardcensored(k,c,t_j)-cumhazardcensored(k,c,t_(j-1)))
           $
-          (Only need to compute this for the individuals with $eventcensored(k-1) < tau$ and $statuscensored(k-1) in {a, ell}$
-          who have followed the treatment regime up to $k-1$ events, i.e., $treatcensored(j) = 1$ for $j < k$)
+          //(Only need to compute this for the individuals with $eventcensored(k-1) < tau$ and $statuscensored(k-1) in {a, ell}$
+          //who have followed the treatment regime up to $k-1$ events, i.e., $treatcensored(j) = 1$ for $j < k$)
         - Plug in the estimates in @eq:eifMG of the martingale term, and the propensity scores $hat(pi)_k$ and censoring weights $hat(S)^c$
           to obtain estimates of $phi_tau^(*, tilde(M)^c) (tilde(O)_i; hat(P))$ for $i = 1, dots, n$.
  
@@ -2050,5 +2064,3 @@ $
 Our data set then consists of $(L_0, A_0, Y_1, L_1, A_1, dots, Y_(K-1), L_(K-1), A_(K-1), Y_K)$,
 which may then be applied with a discrete-time longitudinal causal inference estimator such
 as LTMLE (@ltmle).
-
-
