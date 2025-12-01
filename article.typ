@@ -535,21 +535,26 @@ Its natural filtration is denoted $cal(F)^"full"_t = sigma(beta(s) | s <= t) or 
 Thus, we observe the trajectories of the process given by $[0, tauend] in.rev t mapsto beta (t and C and T^e)$
 and the observed filtration is given by 
 $macron(cal(F))_t = sigma(beta(s and C and T^e) | s <= t) or cal(F)_0$.
-//The observed data is then given by @eq:observedata.
-//Abusing notation a bit, we see that for observed histories, we
-//have $history(k) = historycensored(k)$ if $statuscensored(k) != c$.
+Let $N^"full" (dif (t, m, a, l)) = bb(1) {m != c} N (dif (t, m, a, l)) + delta_((c, A(C), L(C))) (dif (m, a, l)) N^c (dif t)$ be the _full_ random measure, where $N^c$ is the counting process for censoring events.
 
-We posit an independent censoring condition (1. in @thm:iceipcw) that enables the use of regression techniques similar to those that may be found the literature based on independent censoring (@andersenStatisticalModelsBased1993; Definition III.2.1)
+The _canonical compensator_ $rho$ for a random measure $N^*$ is a stochastic kernel from $cal(Y) times N_bold(X) times RR_+$ to $RR_+ times bold(X)$
+satisfying that $rho(Y, N^*, dif (t, x))$ is a $P$-$sigma(Y, N_t^*)$ compensator of $N^*$.
+Here $N_bold(X)$ denotes the canonical point process space with mark space $bold(X)$,
+and measurable element $Y$ at $t=0$ 
+For $N^* = N^"full"$, we take $bold(X) = {0,1} times cal(L) times {a, ell, d, y, c}$
+and $cal(Y) = {0,1} times cal(L)$.
+
+We posit an independent censoring condition that enables the use of regression techniques similar to those that may be found the literature based on independent censoring (@andersenStatisticalModelsBased1993; Definition III.2.1)
 or local independence conditions (@roeysland2024; Definition 4).
 //A simple, sufficient condition for this to hold is e.g., that $C perp history(K)$.
-Note that 2. is a slight strengthening of the fact that the martingales $tilde(M)^c$ and $M^x$
+Note that the second is a slight strengthening of the fact that the martingales $tilde(M)^c$ and $M^x$
 are orthogonal for $x in {a,ell,d,y}$.
 //$Delta tilde(Lambda)^c Delta Lambda^x equiv 0$.
 // Note that this condition can be relaxed by applying the generalized Trotter formula (@gill1994),
 // but is not further considered here. 
 For example if the compensator of the (observed) censoring
 process is absolutely continuous with respect to the Lebesgue measure,
-then 2. of @thm:iceipcw is satisfied.
+then the second of @thm:iceipcw is satisfied.
 Our third condition in @thm:iceipcw is a positivity condition,
 ensuring that the conditional expectations are well-defined.
 //2. is mostly a technicality that is generally
@@ -557,7 +562,12 @@ ensuring that the conditional expectations are well-defined.
 
 #theorem[
     If
-    1. The $P$-$cal(F)_t$-compensator $Lambda$ of $N$ (@eq:randommeasure) is also the $P$-$cal(F)^"full"_t$ compensator of $N$.//, that is $N(t) - Lambda(t)$ is a (local) $P$-$cal(F)^"full"_t$ martingale and a (local) $P$-$cal(F)_t$ martingale.
+    1. Let $rho$ denote the canonical compensator of $N^"full"$ and $rho'$ denote the canonical compensator of $N$.
+       Suppose that $phi = (t_1, d_1, a_1, l_1, dots, t_K, d_K)$ and define the censoring time accordingly as $c(phi)$.
+       We have $bb(1) {m != c} rho ((a_0,l_0), phi, dif (t, m, a, l)) = rho' ((a_0,l_0), phi', dif (t, m, a, l))$,
+       where $phi' = (t'_1, d'_1, a'_1, l'_1, dots, t'_K, d'_K)$, $(t'_k,d'_k,a'_k,l'_k)=(t_k,d_k,a_k,l_k)$ if 
+       $t_k <= c(phi)$; $(t'_k,d'_k,a'_k,l'_k) = (c(phi), d'_(k-1),a'_(k-1),l'_(k-1))$ if $t_(k-1) < c(phi) < t_k$;
+       $(t'_k,d'_k,a'_k,l'_k)=(t_(k-1),d_(k-1),a_(k-1),l_(k-1))$ otherwise.
     // Formulate this in a different way?
     2. $Delta tilde(Lambda)_(k)^c (dot, historycensored(k-1)) Delta cumhazard(k, x, dot) equiv 0$ for $x in {a, ell, y, d}$ and $k in {1, dots, K}$.
     3. $tilde(S)^c (t | historycensored(k-1)) > eta$ for all $t in (0, tau]$ and $k in {1, dots, K}$ $P$-a.s. for some $eta > 0$.
@@ -611,7 +621,7 @@ conditions, this estimator is asymptotically linear at $P$ with
 influence function $phi_tau^*(dot; P)$.
 We derive the efficient influence function using the iterative representation given
 in @eq:iceipcw, working under the conclusions of @thm:iceipcw,
-by finding the Gateaux derivative of the target parameter.
+by finding the pathwise derivative of the target parameter.
 
 We also provide an algorithm for the one-step estimator in the uncensored situation
 or to obtain conservative inference when censoring is present (@alg:onestepsimple).
@@ -655,8 +665,7 @@ and the assumption of orthogonal martingales (which was assumed in @rytgaardCont
         phi_tau^(*, tilde(M)^c) (P) &= (bb(1) {treat(0) = 1})/ (pi_0 (L(0))) sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1))) \
             &#h(0.5cm) integral_((eventcensored(k - 1), tau)) bb(1) {s <= eventcensored(k)} (Qbar(k-1) (tau)-Qbar(k-1) (u)) 1/(tilde(S)^c (u | historycensored(k-1)) S (u- | historycensored(k-1))) tilde(M)^c (dif u)
     $ <eq:eifMG>
-    The Gateaux derivative of $Psi_tau^g$ at $P in cal(M)$ in the direction of the Dirac measure $delta_(tilde(O))$
-    is then given by
+    The efficient influence function at $P in cal(M)$ is given by
     #text(size: 7.5pt)[$
         phi_tau^* (P) &=  phi_tau^(*, tilde(M)^c) (P) + phi_tau^(*, d) (P).
     $<eq:eif>]
@@ -1374,12 +1383,12 @@ This completes the proof.
     Then, we have 
     $
         &bb(1) {statuscensored(k-1) in {a,ell}} P ((eventcensored(k), macron(Delta)_(k), A(eventcensored(k)), L(eventcensored(k))) in dif (t, m, a,l)| historycensored(k-1)) \
-            &= bb(1) {eventcensored(k-1) < t,statuscensored(k-1) in {a,ell}} (tilde(S) (t- | historycensored(k-1)) sum_(x=a, ell, d, y) delta_x (dif m) psi_(k,x) (t, dif (a, l)) cumhazard(k, x, dif t) \
+            &= bb(1) {eventcensored(k-1) < t,statuscensored(k-1) in {a,ell}} (tilde(S) (t- | historycensored(k-1)) sum_(x=a, ell, d, y) delta_x (dif m) psi_(k,x) (history(k-1), t, dif (a, l)) cumhazard(k, x, dif t) \
                 &qquad + delta_((c, A(C), L(C))) (dif (m, a, l)) cumhazardcensored(k, c, dif t)), 
     $ <eq:densitycens>
     where
     $
-        psi_(k, x) (t, dif (a, l)) &=   bb(1) {x = a}(delta_(1) (dif a) pi_k (t, l, history(k-1)) \
+        psi_(k, x) (history(k-1), t, dif (a, l)) &=   bb(1) {x = a}(delta_(1) (dif a) pi_k (t, l, history(k-1)) \
             &qquad + delta_(0) (dif a) (1 - pi_k (t, l, history(k-1))) densitycova(dif l, t, k)) \
             &+ bb(1) {x = ell} densitycovl(dif l, t, k) delta_(treat(k-1)) (dif a) \
             &+ bb(1) {x in {y, d}} delta_(A(T^e)) (dif a) delta_(L(T^e)) (dif l),
@@ -1391,26 +1400,31 @@ This completes the proof.
     $
 ] <lemma:iceone>
 #proof[
+    Let $Phi = (event(n), status(n),treat(n),covariate(n))_n$ denote the marked point process associated with $N$.
     A version of the compensator of the random measure $N$ with respect to the filtration $(cal(F)_t)_(t >= 0)$ is by Theorem 4.1.11 (ii) of @last1995marked is
     $
-        &Lambda (dif (t, m, a, l)) \
-            &= sum_k bb(1) {event(k-1) < t <= event(k)} (P((event(k), status(k), treat(k), covariate(k)) in dif (t, m, a, l) | history(k-1))) / P(event(k) >= t | history(k-1)) \
-            &= sum_k bb(1) {event(k-1) < t <= event(k)}  P((covariate(k), treat(k)) in dif (l, a) | history(k-1), event(k) = t, status(k) = m) (P((treat(k), status(k)) in dif (t, m))) / P(event(k) >= t | history(k-1)) \
-            &= sum_k bb(1) {event(k-1) < t <= event(k)} sum_(x=a,ell,y,d) P((covariate(k), treat(k)) in dif (l, a) | history(k-1), event(k) = t, status(k) = x) delta_x (dif m) cumhazard(k, x, dif t) \
-            &= sum_k bb(1) {event(k-1) < t <= event(k)} sum_(x=a,ell,y,d) psi_(k,x) (t, dif (a, l)) delta_x (dif m) cumhazard(k, x, dif t),
-    $
+        Lambda (dif (t, m, a, l)) &= sum_k bb(1) {event(k-1) < t <= event(k)} (P((event(k), status(k), treat(k), covariate(k)) in dif (t, m, a, l) | history(k-1))) / P(event(k) >= t | history(k-1)) \
+            &= sum_k bb(1) {event(k-1) < t <= event(k)}  P((covariate(k), treat(k)) in dif (l, a) | history(k-1), event(k) = t, status(k) = m) \
+            &quad times (P((event(k), status(k)) in dif (t, m))) / P(event(k) >= t | history(k-1)) \
+            &= sum_k bb(1) {event(k-1) < t <= event(k)} sum_(x=a,ell,y,d) P((covariate(k), treat(k)) in dif (l, a) | history(k-1), event(k) = t, status(k) = x) \
+            &quad times delta_x (dif m) cumhazard(k, x, dif t) \
+            &= sum_k bb(1) {event(k-1) < t <= event(k)} sum_(x=a,ell,y,d) psi_(k,x) (history(k-1), t, dif (a, l)) delta_x (dif m) cumhazard(k, x, dif t) \
+            &=^(*) sum_k bb(1) {v_(k-1) (Phi) < t <= v_(k-1) (Phi) } sum_(x=a,ell,y,d) psi_(k,x) (h_(k-1) (Phi), t, dif (a, l)) delta_x (dif m) Lambda_k^x (dif t, h_(k-1) (Phi)),
+    $ <eq:canonicalproof>
     where we use explicit conditioning and the definition of the cause-specific hazard measures.
-    Under condition 1. of @thm:iceipcw, this is also the compensator for $N^alpha$ with respect to the filtration $cal(F)^"full"_t$.
-    
-    We now let $N^"full" (dif (t, m, a, l)) = N (dif (t, m, a, l)) + delta_((c, A(C), L(C))) (dif (m, a, l)) N^c (dif t)$ be the _full_ random measure,
-    where $N^c$ is the counting process for censoring events.
-    Similarly, let $tilde(N) (dif (t, m, a, l))$ denote the observed random measure, i.e., the random measure corresponding to the observed data.
+    In $(*)$, we use  that $event(k) = v_k (Phi)$ for some measurable function $v_k$
+    and that $history(k) = h_k (Phi)$ for some measurable function $h_k$.
+    //Thus, we have under condition 1 that the last equality of @eq:canonicalproof defines the canonical compensator
+    // of $bb(1) {m != c} rho ((a_0,l_0), phi, dif (t, m, a, l))$.
+
+    We let $tilde(N) (dif (t, m, a, l))$ denote the observed random measure, i.e., the random measure corresponding to the observed data
+    and $tilde(Phi)$ its corresponding marked point process. 
     Let $T_((k))^*, Delta_((k))^*,
     A(T_((k))^*), L(T_((k))^*)$ denote the event times and marks of the random measure $N^"full"$.
-    Again by Theorem 4.1.11 (ii) of @last1995marked, a version of the compensator of $N^c$ with respect to the filtration $(cal(F)^"full"_t)_(t >= 0)$ is given by
-    $
-        Lambda^c (dif t) &= sum_k bb(1) {T_((k-1))^* < t <= T_((k))^*} tilde(Lambda)^(c)_k (dif t, cal(F)^"full"_(T_((k-1))^*)),
-    $ <eq:compensatorc>
+    // Again by Theorem 4.1.11 (ii) of @last1995marked, a version of the compensator of $N^c$ with respect to the filtration $(cal(F)^"full"_t)_(t >= 0)$ is given by
+    // $
+    //     Lambda^c (dif t) &= sum_k bb(1) {T_((k-1))^* < t <= T_((k))^*} tilde(Lambda)^(c)_k (dif t, cal(F)^"full"_(T_((k-1))^*)),
+    // $ <eq:compensatorc>
     // Note this must be the same as the compensator with respect to the stopped filtration corresponding to observed data
     // up to the the terminal event
     // On ..., the conditioning sets are the same.
@@ -1428,19 +1442,19 @@ This completes the proof.
     // We conclude by uniqueness of the canonical compensator (Theorem 4.2.2 (ii) of @last1995marked) that
     // $cumhazardcensored(k, c, dif t) = tilde(Lambda)^(c,*)_k (dif t, cal(F)^"full"_(T_((k-1))^*))$ whenever $C > event(k-1)$,
     
-    and also that a version of the compensator of $N^"full"$ with respect to the filtration $(cal(F)^"full"_t)_(t >= 0)$ is given by
-    $
-        Lambda^"full" (dif (t, m, a, l)) = Lambda (dif (t, m, a, l)) + delta_((c, A(C), L(C))) (dif (m, a, l)) Lambda^c (dif t).
-    $
-    This defines a canonical compensator because each term can be written explicitly as a functional of the history of the process $N^"full"$
-    and the baseline covariates. Denote this explicit representation by $rho$, i.e.,
-    $
-        rho( (L(0), A(0)), N^"full", dif (t, m, a, l)) = Lambda^"full" (dif (t, m, a, l)).
-    $
-    where $rho$ is now a kernel (in the measure theoretical sense) from ${0, 1} times cal(L) times N_bold(X) times RR_+$ to $RR_+ times bold(X)$.
-    Here $N_bold(X)$ denotes the canonical point process space with mark space $bold(X)$ (@last1995marked).
-    In this case, $bold(X) = cal(A) times cal(L) times {a, ell, d, y, c}$, where
-    $cal(A) = {0, 1}$ and $cal(L) subset.eq RR^d$.
+    // and also that a version of the compensator of $N^"full"$ with respect to the filtration $(cal(F)^"full"_t)_(t >= 0)$ is given by
+    // $
+    //     Lambda^"full" (dif (t, m, a, l)) = Lambda (dif (t, m, a, l)) + delta_((c, A(C), L(C))) (dif (m, a, l)) Lambda^c (dif t).
+    // $
+    // This defines a canonical compensator because each term can be written explicitly as a functional of the history of the process $N^"full"$
+    // and the baseline covariates. Denote this explicit representation by $rho$, i.e.,
+    // $
+    //     rho( (L(0), A(0)), N^"full", dif (t, m, a, l)) = Lambda^"full" (dif (t, m, a, l)).
+    // $
+    // where $rho$ is now a kernel (in the measure theoretical sense) from ${0, 1} times cal(L) times N_bold(X) times RR_+$ to $RR_+ times bold(X)$.
+    // Here $N_bold(X)$ denotes the canonical point process space with mark space $bold(X)$ (@last1995marked).
+    // In this case, $bold(X) = cal(A) times cal(L) times {a, ell, d, y, c}$, where
+    // $cal(A) = {0, 1}$ and $cal(L) subset.eq RR^d$.
     
     // //K'((L(0), A(0)), N, t, dif (m, a, l)) V' ((A(0),L(0)), N, dif t)
     // for some kernel $K'$ from ${0, 1} times cal(L) times N_bold(X) times RR_+$ to $bold(X)$
@@ -1469,25 +1483,48 @@ This completes the proof.
     // where $(N^("full"))^(event(k-1))$ stopped process at the $(k-1)$'th event time.
     //(see for instance (ii) of @thm:jointdensity to see how we arrive at the second line of @eq:compensatorpart).
     // Do we need to show whether Delta Rho <= 1?
-
+    To complete the proof, we first need some additional definitions.
+    Let $Phi^*$ be a marked point process with baseline element $Y$
+    and let $U$ be a given $P$-$sigma(Y, Phi_t^*)$ stopping time.
+    For $n in NN$, we let
+    $
+        (T^*_(U,n), X_(U,n)^*) = cases( (T^*_(n+k), X_(n+k)^*) "if" Phi^* (U) = k < oo, (oo, Ø) "otherwise").
+    $
+    //    Now we define $Phi_U^* :=  (T^*_(U,n), X_(U,n)^*)_n$.
+    Note that $T^*_(U,n)$ denotes the $n$'th event time of $Phi^*$ after $U$.
+    Also recall that the restriction of $Phi^*$ to $S$ denoted by $Phi_S^*$ is given by
+    $
+        (T(S)^*_(k), X(S)^*_k) = cases((T^*_n, X_n^*) "if" T^*_n <= S, (oo,Ø) "otherwise")
+    $
+    
     Note that $T^*_((k+1)) = eventcensored(k+1)$ whenever $event(k) < C$.
     Let $T_(S,1)$ denote the first event time of $N^"full"$ after $T_(S,0):=S$,
-    where $S$ is a stopping time with respect to the filtration $(cal(F)^"full"_t)_(t >= 0)$.
+    where $S$ is a stopping time with respect to the filtration $cal(F)^"full"$.
     With $S:= T^e and C and event(k)$, we
-    have $T_(S, 0) := S = T^e and C and event(k)$. It also holds that
-    $T_(S, 0) = eventcensored(k)$ whenever $statuscensored(k-1) in.not {y,d,c}$.
+    have $T_(S, 0) := S = T^e and C and event(k)$.
+
+    Importantly, we have that
+    $
+        bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} Phi^("full")_(T_(S,0)) = bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} tilde(Phi)_(eventcensored(k)) quad P-".a.s."
+    $ <eq:consistency>
     Using Theorem 4.3.8 of @last1995marked, it therefore holds that
     $
-        &bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} P( (macron(T)_(k+1), macron(Delta)_(k+1), A(macron(T)_(k+1)), L(macron(T)_(k+1))) in dif (t, m, a,l) | historycensored(k-1)) \
-            &=bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} P( (T_(S,1)^*, Delta_(S,1)^*, A(T_(S,1)^*), L(T_(S,1)^*)) in dif (t, m, a,l) | historycensored(k-1)) \
-            &=^((*)) bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} P( (T_(S,1)^*, Delta_(S,1)^*, A(T_(S,1)^*), L(T_(S,1)^*)) in dif (t, m, a,l) | cal(F)^("full")_(T_(S,0))) \
+        &bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} \
+            &quad times P( (macron(T)_(k+1), macron(Delta)_(k+1), A(macron(T)_(k+1)), L(macron(T)_(k+1))) in dif (t, m, a,l) | historycensored(k)) \
+            &=bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} \
+            &quad times P( (T_(S,1)^*, Delta_(S,1)^*, A(T_(S,1)^*), L(T_(S,1)^*)) in dif (t, m, a,l) | historycensored(k)) \
+            &=^((*)) bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} \
+            &quad times P( (T_(S,1)^*, Delta_(S,1)^*, A(T_(S,1)^*), L(T_(S,1)^*)) in dif (t, m, a,l) | cal(F)^("full")_(T_(S,0))) \
             &=^("Thm. 4.3.8") bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} bb(1) {T_(S,0) < t} \
-            &quad times product_(s in (T_(S,0), t)) (1 - rho ((L(0),A(0)), (N^("full"))^(T_(S,0)), dif s, {a,y,l,d,y} times {0,1} times cal(L))) rho ((L(0),A(0)), (N^("full"))^(T_(S,0)), dif (t, m, a, l)) \
+            &quad times product_(s in (T_(S,0), t)) (1 - rho ((L(0),A(0)), Phi^("full")_(T_(S,0)), dif s, {a,y,l,d,y} times {0,1} times cal(L))) \
+            &quad times rho ((L(0),A(0)), Phi^("full")_(T_(S,0)), dif (t, m, a, l)) \
             &= bb(1) {statuscensored(1) in.not{c,y,d}, dots, statuscensored(k) in.not {c,y,d}} bb(1) {eventcensored(k) < t} \
-            &quad times product_(s in (eventcensored(k), t)) (1 - rho ((L(0),A(0)), (N^(tilde(beta)))^(eventcensored(k)), dif s, {a,y,l,d,y} times {0,1} times cal(L))) rho (A(0), L(0), (tilde(N)))^(eventcensored(k)), dif (t, m, a, l)).
+            &quad times product_(s in (eventcensored(k), t)) (1 - rho ((L(0),A(0)), tilde(Phi)_(eventcensored(k)), dif s, {a,y,l,d,y} times {0,1} times cal(L))) \
+            &quad times rho (A(0), L(0), tilde(Phi)_(eventcensored(k)), dif (t, m, a, l)).
     $ <eq:densitycensProof>
-    In $(*)$, we use that $cal(F)^("full")_(T_(S,0)) =^((**)) sigma((A(0), L(0)), (N^("full"))^(T_(S,0))) = sigma((A(0), L(0)),(tilde(N))^(eventcensored(k))) =  cal(F)_(eventcensored(k))$ where $(**)$ follows from Theorem 2.1.14 of @last1995marked.
-    This is because no terminal event has occurred before or at $T_(S,0)$.
+    In $(*)$, we use that $cal(F)^("full")_(T_(S,0)) = sigma((A(0), L(0)), Phi^("full")_(T_(S,0)))$,
+    but also $cal(F)_(eventcensored(k)) =  sigma((A(0), L(0)),tilde(Phi)_(eventcensored(k)))$ by Theorem 2.1.14 of @last1995marked.
+    Hence, the conditional expectations are almost surely the same by @eq:consistency.
     From @eq:densitycensProof, we get @eq:densitycens by noting that $psi_(k, x) (t, {a,y,l,d,y} times {0,1} times cal(L)) = 1$.
 ] 
 
@@ -1668,16 +1705,26 @@ $
         &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)] +sum_(z != x) mean(P^(G^*)) [tilde(N)^y (tau) | eventcensored(k) =t, statuscensored(k) =z, historycensored(k-1)] Delta Lambda_k^z (t, historycensored(k-1)))/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)] + Delta Lambda_k^z (t, historycensored(k-1)))) \
         &quad times tilde(N)^x (dif t, historycensored(k-1)) \
         &= integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} \
-        &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)])/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)])) bb(1) {eventcensored(k-1) < t <= eventcensored(k)} bb(1) {sum_(z != x) Delta Lambda_k^z (t, historycensored(k-1)) = 0} tilde(N)^x (dif t, historycensored(k-1)) \
+        &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)])/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)])) bb(1) {eventcensored(k-1) < t <= eventcensored(k)} bb(1) {sum_(z != x) Delta Lambda_k^z (t, historycensored(k-1)) = 0} tilde(N)^x (dif t) \
         &+ integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} \
         &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)] +sum_(z != x) mean(P^(G^*)) [tilde(N)^y (tau) | eventcensored(k) =t, statuscensored(k) =z, historycensored(k-1)] Delta Lambda_k^z (t, historycensored(k-1)))/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)] + Delta Lambda_k^z (t, historycensored(k-1)))) \
-        &quad times bb(1) {sum_(z != x) Delta Lambda_k^z (t, historycensored(k-1)) > 0} tilde(N)^x (dif t, historycensored(k-1)) \
+        &quad times bb(1) {sum_(z != x) Delta Lambda_k^z (t, historycensored(k-1)) > 0} tilde(N)^x (dif t) \
         &=^(***) integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} \
-        &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)])/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)])) bb(1) {eventcensored(k-1) < t <= eventcensored(k)} bb(1) {sum_(z != x) Delta Lambda_k^z (t, historycensored(k-1)) = 0} tilde(N)^x (dif t, historycensored(k-1)) \
+        &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)])/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)])) bb(1) {eventcensored(k-1) < t <= eventcensored(k)} bb(1) {sum_(z != x) Delta Lambda_k^z (t, historycensored(k-1)) = 0} tilde(N)^x (dif t) \
         &=^(****) integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} \
-        &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)])/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)])) bb(1) {eventcensored(k-1) < t <= eventcensored(k)} tilde(N)^x (dif t, historycensored(k-1)) \
+        &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)])/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)])) bb(1) {eventcensored(k-1) < t <= eventcensored(k)} tilde(N)^x (dif t) \
 $
-Here, we use in $(***)$ that the second term is seen to be almost surely zero since its compensator is zero by the assumption of orthogonal martingales.
+Here, we use in $(***)$ that the second term is seen to be almost surely zero since have by the definition of a compensator
+$
+    &mean(P) [integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} \
+        &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)] +sum_(z != x) mean(P^(G^*)) [tilde(N)^y (tau) | eventcensored(k) =t, statuscensored(k) =z, historycensored(k-1)] Delta Lambda_k^z (t, historycensored(k-1)))/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)] + Delta Lambda_k^z (t, historycensored(k-1)))) \
+        &quad times bb(1) {sum_(z != x) Delta Lambda_k^z (t, historycensored(k-1)) > 0} tilde(N)^x (dif t, historycensored(k-1))] \
+        &= mean(P) [integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} \
+        &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)] +sum_(z != x) mean(P^(G^*)) [tilde(N)^y (tau) | eventcensored(k) =t, statuscensored(k) =z, historycensored(k-1)] Delta Lambda_k^z (t, historycensored(k-1)))/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)] + Delta Lambda_k^z (t, historycensored(k-1)))) \
+            &quad times bb(1) {sum_(z != x) Delta Lambda_k^z (t, historycensored(k-1)) > 0} Lambda_k^x (dif t, historycensored(k-1))] \
+        &=0,
+$
+where we use the assumption of orthogonal martingales.
 Next, in $(****)$ we use the same line of argument to show that the difference of the last line and previous line is almost surely zero. 
 Let $B_(k-1) (u) = (Qbar(k-1)(tau) -Qbar(k-1)(u)) 1/( S (u | historycensored(k-1)))$.
 Combining @eq:rytgaardproof1, @eq:rytgaardproof2, @eq:rytgaardproof3, and @eq:rytgaardproof4 with @eq:rytgaardeif, we find that the efficient influence function can also be written as:
