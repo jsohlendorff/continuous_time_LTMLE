@@ -692,7 +692,7 @@ and it may be difficult to estimate $Qbar(k)$ for large $k$
 due to the limited number of observations
 with many events. We shall show that we can data-adaptively
 choose this number such that we get valid inference
-for the original target estimand. 
+for our target estimand. 
 
 Let $Psi_tau^(g, k^*) (P) = mean(P) [N^y (tau) W^g (tau and event(k^*))]$ for $k^* in bb(N)$
 denote the target parameter when we only intervene up to the $k^*$'th event,
@@ -707,16 +707,16 @@ Also let $K_(n c) = max_(v : sum_(i=1)^n bb(1) {tilde(N)_(tau-, i) >= v} > c)$
 denote the maximum number of events with at least $c$ people at risk,
 where $tilde(N)_(tau-, i)$ denotes $tilde(N)_(tau-)$ for subject $i$.
 Suppose that we have the decomposition of the
-estimator $hat(Psi)_n$ of $Psi_tau^(g, K_(n c)) (P)$, such that
+estimator $hat(Psi)_n$ of the data-adaptive target parameter $Psi_tau^(g, K_(n c)) (P)$, such that
 $
     hat(Psi)_n - Psi_tau^(g, K_(n c)) (P) = (bb(P)_n - P) phi_tau^(*, K_(n c)) (dot; P) + o_P (n^(-1/2)),
 $ <eq:adaptive>
 where $phi_tau^(*, k^*) (dot; P)$ is the efficient influence function for the target parameter $Psi_tau^(g, k^*) (P)$.
-Here we use the term data-adaptive target parameter and data-adaptive inference in the sense of @hubbard2016statistical.
 //A result like this may be shown using empirical process conditions
 //as demonstrated in //Theorem 3 of @hubbard2016statistical.
 Then as @thm:adaptive shows, we actually obtain inference for the original parameter of interest
-if the total number of events is bounded. 
+if the total number of events is bounded.
+Note that here we use the term data-adaptive target parameter in the sense of @hubbard2016statistical.
 
 // NOTE: can we add statuscensored(k-1) in {a,ell} in addition to eventcensored(k-1) < tau
 // which is what we would normally do? Not sure if this actually matters 
@@ -725,7 +725,7 @@ if the total number of events is bounded.
 // Anders comment: Is there something missing here? Has the parameter
 // Psi_tau^(g, K_(n c)) been defined?
     // In general, I find a bit difficult to digest this theorem. How is the estimator \hat\Psi_n defined in relation to k and K_{nc}?
-    Suppose that @eq:adaptive holds and that there is a number $K_"lim" in bb(N)$, such that $P(N_(tau-) = K_"lim") > 0$,
+    Suppose that @eq:adaptive holds and that there is a (non-random) number $K_"lim" in bb(N)$, such that $P(N_(tau-) = K_"lim") > 0$,
     but $P(N_(tau-) > K_"lim") = 0$ and that $P(tilde(N)_(tau-) = K_"lim") > 0$.
     Then, the estimator $hat(Psi)_n$ satisfies
     $
@@ -1583,65 +1583,102 @@ $
 in alignment with @eq:weightprocess
 with perfect compliance at time zero. 
 We verify that our efficient influence function is the same as @rytgaardContinuoustimeTargetedMinimum2022
-under their assumptions of orthogonal martingales. 
-To align with @rytgaardContinuoustimeTargetedMinimum2022, we also assume that $covariate(k) = covariate(k-1)$ ($covariatecensored(k) = covariatecensored(k-1)$)
-whenever $status(k) = a$ ($statuscensored(k) = a$).
+under their assumption of orthogonal martingales (which is needed to ensure that the likelihood factorizes in the way
+their likelihood does).
+To align with @rytgaardContinuoustimeTargetedMinimum2022, we also assume that $covariate(k) = covariate(k-1)$ 
+whenever $status(k) = a$.
 The efficient influence function of @rytgaardContinuoustimeTargetedMinimum2022
 is given in Theorem 1 of @rytgaardContinuoustimeTargetedMinimum2022 in our notation by
 $ 
-    phi_tau^*(P) &= mean(P^(G^*)) [N_y (tau) | cal(F)_0] - Psi_tau (P) \
-        &+ integral_0^tau W^g (t -) (mean(P^(G^*)) [N_y (tau) | L(t), N^ell (t), cal(F)_(t-)] - mean(P^(G^*)) [N_y (tau) | N^ell (t), cal(F)_(t-)]) tilde(N)^ell (dif t) \
-        &+ integral_0^tau W^g (t -) (mean(P^(G^*)) [N_y (tau) | Delta N^ell (t) = 1, cal(F)_(t-)] - mean(P^(G^*)) [N_y (tau) | Delta N^ell (t) = 0, cal(F)_(t-)]) tilde(M)^ell (dif t) \
-        &+ integral_0^tau W^g (t -) (mean(P^(G^*)) [N_y (tau) | Delta N^a (t) = 1, cal(F)_(t-)] - mean(P^(G^*)) [N_y (tau) | Delta N^a (t) = 0, cal(F)_(t-)]) tilde(M)^a (dif t) \
-        &+ integral_0^tau W^g (t -) (1 - mean(P^(G^*)) [N_y (tau) | Delta N^y (t) = 0, cal(F)_(t-)]) tilde(M)^y (dif t) \
-        &+integral_0^tau W^g (t -) (0 - mean(P^(G^*)) [N_y (tau) | Delta N^d (t) = 0, cal(F)_(t-)]) tilde(M)^d (dif t).
+    phi_tau^*(P) &= mean(P^(G^*)) [tilde(N)^y (tau) | cal(F)_0] - Psi_tau (P) \
+        &+ integral_0^tau W^g (t -) (mean(P^(G^*)) [tilde(N)^y (tau) | tilde(L)(t), tilde(N)^ell (t), cal(macron(F))_(t-)] - mean(P^(G^*)) [tilde(N)_y (tau) | tilde(N)^ell (t), cal(macron(F))_(t-)]) tilde(N)^ell (dif t) \
+        &+ integral_0^tau W^g (t -) (mean(P^(G^*)) [tilde(N)^y (tau) | Delta tilde(N)^ell (t) = 1, cal(macron(F))_(t-)] - mean(P^(G^*)) [tilde(N)_y (tau) | Delta tilde(N)^ell (t) = 0, cal(macron(F))_(t-)]) tilde(M)^ell (dif t) \
+        &+ integral_0^tau W^g (t -) (mean(P^(G^*)) [tilde(N)^y (tau) | Delta tilde(N)^a (t) = 1, cal(macron(F))_(t-)] - mean(P^(G^*)) [tilde(N)_y (tau) | Delta tilde(N)^a (t) = 0, cal(macron(F))_(t-)]) tilde(M)^a (dif t) \
+        &+ integral_0^tau W^g (t -) (1 - mean(P^(G^*)) [tilde(N)^y (tau) | Delta tilde(N)^y (t) = 0, cal(macron(F))_(t-)]) tilde(M)^y (dif t) \
+        &+integral_0^tau W^g (t -) (0 - mean(P^(G^*)) [tilde(N)^y (tau) | Delta tilde(N)^d (t) = 0, cal(macron(F))_(t-)]) tilde(M)^d (dif t).
 $ <eq:rytgaardeif>
-In @eq:rytgaardeif, it is not evident if many of the integrals are well-defined.
-$mean(P^(G^*)) [N_y (tau) | Delta N^x (t) = 0, cal(F)_(t-)]$
-can be understood as a ratio of two predictable projections (Corollary 2.2.3 of @last1995marked).
-$mean(P^(G^*)) [N_y (tau) | Delta N^x (t) = 1, cal(F)_(t-)]$ however may be problematic;
-it can be defined almost surely for each $t$, but we need to actually define it as a process for
-each element in the sample space. In the following, we ignore these difficulties and continue as if the integrals
-are actually well-defined. 
+In @eq:rytgaardeif, it is not evident if the integral involving
+$mean(P^(G^*)) [tilde(N)_y (tau) | Delta tilde(N)^x (t) = 1, cal(macron(F))_(t-)]$ is actually well-defined since $Delta tilde(N)^x (t) = 1$
+may be a null-set, and we need to define the sample paths of this process. 
+On the other hand (Corollary 2.2.3 of @last1995marked), shows that 
+$mean(P^(G^*)) [tilde(N)_y (tau) | Delta tilde(N)^x (t) = 0, cal(macron(F))_(t-)]$
+can be defined as a $P$-$cal(macron(F))_t$-predictable process,
+and the term involving the counting process integral obviously only needs to be defined at the event times. 
 
 Here, $tilde(M)^x$ denotes the observed martingales with respect to the observed filtration.
-We note, for instance, for $x= ell$ that
+We find $mean(P^(G^*)) [tilde(N)_y (tau) | Delta tilde(N)^x (t) = 1, cal(macron(F))_(t-)]$
+in a situation where it can be relatively easily found. Assuming piecewise-constant compensators we have that
+for $x=ell$,
 $
-    &mean(P^(G^*)) [N_y (tau) | Delta N^x (t) = 1, cal(F)_(t-)] \
-        &=sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)}mean(P^(G^*)) [N_y (tau) | event(k) = t, status(k) = x, history(k-1)] \
-        &= sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} mean(P) [Qbar(k) (tau) | event(k) =t, status(k) = x, history(k-1)].
+    &mean(P^(G^*)) [tilde(N)_y (tau) | Delta tilde(N)^x (t) = 1, cal(macron(F))_(t-)] \
+        &= (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {Delta tilde(N)^x (t) = 1}| cal(macron(F))_(t-)])/(mean(P^(G^*)) [bb(1) {Delta tilde(N)^x (t) = 1} | cal(macron(F))_(t-)]) \
+        &= sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {t <= eventcensored(k)} bb(1) {Delta tilde(N)^x (t) = 1}| historycensored(k-1)])/(mean(P^(G^*)) [bb(1) {t <= eventcensored(k)} bb(1) {Delta tilde(N)^x (t) = 1} | historycensored(k-1)]) \
+        &= sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {t = eventcensored(k), status(k) = x}| historycensored(k-1)])/(mean(P^(G^*)) [bb(1) {t = eventcensored(k), status(k) = x} | historycensored(k-1)]) \
+        &= sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} (mean(P^(G^*)) [mean(P) [Qbar(k) (tau) | eventcensored(k) =t, statuscensored(k) = x, historycensored(k-1)] bb(1) {t = eventcensored(k), status(k) = x}| historycensored(k-1)])/(mean(P^(G^*)) [bb(1) {t = eventcensored(k), status(k) = x} | historycensored(k-1)]) \
+        &= sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} mean(P^(G^*)) [Qbar(k) (tau) | eventcensored(k) =t, statuscensored(k) = x, historycensored(k-1)].
 $ <eq:rytgaardproof1>
+by Corollary 2.2.3 of @last1995marked.
+Because of the assumption of piecewise-constant compensators, this
+process need only be defined whenever the denominator of @eq:rytgaardproof1 is zero. 
 Similarly, we may find that
 $
-    mean(P^(G^*)) [N_y (tau) | Delta N^y (t) = 1, cal(F)_(t-)] = 1, \
-    mean(P^(G^*)) [N_y (tau) | Delta N^d (t) = 1, cal(F)_(t-)] = 0, \
-    mean(P^(G^*)) [N_y (tau) | Delta N^a (t) = 1, cal(F)_(t-)] = sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} Qbar(k) (tau, 1, H_(k)).
+    mean(P^(G^*)) [tilde(N)_y (tau) | Delta tilde(N)^y (t) = 1, cal(macron(F))_(t-)] = 1, \
+    mean(P^(G^*)) [tilde(N)_y (tau) | Delta tilde(N)^d (t) = 1, cal(macron(F))_(t-)] = 0, \
+    mean(P^(G^*)) [tilde(N)_y (tau) | Delta tilde(N)^a (t) = 1, cal(macron(F))_(t-)] = sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} Qbar(k) (tau, 1, H_(k)).
 $ <eq:rytgaardproof2>
-For the first term in @eq:rytgaardeif, we find that
+For the first term in @eq:rytgaardeif, at $t=eventcensored(k-1)$,
 $
-    &mean(P^(G^*)) [N_y (tau) | L(t), N^ell (t), cal(F)_(t-)] - mean(P^(G^*)) [N_y (tau) | N^ell (t), cal(F)_(t-)] \
-        &= mean(P^(G^*)) [N_y (tau) | L(t), Delta N^ell (t) = 0, cal(F)_(t-)] - mean(P^(G^*)) [N_y (tau) | Delta N^ell (t) = 0, cal(F)_(t-)] \
-        &quad +mean(P^(G^*)) [N_y (tau) | L(t), Delta N^ell (t) = 1, cal(F)_(t-)] - mean(P^(G^*)) [N_y (tau) | Delta N^ell (t) = 1, cal(F)_(t-)] \
-        &= 0 \
-        &quad + sum_(k=1)^(K-1) bb(1) {event(k-1) < t <= event(k)} (mean(P^(G^*)) [N_y (tau) | L(event(k)), event(k) = t, status(k) = ell, history(k-1)]-mean(P^(G^*)) [N_y (tau) | event(k) = t, status(k) = ell, history(k-1)]) \
-        &= sum_(k=1)^(K-1) bb(1) {event(k-1) < t <= event(k)} bb(1) {event(k) < tau, status(k) = ell}  (Qbar(k) (tau) - mean(P) [Qbar(k) (tau) | event(k) = t , status(k) = ell, history(k-1)]).
+    &mean(P^(G^*)) [tilde(N)_y (tau) | tilde(L)(t), tilde(N)^ell (t), cal(macron(F))_(t-)] - mean(P^(G^*)) [tilde(N)_y (tau) | tilde(N)^ell (t), cal(macron(F))_(t-)] \
+        &= mean(P^(G^*)) [tilde(N)_y (tau) | tilde(L)(t), Delta tilde(N)^ell (t) = 0, cal(macron(F))_(t-)] - mean(P^(G^*)) [tilde(N)_y (tau) | Delta tilde(N)^ell (t) = 0, cal(macron(F))_(t-)] \
+        &quad +mean(P^(G^*)) [tilde(N)_y (tau) | tilde(L)(t), Delta tilde(N)^ell (t) = 1, cal(macron(F))_(t-)] - mean(P^(G^*)) [tilde(N)_y (tau) | Delta tilde(N)^ell (t) = 1, cal(macron(F))_(t-)] \
+        &= 0 + [tilde(N)_y (tau) | tilde(L)(eventcensored(k)), eventcensored(k) = t, status(k) = ell, historycensored(k-1)]-mean(P^(G^*)) [tilde(N)_y (tau) | eventcensored(k) = t, status(k) = ell, historycensored(k-1)] \
 $ <eq:rytgaardproof3>
-Next, note that under the integral
+Next, note that under the integral, by Corollary 2.2.3 of @last1995marked
 $
-    &mean(P^(G^*)) [N_y (tau) | Delta N^x (t) = 0, cal(F)_(t-)] \
-        &=sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} mean(P^(G^*)) [N_y (tau) | (event(k) > t or event(k) = t, status(k) != x), history(k-1)] \
-        &=sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} (mean(P^(G^*)) [N_y (tau) bb(1) {event(k) > t} | history(k-1)] + mean(P^(G^*)) [N_y (tau) bb(1) {event(k) = t, status(k) != x} | history(k-1)])/((mean(P^(G^*)) [bb(1) {event(k) > t} | history(k-1)] + mean(P^(G^*)) [bb(1) {event(k) = t, status(k) != x} | history(k-1)])) \
-        &=^(**)sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} mean(P^(G^*)) [N_y (tau) | event(k) > t, history(k-1)] \
-        &=sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} (mean(P^(G^*)) [N_y (tau) bb(1) { event(k) > t} |history(k-1)])/(mean(P^(G^*)) [bb(1) { event(k) > t } | history(k-1)]) \
-        &=sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} (Qbar(k-1) (tau, history(k-1)) - Qbar(k-1) (t, history(k-1)))/(S (t | history(k-1))),
+    &mean(P^(G^*)) [tilde(N)_y (tau) | Delta tilde(N)^x (t) = 0, cal(macron(F))_(t-)] \
+        &=sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} mean(P^(G^*)) [tilde(N)_y (tau) | (eventcensored(k) > t or eventcensored(k) = t, statuscensored(k) != x), historycensored(k-1)] \
+        &=sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)] + mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) = t, statuscensored(k) != x} | historycensored(k-1)])/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | historycensored(k-1)] + mean(P^(G^*)) [bb(1) {eventcensored(k) = t, statuscensored(k) != x} | historycensored(k-1)])) \
+        &=^(**)sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} mean(P^(G^*)) [tilde(N)_y (tau) | eventcensored(k) > t, historycensored(k-1)] \
+        &=sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) { eventcensored(k) > t} |historycensored(k-1)])/(mean(P^(G^*)) [bb(1) { eventcensored(k) > t } | historycensored(k-1)]) \
+        &=sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} (Qbar(k-1) (tau, historycensored(k-1)) - Qbar(k-1) (t, historycensored(k-1)))/(S (t | historycensored(k-1))),
 $ <eq:rytgaardproof4>
 where in $(**)$, we use that 
 $
-    &integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} (mean(P^(G^*)) [N_y (tau) bb(1) {event(k) > t} | history(k-1)] + mean(P^(G^*)) [N_y (tau) bb(1) {event(k) = t, status(k) != x} | history(k-1)])/((mean(P^(G^*)) [bb(1) {event(k) > t} | history(k-1)] + mean(P^(G^*)) [bb(1) {event(k) = t, status(k) != x} | history(k-1)])) tilde(M)^x (dif t) \
-        &= integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {event(k-1) < t <= event(k)} mean(P^(G^*)) [N_y (tau) | event(k) > t, history(k-1)] tilde(M)^x (dif t).
+    &integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} \
+        &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)] + mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) = t, statuscensored(k) != x} | historycensored(k-1)])/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)] + mean(P^(G^*)) [bb(1) {eventcensored(k) = t, statuscensored(k) != x} | historycensored(k-1)])) tilde(M)^x (dif t) \
+        &= integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} \
+        &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)] +sum_(z != x) mean(P^(G^*)) [tilde(N)^y (tau) | eventcensored(k) =t, statuscensored(k) =z, historycensored(k-1)] Delta Lambda_k^z (t, historycensored(k-1)))/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)] + Delta Lambda_k^z (t, historycensored(k-1)))) tilde(M)^x (dif t) \
+        &= integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} mean(P^(G^*)) [tilde(N)_y (tau) | eventcensored(k) > t, historycensored(k-1)] tilde(M)^x (dif t).
 $
-This follows because of the orthogonality of the martingales (using that if one of the two terms with $status(k) != x$ was greater than zero, then $tilde(N)^x$ would not be able to jump at time $t$
-with probability > 0).
+To see the last equality, note that by orthogonality of the martingales (Equation (2.4.2) and (2.4.3) of @andersenStatisticalModelsBased1993),
+we have that
+$
+    0 = sum_k integral_0^s bb(1) {eventcensored(k-1) < t <= eventcensored(k)}  Delta Lambda_k^z (t, historycensored(k-1)) Lambda_k^x (dif t, historycensored(k-1))
+$ 
+Conclude that
+$
+    &integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} \
+        &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)] +sum_(z != x) mean(P^(G^*)) [tilde(N)^y (tau) | eventcensored(k) =t, statuscensored(k) =z, historycensored(k-1)] Delta Lambda_k^z (t, historycensored(k-1)))/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)] + Delta Lambda_k^z (t, historycensored(k-1)))) \
+        &quad times Lambda_k^x (dif t, historycensored(k-1)) \
+    &=integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)])/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)])) Lambda_k^x (dif t, historycensored(k-1)) 
+$
+Similarly,
+$
+    &integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} \
+        &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)] +sum_(z != x) mean(P^(G^*)) [tilde(N)^y (tau) | eventcensored(k) =t, statuscensored(k) =z, historycensored(k-1)] Delta Lambda_k^z (t, historycensored(k-1)))/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)] + Delta Lambda_k^z (t, historycensored(k-1)))) \
+        &quad times tilde(N)^x (dif t, historycensored(k-1)) \
+        &= integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} \
+        &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)])/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)])) bb(1) {eventcensored(k-1) < t <= eventcensored(k)} bb(1) {sum_(z != x) Delta Lambda_k^z (t, historycensored(k-1)) = 0} tilde(N)^x (dif t, historycensored(k-1)) \
+        &+ integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} \
+        &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)] +sum_(z != x) mean(P^(G^*)) [tilde(N)^y (tau) | eventcensored(k) =t, statuscensored(k) =z, historycensored(k-1)] Delta Lambda_k^z (t, historycensored(k-1)))/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)] + Delta Lambda_k^z (t, historycensored(k-1)))) \
+        &quad times bb(1) {sum_(z != x) Delta Lambda_k^z (t, historycensored(k-1)) > 0} tilde(N)^x (dif t, historycensored(k-1)) \
+        &=^(***) integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} \
+        &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)])/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)])) bb(1) {eventcensored(k-1) < t <= eventcensored(k)} bb(1) {sum_(z != x) Delta Lambda_k^z (t, historycensored(k-1)) = 0} tilde(N)^x (dif t, historycensored(k-1)) \
+        &=^(****) integral_0^tau W^g (t - ) sum_(k=1)^K bb(1) {eventcensored(k-1) < t <= eventcensored(k)} \
+        &quad times (mean(P^(G^*)) [tilde(N)_y (tau) bb(1) {eventcensored(k) > t} | historycensored(k-1)])/((mean(P^(G^*)) [bb(1) {eventcensored(k) > t} | history(k-1)])) bb(1) {eventcensored(k-1) < t <= eventcensored(k)} tilde(N)^x (dif t, historycensored(k-1)) \
+$
+Here, we use in $(***)$ that the second term is seen to be almost surely zero since its compensator is zero by the assumption of orthogonal martingales.
+Next, in $(****)$ we use the same line of argument to show that the difference of the last line and previous line is almost surely zero. 
 Let $B_(k-1) (u) = (Qbar(k-1)(tau) -Qbar(k-1)(u)) 1/( S (u | historycensored(k-1)))$.
 Combining @eq:rytgaardproof1, @eq:rytgaardproof2, @eq:rytgaardproof3, and @eq:rytgaardproof4 with @eq:rytgaardeif, we find that the efficient influence function can also be written as:
 $
@@ -1649,7 +1686,7 @@ $
         &[integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u- | historycensored(k-1))) (Qbar(k) (covariatecensored(k), 1, a, historycensored(k-1))- B_(k-1) (u)) tilde(M)^(a) (d u) \
             &quad+integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u- | historycensored(k-1))) (mean(P) [Qbar(k) (tau) | event(k) =u , status(k) = ell, history(k-1)] - B_(k-1) (u)) tilde(M)^(ell) (d u) \
             &quad+integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u- | historycensored(k-1))) (1 - B_(k-1) (u)) tilde(M)^(y) (d u) +integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u- | historycensored(k-1)))(0 - B_(k-1) (u)) tilde(M)^(d) (d u) \
-            &quad+  1/(tilde(S)^c (eventcensored(k)- | historycensored(k-1))) bb(1) (eventcensored(k) < tau, statuscensored(k) = ell, k < K) ( Qbar(k) (tau) - mean(P) [Qbar(k) (tau) | eventcensored(k), status(k) = ell, history(k-1)] )]\
+            &quad+  1/(tilde(S)^c (eventcensored(k)- | historycensored(k-1))) bb(1) (eventcensored(k) < tau, statuscensored(k) = ell, k < K) ( Qbar(k) (tau) - mean(P) [Qbar(k) (tau) | eventcensored(k), status(k) = ell, historycensored(k-1)] )]\
         &+ Qbar(0) (tau, 1, covariate(0))- Psi_tau^g (P) \
         &= sum_(k=1)^K product_(j = 1)^(k-1) ((bb(1) {treatcensored(j) = 1}) / (densitytrtcensored(eventcensored(j), j)))^(bb(1) {statuscensored(j) = a}) 1/( product_(j=1)^(k-1) tilde(S)^c (eventcensored(j)- | historycensored(j-1))) bb(1) {statuscensored(k-1) in {ell, a}, eventcensored(k-1) < tau} [ \
             &quad-integral_(eventcensored(k-1))^(tau and eventcensored(k)) 1/(tilde(S)^c (u- | historycensored(k-1))) Qbar(k) (1, covariatecensored(k-1), u, a, historycensored(k-1))  Lambda^a_k (dif u , historycensored(k-1))  \
@@ -1712,23 +1749,35 @@ This now shows that @eq:rytgaard55 is equal to @eq:eif.
 == Proof of @thm:eif <section:proofeif>
 We let $Qbar(k) (u, a_k, h_k; P)$ denote the right-hand side of @eq:iceipcw,
 with $P$ being explicit in the notation and likewise define the notation with $macron(Z)^a_(k, tau) (u; P)$.
-We compute the efficient influence function by calculating the derivative (Gateaux derivative) of $Psi_tau^g (P_epsilon)$
-with $P_epsilon = P + epsilon (delta_(O)-P)$ at $epsilon = 0$,
-where $delta$ denotes the Dirac measure at the point $O$.
-First note that
+Let ${P_epsilon | |epsilon| <= delta}$ denote a bounded, Hellinger differentiable path
+with $P_epsilon = P$ at $epsilon = 0$ and score function $dot(ell)$ at $epsilon = 0$.
+We compute the efficient influence function by calculating $evaluated(partial / (partial epsilon))_(epsilon=0) Psi_tau (P_epsilon)$.
+Assuming boundedness, first note that
 $
-    evaluated(partial / (partial epsilon))_(epsilon=0) Psi_tau (P_epsilon) = Qbar(0) (tau) - Psi_tau^g (P) + integral evaluated(partial / (partial epsilon))_(epsilon=0) Qbar(0) (tau, 1, l; P_epsilon) P_L (dif l).
+    evaluated(partial / (partial epsilon))_(epsilon=0) Psi_tau (P_epsilon) &= integral dot(ell) (l) Qbar(0) (tau, 1, l) P_(L) (dif l) + integral evaluated(partial / (partial epsilon))_(epsilon=0) Qbar(0) (tau, 1, l; P_epsilon) P_L (dif l) \
+        &= integral dot(ell) (l) (Qbar(0) (tau, 1, l)-Psi_tau (P)) P_(L) (dif l) + integral evaluated(partial / (partial epsilon))_(epsilon=0) Qbar(0) (tau, 1, l; P_epsilon) P_L (dif l).
 $ <eq:baselineeif>
     
 Then note that
 $
     &evaluated(partial / (partial epsilon))_(epsilon=0) Lambda_(k, epsilon)^c (dif t | f_(k-1)) \
         &=evaluated(partial / (partial epsilon))_(epsilon=0) (P_epsilon (eventcensored(k) in dif t, statuscensored(k) = c | historycensored(k-1) = f_(k-1))) / (P_epsilon (eventcensored(k) >= t | historycensored(k-1) = f_(k-1))) \
-        &=evaluated(partial / (partial epsilon))_(epsilon=0) (P_epsilon (eventcensored(k) in dif t, statuscensored(k) = c, historycensored(k-1) = f_(k-1))) / (P_epsilon (eventcensored(k) >= t, historycensored(k-1) = f_(k-1))) \
-        &= (delta_(historycensored(k-1)) (f_(k-1)))/P(historycensored(k-1) = f_(k-1)) (bb(1) {eventcensored(k) in dif t, statuscensored(k) = c}-P (eventcensored(k) in dif t, statuscensored(k) = c | historycensored(k-1) = f_(k-1))) / (P (eventcensored(k) >= t | historycensored(k-1) = f_(k-1))) \
-        &quad- (delta_(historycensored(k-1)) (f_(k-1)))/P(historycensored(k-1) = f_(k-1)) (bb(1) {eventcensored(k) >= t} - P(eventcensored(k) >= t | historycensored(k-1) = f_(k-1)))(P (eventcensored(k) in dif t, statuscensored(k) = c | historycensored(k-1) = f_(k-1))) / (P (eventcensored(k) >= t| historycensored(k-1) = f_(k-1)))^2 \
-        &= (delta_(historycensored(k-1)) (f_(k-1)))/P(historycensored(k-1) = f_(k-1)) (bb(1) {eventcensored(k) in dif t, statuscensored(k) = c}) / (P (eventcensored(k) >= t | historycensored(k-1) = f_(k-1))) - bb(1) {eventcensored(k) >= t} (P (eventcensored(k) in dif t, statuscensored(k) = c | historycensored(k-1) = f_(k-1))) / (P (eventcensored(k) >= t| historycensored(k-1) = f_(k-1)))^2 \
-        &= (delta_(historycensored(k-1)) (f_(k-1)))/P(historycensored(k-1) = f_(k-1)) 1/(P (eventcensored(k) >= t | historycensored(k-1) = f_(k-1))) (bb(1) {eventcensored(k) in dif t, statuscensored(k) = c} - bb(1) {eventcensored(k) >= t} tilde(Lambda)^c_k (dif t | historycensored(k-1) = f_(k-1))),
+        &=(evaluated(partial / (partial epsilon))_(epsilon=0) P_epsilon (eventcensored(k) in dif t, statuscensored(k) = c | historycensored(k-1) = f_(k-1))) / (P (eventcensored(k) >= t | historycensored(k-1) = f_(k-1)))\
+        &#h(2cm) -(evaluated(partial / (partial epsilon))_(epsilon=0) P_epsilon (eventcensored(k) >= t | historycensored(k-1) = f_(k-1))P (eventcensored(k) in dif t, statuscensored(k) = c | historycensored(k-1) = f_(k-1))) / (P (eventcensored(k) >= t | historycensored(k-1) = f_(k-1)))^2 \
+        &=1/(P (eventcensored(k) >= t | historycensored(k-1) = f_(k-1))) \
+        &quad times underbrace(evaluated(partial / (partial epsilon))_(epsilon=0) P_epsilon (eventcensored(k) in dif t, statuscensored(k) = c | historycensored(k-1) = f_(k-1)) -evaluated(partial / (partial epsilon))_(epsilon=0) P_epsilon (eventcensored(k) >= t | historycensored(k-1) = f_(k-1)) Lambda_(k)^c (dif t | f_(k-1)), := h_P (dif t))
+        // &=evaluated(partial / (partial epsilon))_(epsilon=0) (P_epsilon (eventcensored(k) in dif t, statuscensored(k) = c, historycensored(k-1) = f_(k-1))) / (P_epsilon (eventcensored(k) >= t, historycensored(k-1) = f_(k-1))) \
+        // &= (delta_(historycensored(k-1)) (f_(k-1)))/P(historycensored(k-1) = f_(k-1)) (bb(1) {eventcensored(k) in dif t, statuscensored(k) = c}-P (eventcensored(k) in dif t, statuscensored(k) = c | historycensored(k-1) = f_(k-1))) / (P (eventcensored(k) >= t | historycensored(k-1) = f_(k-1))) \
+        // &quad- (delta_(historycensored(k-1)) (f_(k-1)))/P(historycensored(k-1) = f_(k-1)) (bb(1) {eventcensored(k) >= t} - P(eventcensored(k) >= t | historycensored(k-1) = f_(k-1)))(P (eventcensored(k) in dif t, statuscensored(k) = c | historycensored(k-1) = f_(k-1))) / (P (eventcensored(k) >= t| historycensored(k-1) = f_(k-1)))^2 \
+        // &= (delta_(historycensored(k-1)) (f_(k-1)))/P(historycensored(k-1) = f_(k-1)) (bb(1) {eventcensored(k) in dif t, statuscensored(k) = c}) / (P (eventcensored(k) >= t | historycensored(k-1) = f_(k-1))) - bb(1) {eventcensored(k) >= t} (P (eventcensored(k) in dif t, statuscensored(k) = c | historycensored(k-1) = f_(k-1))) / (P (eventcensored(k) >= t| historycensored(k-1) = f_(k-1)))^2 \
+        //&= (delta_(historycensored(k-1)) (f_(k-1)))/P(historycensored(k-1) = f_(k-1)) 1/(P (eventcensored(k) >= t | historycensored(k-1) = f_(k-1))) (bb(1) {eventcensored(k) in dif t, statuscensored(k) = c} - bb(1) {eventcensored(k) >= t} tilde(Lambda)^c_k (dif t | historycensored(k-1) = f_(k-1))),
+$
+We also have
+$
+    &evaluated(partial / (partial epsilon))_(epsilon=0) P_epsilon (eventcensored(k) in dot, statuscensored(k) = c | historycensored(k-1) = f_(k-1)) \
+        &= integral_(dot times {a,ell,d,y,c}) bb(1) {delta = c} dot(ell) (s, delta | f_(k-1)) P (eventcensored(k) in dif s, statuscensored(k) in dif delta  | historycensored(k-1) = f_(k-1)) \ \
+        &evaluated(partial / (partial epsilon))_(epsilon=0) P_epsilon (eventcensored(k) >= t | historycensored(k-1) = f_(k-1)) \
+        &= integral bb(1) {t>=s} dot(ell) (s, delta | f_(k-1)) P (eventcensored(k) in dif s, statuscensored(k) in dif delta  | historycensored(k-1) = f_(k-1)) \
 $
 so that
 $
@@ -1750,48 +1799,67 @@ $
 
 In $(**)$, we use that
 $integral_({t}) 1/(1 - Delta tilde(Lambda)_k^c (u | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) tilde(Lambda)^c_k (dif u | f_(k-1)) = 1/(1 - Delta tilde(Lambda)_k^c (t | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) Delta tilde(Lambda)^c_(k,epsilon) (t | f_(k-1))$.
-Furthermore, for $P_epsilon = P + epsilon (delta_((X,Y)) - P)$, a simple calculation yields the well-known result
+Furthermore, a simple calculation yields the well-known result
 $
-    evaluated(partial / (partial epsilon))_(epsilon=0) mean(P_epsilon) [Y | X = x] = (delta_(X) (x)) / P(X = x) (Y - mean(P) [Y | X = x]).
+    evaluated(partial / (partial epsilon))_(epsilon=0) mean(P_epsilon) [Y | X = x] = integral y dot(ell) (y | x) P(dif y | x) = integral (y-mean(P) [Y| X=x]) dot(ell) (y | x) P(dif y | x)
 $ <eq:derivcondexp>
 Using @eq:iceipcw with @eq:derivcondexp and @eq:derivcumhazard, we have
 $
-    evaluated(partial / (partial epsilon))_(epsilon=0) Qbar(k-1) (tau, f_(k-1); P_epsilon) = delta_(historycensored(k-1) (f_(k-1)))/P(historycensored(k-1) = f_(k-1))  (macron(Z)^a_(k,tau) (tau) - Qbar(k-1) (tau) + A + B),
-$
+    &evaluated(partial / (partial epsilon))_(epsilon=0) Qbar(k-1) (tau, f_(k-1); P_epsilon) \
+        &= integral bb(1) {t_(k-1) < t_k <= tau} dot(ell) (t_k, d_k,l_k,a_k | f_(k-1))  \
+        &#h(1cm) (macron(Z)^a_(k,tau) (t_k, d_k, l_k, a_k, f_(k-1)) - Qbar(k-1) (tau, f_(k-1))) P_((eventcensored(k), statuscensored(k), covariatecensored(k), treatcensored(k))) (dif (t_k, d_k, l_k, a_k) | f_(k-1))\
+        &quad + A + B,
+$ <eq:iterative>
 for $k=1, dots, K$,
 where in the notation with $macron(Z)^a_(k,tau)$, we have made the dependencies explicit,
-where
+and
 $
-    A &:= integral_(eventcensored(k-1))^(tau) macron(Z)^a_(k,tau) (t_k, d_k, l_k, a_k, f_(k-1)) integral_((eventcensored(k-1), t_k)) 1/(1- Delta tilde(Lambda)_k^c (s | f_(k-1))) 1/(tilde(S) (s - | historycensored(k-1) = f_(k-1))) (tilde(N)^c (dif s) - tilde(Lambda)^c (dif s)) \
+    A &:= integral bb(1) {t_(k-1) < t_k <= tau} macron(Z)^a_(k,tau) (t_k, d_k, l_k, a_k, f_(k-1)) integral_((t_(k-1), t_k)) 1/(1- Delta tilde(Lambda)_k^c (s | f_(k-1))) evaluated(partial / (partial epsilon))_(epsilon=0) Lambda_(k, epsilon)^c (dif s | f_(k-1)) \
         &quad P_((eventcensored(k), statuscensored(k), covariatecensored(k), treatcensored(k))) (dif (t_k, d_k, l_k, a_k) | f_(k-1)) \
-        B &:=integral_(eventcensored(k-1))^(tau) (bb(1) {t_k < tau, d_(k) in {a, ell}})/(tilde(S)^c (t_k - | f_(k-1)))  ((bb(1) {a_k = 1}) / (densitytrtcensored(t_(k), k)))^(bb(1) {d_(k) = a}) evaluated(partial / (partial epsilon))_(epsilon=0) lr(Qbar(k) (P_epsilon | a_(k), l_(k),t_(k), d_(k), f_(k-1))) \
+        B &:=integral bb(1) {t_(k-1) < t_k <= tau} (bb(1) {t_k < tau, d_(k) in {a, ell}})/(tilde(S)^c (t_k - | f_(k-1)))  ((bb(1) {a_k = 1}) / (pi_k (t_(k), l_k, f_(k-1))))^(bb(1) {d_(k) = a}) evaluated(partial / (partial epsilon))_(epsilon=0) lr(Qbar(k) (P_epsilon | a_(k), l_(k),t_(k), d_(k), f_(k-1))) \
         & P_((eventcensored(k), statuscensored(k), covariatecensored(k), treatcensored(k))) (dif (t_k, d_k, l_k, a_k) | f_(k-1)),
 $
-To get B, we use a similar derivation to the one given in @eq:stepTheorem1.
-Now note that for simplifying A, we can write
+To get $B$, we use the same derivation as the one given in @eq:stepTheorem1.
+// should be easy enough interchanging integrals 
+Now note that for simplifying $A$, we can write
 $
-    &integral_(eventcensored(k-1))^(tau) macron(Z)^a_(k,tau) (t_k, d_k, l_k, a_k, f_(k-1)) integral_((eventcensored(k-1),t_k)) 1/(1- Delta tilde(Lambda)_k^c (s | f_(k-1))) 1/(tilde(S) (s - | historycensored(k-1) = f_(k-1)))  (tilde(N)^c (dif s) - tilde(Lambda)^c (dif s)) \
+    &integral bb(1) {t_(k-1) < t_k <= tau} macron(Z)^a_(k,tau) (t_k, d_k, l_k, a_k, f_(k-1)) integral_((t_(k-1),t_k)) 1/(1- Delta tilde(Lambda)_k^c (s | f_(k-1))) 1/(tilde(S) (s - | historycensored(k-1) = f_(k-1))) h_P (dif s) \
         &#h(1.5cm) P_((eventcensored(k), statuscensored(k), covariatecensored(k), treatcensored(k))) (dif (t_k, d_k, l_k, a_k) | historycensored(k-1) = f_(k-1)) \
-        &= integral_((eventcensored(k-1),tau)) integral_(s)^tau macron(Z)^a_(k,tau) (t_k, d_k, l_k, a_k, f_(k-1)) P_((eventcensored(k), statuscensored(k), covariatecensored(k), treatcensored(k))) (dif (t_k, d_k, l_k, a_k) | historycensored(k-1) = f_(k-1)) \
-        &#h(1.5cm) 1/(1- Delta tilde(Lambda)_k^c (s | f_(k-1))) 1/(tilde(S) (s - | historycensored(k-1) = f_(k-1)))  (tilde(N)^c (dif s) - tilde(Lambda)^c (dif s)) \
-        &= integral_((eventcensored(k-1),tau)) (Qbar(k-1)(tau) - Qbar(k-1)(s)) \
-        &#h(1.5cm) 1/(1- Delta tilde(Lambda)_k^c (s | f_(k-1))) 1/(tilde(S) (s - | historycensored(k-1) = f_(k-1)))  (tilde(N)^c (dif s) - tilde(Lambda)^c (dif s)) \
-        &= integral_((eventcensored(k-1),tau)) (Qbar(k-1)(tau) - Qbar(k-1)(s)) \
-        &#h(1.5cm) 1/(tilde(S)^c (s | historycensored(k-1) = f_(k-1)) S (s - | historycensored(k-1) = f_(k-1))) (tilde(N)^c (dif s) - tilde(Lambda)^c (dif s)),
+        &= integral_((t_(k-1),tau)) integral bb(1) {s < t_k <= tau} macron(Z)^a_(k,tau) (t_k, d_k, l_k, a_k, f_(k-1)) P_((eventcensored(k), statuscensored(k), covariatecensored(k), treatcensored(k))) (dif (t_k, d_k, l_k, a_k) | historycensored(k-1) = f_(k-1)) \
+        &#h(1.5cm) 1/(1- Delta tilde(Lambda)_k^c (s | f_(k-1))) 1/(tilde(S) (s - | historycensored(k-1) = f_(k-1))) h_P (dif s) \
+        &= integral_((t_(k-1),tau)) (Qbar(k-1)(tau) - Qbar(k-1)(s)) \
+        &#h(1.5cm) 1/(1- Delta tilde(Lambda)_k^c (s | f_(k-1))) 1/(tilde(S) (s - | historycensored(k-1) = f_(k-1))) h_P (dif s) \
+        &= integral_((t_(k-1),tau)) (Qbar(k-1)(tau) - Qbar(k-1)(s)) \
+        &#h(1.5cm) 1/(tilde(S)^c (s | historycensored(k-1) = f_(k-1)) S (s - | historycensored(k-1) = f_(k-1))) h_P (dif s),
 $
-by an exchange of integrals. Here, we apply the result of @thm:iceipcw to get the last equation.
-Hence, we have
+by an exchange of integrals.
+Then,
 $
-    & evaluated(partial / (partial epsilon))_(epsilon=0) Qbar(k-1) (tau, f_(k-1); P_epsilon) \
-        &= delta_(historycensored(k-1) (f_(k-1)))/P(historycensored(k-1) = f_(k-1))  (macron(Z)^a_(k,tau) (tau) - Qbar(k-1) (tau) + \            
-            &quad+ integral_((eventcensored(k-1),tau)) (Qbar(k-1)(tau) - Qbar(k-1)(s)) \
-            &#h(1.5cm) 1/(tilde(S)^c (s | historycensored(k-1) = f_(k-1)) S (s - | historycensored(k-1) = f_(k-1))) (tilde(N)^c (dif s) - tilde(Lambda)^c (dif s))) \
-        &quad+ integral_(eventcensored(k-1))^(tau) (bb(1) {t_k < tau, d_(k) in {a, ell}})/(tilde(S)^c (t_k - | f_(k-1)))  ((bb(1) {a_k = 1}) / (densitytrtcensored(t_(k), k)))^(bb(1) {d_(k) = a}) evaluated(partial / (partial epsilon))_(epsilon=0) lr(Qbar(k) (P_epsilon | a_(k), l_(k),t_(k), d_(k), f_(k-1))) \
-        &#h(1.5cm) P_((eventcensored(k), statuscensored(k), covariatecensored(k), treatcensored(k))) (dif (t_k, d_k, l_k, a_k) | f_(k-1)).
-$ <eq:stepTheorem3>
-Note that for $k=K+1$, the last term vanishes.
-Therefore, we can combine the results from @eq:stepTheorem3 and @eq:baselineeif iteratively
-to obtain the result, i.e. @eq:eif.
+    &integral bb(1) {t_(k-1) < s < tau} (Qbar(k-1)(tau) - Qbar(k-1) (s)) 1/(tilde(S)^c (s | historycensored(k-1) = f_(k-1)) S (s - | historycensored(k-1) = f_(k-1))) h_P (dif s) \
+        &=integral bb(1) {t_(k-1) < s < tau} (Qbar(k-1)(tau) - Qbar(k-1) (s)) 1/(tilde(S)^c (s | historycensored(k-1) = f_(k-1)) S (s - | historycensored(k-1) = f_(k-1))) \
+        &quad times bb(1) {delta = c} dot(ell) (s, delta | f_(k-1)) P (eventcensored(k) in dif s, statuscensored(k) in dif delta) \
+        &quad -integral bb(1) {t_(k-1) < s < tau} (Qbar(k-1)(tau) - Qbar(k-1) (s)) 1/(tilde(S)^c (s | historycensored(k-1) = f_(k-1)) S (s - | historycensored(k-1) = f_(k-1))) \
+        &quad times integral bb(1) {u >= s} dot(ell) (u, delta' | f_(k-1)) P (eventcensored(k) in dif u, statuscensored(k) in dif delta'  | historycensored(k-1) = f_(k-1)) Lambda_(k)^c (dif s | f_(k-1)) \
+        &=integral bb(1) {t_(k-1) < s < tau} (Qbar(k-1)(tau) - Qbar(k-1) (s)) 1/(tilde(S)^c (s | historycensored(k-1) = f_(k-1)) S (s - | historycensored(k-1) = f_(k-1))) \
+        &quad times bb(1) {delta = c} dot(ell) (s, delta | f_(k-1)) P (eventcensored(k) in dif s, statuscensored(k) in dif delta) \
+        &quad -integral dot(ell) (u, delta' | f_(k-1)) integral bb(1) {t_(k-1) < s < tau} (Qbar(k-1)(tau) - Qbar(k-1) (s)) 1/(tilde(S)^c (s | historycensored(k-1) = f_(k-1)) S (s - | historycensored(k-1) = f_(k-1))) \
+        &quad times bb(1) {u >= s} Lambda_(k)^c (dif s | f_(k-1)) P (eventcensored(k) in dif u, statuscensored(k) in dif delta'  | historycensored(k-1) = f_(k-1)) \
+        &=integral dot(ell) (u, delta' | f_(k-1)) integral bb(1) {t_(k-1) < s < tau} (Qbar(k-1)(tau) - Qbar(k-1) (s)) 1/(tilde(S)^c (s | historycensored(k-1) = f_(k-1)) S (s - | historycensored(k-1) = f_(k-1))) \
+        &quad times (tilde(N)^c (dif s) - bb(1) {u >= s} Lambda_(k)^c (dif s | f_(k-1))) P (eventcensored(k) in dif u, statuscensored(k) in dif delta'  | historycensored(k-1) = f_(k-1)) 
+$ <eq:MC>
+Note that due to orthogonality, every place with a conditional score can be replaced with the full score. 
+Therefore, we can combine the results from iteratively from @eq:iterative, @eq:MC, and @eq:baselineeif to obtain the result, i.e. @eq:eif.
+// Here, we apply the result of @thm:iceipcw to get the last equation.
+// Hence, we have
+// $
+//     & evaluated(partial / (partial epsilon))_(epsilon=0) Qbar(k-1) (tau, f_(k-1); P_epsilon) \
+//         &= delta_(historycensored(k-1) (f_(k-1)))/P(historycensored(k-1) = f_(k-1))  (macron(Z)^a_(k,tau) (tau) - Qbar(k-1) (tau) + \            
+//             &quad+ integral_((eventcensored(k-1),tau)) (Qbar(k-1)(tau) - Qbar(k-1)(s)) \
+//             &#h(1.5cm) 1/(tilde(S)^c (s | historycensored(k-1) = f_(k-1)) S (s - | historycensored(k-1) = f_(k-1))) (tilde(N)^c (dif s) - tilde(Lambda)^c (dif s))) \
+//         &quad+ integral_(eventcensored(k-1))^(tau) (bb(1) {t_k < tau, d_(k) in {a, ell}})/(tilde(S)^c (t_k - | f_(k-1)))  ((bb(1) {a_k = 1}) / (densitytrtcensored(t_(k), k)))^(bb(1) {d_(k) = a}) evaluated(partial / (partial epsilon))_(epsilon=0) lr(Qbar(k) (P_epsilon | a_(k), l_(k),t_(k), d_(k), f_(k-1))) \
+//         &#h(1.5cm) P_((eventcensored(k), statuscensored(k), covariatecensored(k), treatcensored(k))) (dif (t_k, d_k, l_k, a_k) | f_(k-1)).
+// $ <eq:stepTheorem3>
+// Note that for $k=K+1$, the last term vanishe
 
 =
 
