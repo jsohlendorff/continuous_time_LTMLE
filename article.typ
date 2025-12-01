@@ -1656,7 +1656,7 @@ $
 $ <eq:rytgaardproof1>
 by Corollary 2.2.3 of @last1995marked.
 Because of the assumption of piecewise-constant compensators, this
-process need only be defined whenever the denominator of @eq:rytgaardproof1 is zero. 
+process need only be defined whenever the denominator of @eq:rytgaardproof1 is non-zero. 
 Similarly, we may find that
 $
     mean(P^(G^*)) [tilde(N)_y (tau) | Delta tilde(N)^y (t) = 1, cal(macron(F))_(t-)] = 1, \
