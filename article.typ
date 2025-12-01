@@ -538,9 +538,9 @@ $macron(cal(F))_t = sigma(beta(s and C and T^e) | s <= t) or cal(F)_0$.
 Let $N^"full" (dif (t, m, a, l)) = bb(1) {m != c} N (dif (t, m, a, l)) + delta_((c, A(C), L(C))) (dif (m, a, l)) N^c (dif t)$ be the _full_ random measure, where $N^c$ is the counting process for censoring events.
 
 The _canonical compensator_ $rho$ for a random measure $N^*$ is a stochastic kernel from $cal(Y) times N_bold(X) times RR_+$ to $RR_+ times bold(X)$
-satisfying that $rho(Y, N^*, dif (t, x))$ is a $P$-$sigma(Y, N_t^*)$ compensator of $N^*$.
+satisfying that $rho(Y, N^*, dif (t, x))$ is a $P$-$cal(F)_t^*$ compensator of $N^*$, where $cal(F)^*_t = sigma(Y, N_t^*)$.
 Here $N_bold(X)$ denotes the canonical point process space with mark space $bold(X)$,
-and measurable element $Y$ at $t=0$ 
+and measurable element $Y in cal(Y)$ at $t=0$. 
 For $N^* = N^"full"$, we take $bold(X) = {0,1} times cal(L) times {a, ell, d, y, c}$
 and $cal(Y) = {0,1} times cal(L)$.
 
