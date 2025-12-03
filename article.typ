@@ -646,8 +646,9 @@ A key feature of our approach is that the efficient influence function is expres
 This representation is computationally simpler, as it avoids the need to estimate multiple martingale terms.
 For a detailed comparison, we refer the reader to the appendix, where we show that our efficient influence function
 simplifies to the same as the one derived by @rytgaardContinuoustimeTargetedMinimum2022
-(@section:compareif) under the assumption that $Delta L (t) = 0$ whenever $Delta N^a (t) = 1$
+(@section:compareif) under the assumption that $Delta L (t) = 0$ whenever $Delta N^a (t) = 1$ (which we relaxed here)
 and the assumption of orthogonal martingales (which was assumed in @rytgaardContinuoustimeTargetedMinimum2022).
+These are assumptions are needed may be needed for the target parameters to be the same.
 
 #theorem("Efficient influence function")[
     Suppose that there is a universal constant $C^* > 0$
