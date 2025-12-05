@@ -646,9 +646,7 @@ A key feature of our approach is that the efficient influence function is expres
 This representation is computationally simpler, as it avoids the need to estimate multiple martingale terms.
 For a detailed comparison, we refer the reader to the appendix, where we show that our efficient influence function
 simplifies to the same as the one derived by @rytgaardContinuoustimeTargetedMinimum2022
-(@section:compareif) under the assumption that $Delta L (t) = 0$ whenever $Delta N^a (t) = 1$ (which we relaxed here)
-and the assumption of orthogonal martingales (which was assumed in @rytgaardContinuoustimeTargetedMinimum2022)
-as their target parameter is only defined in those settings. 
+(@section:compareif).
 
 #theorem("Efficient influence function")[
     Suppose that there is a universal constant $C^* > 0$
@@ -1620,11 +1618,11 @@ $
 $
 in alignment with @eq:weightprocess
 with perfect compliance at time zero. 
-We verify that our efficient influence function is the same as @rytgaardContinuoustimeTargetedMinimum2022
-under their assumption of orthogonal martingales (which is needed to ensure that the likelihood factorizes in the way
-their likelihood does).
-To align with @rytgaardContinuoustimeTargetedMinimum2022, we also assume that $covariate(k) = covariate(k-1)$ 
-whenever $status(k) = a$.
+We verify that our efficient influence function is the same as @rytgaardContinuoustimeTargetedMinimum2022,
+but first we need to make sure that the setting is the same as theirs.
+@rytgaardContinuoustimeTargetedMinimum2022
+assumes orthogonal martingales and that $covariate(k) = covariate(k-1)$ 
+whenever $status(k) = a$ (in our manuscript, we allowed $covariate(k)$ to change).
 The efficient influence function of @rytgaardContinuoustimeTargetedMinimum2022
 is given in Theorem 1 of @rytgaardContinuoustimeTargetedMinimum2022 in our notation by
 $ 
@@ -1635,13 +1633,16 @@ $
         &+ integral_0^tau W^g (t -) (1 - mean(P^(G^*)) [tilde(N)^y (tau) | Delta tilde(N)^y (t) = 0, cal(macron(F))_(t-)]) tilde(M)^y (dif t) \
         &+integral_0^tau W^g (t -) (0 - mean(P^(G^*)) [tilde(N)^y (tau) | Delta tilde(N)^d (t) = 0, cal(macron(F))_(t-)]) tilde(M)^d (dif t).
 $ <eq:rytgaardeif>
-In @eq:rytgaardeif, it is not evident if the integral involving
-$mean(P^(G^*)) [tilde(N)_y (tau) | Delta tilde(N)^x (t) = 1, cal(macron(F))_(t-)]$ is actually well-defined since $Delta tilde(N)^x (t) = 1$
-may be a null-set, and we need to define the sample paths of this process. 
-On the other hand (Corollary 2.2.3 of @last1995marked), shows that 
+In @eq:rytgaardeif, we need to define the sample paths of the process
+$mean(P^(G^*)) [tilde(N)_y (tau) | Delta tilde(N)^x (t) = 1, cal(macron(F))_(t-)]$.
+This is a non-trivial matter in continuous time since $Delta tilde(N)^x (t) = 1$
+is a null-set in continuous time. We verify that we can do this in discrete time
+and provide a simple presentation of it. 
+On the other hand,Corollary 2.2.3 of @last1995marked shows that 
 $mean(P^(G^*)) [tilde(N)_y (tau) | Delta tilde(N)^x (t) = 0, cal(macron(F))_(t-)]$
 can be defined as a $P$-$cal(macron(F))_t$-predictable process,
-and the term involving the counting process integral obviously only needs to be defined at the event times. 
+and the term involving the counting process integral obviously only needs to be defined at the event times.
+We now provide these details. 
 
 Here, $tilde(M)^x$ denotes the observed martingales with respect to the observed filtration.
 We find $mean(P^(G^*)) [tilde(N)_y (tau) | Delta tilde(N)^x (t) = 1, cal(macron(F))_(t-)]$

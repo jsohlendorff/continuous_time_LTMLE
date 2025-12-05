@@ -10,6 +10,7 @@
 #show: thmrules.with(qed-symbol: $square$)
 
 #let theorem = thmbox("theorem", "Theorem", fill: rgb("#eeffee"), base_level: 0)
+#let corollary = thmbox("corollary", "Corollary", fill: rgb("#eeffee"), base_level: 0)
 #let algorithm = thmbox("algorithm", "Algorithm", fill: rgb("#f5b8c3"), base_level: 0)
 #let lemma = thmbox("lemma", "Lemma", fill: rgb("#eeffee"), base_level: 0)
 #let assumption = thmbox("assumption", "Assumption", fill: rgb("#eeeeff"), base_level: 0)
