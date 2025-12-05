@@ -1897,7 +1897,11 @@ $
         &quad times (tilde(N)^c (dif s) - bb(1) {u >= s} Lambda_(k)^c (dif s | f_(k-1))) P (eventcensored(k) in dif u, statuscensored(k) in dif delta'  | historycensored(k-1) = f_(k-1)) 
 $ <eq:MC>
 Note that due to orthogonality, every place with a conditional score can be replaced with the full score. 
-Therefore, we can combine the results from iteratively from @eq:iterative, @eq:MC, and @eq:baselineeif to obtain the result, i.e. @eq:eif.
+Therefore, we can combine the results from iteratively from @eq:iterative, @eq:MC, and @eq:baselineeif to obtain the result,
+$
+    evaluated(partial / (partial epsilon))_(epsilon=0) Psi_tau (P_epsilon) = mean(P) [phi^*_tau (P) dot(ell) (tilde(O))].
+$
+as desired. 
 // Here, we apply the result of @thm:iceipcw to get the last equation.
 // Hence, we have
 // $
